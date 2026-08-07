@@ -1,0 +1,4 @@
+# CORE lane, minimal. The scheduling engine is a published PyPI package, not internal code
+# (conventions/no-internal-packages.md): PhaseFlow consumes oreblocks pinned.
+numpy==2.5.0
+oreblocks==0.2.0

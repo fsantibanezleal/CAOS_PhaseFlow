@@ -1,0 +1,2 @@
+# The offline bake needs nothing the core lane does not: the engine is oreblocks.
+-r ../requirements.txt

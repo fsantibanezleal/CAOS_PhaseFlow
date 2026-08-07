@@ -1,0 +1,211 @@
+/* PhaseFlow layout.
+ *
+ * ADR-0071, the UI floor, is the minimum and it is measured rather than judged: the page IS the
+ * viewport, the workbench uses the full width, every ancestor of a scrollable row carries
+ * min-width: 0, navigation chrome gets ONE row, and the instrument owns at least half the App route
+ * and at least 80 percent of the focus route. The prose routes are legitimately taller than the
+ * screen and scroll INSIDE their own container, because clipping them is how twelve routes across
+ * four products in this line silently hid their content.
+ */
+
+:root {
+  --pf-rail: 320px;
+  --pf-gap: 12px;
+}
+
+/* ---------- the workbench route ---------- */
+.pf-layout {
+  display: grid;
+  grid-template-columns: var(--pf-rail) minmax(0, 1fr);
+  gap: var(--pf-gap);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.pf-rail {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pf-main {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-main .tabpanel,
+.pf-tabpanel {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+}
+
+@media (max-width: 900px) {
+  .pf-layout { grid-template-columns: minmax(0, 1fr); }
+  .pf-rail { max-height: 44vh; }
+}
+
+/* ---------- the 3D stage ---------- */
+.pf-stage3d {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.pf-stage3d canvas { display: block; }
+
+.pf-stagewrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+
+/* ---------- HUD, overlaid on the stage, never stacked as cards above it ---------- */
+.pf-hud {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+  z-index: 4;
+  max-width: 46ch;
+}
+
+.pf-hud-label {
+  background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.pf-hud-title { font-weight: 650; font-size: 0.95rem; }
+.pf-hud-sub { color: var(--color-fg-muted); font-size: 0.8rem; line-height: 1.35; margin-top: 2px; }
+
+.pf-hud-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.pf-hud-row { display: flex; align-items: baseline; gap: 8px; }
+.pf-hud-val { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.95rem; font-weight: 600; min-width: 8ch; }
+.pf-hud-key { font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-fg-muted); }
+
+/* ---------- focus route: outside the shell, fixed to the viewport ---------- */
+.pf-focus {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  overflow: hidden;
+}
+
+.pf-focus-stage { position: relative; min-width: 0; min-height: 0; display: flex; }
+
+.pf-focus-rail {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  border-left: 1px solid var(--color-border);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pf-focus-exit {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 6;
+}
+
+@media (max-width: 860px) {
+  .pf-focus { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 46vh; }
+  .pf-focus-rail { border-left: none; border-top: 1px solid var(--color-border); }
+}
+
+/* ---------- controls ---------- */
+.pf-ctl { display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; }
+.pf-ctl > span { display: flex; justify-content: space-between; gap: 8px; color: var(--color-fg-muted); }
+.pf-ctl b { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--color-fg); font-weight: 600; }
+.pf-ctl input[type='range'] { width: 100%; }
+
+.pf-group { border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.pf-group > h4 { margin: 0; font-size: 0.72rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--color-fg-muted); }
+
+.pf-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.pf-chip {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-fg);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+.pf-chip.on { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg); }
+
+.pf-legend { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.72rem; color: var(--color-fg-muted); }
+.pf-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin-right: 3px; }
+
+/* ---------- readouts ---------- */
+.pf-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.pf-kpi { border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 10px; min-width: 0; }
+.pf-kpi b { display: block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.02rem; }
+.pf-kpi span { font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-fg-muted); }
+
+.pf-canvas-host { width: 100%; height: 100%; min-height: 200px; }
+.pf-chart { width: 100%; }
+
+.pf-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.pf-table th, .pf-table td { border-bottom: 1px solid var(--color-border); padding: 5px 8px; text-align: right; }
+.pf-table th:first-child, .pf-table td:first-child { text-align: left; }
+.pf-table thead th { color: var(--color-fg-muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.pf-scroll-x { overflow-x: auto; min-width: 0; }
+
+.pf-methodbars { display: flex; flex-direction: column; gap: 3px; }
+.pf-mb-row { display: grid; grid-template-columns: 15rem 1fr 5rem 10rem; gap: 8px; align-items: center; font-size: 0.8rem; padding: 2px 4px; border-radius: 5px; }
+.pf-mb-row.on { background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
+.pf-mb-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow: hidden; text-overflow: ellipsis; }
+.pf-mb-track { height: 9px; background: color-mix(in srgb, var(--color-fg-muted) 18%, transparent); border-radius: 999px; overflow: hidden; }
+.pf-mb-fill { display: block; height: 100%; }
+.pf-mb-val { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; text-align: right; }
+.pf-mb-sub { color: var(--color-fg-muted); font-size: 0.72rem; text-align: right; }
+
+.pf-muted { color: var(--color-fg-muted); }
+.pf-cap { font-size: 0.74rem; line-height: 1.4; }
+.pf-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.pf-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; min-width: 0; }
+.pf-split > * { min-width: 0; }
+.pf-panel { border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.pf-panel > h4 { margin: 0; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-fg-muted); }
+
+.pf-badge { display: inline-block; border-radius: 999px; padding: 1px 8px; font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; border: 1px solid var(--color-border); }
+.pf-badge.live { color: var(--color-ok, #3fb950); border-color: currentColor; }
+.pf-badge.replay { color: var(--color-warn, #d29922); border-color: currentColor; }
+.pf-badge.pass { color: var(--color-ok, #3fb950); border-color: currentColor; }
+.pf-badge.fail { color: var(--color-danger, #f85149); border-color: currentColor; }
