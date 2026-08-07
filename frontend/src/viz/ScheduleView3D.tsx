@@ -85,7 +85,17 @@ export function ScheduleView3D({
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(bg);
     const camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 1000);
-    camera.position.set(2.4, 1.9, 2.6);
+    // FIT the camera to the model instead of hard-coding a distance. A fixed position leaves the pit
+    // a small object in a large frame, which is the underfill failure: presence, stage share and
+    // no-scroll are all true of a stage whose instrument occupies six percent of its own pixels.
+    // Half-extent of the normalised model is 1 on the longest axis; back off far enough that it
+    // subtends about 80 percent of the smaller field of view, then look at the centre.
+    const fitRadius = Math.SQRT2;
+    const vFov = (50 * Math.PI) / 180;
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (W / H));
+    const dist = (fitRadius / Math.sin(Math.min(vFov, hFov) / 2)) * 0.62;
+    camera.position.set(dist * 0.62, dist * 0.5, dist * 0.68);
+    camera.lookAt(0, 0, 0);
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     renderer.setSize(W, H);
@@ -133,6 +143,10 @@ export function ScheduleView3D({
       const h2 = height > 0 ? height : Math.max(1, el.clientHeight || H);
       camera.aspect = w2 / h2;
       camera.updateProjectionMatrix();
+      const hf = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+      const d2 = (fitRadius / Math.sin(Math.min(vFov, hf) / 2)) * 0.62;
+      const cur = camera.position.length() || 1;
+      camera.position.multiplyScalar(d2 / cur);
       renderer.setSize(w2, h2);
       kick(200);
     };
