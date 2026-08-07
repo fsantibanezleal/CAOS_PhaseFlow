@@ -1,85 +1,91 @@
-# CAOS product template, a REAL product repo (not a demo)
+# PhaseFlow
 
-<!-- BADGE HEADER (ADR-0065), copy this block to the top of an instantiated product README.
-     Replace <OWNER>/<REPO> and the CI workflow filename. Every badge here is auto-updating and truthful.
-     Allowed: CI (from Actions), license, latest version/tag, live demo, and arXiv ONLY once a real preprint exists.
-     FORBIDDEN: hand-typed count/claim badges (tests N passing, languages N, coverage unless from CI, agents N, ...)
-     and supply-chain-security theater (OpenSSF Scorecard, SLSA, VirusTotal) unless the repo actually ships signed
-     installable binaries. A badge that states something a tool does not verify live is vanity, do not add it.
-[![CI](https://img.shields.io/github/actions/workflow/status/<OWNER>/<REPO>/ci.yml?branch=main&label=CI)](https://github.com/<OWNER>/<REPO>/actions)
-[![License](https://img.shields.io/github/license/<OWNER>/<REPO>)](LICENSE)
-[![Version](https://img.shields.io/github/v/tag/<OWNER>/<REPO>?label=version&sort=semver)](https://github.com/<OWNER>/<REPO>/tags)
-[![Live demo](https://img.shields.io/badge/demo-live-2ea44f)](https://<SLUG>.fasl-work.com)
--->
+[![CI](https://img.shields.io/github/actions/workflow/status/fsantibanezleal/CAOS_PhaseFlow/ci.yml?branch=main&label=CI)](https://github.com/fsantibanezleal/CAOS_PhaseFlow/actions)
+[![License](https://img.shields.io/github/license/fsantibanezleal/CAOS_PhaseFlow)](LICENSE)
+[![Version](https://img.shields.io/github/v/tag/fsantibanezleal/CAOS_PhaseFlow?label=version&sort=semver)](https://github.com/fsantibanezleal/CAOS_PhaseFlow/tags)
+[![Live](https://img.shields.io/badge/live-phaseflow.fasl--work.com-blue)](https://phaseflow.fasl-work.com)
 
-This is the **canonical template** every Faena/CAOS data-product repo is instantiated from. It exists because
-ad-hoc products (bespoke scripts, baked cases, no reproducible env, no data contract) kept shipping, they
-*look* done but **cannot be applied to new data**, so they are demos, not tools. This template makes the standard
-**executable**: clone it, run two scripts, and you have a reproducible offline pipeline that ingests data in a
-**standard format**, processes it through **typed, seeded, tested stages**, emits **committed standard-format
-artifacts + a manifest**, and feeds a web app that **replays** them, and that any third party can point at
-**their own data**.
+**An open-pit production schedule, solved with a certified bound and animated year by year over the
+block model.** The ultimate pit answers *which* blocks are worth mining. PhaseFlow answers *when*,
+subject to slope precedence in every period and per-period mining and processing capacity, maximising
+discounted NPV.
 
-It is modelled on the validated exemplar **CAOS_SIMLAB** (`simlab/pipeline.py`, `requirements-*.txt`,
-`scripts/setup+precompute`, `docs/frameworks`, `data/artifacts`, `manifests/`).
+That is the **constrained pit limit problem** (CPIT). It is NP-hard, so what ships is a **certified
+upper bound** plus **feasible heuristic** schedules, with the gap between them on every screen. A
+schedule shown without its gap is a number with no scale.
 
-## The two data contracts (the thing that was missing everywhere)
+## What makes it worth looking at
 
-A product is only real if data flows through **two enforced contracts**:
+**The bound needs no LP solver.** Chicoisne, Espinoza, Goycoolea, Moreno and Rubio
+([doi:10.1287/opre.1120.1050](https://doi.org/10.1287/opre.1120.1050), Theorem 3.1) show that for one
+resource constraint per period the CPIT LP relaxation is solved exactly in `O(mn log n)`, as a
+sequence of parametric nested pits, which are maximum closures, which are minimum cuts. So the
+certified bound runs on max-flow machinery, offline in Python and **live in the browser**.
 
-1. **Ingestion contract, `raw → processing`.** `data-pipeline/pipeline/io/contract.py` (shipped as `pipeline`) defines the required schema (columns,
-   units, ranges) of an input dataset and an explicit **outlier policy** (reject / clip / flag). This is the
-   *"bring your own data"* gate: a user's dataset is accepted iff it satisfies the contract. Documented in
-   [docs/data-contract.md](docs/data-contract.md).
-2. **Artifact contract, `processing → web`.** Every canonical pipeline run writes a compact,
-   standard-format artifact and a `manifests/<case>.json` (params, seed, run_ms, bytes, gate verdict,
-   format/version). The web replay lane loads only these. A separately named reduced live engine may compute
-   valid interactive results when its parity/latency/memory gates pass; it never overwrites or masquerades
-   as canonical offline truth. A TS type mirrors the manifest schema so contract drift fails the build.
+**The trust anchor is a published instance solved as published.** `newman1.cpit`: its own six
+periods, its own eight percent rate, its own two capacities.
 
-If either contract is missing, the product is a demo. CI enforces both.
+| quantity | PhaseFlow | published |
+|---|---|---|
+| ultimate pit optimum | 26,086,899 | 26,086,899 |
+| certified LP bound | 24,487,410 | 24,486,549 |
+| best feasible schedule | 23,873,589 | 24,176,861 |
+| optimality gap | 2.51% | 1.26% |
 
-## Quickstart (proves the template runs end-to-end)
+The bound lands 3.5e-5 from the published value, with the residual in the expected direction because
+a single-resource relaxation is looser than the joint bound. The schedule sits below the best known:
+this is a heuristic with no exact local search, and that distance is the price of not implementing
+the `C-PIT[D]` neighbourhood. Published values: Jelvez, Morales and Nancel-Penard,
+[doi:10.1007/978-3-319-99220-4_18](https://doi.org/10.1007/978-3-319-99220-4_18).
+
+**The walls carry the schedule.** Drawing the mined blocks gives a growing solid that is not a pit.
+Carving them away and colouring by grade gives a pit whose final frame shows no schedule at all
+(measured on a real engine: 25 percent of the model ever visible, 65 percent of that surface
+unscheduled mid-animation, 100 percent at the end). PhaseFlow colours the **void boundary**: each
+standing block adjacent to an already-mined one takes the period of the neighbour that exposed it. The
+pit wall is then 100 percent period-coloured at every frame including the last, and it is what the
+discipline already draws (Chicoisne et al. Figure 1d; Morales et al. pit profiles).
+
+**Spatial coherence is measured, not assumed.** The algorithm's own authors warn that block-level
+schedules scatter across the mine. PhaseFlow reports connected components per period, the share in
+the largest, and the narrowest mined run, next to the NPV that would otherwise flatter it.
+
+## Run it
 
 ```bash
-# 1. create the reproducible environment (.venv + pinned per-need requirements)
-./scripts/setup.sh                      # or scripts/setup.ps1 on Windows PowerShell
-
-# 2. run the offline pipeline over every case → data/artifacts/ + manifests/
-./scripts/precompute.sh                 # or scripts/precompute.ps1
-
-# 3. the tests (determinism, both data contracts, the gate, parity)
-.venv/bin/python -m pytest              # .venv/Scripts/python.exe on Windows
-
-# 4. the web app consumes the artifacts (copy-data enforces the artifact contract)
-cd web && npm install && node copy-data.mjs && npm run dev
+python -m venv .venv && .venv/Scripts/pip install -r requirements.txt -r requirements-dev.txt
+python scripts/fetch_minelib.py --all      # academic download, git-ignored, never redistributed
+python data-pipeline/run.py                # canonical bake, ~25 min
+cd frontend && npm ci && npm run dev
 ```
 
-## How to instantiate this template for a NEW product
+`python data-pipeline/run.py <case> --output build/sandbox` bakes into a sandbox and never touches
+committed evidence. `npm test` runs the engine, parity and product gates.
 
-See [docs/guides/00_instantiate.md](docs/guides/00_instantiate.md). In short: copy this tree, **delete the
-`.template-source` sentinel** (this arms the residue guard, `scripts/check_template_residue.py`, which then
-fails CI if any example pipeline or placeholder text survives), rename the `pipeline` package (in
-`data-pipeline/`) to `pipeline`, **replace the EXAMPLE engine** (the SIR model in
-`data-pipeline/pipeline/model/` + `stages/`) with your
-product's complete research-chosen classical→SOTA→frontier method registry. Every promised method must
-pass ADR-0069's vertical acceptance contract and be documented in `docs/frameworks/`, pinned in
-`requirements-precompute.txt` or `requirements-gpu.txt`, and actually executed by the pipeline. Write the
-ingestion contract, split policy, cases/variants, and fill the `docs/` wiki **as you build, not at the end**.
+## Shape
 
-## Hard rules this template bakes in
+| path | what |
+|---|---|
+| `data-pipeline/` | repo-local tooling, invoked by path. **Not a package.** |
+| `data/derived/` | the committed evidence: one trace and one manifest per case |
+| `frontend/src/engine/` | the TypeScript live lane: max-flow, the critical multiplier bound, TopoSort |
+| `frontend/src/viz/` | the stage, the profile and plan views, the charts |
+| `docs/` | the wiki |
+| `app/` | dormant; PhaseFlow needs no backend |
 
-- **The deep research is binding, not decoration.** Every engine/solver/library the research selected lives in
-  `docs/frameworks/<tool>/` *and* `requirements-precompute.txt`, and the pipeline actually uses it. No hand-rolled
-  substitute for a SOTA engine the research prescribed.
-- **The repository is the product.** It implements ingest, preprocess, dataset/split, feature extraction,
-  training/fine-tuning, inference, evaluation, export, and validation for every promised method. The web is
-  the companion workbench, not a substitute for those engines.
-- **Canonical science is offline.** Tests run in sandboxes; release bake is explicit; deployment verifies
-  checksums and publishes existing evidence. Deploy never trains, benchmarks, or mutates canonical artifacts.
-- **Standard formats end-to-end** (`data-pipeline/pipeline/io/formats.py`): domain-standard in, compact-standard out.
-- **Reproducible**: pinned requirements per need; `scripts/setup`; CI installs them and runs a pipeline smoke.
-- **Applicable to new data**: the ingestion contract is the bring-your-own-data door.
-- **Versioned** (X.XX.XXX, CHANGELOG + tags from day 1) with **license/attribution hygiene**.
+## Honest scope
 
-See [docs/architecture/01_overview.md](docs/architecture/01_overview.md) for the full rationale.
+No stockpiles: an inventory whose reclaimed grade is the blend of what is inside makes the model
+bilinear, the published linear models fix that grade as a parameter and search over it
+([doi:10.1016/j.cor.2019.02.001](https://doi.org/10.1016/j.cor.2019.02.001)), and at 10 percent annual
+degradation the value falls by 69 percent
+([doi:10.1016/j.cor.2018.11.009](https://doi.org/10.1016/j.cor.2018.11.009)). No blending or other
+general side constraints. No minimum-production constraints: the solver raises rather than quietly
+solving a different problem. No stochastic optimisation. Not for production mine planning.
+
+## Engine
+
+[`oreblocks`](https://pypi.org/project/oreblocks/), a published PyPI project, consumed as a pinned
+dependency. PhaseFlow declares no package of its own.
+
+MIT. Owner: Felipe Santibanez-Leal.

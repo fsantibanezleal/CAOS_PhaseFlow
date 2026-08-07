@@ -110,11 +110,11 @@ export const architecture: ArchitectureConfig = {
       body_en:
         'There are three things you can draw from a block-level schedule and only one is honest.\n\n' +
         'Draw the MINED blocks and you get a growing solid, not a pit. Carve them away and colour what is left by grade and you get a pit with no schedule in it: measured on a real engine, about 25 percent of the model is ever visible, 65 percent of that surface carries no period colour mid-animation, and the FINAL frame carries none at all.\n\n' +
-        'So PhaseFlow colours the VOID BOUNDARY: each standing block adjacent to an already-mined one takes the period of the neighbour that exposed it. Every visible surface then carries period colour by construction, and the object stays a pit. This is not an invention. Chicoisne et al. 2012 Figure 1(d) is a pit cross-section with the period numbers written into bands climbing the wall, and Morales et al. 2015 present nine pit profiles per period. The discipline draws the void boundary; this is that drawing in three dimensions.',
+        'So PhaseFlow colours the VOID BOUNDARY: each standing block adjacent to an already-mined one takes the period of the neighbour that exposed it. Every block touching the excavated void then carries period colour BY CONSTRUCTION, and the object stays a pit. Measured on the shipping case at the FINAL frame: the pit wall is 100 percent period-coloured, and it is 33 percent of everything visible from outside (the rest is the model box, which is not the pit) against 0 percent for the carve-away rendering at that same frame. This is not an invention. Chicoisne et al. 2012 Figure 1(d) is a pit cross-section with the period numbers written into bands climbing the wall, and Morales et al. 2015 present nine pit profiles per period. The discipline draws the void boundary; this is that drawing in three dimensions.',
       body_es:
         'Hay tres cosas que se pueden dibujar de un plan por bloque y solo una es honesta.\n\n' +
         'Dibuja los bloques EXTRAIDOS y obtienes un solido que crece, no un rajo. Quitalos y colorea lo que queda por ley y obtienes un rajo sin plan adentro: medido sobre un motor real, cerca del 25 por ciento del modelo es visible alguna vez, el 65 por ciento de esa superficie no lleva color de periodo a mitad de animacion, y el cuadro FINAL no lleva ninguno.\n\n' +
-        'Por eso PhaseFlow colorea la FRONTERA DEL VACIO: cada bloque en pie junto a uno ya extraido toma el periodo del vecino que lo expuso. Toda superficie visible lleva entonces color de periodo por construccion, y el objeto sigue siendo un rajo. No es un invento. La Figura 1(d) de Chicoisne et al. 2012 es una seccion de rajo con los numeros de periodo escritos en bandas que suben la pared, y Morales et al. 2015 presentan nueve perfiles de rajo por periodo. La disciplina dibuja la frontera del vacio; esto es ese dibujo en tres dimensiones.',
+        'Por eso PhaseFlow colorea la FRONTERA DEL VACIO: cada bloque en pie junto a uno ya extraido toma el periodo del vecino que lo expuso. Todo bloque que toca el vacio excavado lleva entonces color de periodo POR CONSTRUCCION, y el objeto sigue siendo un rajo. Medido sobre el caso que se publica, en el cuadro FINAL: la pared del rajo esta 100 por ciento coloreada por periodo, y es el 33 por ciento de todo lo visible desde afuera (el resto es la caja del modelo, que no es el rajo), contra 0 por ciento del dibujo por remocion en ese mismo cuadro. No es un invento. La Figura 1(d) de Chicoisne et al. 2012 es una seccion de rajo con los numeros de periodo escritos en bandas que suben la pared, y Morales et al. 2015 presentan nueve perfiles de rajo por periodo. La disciplina dibuja la frontera del vacio; esto es ese dibujo en tres dimensiones.',
       svg: S(
         `<text class="tb" x="24" y="24">A. mined solid</text>
          <path class="bx" d="M40 60 L120 60 L100 110 L60 110 z"/><text class="ts" x="30" y="132">not a pit</text>
@@ -127,7 +127,7 @@ export const architecture: ArchitectureConfig = {
          <path class="bx" style="stroke-width:3.2" d="M550 45 L590 110 L640 110 L690 45"/>
          <path class="bx" style="stroke-width:2.2;opacity:.55" d="M566 71 L682 71"/>
          <path class="bx" style="stroke-width:2.2;opacity:.4" d="M580 92 L664 92"/>
-         <text class="ts" x="516" y="152">every visible wall carries its year</text>`,
+         <text class="ts" x="516" y="152">every pit wall carries its year</text>`,
         760, 175,
       ),
     },

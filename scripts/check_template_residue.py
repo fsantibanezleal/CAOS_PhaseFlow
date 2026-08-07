@@ -26,8 +26,12 @@ SELF = {"scripts/check_template_residue.py", "scripts/.template_residue_allow"}
 
 # Tracked PATHS that must not exist in an instantiated product (the example pipeline + its cases +
 # known scaffold residue). Matched as substring on the path or a suffix for extensions.
+# NOTE (2026-08-07): "data-pipeline/pipeline/" was on this list because the template used to instruct
+# a rename to `<slug>lab`. Under conventions/no-internal-packages.md and the ADR-0057 packaging
+# section there is no `<slug>lab` any more: a product declares NO package, and `data-pipeline/pipeline/`
+# IS the correct shape (PitForge ships exactly that path). The guard now enforces what actually
+# matters, which is that the EXAMPLE CONTENT is gone, not that the folder was renamed.
 FORBIDDEN_PATH_SUBSTR = (
-    "data-pipeline/pipeline/",
     "data/derived/EX01_subcritical",
     "data/derived/EX02_epidemic",
     "data/derived/EX03_fast_burn",
@@ -45,8 +49,12 @@ FORBIDDEN_PATH_NAME = (
 
 # Tracked TEXT content that must not survive instantiation (unambiguous template tokens only;
 # generic capability words like "Pyodide" are intentionally NOT listed, a product may truly use it).
+# NOTE (2026-08-07): "pipeline" used to be on this list, because the template package was called
+# `examplelab` and the token was renamed along with it during the no-internal-packages sweep. That
+# turned the guard into nonsense: "pipeline" is the correct name of the folder AND an ordinary
+# domain word. The real template token is `examplelab`.
 FORBIDDEN_CONTENT = (
-    "pipeline",
+    "examplelab",
     "SIRChart",
     "CAOS product template",
     "PENDING-training",

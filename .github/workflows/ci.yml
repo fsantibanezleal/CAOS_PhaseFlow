@@ -16,15 +16,22 @@ jobs:
           python-version: "3.12"
           cache: pip
       - name: Install (offline lane + dev + editable pkg)
-        run: pip install -r requirements-precompute.txt -r requirements-dev.txt
+        run: pip install -r requirements.txt -r requirements-dev.txt
       - name: Lint
         run: ruff check data-pipeline tests
       - name: Tests
         run: pytest
       - name: Pipeline smoke (sandboxed; canonical artifacts are read-only)
-        run: python data-pipeline/run.py EX02_epidemic --output "${{ runner.temp }}/pipeline-smoke"
-      - name: CONTRACT 2, manifests <-> artifacts consistent (no drift)
+        run: python data-pipeline/run.py twin-porphyry-s --output "${{ runner.temp }}/pipeline-smoke"
+      - name: CONTRACT 2, manifests and artifacts consistent (no drift)
         run: python scripts/check_artifacts.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Frontend build, engine tests, parity and the product gates
+        run: cd frontend && npm ci && npm run build && npm test
 
   guards:
     runs-on: ubuntu-latest

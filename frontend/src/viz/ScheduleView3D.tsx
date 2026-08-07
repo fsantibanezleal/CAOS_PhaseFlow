@@ -12,8 +12,10 @@
 //      colour at the mid-animation frame, and the FINAL frame carries none at all. The finished pit
 //      shows zero schedule.
 //   C. Carve the mined rock away and colour the EXPOSED WALL by the period of the mined neighbour
-//      that exposed it. Every visible surface carries period colour by construction, the worst frame
-//      inverts from 0 percent to 100 percent, and the object stays a pit.
+//      that exposed it. Every block touching the void carries period colour BY CONSTRUCTION, so the
+//      pit wall is 100 percent coloured at every frame INCLUDING the last. Measured on the shipping
+//      case at the final frame that wall is 33 percent of everything visible from outside (the rest
+//      is the model box, which is not the pit) against 0 percent for B. The object stays a pit.
 //
 // C is what this component draws, and it is not an invention: Chicoisne et al. 2012
 // (doi:10.1287/opre.1120.1050) Figure 1(d) is a pit cross-section with the period numbers written
