@@ -41,12 +41,25 @@
   flex-direction: column;
 }
 
+/* ADR-0071 rule 8: the instrument gets at least half an App route. The tab panel must therefore be
+ * a flex COLUMN that passes its height down, or the stage collapses to its min-height and the
+ * measured share lands around twenty percent while every other predicate still passes. */
 .pf-main .tabpanel,
 .pf-tabpanel {
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-main .tabpanel > * {
+  min-height: 0;
+}
+
+.pf-stagewrap {
+  min-height: 420px;
 }
 
 @media (max-width: 900px) {
