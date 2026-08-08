@@ -14,7 +14,7 @@ trigger PhaseFlow does not have.
 ## What CI enforces on every push
 
 `ci.yml`: ruff, pytest, a bake smoke, `check_artifacts.py` for CONTRACT 2, the frontend build, and the
-frontend gates (engine, parity, contract, coherence, design tokens), plus guards that fail on a
+frontend gates (the live-vs-offline parity, the ladder claims, the design tokens), plus guards that fail on a
 tracked `.env`, a tracked venv, a native or heavy binary, raw data, or a leaked machine path.
 
 `npm test` uses Node's DEFAULT test discovery rather than a list of files. The list named four files
