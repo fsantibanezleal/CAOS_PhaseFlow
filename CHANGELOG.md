@@ -3,6 +3,21 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.02.001] - 2026-08-08
+
+### Fixed
+- **The learned scorecard printed `NaN%`** next to four correct numbers, on the deployed site, for a
+  release: it read `holdout_npv_vs_greedy_mean`, which was renamed when that metric was fixed.
+  TypeScript indexes a `Record<string, number>` happily and a NaN reads as a rendering glitch. The
+  panel now shows the median, the P10, the WORST case and the beats-greedy rate, a missing key renders
+  as a dash rather than a NaN, and `learned-keys.test.ts` asserts the join between the artifact and
+  the panels so it cannot ship again.
+
+### Added
+- `npm test` DISCOVERS its tests instead of listing them. The list named four files and only two
+  existed: Node silently skips a missing path on Windows and hard-fails on Linux, so the local run was
+  green for the wrong reason and the CI runner was the first thing to say so.
+
 ## [0.02.000] - 2026-08-08
 
 The full method ladder: 12 methods across 4 rungs, two bounds, a learned lane, an uncertainty
