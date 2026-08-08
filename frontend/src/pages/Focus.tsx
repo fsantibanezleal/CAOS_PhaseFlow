@@ -145,6 +145,7 @@ export default function Focus() {
             cursor={Math.min(st.cursor, T - 1)}
             mode={mode}
             theme={st.theme}
+        lang={st.lang}
           />
         ) : (
           <div style={{ padding: 24 }}>

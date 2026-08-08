@@ -1,10 +1,15 @@
 # Frameworks
 
-One card per research-chosen engine/library, **the deep research, made binding**. Every engine the pipeline uses
-gets a card here AND an exact pin in the matching `requirements-*.txt`. No hand-rolled toy substitute for a SOTA
-engine the research prescribed.
+One card per engine or library the product depends on: what it is, why this one, the exact pin, and
+what would make us change it. Every card matches a pin in a `requirements-*.txt` or in
+`frontend/package.json`.
 
-- [00, card TEMPLATE](frameworks/00_TEMPLATE.md), copy per engine to `frameworks/<NN>_<tool>/<tool>.md`
+- [01, oreblocks](frameworks/01_oreblocks.md): the scheduling engine, a separate repo and a published
+  PyPI project
+- [02, three.js](frameworks/02_threejs.md): the 3D stage
+- [03, uPlot](frameworks/03_uplot.md): the charts
+- [04, onnxruntime](frameworks/04_onnxruntime.md): the learned lane's export and its verification
 
-*(The template's EXAMPLE engine is numpy-only SIR, so it ships no SOTA card. A real product adds e.g.
-`01_yade/`, `02_ortools/`, `03_mintpy/`, `04_torch/`.)*
+PhaseFlow declares **no package of its own** (`conventions/no-internal-packages.md`). Where an engine
+is required it is a separate repo with a published project, consumed pinned, and it is named for the
+domain rather than for this product.

@@ -50,6 +50,17 @@ export function fmtMoney(v: number): string {
   return v.toFixed(0);
 }
 
+/**
+ * Group digits by the APP's language, never by the browser's.
+ *
+ * A bare `toLocaleString()` asks the browser, so an English page rendered on a Spanish machine
+ * printed 14,153 blocks as `14.153`, which an English reader parses as fourteen point one five
+ * three. The number was right and the page said something else.
+ */
+export function fmtInt(v: number, lang: string): string {
+  return v.toLocaleString(lang === 'es' ? 'es-CL' : 'en-US');
+}
+
 export function fmtTonnes(v: number): string {
   const a = Math.abs(v);
   if (a >= 1e6) return `${(v / 1e6).toFixed(2)} Mt`;
