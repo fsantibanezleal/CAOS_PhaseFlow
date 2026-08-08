@@ -61,6 +61,12 @@ ensemble, and a docs wiki with the theory behind each.
   cache-busting query. It reads `VERSION` now.
 - **A bake printed nothing until it finished**, so a stuck bake and a slow one looked identical for
   four hours. One line per case as it lands.
+- **The learned scorecard printed `NaN%`** next to four correct numbers, on the deployed site, for a
+  release: it read `holdout_npv_vs_greedy_mean`, which was renamed when that metric was fixed.
+  TypeScript indexes a `Record<string, number>` happily and a NaN reads as a rendering glitch. The
+  panel now shows the median, the P10, the WORST case and the beats-greedy rate, a missing key renders
+  as a dash rather than a NaN, and `learned-keys.test.ts` asserts the join between the artifact and
+  the panels so it cannot ship again.
 - **The App stage was 22 percent of the viewport** against the ADR-0071 rule 8 floor of 50 percent.
   The break was the shared shell's `.tabs` wrapper: a plain BLOCK, so as a flex item it sized to its
   content at 359px and every descendant inherited that ceiling. Presence, pixel sampling and
