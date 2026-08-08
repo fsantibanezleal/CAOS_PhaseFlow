@@ -33,6 +33,9 @@ def build_trace(
     results: list[Any],
     controls: dict,
     published: dict,
+    bound_report: dict | None = None,
+    ensemble: dict | None = None,
+    learned: dict | None = None,
 ) -> dict:
     """Assemble the committed artifact for one case, over every method that ran on it."""
     cpit = instance.cpit
@@ -112,6 +115,9 @@ def build_trace(
         },
         "published": published,
         "controls": controls,
+        "bound": bound_report or {},
+        "ensemble": ensemble or {},
+        "learned": learned or {},
         "contract": {
             "accepted": instance.report.ok,
             "flags": instance.report.flagged,

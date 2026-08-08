@@ -1,20 +1,72 @@
-# Docs, the product wiki
+# PhaseFlow docs
 
-SimLab-style navigable wiki (ADR-0056), authored **as the product is built**, not at the end. The pipeline +
-its validation + these docs are the primary product; the web app is a projection of a validated subset.
+An open-pit **production schedule**, solved with a certified bound and animated year by year over the
+block model. The ultimate pit answers *which* blocks are worth mining; PhaseFlow answers *when*.
 
-## Map
-- **[architecture/](architecture/)**, how the repo works: the frozen base, the two data contracts, determinism +
-  trace, the live/precompute gate, the staged pipeline, model evaluation, deploy.
-- **[frameworks/](frameworks/)**, one card per research-chosen engine/library (what/why · install · usage ·
-  applying). The deep research, made binding (each is pinned in a `requirements-*.txt`).
-- **[guides/](guides/)**, runnable how-tos: **instantiate the template**, run the precompute pipeline,
-  **bring your own data**, the GPU lane, run the API.
-- **[cases/](cases/)**, the CATEGORY taxonomy + the coverage matrix + one page per documented case.
+## Start here
 
-## Honesty + data policy
-- Numbers come from the calibrated engine / committed artifacts, never from a claim. The EXAMPLE engine (SIR) is
-  synthetic and clearly labelled; a real product states sources, licenses and what is real vs synthetic.
-- Public derived artifacts are committed (`data/derived/`); raw/private sources stay out of git (`data/raw/`,
-  vault) per ADR-0055. The two data contracts ([architecture/08_data-contracts.md](architecture/08_data-contracts.md))
-  govern raw→pipeline and pipeline→web.
+| | |
+|---|---|
+| **[methods/](methods/README.md)** | the ladder: every rung, what it claims, and what it is not allowed to claim |
+| [methods/02_the_bound.md](methods/02_the_bound.md) | the certified bound, both of them, and why there are two |
+| [cases/README.md](cases/README.md) | the case matrix, each case's ROLE, and the data that is actually reachable |
+| [architecture/](architecture/) | contracts, lanes, determinism, deploy |
+
+## The one rule
+
+**The bound is never produced by a heuristic**, and every schedule is shown with its gap to it. A
+schedule reported without its gap is a number with no scale, and this product does not print one.
+
+## The ladder at a glance
+
+| rung | what it means | count |
+|---|---|---|
+| `classical` | what a planner, a textbook or a commercial package would do | 5 |
+| `sota` | the published state of the art, implemented rather than cited | 4 |
+| `learned` | a model that ACCELERATES something exact, scored against the exact quantity on data it never saw | 1 |
+| `beyond` | a different problem or a different question, and NOT NPV-comparable with the rest | 2 |
+
+Plus two bounds (the critical multiplier algorithm and Bienstock-Zuckerberg), three controls, a
+spatial-coherence measurement per period, and an uncertainty ensemble.
+
+## The trust anchor
+
+The published MineLib `newman1.cpit`, solved **as published**: its own six periods, its own eight
+percent discount rate, its own two capacities.
+
+| quantity | PhaseFlow | published |
+|---|---|---|
+| ultimate pit optimum | 26,086,899 | 26,086,899 |
+| certified LP bound (BZ, joint) | 24,486,184 | 24,486,549 (PCPSP LP) |
+| best feasible schedule | 23,876,000 approx | 24,176,861 |
+| optimality gap | 2.49% | 1.26% |
+
+The bound ordering is the check: the CPIT LP bound must sit below the PCPSP LP bound, because PCPSP is
+the richer problem.
+
+## What is deliberately not here
+
+No stockpiles (the blended-grade model is bilinear), no blending or other general side constraints, no
+minimum-production constraints (the solver raises rather than solving a different problem), and no
+two-stage stochastic integer programming. Each is named with its reason in
+[methods/06_destinations.md](methods/06_destinations.md) and
+[methods/08_uncertainty.md](methods/08_uncertainty.md).
+
+## Bugs worth reading about
+
+Each of these shipped, was caught by a test or a gate, and is written up where the method lives, because
+the failure mode is more transferable than the fix:
+
+- a sliding window that **double-booked capacity** and collapsed the objective to a third while every
+  feasibility check passed ([01](methods/01_classical.md))
+- a bisection that stopped on an **interval width** rather than a duality certificate
+  ([02](methods/02_the_bound.md))
+- smoothing that checked precedence in **one direction** ([07](methods/07_operability.md))
+- an ensemble perturbation that was **not mean-preserving**, biasing the one number it existed to report
+  ([08](methods/08_uncertainty.md))
+- a value of information that came out **negative** because it was the wrong quantity
+  ([08](methods/08_uncertainty.md))
+- a learned metric that came out as **1.37e14** because it divided by a near-zero denominator
+  ([05](methods/05_learned.md))
+- two copies of `react-router`, which crashed every route while the HTTP check reported 200
+  (`deployments/phaseflow.md` in CAOS_MANAGE)

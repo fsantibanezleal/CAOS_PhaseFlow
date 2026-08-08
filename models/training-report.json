@@ -1,0 +1,113 @@
+{
+  "expected_time": {
+    "holdout_spearman": 0.9009045889095757,
+    "holdout_mae_fraction": 0.061260945622176474,
+    "holdout_npv_vs_exact_exts_mean": 1.012553025192549,
+    "holdout_npv_vs_exact_exts_min": 0.34386328424251483,
+    "holdout_npv_vs_greedy_mean": 136852074761549.1,
+    "n_train_rows": 241920,
+    "n_holdout_rows": 120960,
+    "train_seeds": [
+      101,
+      103,
+      107,
+      109,
+      113,
+      127,
+      131,
+      137,
+      139,
+      149,
+      151,
+      157
+    ],
+    "holdout_seeds": [
+      211,
+      223,
+      227,
+      229,
+      233,
+      239
+    ],
+    "split": "by deposit seed, never by row"
+  },
+  "bound": {
+    "holdout_mean_rel_err": 0.014019434069063384,
+    "holdout_p90_rel_err": 0.03992625319192607,
+    "holdout_max_rel_err": 0.13993106879723496,
+    "n_train_rows": 240,
+    "n_holdout_rows": 120,
+    "train_seeds": [
+      101,
+      103,
+      107,
+      109,
+      113,
+      127,
+      131,
+      137,
+      139,
+      149,
+      151,
+      157
+    ],
+    "holdout_seeds": [
+      211,
+      223,
+      227,
+      229,
+      233,
+      239
+    ],
+    "split": "by deposit seed, never by row"
+  },
+  "archetypes": [
+    "porphyry",
+    "vein",
+    "layered",
+    "core_halo"
+  ],
+  "scenarios": [
+    {
+      "periods": 6,
+      "rate": 0.08,
+      "capacity_fraction": [
+        0.7,
+        0.45
+      ]
+    },
+    {
+      "periods": 8,
+      "rate": 0.1,
+      "capacity_fraction": [
+        0.8,
+        0.5
+      ]
+    },
+    {
+      "periods": 8,
+      "rate": 0.15,
+      "capacity_fraction": [
+        0.6,
+        0.4
+      ]
+    },
+    {
+      "periods": 10,
+      "rate": 0.1,
+      "capacity_fraction": [
+        0.9,
+        0.6
+      ]
+    },
+    {
+      "periods": 12,
+      "rate": 0.2,
+      "capacity_fraction": [
+        0.55,
+        0.35
+      ]
+    }
+  ],
+  "honesty": "Neither model certifies anything. The certified bound always comes from the critical multiplier algorithm or from Bienstock-Zuckerberg; these are scored against the exact quantity they approximate, on deposits they never saw, split by deposit seed."
+}

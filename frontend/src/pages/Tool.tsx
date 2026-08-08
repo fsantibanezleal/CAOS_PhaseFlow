@@ -12,6 +12,7 @@ import { ScheduleView3D, type StageMode } from '../viz/ScheduleView3D.tsx';
 import { BenchPlan, PitProfile } from '../viz/SectionViews.tsx';
 import { CapacityChart, CoherenceChart, GradeStripChart, MethodBars, ProductionChart } from '../viz/Charts.tsx';
 import { periodCss } from '../viz/colormap.ts';
+import { BoundPanel, LearnedPanel, RiskPanel } from '../viz/Ladder.tsx';
 
 export default function Tool() {
   const st = useCase();
@@ -196,6 +197,36 @@ export default function Tool() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: 'analysis',
+      label: es ? 'Analisis' : 'Analysis',
+      content: (
+        <div className="pf-split">
+          <BoundPanel bound={trace.bound} best={trace.methods.reduce((a, b) => (a.npv >= b.npv ? a : b))} es={es} />
+          <LearnedPanel learned={trace.learned} methods={trace.methods} es={es} />
+          <RiskPanel ensemble={trace.ensemble} theme={st.theme} es={es} />
+          <div className="pf-panel">
+            <h4>{es ? 'Peldanos' : 'Rungs'}</h4>
+            {(['classical', 'sota', 'learned', 'beyond'] as const).map((rung) => {
+              const rows = trace.methods.filter((m) => m.rung === rung);
+              if (!rows.length) return null;
+              const best = rows.reduce((a, b) => (a.npv >= b.npv ? a : b));
+              return (
+                <p className="pf-cap" key={rung}>
+                  <b>{rung}</b>: {rows.length} {es ? 'metodos' : 'methods'}, {es ? 'mejor' : 'best'}{' '}
+                  <code>{best.method}</code> {es ? 'con brecha' : 'at a gap of'} {best.gapPct.toFixed(2)}%
+                </p>
+              );
+            })}
+            <p className="pf-cap pf-muted">
+              {es
+                ? 'Los peldanos beyond no son comparables con los demas por NPV: destination-toposort resuelve otro problema (PCPSP, con el destino como decision) y min-width es una vista de operabilidad que no re-impone la capacidad.'
+                : 'The beyond rungs are not NPV-comparable with the rest: destination-toposort solves a different problem (PCPSP, with the destination as a decision) and min-width is an operability view that does not re-impose capacity.'}
+            </p>
           </div>
         </div>
       ),

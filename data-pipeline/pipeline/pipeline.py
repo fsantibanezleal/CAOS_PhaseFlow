@@ -68,8 +68,9 @@ def precompute(case_id: str, *, output_root: str | Path | None = None, learned=N
     t0 = time.perf_counter()
     instance = build_instance(case)
     predictions = None if learned is None else learned.for_instance(instance)
-    results, relaxations = solve_stage.run_ladder(instance, learned=predictions)
+    results, relaxations, bound_report = solve_stage.run_ladder(instance, learned=predictions)
     controls = evaluate_stage.run_controls(instance, results)
+    ensemble = evaluate_stage.run_ensemble(instance, results)
     offline_ms = (time.perf_counter() - t0) * 1000.0
 
     trace = build_trace(
@@ -78,6 +79,9 @@ def precompute(case_id: str, *, output_root: str | Path | None = None, learned=N
         results=results,
         controls=controls,
         published=case.published,
+        bound_report=bound_report,
+        ensemble=ensemble,
+        learned=None if learned is None else learned.report(),
     )
     artifact_rel = f"{case.id}/trace.json"
     artifact_path = paths.root / artifact_rel
