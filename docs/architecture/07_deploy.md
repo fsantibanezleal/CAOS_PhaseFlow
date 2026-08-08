@@ -17,6 +17,12 @@ trigger PhaseFlow does not have.
 frontend gates (engine, parity, contract, coherence, design tokens), plus guards that fail on a
 tracked `.env`, a tracked venv, a native or heavy binary, raw data, or a leaked machine path.
 
+`npm test` uses Node's DEFAULT test discovery rather than a list of files. The list named four files
+and only two existed: Node silently skipped the missing ones on Windows and hard-failed on the Linux
+runner, so the local run was green for the wrong reason and CI was the first thing to say so. A
+discovery rule cannot name a file that is not there, and it picks up a new test without anyone
+remembering to add it.
+
 ## What CI cannot enforce, and what covers it
 
 CI cannot see the page. Several defects have shipped through a green CI and a green HTTP check: two
