@@ -26,7 +26,7 @@ interface PlotProps {
   onCursor?: (idx: number | null) => void;
 }
 
-export function UPlotChart({ data, build, height = 220, testId, onCursor }: PlotProps) {
+export function UPlotChart({ data, build, height = 300, testId, onCursor }: PlotProps) {
   const host = useRef<HTMLDivElement>(null);
   const plot = useRef<uPlot | null>(null);
   useEffect(() => {
@@ -51,7 +51,7 @@ export function UPlotChart({ data, build, height = 220, testId, onCursor }: Plot
 }
 
 const baseAxes = () => {
-  const fg = cssVar('--color-fg-muted', '#8b949e');
+  const fg = cssVar('--color-fg-subtle', '#8b949e');
   const grid = cssVar('--color-border', '#30363d');
   return { stroke: fg, grid: { stroke: grid, width: 1 }, ticks: { stroke: grid } };
 };
@@ -82,7 +82,7 @@ export function ProductionChart({ periods, bound, theme, onCursor }: {
         ],
         series: [
           { label: 'period' },
-          { label: 'ore + waste (Mt)', scale: 'y', fill: cssVar('--color-fg-muted', '#8b949e') + '55', stroke: cssVar('--color-fg-muted', '#8b949e'), paths: uPlot.paths.bars!({ size: [0.82] }) },
+          { label: 'ore + waste (Mt)', scale: 'y', fill: cssVar('--color-fg-subtle', '#8b949e') + '55', stroke: cssVar('--color-fg-subtle', '#8b949e'), paths: uPlot.paths.bars!({ size: [0.82] }) },
           { label: 'ore (Mt)', scale: 'y', fill: periodCss(0.7 * (periods.length - 1), periods.length) + 'cc', stroke: 'transparent', paths: uPlot.paths.bars!({ size: [0.82] }) },
           { label: 'cumulative NPV', scale: 'npv', stroke: cssVar('--color-accent', '#58a6ff'), width: 2.2 },
           { label: 'certified bound', scale: 'npv', stroke: cssVar('--color-warn', '#d29922'), width: 1.4, dash: [5, 4] },
@@ -143,8 +143,8 @@ export function CoherenceChart({ periods, theme }: { periods: TracePeriod[]; the
         ],
         series: [
           { label: 'period' },
-          { label: 'connected components', scale: 'y', stroke: cssVar('--color-danger', '#f85149'), width: 2, points: { show: true, size: 5 } },
-          { label: 'largest component share', scale: 'pct', stroke: cssVar('--color-ok', '#3fb950'), width: 2, dash: [4, 3] },
+          { label: 'connected components', scale: 'y', stroke: cssVar('--color-bad', '#f85149'), width: 2, points: { show: true, size: 5 } },
+          { label: 'largest component share', scale: 'pct', stroke: cssVar('--color-good', '#3fb950'), width: 2, dash: [4, 3] },
         ],
         legend: { live: true },
       })}
@@ -187,7 +187,7 @@ export function MethodBars({ rows }: { rows: { method: string; rung: string; gap
   const [hover, setHover] = useState<number | null>(null);
   const worst = Math.max(1e-9, ...rows.map((r) => r.gapPct));
   const rungColor: Record<string, string> = {
-    classical: 'var(--color-fg-muted)', sota: 'var(--color-accent)',
+    classical: 'var(--color-fg-subtle)', sota: 'var(--color-accent)',
     learned: '#8957e5', beyond: 'var(--color-warn)',
   };
   return (
@@ -203,7 +203,7 @@ export function MethodBars({ rows }: { rows: { method: string; rung: string; gap
           <span className="pf-mb-track">
             <span
               className="pf-mb-fill"
-              style={{ width: `${(100 * r.gapPct) / worst}%`, background: rungColor[r.rung] ?? 'var(--color-fg-muted)' }}
+              style={{ width: `${(100 * r.gapPct) / worst}%`, background: rungColor[r.rung] ?? 'var(--color-fg-subtle)' }}
             />
           </span>
           <span className="pf-mb-val">{r.gapPct.toFixed(2)}%</span>

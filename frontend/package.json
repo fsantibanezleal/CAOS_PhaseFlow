@@ -1,7 +1,7 @@
 {
   "name": "phaseflow-frontend",
   "private": true,
-  "version": "0.01.000",
+  "version": "0.02.000",
   "type": "module",
   "scripts": {
     "predev": "node copy-data.mjs",
@@ -10,7 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "postbuild": "node spa-404.mjs",
     "preview": "vite preview",
-    "test": "node --import tsx --test test/engine.test.ts test/contract.test.ts test/parity.test.ts test/coherence.test.ts"
+    "test": "node --import tsx --test test/engine.test.ts test/contract.test.ts test/parity.test.ts test/coherence.test.ts test/tokens.test.ts"
   },
   "dependencies": {
     "@fasl-work/caos-app-shell": "^0.5.0",

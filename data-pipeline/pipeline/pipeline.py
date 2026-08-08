@@ -134,10 +134,24 @@ def _validate(artifact_path: Path, manifest_path: Path) -> None:
 
 
 def run_all(*, output_root: str | Path | None = None, learned=None) -> list[dict]:
+    """Bake every case in the registry.
+
+    Prints a line PER CASE as it lands, not a summary at the end. A bake that runs for hours with a
+    silent stdout is indistinguishable from a bake that is stuck, and one of them cost four hours
+    before anyone could tell which it was.
+    """
+    import time
+
     paths = PipelinePaths.from_output(output_root)
     entries = []
-    for c in registry.list_cases():
+    cases = registry.list_cases()
+    for i, c in enumerate(cases, 1):
+        t0 = time.perf_counter()
         m = precompute(c.id, output_root=output_root, learned=learned)
+        print(
+            f"[{i}/{len(cases)}] {c.id}: {time.perf_counter() - t0:.1f}s",
+            flush=True,
+        )
         entries.append(
             {
                 "case_id": c.id,

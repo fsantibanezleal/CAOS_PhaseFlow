@@ -147,9 +147,12 @@ export interface ScheduleTrace {
   };
   published: TracePublished;
   controls: TraceControls;
-  bound: BoundReport;
-  ensemble: EnsembleReport;
-  learned: LearnedReport;
+  // OPTIONAL on purpose. A case baked before these existed is a valid artifact of an older schema,
+  // and typing them as required told every reader they were always there: the Analysis tab read
+  // `bound.algorithm4` on such a case and unmounted the whole app.
+  bound?: BoundReport;
+  ensemble?: EnsembleReport;
+  learned?: LearnedReport;
   contract: { accepted: boolean; flags: { code: string; detail: string }[]; facts: Record<string, number> };
   methods: TraceMethod[];
   blocks?: TraceBlocks;

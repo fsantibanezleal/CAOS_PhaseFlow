@@ -2059,9 +2059,12 @@
  "metrics": {
   "holdout_spearman": 0.9009045889095757,
   "holdout_mae_fraction": 0.061260945622176474,
+  "holdout_npv_vs_exact_exts_median": 0.999744439919215,
   "holdout_npv_vs_exact_exts_mean": 1.012553025192549,
   "holdout_npv_vs_exact_exts_min": 0.34386328424251483,
-  "holdout_npv_vs_greedy_mean": 136852074761549.1,
+  "holdout_npv_vs_exact_exts_p10": 0.9381267972891387,
+  "holdout_beats_greedy_rate": 0.9666666666666667,
+  "holdout_worst_case": "train-core_halo-239-12-0.2",
   "n_train_rows": 241920,
   "n_holdout_rows": 120960,
   "train_seeds": [

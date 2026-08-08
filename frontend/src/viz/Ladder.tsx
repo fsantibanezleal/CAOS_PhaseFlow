@@ -2,7 +2,7 @@
 // lane. Each answers a question the method table cannot.
 
 import { Cite } from '@fasl-work/caos-app-shell';
-import { fmtMoney } from '../lib/artifacts.ts';
+import { fmtInt, fmtMoney } from '../lib/artifacts.ts';
 import type { BoundReport, EnsembleReport, LearnedReport, TraceMethod } from '../lib/contract.types.ts';
 import { UPlotChart } from './Charts.tsx';
 import uPlot from 'uplot';
@@ -61,7 +61,7 @@ export function BoundPanel({ bound, best, es }: { bound: BoundReport; best: Trac
                   ? bound.joint_skipped
                   : bound.joint_error
                     ? bound.joint_error
-                    : `${bound.joint_iterations} ${es ? 'iteraciones' : 'iterations'}, ${(bound.joint_nodes ?? 0).toLocaleString()} ${es ? 'nodos' : 'nodes'}`}
+                    : `${bound.joint_iterations} ${es ? 'iteraciones' : 'iterations'}, ${fmtInt(bound.joint_nodes ?? 0, es ? 'es' : 'en')} ${es ? 'nodos' : 'nodes'}`}
               </td>
             </tr>
           </tbody>
@@ -116,14 +116,14 @@ export function RiskPanel({ ensemble, theme, es }: { ensemble: EnsembleReport; t
           height: h,
           scales: { x: { time: false }, y: {} },
           axes: [
-            { stroke: cssVar('--color-fg-muted', '#8b949e'), label: es ? 'plan' : 'plan' },
-            { stroke: cssVar('--color-fg-muted', '#8b949e'), label: 'M' },
+            { stroke: cssVar('--color-fg-subtle', '#8b949e'), label: es ? 'plan' : 'plan' },
+            { stroke: cssVar('--color-fg-subtle', '#8b949e'), label: 'M' },
           ],
           series: [
             { label: 'plan' },
-            { label: 'P10', stroke: cssVar('--color-danger', '#f85149'), width: 1.6, dash: [4, 3] },
+            { label: 'P10', stroke: cssVar('--color-bad', '#f85149'), width: 1.6, dash: [4, 3] },
             { label: es ? 'esperado' : 'expected', stroke: cssVar('--color-accent', '#58a6ff'), width: 2.4 },
-            { label: 'P90', stroke: cssVar('--color-ok', '#3fb950'), width: 1.6, dash: [4, 3] },
+            { label: 'P90', stroke: cssVar('--color-good', '#3fb950'), width: 1.6, dash: [4, 3] },
             { label: es ? 'modelo medio' : 'mean model', stroke: cssVar('--color-warn', '#d29922'), width: 1.4 },
           ],
           legend: { live: true },

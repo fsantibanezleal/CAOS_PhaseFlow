@@ -39,7 +39,7 @@ from pathlib import Path
 import numpy as np
 
 from ..io.schema import Scenario
-from .features import BLOCK_FEATURES, DEPOSIT_FEATURES, block_feature_matrix, deposit_feature_vector
+from .features import block_feature_matrix, deposit_feature_vector
 
 __all__ = ["Mlp", "LearnedBundle", "train_mlp", "export_onnx"]
 

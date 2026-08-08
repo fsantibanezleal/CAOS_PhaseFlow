@@ -66,6 +66,18 @@ negative value of information is a naming error, not a finding. The fix is to ta
 re-solve and every candidate already evaluated, which makes the quantity a proper lower bound and
 non-negative, and a test asserts both.
 
+## The per-realisation solve is deliberately the cheap one
+
+The re-solve runs with `bound=False` and Gershon's successor-cone weight, so each realisation costs one
+maximum closure and a topological pass instead of a parametric family of closures per resource. The
+ensemble compares NPVs across realisations and never reads a bound, so computing one is a factor of a
+hundred spent on a discarded number. That is not a hypothetical: with the bound left on, the first full
+thirteen-case bake ran for four hours and finished ONE case, stuck in this loop.
+
+The consequence is stated rather than hidden: a weaker per-realisation solve makes the reported value of
+re-planning a LOOSER lower bound, which is what it already was. The trace carries `resolveMethod` so the
+number is never read without knowing what produced it.
+
 ## The label that stays on it
 
 The ensemble is **synthetic** geological uncertainty from a seeded generator, not a conditional

@@ -1,4 +1,8 @@
 # CORE lane, minimal. The scheduling engine is a published PyPI package, not internal code
 # (conventions/no-internal-packages.md): PhaseFlow consumes oreblocks pinned.
+#
+# scipy is in the MILP extra because three rungs need a solver: the Bienstock-Zuckerberg restricted
+# master, the exact C-PIT[D] local search, and the exact OPBSP destination model. Without it those
+# rungs record NOT RUN with the reason rather than quietly substituting a weaker method.
 numpy==2.5.0
-oreblocks==0.2.0
+oreblocks[milp]==0.3.1

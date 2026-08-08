@@ -56,11 +56,13 @@ export interface ScheduleView3DProps {
   /** cut everything with y index above this, to look inside. -1 disables. */
   sectionY?: number;
   onStats?: (s: { drawn: number; wall: number; coloured: number }) => void;
+  /** only for the placeholder sentence shown until the first frame lands */
+  lang?: string;
 }
 
 export function ScheduleView3D({
   x, y, level, grade, inPit, periodOfBlock, dims, nPeriods, cursor,
-  mode = 'schedule', theme, height = 0, sectionY = -1, onStats,
+  mode = 'schedule', theme, height = 0, sectionY = -1, onStats, lang = 'en',
 }: ScheduleView3DProps) {
   const host = useRef<HTMLDivElement>(null);
   const api = useRef<{
@@ -69,6 +71,9 @@ export function ScheduleView3D({
   } | null>(null);
 
   const gradeMax = useMemo(() => Math.max(1e-9, ...grade), [grade]);
+  // Shown through ::after until the first frame lands, so a slow machine gets a sentence rather than
+  // an empty rectangle. It disappears by CSS on [data-drawn], never by a timeout.
+  const label = lang === 'es' ? 'preparando el rajo' : 'preparing the pit';
 
   // -------- build the scene ONCE per model/theme, never per cursor --------
   useEffect(() => {
@@ -88,13 +93,37 @@ export function ScheduleView3D({
     // FIT the camera to the model instead of hard-coding a distance. A fixed position leaves the pit
     // a small object in a large frame, which is the underfill failure: presence, stage share and
     // no-scroll are all true of a stage whose instrument occupies six percent of its own pixels.
-    // Half-extent of the normalised model is 1 on the longest axis; back off far enough that it
-    // subtends about 80 percent of the smaller field of view, then look at the centre.
-    const fitRadius = Math.SQRT2;
+    // Fit to the model's own eight CORNERS, not to its bounding sphere. A deposit 28x28x14 and one
+    // 20x20x20 do not want the same distance, and a sphere fit is right for neither: it reserves room
+    // for a ball the deposit does not fill, so a flat orebody in a wide stage sits small in the middle
+    // of its own frame. Solving the two frustum inequalities per corner gives the smallest distance
+    // that clips nothing, for THIS aspect and THIS view direction. FILL is the requirement and
+    // CLIPPING is the failure, and the gate checks both: the non-background share AND whether the
+    // render touches the border of its own canvas.
+    const span = Math.max(nx, ny, nz);
+    const half: [number, number, number] = [nx / span, nz / span, ny / span];
     const vFov = (50 * Math.PI) / 180;
-    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (W / H));
-    const dist = (fitRadius / Math.sin(Math.min(vFov, hFov) / 2)) * 0.62;
-    camera.position.set(dist * 0.62, dist * 0.5, dist * 0.68);
+    // Elevated enough to look INTO the pit. From near the horizon a pit reads as a rectangle: the
+    // void is the subject here, so the default view must see down into it.
+    const EL = (38 * Math.PI) / 180, AZ = (35 * Math.PI) / 180;
+    const dir = new THREE.Vector3(
+      Math.cos(EL) * Math.cos(AZ), Math.sin(EL), Math.cos(EL) * Math.sin(AZ),
+    ).normalize();
+    const fitDistance = (aspect: number, view: THREE.Vector3 = dir): number => {
+      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * aspect);
+      const tv = Math.tan(vFov / 2), th = Math.tan(hFov / 2);
+      const right = new THREE.Vector3().crossVectors(view, new THREE.Vector3(0, 1, 0)).normalize();
+      const up = new THREE.Vector3().crossVectors(right, view).normalize();
+      let d = 0;
+      for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+        const p = new THREE.Vector3(sx * half[0], sy * half[1], sz * half[2]);
+        const along = p.dot(view);
+        d = Math.max(d, along + Math.abs(p.dot(right)) / th, along + Math.abs(p.dot(up)) / tv);
+      }
+      return d * 1.04;                              // a little air, so nothing sits on the border
+    };
+    const dist = fitDistance(W / H);
+    camera.position.copy(dir).multiplyScalar(dist);
     camera.lookAt(0, 0, 0);
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
@@ -111,7 +140,14 @@ export function ScheduleView3D({
 
     const unit = 2 / Math.max(nx, ny, nz);
     const geo = new THREE.BoxGeometry(unit * 0.94, unit * 0.94, unit * 0.94);
-    const mat = new THREE.MeshStandardMaterial({ roughness: 0.82, metalness: 0.0, vertexColors: true });
+    // NOT vertexColors. An InstancedMesh with instanceColor already defines USE_INSTANCING_COLOR, and
+    // the fragment stage multiplies the diffuse by vColor on that define alone. Adding vertexColors
+    // also defines USE_COLOR, which multiplies vColor by a per-VERTEX color attribute that BoxGeometry
+    // does not have; WebGL then supplies the default generic attribute (0,0,0) and every instance
+    // renders black. The stage still had 98 distinct colours and 62 percent non-background, because
+    // the specular highlight survives, so a distinct-colour count passed on an all-black pit. The
+    // gate now asserts SATURATION, which is the thing the period colours actually are.
+    const mat = new THREE.MeshStandardMaterial({ roughness: 0.82, metalness: 0.0 });
     const mesh = new THREE.InstancedMesh(geo, mat, n);
     mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3);
@@ -123,10 +159,22 @@ export function ScheduleView3D({
 
     let raf = 0;
     let until = 0;
+    // The host advertises that a frame has actually reached the canvas. A stage that is present,
+    // correctly sized and scroll-free is all of those things while still blank, so both the CSS
+    // placeholder and the browser gate key off THIS rather than off a timer. On a software
+    // rasteriser a frame of this scene costs about 100 ms, so a fixed sleep is a promise the stage
+    // size can break: growing the stage to meet the ADR-0071 floor tripled its pixels and broke
+    // exactly that assumption once already.
+    // Only once the mesh actually HAS instances. The build effect renders before the cursor effect
+    // has written a single matrix, so a flag set in the render loop alone marks a black frame as
+    // drawn: the placeholder disappears over an empty canvas and the gate reads a blank stage as
+    // ready. The count is the honest signal.
+    const markDrawn = () => { if (mesh.count > 0) el.dataset.drawn = '1'; };
     const loop = () => {
       raf = requestAnimationFrame(loop);
       controls.update();
       renderer.render(scene, camera);
+      markDrawn();
       if (performance.now() > until) { cancelAnimationFrame(raf); raf = 0; }
     };
     const kick = (ms: number) => {
@@ -143,12 +191,17 @@ export function ScheduleView3D({
       const h2 = height > 0 ? height : Math.max(1, el.clientHeight || H);
       camera.aspect = w2 / h2;
       camera.updateProjectionMatrix();
-      const hf = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
-      const d2 = (fitRadius / Math.sin(Math.min(vFov, hf) / 2)) * 0.62;
+      // Re-fit for the new aspect, keeping whatever direction the reader has orbited to. Scaling the
+      // CURRENT position preserves their view; only the distance changes.
       const cur = camera.position.length() || 1;
-      camera.position.multiplyScalar(d2 / cur);
+      const view = camera.position.clone().normalize();
+      camera.position.multiplyScalar(fitDistance(camera.aspect, view) / cur);
+      // setSize CLEARS the drawing buffer, so re-render here and now rather than waiting for the
+      // next animation frame. On a software rasteriser that wait is about 100 ms of a stage that has
+      // gone completely black, and the layout settles late enough that a reader sees it.
       renderer.setSize(w2, h2);
-      kick(200);
+      renderer.render(scene, camera);
+      markDrawn();
     };
     const ro = new ResizeObserver(onResize);
     ro.observe(el);
@@ -157,7 +210,7 @@ export function ScheduleView3D({
       mesh,
       scene,
       n,
-      render: () => { renderer.render(scene, camera); kick(200); },
+      render: () => { renderer.render(scene, camera); markDrawn(); kick(200); },
       dispose: () => {
         ro.disconnect();
         document.removeEventListener('visibilitychange', onVis);
@@ -215,7 +268,12 @@ export function ScheduleView3D({
         }
       }
 
-      dummy.position.set((x[b] - cx) * s, -(level[b] - cz) * s, (y[b] - cy) * s);
+      // Levels increase UPWARD: `buildPrecedence` puts a block's predecessors one level ABOVE it, and
+      // the data agrees (the ultimate pit holds every block of the top four benches and none of the
+      // bottom one). Negating this rendered the deposit UPSIDE DOWN, which put the one fully intact
+      // bench, the deepest, on top as a flat lid and hid the entire pit behind it. Every numeric gate
+      // passed: the wall share, the coherence, the drawn count. The picture was of the underside.
+      dummy.position.set((x[b] - cx) * s, (level[b] - cz) * s, (y[b] - cy) * s);
       dummy.updateMatrix();
       a.mesh.setMatrixAt(drawn, dummy.matrix);
       colors[drawn * 3] = rgb[0];
@@ -236,6 +294,7 @@ export function ScheduleView3D({
       ref={host}
       className="pf-stage3d"
       data-testid="schedule-stage"
+      data-label={label}
       style={height > 0 ? { height } : undefined}
     />
   );

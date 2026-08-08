@@ -6,4 +6,11 @@ PhaseFlow's engine is `oreblocks`, consumed as a pinned dependency. Everything h
 tooling invoked by path: `python data-pipeline/run.py`.
 """
 
-__version__ = "0.01.000"  # display X.XX.XXX; the frontend manifest carries the semver form
+# Read from the repo's VERSION file rather than restated here. A second copy of a version is a
+# second thing to forget: this one was a release behind and stamped 0.01.000 onto every artifact of
+# the 0.02.000 bake, including the cache-busting query the frontend appends to each fetch.
+import pathlib
+
+__version__ = (
+    (pathlib.Path(__file__).resolve().parents[2] / "VERSION").read_text(encoding="utf-8").strip()
+)

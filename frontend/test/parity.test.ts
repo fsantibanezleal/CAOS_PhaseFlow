@@ -160,3 +160,60 @@ test('the last mining period is not empty on the default case', () => {
       'A landing animation whose last frame is empty is a defect no rendering quality fixes.',
   );
 });
+
+
+// ------------------------------------------------------------------------------------------------
+// THE LADDER
+// ------------------------------------------------------------------------------------------------
+test('the ladder spans four rungs and no rung is empty by accident', () => {
+  const t = load(CASE);
+  const rungs = new Set(t.methods.map((m) => m.rung));
+  assert.ok(rungs.has('classical'), 'a comparison with no floor in it is a marketing chart');
+  assert.ok(rungs.has('sota'), 'the published state of the art must be present');
+  assert.ok(rungs.has('beyond'), 'the different-problem rungs must be present');
+  assert.ok(t.methods.length >= 10, `only ${t.methods.length} methods ran`);
+});
+
+test('every schedule is measured against the SAME bound, and the tighter one is used', () => {
+  const t = load(CASE);
+  const bounds = new Set(t.methods.map((m) => Math.round(m.bound)));
+  assert.equal(bounds.size, 1, 'methods are being compared against different bounds');
+  const b = t.bound;
+  if (b.joint != null && b.algorithm4 != null) {
+    assert.ok(b.joint <= b.algorithm4 * (1 + 1e-9), 'the joint bound must not be looser');
+    assert.equal(b.used, 'bienstock-zuckerberg');
+    assert.equal(Math.round([...bounds][0]), Math.round(b.joint));
+  } else {
+    assert.equal(b.used, 'algorithm4');
+    assert.ok(
+      typeof b.joint_skipped === 'string' && b.joint_skipped.length > 0,
+      'a bound that did not run must say why, not leave the field blank',
+    );
+  }
+});
+
+test('the beyond rungs are labelled, because they are not NPV-comparable', () => {
+  const t = load(CASE);
+  for (const m of t.methods.filter((x) => x.rung === 'beyond')) {
+    assert.ok(m.notes.length > 20, `${m.method} has no note explaining what it is`);
+  }
+});
+
+test('the exact local search never loses to the shift neighbourhood it starts from', () => {
+  const t = load(CASE);
+  const shift = t.methods.find((m) => m.method === 'shift-local-search');
+  const exact = t.methods.find((m) => m.method === 'cpitD-local-search');
+  if (!shift || !exact) return;
+  if (exact.notes.startsWith('NOT RUN')) return;
+  assert.ok(exact.npv >= shift.npv - 1e-6, 'the exact re-solve came out worse than its own seed');
+});
+
+test('the risk readout never reports a negative value of re-planning', () => {
+  const t = load(CASE);
+  if (!t.ensemble?.ran) return;
+  assert.ok(
+    (t.ensemble.valueOfReplanning ?? 0) >= -1e-6,
+    'a negative value of information is a naming error, not a finding',
+  );
+  assert.ok(t.ensemble.note && t.ensemble.note.includes('SYNTHETIC'), 'the ensemble must be labelled synthetic');
+});

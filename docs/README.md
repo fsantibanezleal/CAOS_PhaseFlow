@@ -9,8 +9,12 @@ block model. The ultimate pit answers *which* blocks are worth mining; PhaseFlow
 |---|---|
 | **[methods/](methods/README.md)** | the ladder: every rung, what it claims, and what it is not allowed to claim |
 | [methods/02_the_bound.md](methods/02_the_bound.md) | the certified bound, both of them, and why there are two |
+| [methods/09_ladder_results.md](methods/09_ladder_results.md) | how to read the numbers, and which comparisons are legitimate |
 | [cases/README.md](cases/README.md) | the case matrix, each case's ROLE, and the data that is actually reachable |
-| [architecture/](architecture/) | contracts, lanes, determinism, deploy |
+| [architecture.md](architecture.md) | the three lanes, the contracts, determinism, the gate, deploy |
+| [guides.md](guides.md) | bake the artifacts, bring your own block model |
+| [frameworks.md](frameworks.md) | one card per engine: what, why this one, the exact pin |
+| [`scripts/local/`](../scripts/local/README.md) | run it locally, numbered in the order you run them |
 
 ## The one rule
 

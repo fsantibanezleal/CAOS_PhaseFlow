@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Maximize2 } from 'lucide-react';
 import { Callout, Cite, Tabs } from '@fasl-work/caos-app-shell';
-import { fmtMoney, fmtTonnes } from '../lib/artifacts.ts';
+import { fmtInt, fmtMoney, fmtTonnes } from '../lib/artifacts.ts';
 import type { CaseIndexEntry } from '../lib/contract.types.ts';
 import { stageLabel, useCase } from '../lib/useCase.ts';
 import { ScheduleView3D, type StageMode } from '../viz/ScheduleView3D.tsx';
@@ -13,12 +13,16 @@ import { BenchPlan, PitProfile } from '../viz/SectionViews.tsx';
 import { CapacityChart, CoherenceChart, GradeStripChart, MethodBars, ProductionChart } from '../viz/Charts.tsx';
 import { periodCss } from '../viz/colormap.ts';
 import { BoundPanel, LearnedPanel, RiskPanel } from '../viz/Ladder.tsx';
+import { Absent, PanelBoundary } from '../viz/PanelBoundary.tsx';
 
 export default function Tool() {
   const st = useCase();
   const [mode, setMode] = useState<StageMode>('schedule');
-  const [northing, setNorthing] = useState(0);
-  const [bench, setBench] = useState(0);
+  // null means "not chosen yet", so the defaults can come from the DATA once it lands. Starting both
+  // at zero put the profile on the outermost slice and the bench plan on the deepest bench, which is
+  // entirely outside the pit: the panel drew a correct and completely empty rectangle.
+  const [northing, setNorthing] = useState<number | null>(null);
+  const [bench, setBench] = useState<number | null>(null);
   const es = st.lang === 'es';
 
   const dims = useMemo<[number, number, number]>(
@@ -26,10 +30,25 @@ export default function Tool() {
     [st.trace],
   );
 
+  // the slice through the middle of the model, and the bench where the most rock is actually moved
+  const defaultNorthing = Math.floor(dims[1] / 2);
+  const defaultBench = useMemo(() => {
+    const pob = st.method?.periodOfBlock;
+    const lv = st.trace?.blocks?.level;
+    if (!pob || !lv) return Math.max(0, dims[2] - 1);
+    const perLevel = new Array<number>(dims[2]).fill(0);
+    for (let b = 0; b < lv.length; b++) if (pob[b] >= 0) perLevel[lv[b]]++;
+    let best = 0;
+    for (let i = 1; i < perLevel.length; i++) if (perLevel[i] > perLevel[best]) best = i;
+    return best;
+  }, [st.method, st.trace, dims]);
+
   if (st.error) return <Callout variant="honest" title="Data">{st.error}</Callout>;
   if (!st.trace || !st.manifest || !st.method) return <p className="pf-muted">Loading…</p>;
 
   const { trace, manifest, method } = st;
+  const northingAt = northing ?? defaultNorthing;
+  const benchAt = bench ?? defaultBench;
   const T = trace.scenario.periods;
   const p = method.periods[st.cursor];
   const label = stageLabel(trace, method, st.cursor, st.lang);
@@ -50,6 +69,7 @@ export default function Tool() {
         cursor={st.cursor}
         mode={mode}
         theme={st.theme}
+        lang={st.lang}
       />
       <div className="pf-hud">
         <div className="pf-hud-label">
@@ -105,11 +125,11 @@ export default function Tool() {
           <div className="pf-panel">
             <h4>{es ? 'Perfil del rajo' : 'Pit profile'}</h4>
             <label className="pf-ctl">
-              <span>{es ? 'norte' : 'northing'} <b>{northing}</b></span>
-              <input type="range" min={0} max={dims[1] - 1} value={northing} onChange={(e) => setNorthing(+e.target.value)} />
+              <span>{es ? 'norte' : 'northing'} <b>{northingAt}</b></span>
+              <input type="range" min={0} max={dims[1] - 1} value={northingAt} onChange={(e) => setNorthing(+e.target.value)} />
             </label>
             <div style={{ flex: '1 1 auto', minHeight: 220 }}>
-              <PitProfile {...trace.blocks!} periodOfBlock={method.periodOfBlock!} dims={dims} nPeriods={T} cursor={st.cursor} theme={st.theme} northing={northing} />
+              <PitProfile {...trace.blocks!} periodOfBlock={method.periodOfBlock!} dims={dims} nPeriods={T} cursor={st.cursor} theme={st.theme} northing={northingAt} />
             </div>
             <p className="pf-cap pf-muted">
               {es ? 'Elevacion contra este, con la topografia y la superficie del rajo por periodo. Es el dibujo que la disciplina lee' : 'Elevation against easting, with the topography and the pit surface per period. This is the drawing the discipline reads'} <Cite id="morales2015" />.
@@ -118,11 +138,11 @@ export default function Tool() {
           <div className="pf-panel">
             <h4>{es ? 'Planta del banco' : 'Bench plan'}</h4>
             <label className="pf-ctl">
-              <span>{es ? 'banco' : 'bench'} <b>{bench}</b></span>
-              <input type="range" min={0} max={dims[2] - 1} value={bench} onChange={(e) => setBench(+e.target.value)} />
+              <span>{es ? 'banco' : 'bench'} <b>{benchAt}</b></span>
+              <input type="range" min={0} max={dims[2] - 1} value={benchAt} onChange={(e) => setBench(+e.target.value)} />
             </label>
             <div style={{ flex: '1 1 auto', minHeight: 220 }}>
-              <BenchPlan {...trace.blocks!} periodOfBlock={method.periodOfBlock!} dims={dims} nPeriods={T} cursor={st.cursor} theme={st.theme} bench={bench} />
+              <BenchPlan {...trace.blocks!} periodOfBlock={method.periodOfBlock!} dims={dims} nPeriods={T} cursor={st.cursor} theme={st.theme} bench={benchAt} />
             </div>
             <p className="pf-cap pf-muted">
               {es ? 'Un banco desde arriba, por periodo. Aqui se ve si un ano es un volumen operable o fragmentos sueltos' : 'One bench from above, by period. This is where a year is visibly one workable volume or loose fragments'} <Cite id="bai2018" />.
@@ -135,7 +155,7 @@ export default function Tool() {
       id: 'production',
       label: es ? 'Produccion y NPV' : 'Production and NPV',
       content: (
-        <div className="pf-split">
+        <div className="pf-split pf-split--wide">
           <div className="pf-panel">
             <h4>{es ? 'Produccion y NPV acumulado' : 'Production and cumulative NPV'}</h4>
             <ProductionChart periods={method.periods} bound={method.bound} theme={st.theme} />
@@ -205,10 +225,22 @@ export default function Tool() {
       id: 'analysis',
       label: es ? 'Analisis' : 'Analysis',
       content: (
-        <div className="pf-split">
-          <BoundPanel bound={trace.bound} best={trace.methods.reduce((a, b) => (a.npv >= b.npv ? a : b))} es={es} />
-          <LearnedPanel learned={trace.learned} methods={trace.methods} es={es} />
-          <RiskPanel ensemble={trace.ensemble} theme={st.theme} es={es} />
+        <div className="pf-split pf-split--wide">
+          <PanelBoundary title={es ? 'Las dos cotas' : 'The two bounds'}>
+            {trace.bound
+              ? <BoundPanel bound={trace.bound} best={trace.methods.reduce((a, b) => (a.npv >= b.npv ? a : b))} es={es} />
+              : <Absent title={es ? 'Las dos cotas' : 'The two bounds'} what={es ? 'la cota conjunta' : 'the joint bound'} es={es} />}
+          </PanelBoundary>
+          <PanelBoundary title={es ? 'El carril aprendido' : 'The learned lane'}>
+            {trace.learned
+              ? <LearnedPanel learned={trace.learned} methods={trace.methods} es={es} />
+              : <Absent title={es ? 'El carril aprendido' : 'The learned lane'} what={es ? 'el carril aprendido' : 'the learned lane'} es={es} />}
+          </PanelBoundary>
+          <PanelBoundary title={es ? 'Riesgo' : 'Risk'}>
+            {trace.ensemble
+              ? <RiskPanel ensemble={trace.ensemble} theme={st.theme} es={es} />
+              : <Absent title={es ? 'Riesgo' : 'Risk'} what={es ? 'el ensemble de incertidumbre' : 'the uncertainty ensemble'} es={es} />}
+          </PanelBoundary>
           <div className="pf-panel">
             <h4>{es ? 'Peldanos' : 'Rungs'}</h4>
             {(['classical', 'sota', 'learned', 'beyond'] as const).map((rung) => {
@@ -260,8 +292,8 @@ export default function Tool() {
             <h4>{es ? 'Carril' : 'Lane'}</h4>
             <p className="pf-cap">
               <span className={`pf-badge ${manifest.lane}`}>{manifest.lane}</span>{' '}
-              {manifest.gate.n_blocks.toLocaleString()} {es ? 'bloques' : 'blocks'} ·{' '}
-              {manifest.gate.n_arcs.toLocaleString()} {es ? 'arcos' : 'arcs'} ·{' '}
+              {fmtInt(manifest.gate.n_blocks, st.lang)} {es ? 'bloques' : 'blocks'} ·{' '}
+              {fmtInt(manifest.gate.n_arcs, st.lang)} {es ? 'arcos' : 'arcs'} ·{' '}
               {(manifest.gate.trace_bytes / 1024).toFixed(0)} kB ·{' '}
               {(manifest.gate.offline_ms / 1000).toFixed(1)} s {es ? 'offline' : 'offline'}
             </p>
