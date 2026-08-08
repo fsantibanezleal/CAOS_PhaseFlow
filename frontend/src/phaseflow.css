@@ -41,12 +41,47 @@
   flex-direction: column;
 }
 
-.pf-main .tabpanel,
-.pf-tabpanel {
+/* ADR-0071 rule 8: the instrument gets at least half an App route.
+ *
+ * MEASURED, because guessing at this is how it stayed broken through two attempts. The chain above
+ * the stage is  pf-main (flex column, 804px)  >  .tabs (the SHELL's wrapper)  >  .tabpanel  >
+ * .pf-stagewrap  >  .pf-stage3d. The break was `.tabs`: it is a plain BLOCK, so as a flex item it
+ * sized to its content at 359px and every descendant inherited that ceiling, leaving the stage at its
+ * 260px min-height and 22 percent of the viewport while presence, pixels and no-scroll all passed.
+ * Making the shell's wrapper a filling flex column is the fix; the tab panel alone was not. */
+.pf-main > .tabs {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* :not([hidden]) is load-bearing. The shell keeps EVERY tab panel mounted and hides the inactive
+ * ones with the `hidden` attribute; `[hidden] {display:none}` is a one-class-specificity rule, so a
+ * two-class `display:flex` beats it and every hidden panel comes back as a 76px empty box. Five of
+ * them sat above the active panel, stealing 380px of the stage, and the symptom was a tab whose
+ * content began two thirds of the way down an empty page. */
+.pf-main .tabpanel:not([hidden]),
+.pf-tabpanel:not([hidden]) {
   flex: 1 1 auto;
   min-height: 0;
   min-width: 0;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-main .tabpanel[hidden],
+.pf-tabpanel[hidden] {
+  display: none;
+}
+
+.pf-main .tabpanel > * {
+  min-height: 0;
+}
+
+.pf-stagewrap {
+  min-height: 340px;
 }
 
 @media (max-width: 900px) {
@@ -57,8 +92,9 @@
 /* ---------- the 3D stage ---------- */
 .pf-stage3d {
   width: 100%;
-  height: 100%;
-  min-height: 260px;
+  height: auto;
+  flex: 1 1 auto;
+  min-height: 300px;
   border-radius: 8px;
   overflow: hidden;
   position: relative;
@@ -95,7 +131,7 @@
 }
 
 .pf-hud-title { font-weight: 650; font-size: 0.95rem; }
-.pf-hud-sub { color: var(--color-fg-muted); font-size: 0.8rem; line-height: 1.35; margin-top: 2px; }
+.pf-hud-sub { color: var(--color-fg-subtle); font-size: 0.8rem; line-height: 1.35; margin-top: 2px; }
 
 .pf-hud-grid {
   display: flex;
@@ -110,7 +146,7 @@
 
 .pf-hud-row { display: flex; align-items: baseline; gap: 8px; }
 .pf-hud-val { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.95rem; font-weight: 600; min-width: 8ch; }
-.pf-hud-key { font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-fg-muted); }
+.pf-hud-key { font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-fg-subtle); }
 
 /* ---------- focus route: outside the shell, fixed to the viewport ---------- */
 .pf-focus {
@@ -150,12 +186,12 @@
 
 /* ---------- controls ---------- */
 .pf-ctl { display: flex; flex-direction: column; gap: 4px; font-size: 0.82rem; }
-.pf-ctl > span { display: flex; justify-content: space-between; gap: 8px; color: var(--color-fg-muted); }
+.pf-ctl > span { display: flex; justify-content: space-between; gap: 8px; color: var(--color-fg-subtle); }
 .pf-ctl b { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--color-fg); font-weight: 600; }
 .pf-ctl input[type='range'] { width: 100%; }
 
 .pf-group { border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-.pf-group > h4 { margin: 0; font-size: 0.72rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--color-fg-muted); }
+.pf-group > h4 { margin: 0; font-size: 0.72rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--color-fg-subtle); }
 
 .pf-chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .pf-chip {
@@ -169,14 +205,14 @@
 }
 .pf-chip.on { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg); }
 
-.pf-legend { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.72rem; color: var(--color-fg-muted); }
+.pf-legend { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.72rem; color: var(--color-fg-subtle); }
 .pf-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin-right: 3px; }
 
 /* ---------- readouts ---------- */
 .pf-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
 .pf-kpi { border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 10px; min-width: 0; }
 .pf-kpi b { display: block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.02rem; }
-.pf-kpi span { font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-fg-muted); }
+.pf-kpi span { font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-fg-subtle); }
 
 .pf-canvas-host { width: 100%; height: 100%; min-height: 200px; }
 .pf-chart { width: 100%; }
@@ -184,28 +220,56 @@
 .pf-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
 .pf-table th, .pf-table td { border-bottom: 1px solid var(--color-border); padding: 5px 8px; text-align: right; }
 .pf-table th:first-child, .pf-table td:first-child { text-align: left; }
-.pf-table thead th { color: var(--color-fg-muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.pf-table thead th { color: var(--color-fg-subtle); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; }
 .pf-scroll-x { overflow-x: auto; min-width: 0; }
 
 .pf-methodbars { display: flex; flex-direction: column; gap: 3px; }
 .pf-mb-row { display: grid; grid-template-columns: 15rem 1fr 5rem 10rem; gap: 8px; align-items: center; font-size: 0.8rem; padding: 2px 4px; border-radius: 5px; }
 .pf-mb-row.on { background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
 .pf-mb-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow: hidden; text-overflow: ellipsis; }
-.pf-mb-track { height: 9px; background: color-mix(in srgb, var(--color-fg-muted) 18%, transparent); border-radius: 999px; overflow: hidden; }
+.pf-mb-track { height: 9px; background: color-mix(in srgb, var(--color-fg-subtle) 18%, transparent); border-radius: 999px; overflow: hidden; }
 .pf-mb-fill { display: block; height: 100%; }
 .pf-mb-val { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; text-align: right; }
-.pf-mb-sub { color: var(--color-fg-muted); font-size: 0.72rem; text-align: right; }
+.pf-mb-sub { color: var(--color-fg-subtle); font-size: 0.72rem; text-align: right; }
 
-.pf-muted { color: var(--color-fg-muted); }
+.pf-muted { color: var(--color-fg-subtle); }
 .pf-cap { font-size: 0.74rem; line-height: 1.4; }
 .pf-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .pf-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; min-width: 0; }
+/* Four charts across a 1220px stage leaves each one 290px wide and 130px of plot, with 250px of
+ * empty page underneath. Two columns give each chart 600x300 and use the height the tab already
+ * has. ADR-0071 rule 8 is about the INSTRUMENT filling its route, and a row of postage stamps above
+ * an empty half-page satisfies the letter of it and none of the point. */
+.pf-split--wide { grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); align-content: start; }
 .pf-split > * { min-width: 0; }
 .pf-panel { border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
-.pf-panel > h4 { margin: 0; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-fg-muted); }
+.pf-panel > h4 { margin: 0; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-fg-subtle); }
 
 .pf-badge { display: inline-block; border-radius: 999px; padding: 1px 8px; font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; border: 1px solid var(--color-border); }
-.pf-badge.live { color: var(--color-ok, #3fb950); border-color: currentColor; }
+.pf-badge.live { color: var(--color-good, #3fb950); border-color: currentColor; }
 .pf-badge.replay { color: var(--color-warn, #d29922); border-color: currentColor; }
-.pf-badge.pass { color: var(--color-ok, #3fb950); border-color: currentColor; }
-.pf-badge.fail { color: var(--color-danger, #f85149); border-color: currentColor; }
+.pf-badge.pass { color: var(--color-good, #3fb950); border-color: currentColor; }
+.pf-badge.fail { color: var(--color-bad, #f85149); border-color: currentColor; }
+
+/* The stage says what it is doing until a frame actually lands. Presence, size and no-scroll are all
+   true of a blank canvas, so an empty rectangle is the one thing this stage must never be. The
+   placeholder is removed by the DRAWN attribute the renderer sets, never by a timer. */
+.pf-stage3d { position: relative; }
+.pf-stage3d:not([data-drawn])::after {
+  content: attr(data-label);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-fg-subtle, #8b949e);
+  background: var(--color-bg, #0d1117);
+  pointer-events: none;
+}
+
+/* a panel that failed still looks like a panel, and says so */
+.pf-panel-failed { border-color: var(--color-warn, #d29922); }
+.pf-panel-failed pre { white-space: pre-wrap; word-break: break-word; margin: 0; }

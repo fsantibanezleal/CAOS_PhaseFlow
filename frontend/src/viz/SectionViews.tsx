@@ -59,11 +59,18 @@ export function PitProfile({ x, y, level, periodOfBlock, dims, nPeriods, cursor,
   const [nx, , nz] = dims;
   const ref = useCanvas((ctx, w, h) => {
     const fg = cssVar('--color-fg', '#c9d1d9');
-    const muted = cssVar('--color-fg-muted', '#8b949e');
+    const muted = cssVar('--color-fg-subtle', '#8b949e');
     const pad = { l: 34, r: 8, t: 10, b: 24 };
     const iw = w - pad.l - pad.r, ih = h - pad.t - pad.b;
-    const sx = (i: number) => pad.l + (i / Math.max(1, nx - 1)) * iw;
-    const sy = (lv: number) => pad.t + ih - (lv / Math.max(1, nz - 1)) * ih;
+    // ONE scale for both axes, and it is not a detail. Stretching each axis to its own extent gave
+    // this section 2.1x of unlabelled vertical exaggeration, so the 45 degree slope the precedence
+    // graph enforces read off the drawing as 63 degrees. A mine section may be exaggerated, but then
+    // it says so; this one is true instead, and the pit is centred in whatever space is left.
+    const k = Math.min(iw / Math.max(1, nx - 1), ih / Math.max(1, nz - 1));
+    const ox = pad.l + (iw - k * (nx - 1)) / 2;
+    const oy = pad.t + ih - (ih - k * (nz - 1)) / 2;
+    const sx = (i: number) => ox + i * k;
+    const sy = (lv: number) => oy - lv * k;
 
     // topography = the highest existing block per column at this northing
     const top = new Int32Array(nx).fill(-1);
@@ -124,7 +131,7 @@ export function PitProfile({ x, y, level, periodOfBlock, dims, nPeriods, cursor,
 export function BenchPlan({ x, y, level, periodOfBlock, dims, nPeriods, cursor, theme, bench }: Common & { bench: number }) {
   const [nx, ny] = dims;
   const ref = useCanvas((ctx, w, h) => {
-    const muted = cssVar('--color-fg-muted', '#8b949e');
+    const muted = cssVar('--color-fg-subtle', '#8b949e');
     const pad = 8;
     const cell = Math.max(2, Math.floor(Math.min((w - 2 * pad) / nx, (h - 2 * pad) / ny)));
     const ox = Math.floor((w - cell * nx) / 2);

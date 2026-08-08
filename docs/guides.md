@@ -1,8 +1,12 @@
 # Guides
 
-- [00, instantiate a new product from the template](guides/00_instantiate.md)
-- [01, run the precompute pipeline](guides/01_precompute-pipeline.md)
-- [02, bring your own data](guides/02_bring-your-own-data.md)
-- [03, the GPU lane](guides/03_gpu-lane.md)
-- [04, run the API (only if `app/` is activated)](guides/04_run-the-api.md)
-- [05, the in-app Architecture / "How it works" modal (ADR-0058)](guides/05_architecture-modal.md)
+- [01, bake the artifacts](guides/01_bake-the-artifacts.md)
+- [02, bring your own block model](guides/02_bring-your-own-data.md)
+- [05, the in-app Architecture modal (ADR-0058)](guides/05_architecture-modal.md)
+
+Running it locally is [`scripts/local/README.md`](../scripts/local/README.md): numbered scripts, each
+printing the next command.
+
+There is no API guide and no GPU guide. PhaseFlow has no backend, and the bake is a pure-Python
+max-flow that a GPU would not help: the work is a sequence of dependent closures, not a batch of
+arithmetic.

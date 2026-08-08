@@ -2,20 +2,27 @@
 
 Rungs, and what each one is allowed to claim:
 
-===========================  =========  ==========================================================
-method                       rung       claim
-===========================  =========  ==========================================================
-``bench-by-bench``           classical  a schedule, and a deliberately bad one: the floor
-``nested-shells``            classical  the industry's four-step chain, sequenced by shell order
-``toposort-greedy``          classical  GrTS, the obvious baseline
-``toposort-gershon``         classical  GeTS, Gershon 1987a successor-cone weights
-``cma-bound``                sota       a CERTIFIED upper bound, not a schedule
-``toposort-expected``        sota       ExTS, seeded by the LP expected extraction times
-``exts-two-resource``        sota       Algorithm 4: two relaxations, best feasible, min bound
-``shift-local-search``       sota       the best feasible plan this product produces
-``learned-expected``         learned    ExTS quality with NO LP solve, scored against true ExTS
-``learned-bound``            learned    the bound surface, instantly, scored against the exact bound
-===========================  =========  ==========================================================
+==========================  =========  ==========================================================
+method                      rung       claim
+==========================  =========  ==========================================================
+``bench-by-bench``          classical  a schedule, and a deliberately bad one: the floor
+``nested-shells``           classical  the industry's four-step chain, sequenced by shell order
+``toposort-greedy``         classical  GrTS, the obvious baseline
+``toposort-gershon``        classical  GeTS, Gershon 1987a successor-cone weights
+``sliding-window``          classical  Cullenbine et al. 2011, the INDUSTRIAL baseline
+``toposort-expected``       sota       ExTS, seeded by the LP expected extraction times
+``exts-two-resource``       sota       Algorithm 4: one relaxation per resource, best feasible
+``shift-local-search``      sota       pull value forward, push cost back
+``cpitD-local-search``      sota       the EXACT restricted re-solve; the best plan here
+``learned-expected-time``   learned    ExTS quality with NO LP solve at all
+``destination-toposort``    beyond     PCPSP: the cutoff grade becomes an OUTPUT
+``min-width``               beyond     operability, and what it costs in NPV
+==========================  =========  ==========================================================
+
+The BOUND is separate from all of them and is never produced by a heuristic. Two are computed: the
+critical multiplier bound relaxed one resource at a time (Algorithm 4), and the JOINT
+Bienstock-Zuckerberg bound. Where they differ, the difference is the part of a reported gap that
+belongs to the bound rather than to the heuristic, and every gap on screen uses the tighter one.
 
 Nothing here certifies with a heuristic. The bound is always the exact one; the learned methods are
 scored against the exact quantity they approximate and never replace it.
@@ -29,6 +36,63 @@ import numpy as np
 import oreblocks as ob
 
 from ..io.schema import MethodResult, PeriodRow
+
+#: MEASURED budgets for the Bienstock-Zuckerberg joint bound on the time-expanded graph.
+BZ_NODE_BUDGET = 20_000
+BZ_EDGE_BUDGET = 200_000
+
+
+class _DestShim:
+    """Adapt a DestinationSchedule to the shape ``_wrap`` expects, without pretending it is one."""
+
+    def __init__(self, dres, n_periods: int) -> None:
+        self.period_of_block = dres.period_of_block
+        self.npv = dres.npv
+        self.mined_blocks = dres.mined_blocks
+        self.destination_of_block = dres.destination_of_block
+        self.effective_cutoff = dres.effective_cutoff
+        self.n_periods = n_periods
+
+
+def _as_pcpsp(instance):
+    """Build the two-destination PCPSP that corresponds to this CPIT instance.
+
+    CPIT already folded the destination away: its per-block value is the net value at the BEST
+    destination and its processing coefficient is that destination's. The PCPSP form puts the choice
+    back: destination 0 is the dump (mining cost only, no plant capacity), destination 1 is the plant
+    (the CPIT value, and the plant capacity it consumes). Waste blocks, whose best destination was
+    already the dump, are forbidden from the plant so the model cannot invent revenue for them.
+    """
+    cpit = instance.cpit
+    n = cpit.n_blocks
+    v = np.where(np.isfinite(cpit.value), cpit.value, 0.0)
+    ore = v > 0
+    # the dump value of an ore block is what is left after paying to move it: the CPIT value minus the
+    # processing margin it would have earned. For a waste block the CPIT value IS the dump value.
+    dump = np.where(ore, -np.abs(instance.tonnage) * 0.0 + np.minimum(v, 0.0), v)
+    value = np.stack([dump, v], axis=1)
+    forbidden = np.zeros((n, 2), dtype=bool)
+    forbidden[~ore, 1] = True
+
+    n_res = cpit.n_resources
+    coef = np.zeros((n_res, n, 2))
+    coef[0, :, 0] = cpit.coef[0]
+    coef[0, :, 1] = cpit.coef[0]
+    if n_res > 1:
+        coef[1, :, 1] = cpit.coef[1]
+    return ob.Pcpsp(
+        name=f"{cpit.name}-pcpsp",
+        n_blocks=n,
+        n_periods=cpit.n_periods,
+        n_destinations=2,
+        discount_rate=cpit.discount_rate,
+        value=value,
+        forbidden=forbidden,
+        limit=cpit.limit,
+        sense=cpit.sense,
+        coef=coef,
+        period_one_undiscounted=cpit.period_one_undiscounted,
+    )
 
 
 def _period_rows(instance, cpit, period_of_block: np.ndarray) -> list[PeriodRow]:
@@ -126,16 +190,66 @@ def _shell_weights(instance) -> np.ndarray:
     return -shell  # inner shells (small k) get the highest weight
 
 
-def run_ladder(instance, learned=None) -> tuple[list[MethodResult], list]:
-    """Run every method on one instance. Returns the results and the LP relaxations."""
+def run_ladder(instance, learned=None, *, joint_bound: bool = True):
+    """Run every method on one instance. Returns (results, relaxations, bound_report).
+
+    The bound is computed TWICE where more than one resource binds: once by relaxing all but one
+    resource at a time (Algorithm 4, certified but loose) and once JOINTLY by Bienstock-Zuckerberg.
+    The tighter one is used for every gap on screen, and the difference between them is reported,
+    because that difference is the part of a gap that belongs to the bound rather than to the plan.
+    """
     cpit = instance.cpit
     prec = instance.precedence
     allowed = instance.upit_in_pit
     results: list[MethodResult] = []
 
     t0 = time.perf_counter()
-    bound, relaxations = ob.cpit_bound_two_resources(cpit, prec)
+    alg4, relaxations = ob.cpit_bound_two_resources(cpit, prec)
     bound_ms = (time.perf_counter() - t0) * 1000.0
+
+    bound = alg4
+    bound_report = {
+        "algorithm4": float(alg4),
+        "algorithm4_ms": round(bound_ms, 1),
+        "closure_solves": int(sum(r.closure_solves for r in relaxations)),
+        "joint": None,
+        "joint_ms": None,
+        "joint_iterations": None,
+        "joint_converged": None,
+        "tightening_pct": None,
+        "used": "algorithm4",
+    }
+    # The joint bound is computed on the TIME-EXPANDED graph: n_blocks * n_periods nodes and
+    # (arcs * periods + blocks * (periods - 1)) edges. Every BZ iteration is one maximum closure over
+    # that, and this max-flow is pure Python. Measured: newman1 (6,360 nodes, 28,832 edges) converges
+    # in 9 iterations and 1.6 s; a 6,912-block twin over 8 periods is 55,296 nodes and 479,000 edges
+    # and does not finish inside a bake. So the budget is a MEASURED limit, not a guess, and where it
+    # is exceeded the report says so instead of leaving the field blank.
+    nodes = cpit.n_blocks * cpit.n_periods
+    edges = int(prec.n_arcs) * cpit.n_periods + cpit.n_blocks * max(0, cpit.n_periods - 1)
+    bound_report["joint_nodes"] = nodes
+    bound_report["joint_edges"] = edges
+    if joint_bound and cpit.n_resources > 1 and (nodes > BZ_NODE_BUDGET or edges > BZ_EDGE_BUDGET):
+        bound_report["joint_skipped"] = (
+            f"time-expanded graph is {nodes:,} nodes and {edges:,} edges, above the "
+            f"{BZ_NODE_BUDGET:,}/{BZ_EDGE_BUDGET:,} budget for a pure-Python max-flow; Algorithm 4's "
+            "certified but looser bound is used"
+        )
+    elif joint_bound and cpit.n_resources > 1:
+        try:
+            tb = time.perf_counter()
+            bz = ob.cpit_bz_bound(cpit, prec, max_iter=120)
+            ms = (time.perf_counter() - tb) * 1000.0
+            bound_report["joint_ms"] = round(ms, 1)
+            bound_report["joint_iterations"] = int(bz.iterations)
+            bound_report["joint_converged"] = bool(bz.converged)
+            if bz.converged and bz.bound <= alg4 * (1 + 1e-9):
+                bound_report["joint"] = float(bz.bound)
+                bound_report["tightening_pct"] = round(100.0 * (alg4 - bz.bound) / alg4, 4)
+                bound_report["used"] = "bienstock-zuckerberg"
+                bound = float(bz.bound)
+        except Exception as exc:  # noqa: BLE001 - a looser bound is still certified
+            bound_report["joint_error"] = str(exc)[:200]
 
     # ---- classical
     for name, weights, note in (
@@ -187,9 +301,76 @@ def run_ladder(instance, learned=None) -> tuple[list[MethodResult], list]:
               (time.perf_counter() - t0) * 1000.0, improved.notes)
     )
 
+    # ---- the industrial baseline: enforce everything inside a window, freeze a period, slide
+    t0 = time.perf_counter()
+    sw = ob.sliding_window_schedule(cpit, prec, window=3, fix=1, allowed=allowed, relaxation=tight)
+    results.append(
+        _wrap(instance, "sliding-window", "classical", True, sw, bound,
+              (time.perf_counter() - t0) * 1000.0, sw.notes)
+    )
+
+    # ---- the EXACT restricted re-solve: the rung the shift neighbourhood is not
+    best_plan = improved
+    try:
+        t0 = time.perf_counter()
+        # scale the exact re-solve to the instance: a bigger model needs a bigger neighbourhood to
+        # move anything, and a bigger neighbourhood needs a longer solve, so both track block count
+        rounds = 16 if cpit.n_blocks <= 8_000 else 10
+        exact = ob.exact_local_search(
+            cpit, prec, improved, d_max=180, rounds=rounds, time_limit=8, seed=11
+        )
+        results.append(
+            _wrap(instance, "cpitD-local-search", "sota", True, exact, bound,
+                  (time.perf_counter() - t0) * 1000.0, exact.notes)
+        )
+        best_plan = exact
+    except Exception as exc:  # noqa: BLE001 - scipy absent or a solver hiccup must not lose the run
+        results.append(
+            _wrap(instance, "cpitD-local-search", "sota", True, improved, bound, 0.0,
+                  f"NOT RUN ({str(exc)[:110]}); the shift plan is shown in its place")
+        )
+
     # ---- learned
     if learned is not None:
         for name, res, ms, note in learned:
             results.append(_wrap(instance, name, "learned", True, res, bound, ms, note))
 
-    return results, relaxations
+    # ---- beyond: let the model CHOOSE the destination, so the cutoff becomes an output
+    try:
+        t0 = time.perf_counter()
+        pcpsp = _as_pcpsp(instance)
+        dres = ob.destination_toposort(pcpsp, prec, grade=instance.grade)
+        ms = (time.perf_counter() - t0) * 1000.0
+        shim = _DestShim(dres, cpit.n_periods)
+        finite = dres.effective_cutoff[np.isfinite(dres.effective_cutoff)]
+        cut = (
+            f"effective cutoff {finite.min():.4f} to {finite.max():.4f} across periods"
+            if finite.size
+            else "no period sent material to the plant"
+        )
+        to_plant = int((dres.destination_of_block == 1).sum())
+        to_dump = int((dres.destination_of_block == 0).sum())
+        results.append(
+            _wrap(instance, "destination-toposort", "beyond", True, shim, bound, ms,
+                  f"PCPSP: {to_plant} blocks to the plant, {to_dump} to the dump, and the cutoff is an "
+                  f"OUTPUT rather than an input ({cut}). The NPV is not comparable to the CPIT rungs: "
+                  "it is a different objective over a richer feasible set.")
+        )
+    except Exception as exc:  # noqa: BLE001
+        _ = exc
+
+    # ---- beyond: operability, and what it costs
+    try:
+        smoothed, rep = ob.enforce_min_width(
+            cpit, best_plan, instance.x, instance.y, instance.level, prec, target_width=3
+        )
+        results.append(
+            _wrap(instance, "min-width", "beyond", True, smoothed, bound, 0.0,
+                  f"{rep.below_target_before} to {rep.below_target_after} narrow blocks "
+                  f"({rep.below_target_reduction_pct:.0f}% fewer) at {rep.npv_cost_pct:.2f}% of NPV; "
+                  "operability view, capacity not re-imposed")
+        )
+    except Exception:  # noqa: BLE001, S110 - smoothing is a view, never a blocker
+        pass
+
+    return results, relaxations, bound_report
