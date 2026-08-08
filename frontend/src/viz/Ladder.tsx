@@ -188,15 +188,23 @@ export function LearnedPanel({ learned, methods, es }: { learned: LearnedReport;
       </div>
     );
   }
+  // A missing key must not become a quiet NaN on the page. `holdout_npv_vs_greedy_mean` was renamed
+  // when the metric was fixed, and this panel went on printing "NaN%" next to four real numbers,
+  // which reads as a rendering glitch rather than as a scorecard pointing at a field that no longer
+  // exists. A dash says ABSENT, and `learned-keys.test.ts` fails the build so it never gets shipped.
   const num = (v: unknown) => (typeof v === 'number' ? v : NaN);
+  const pct = (v: unknown, digits = 1) =>
+    typeof v === 'number' && Number.isFinite(v) ? `${(100 * v).toFixed(digits)}%` : '-';
   return (
     <div className="pf-panel" data-testid="learned-panel">
       <h4>{es ? 'Carril aprendido' : 'Learned lane'}</h4>
       <div className="pf-kpis">
         <div className="pf-kpi"><b>{num(et.holdout_spearman).toFixed(3)}</b><span>{es ? 'Spearman fuera de muestra' : 'holdout Spearman'}</span></div>
-        <div className="pf-kpi"><b>{(100 * num(et.holdout_npv_vs_exact_exts_mean)).toFixed(1)}%</b><span>{es ? 'NPV vs ExTS exacto' : 'NPV vs exact ExTS'}</span></div>
-        <div className="pf-kpi"><b>{(100 * num(et.holdout_npv_vs_greedy_mean)).toFixed(0)}%</b><span>{es ? 'NPV vs codicioso' : 'NPV vs greedy'}</span></div>
-        <div className="pf-kpi"><b>{(100 * num(bd.holdout_mean_rel_err)).toFixed(2)}%</b><span>{es ? 'error de la cota' : 'bound surrogate error'}</span></div>
+        <div className="pf-kpi"><b>{pct(et.holdout_npv_vs_exact_exts_median)}</b><span>{es ? 'NPV vs ExTS (mediana)' : 'NPV vs exact ExTS (median)'}</span></div>
+        <div className="pf-kpi"><b>{pct(et.holdout_npv_vs_exact_exts_p10)}</b><span>P10</span></div>
+        <div className="pf-kpi"><b>{pct(et.holdout_npv_vs_exact_exts_min)}</b><span>{es ? 'peor caso' : 'worst case'}</span></div>
+        <div className="pf-kpi"><b>{pct(et.holdout_beats_greedy_rate, 0)}</b><span>{es ? 'gana al codicioso' : 'beats greedy'}</span></div>
+        <div className="pf-kpi"><b>{pct(bd.holdout_mean_rel_err, 2)}</b><span>{es ? 'error de la cota' : 'bound surrogate error'}</span></div>
       </div>
       {learnedRow && exactRow && (
         <p className="pf-cap">
