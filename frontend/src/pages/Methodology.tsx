@@ -68,6 +68,17 @@ export default function Methodology() {
             <InlineMath tex={String.raw`\mathrm{CP}(U)=\min_{\lambda}\bigl[\,\mathrm{UPL}(p-\lambda a)+\lambda U\,\bigr]`} />
             {es ? '. Cuando primal y dual coinciden, los dos pits que encajonan son puntos de quiebre consecutivos; un ancho pequeno no prueba eso.' : '. When primal and dual agree, the two bracketing pits are provably consecutive break-points; a small interval does not prove that.'}
           </p>
+          <p>
+            {es
+              ? 'El multiplicador critico exige UN recurso por periodo. Con dos, el Algoritmo 4 relaja todos menos uno y se queda con la menor de esas cotas: sigue siendo certificada y es MAS FLOJA. Eso importa porque entonces una brecha reportada mezcla dos cosas distintas, cuanto pierde la heuristica y cuanto pierde la cota. Bienstock-Zuckerberg calcula la cota CONJUNTA sobre todos los recursos a la vez y las separa. Medido sobre el newman1.cpit publicado: el Algoritmo 4 da 24.487.410 y BZ da 24.486.184 en 9 iteraciones, correctamente por debajo de la cota PCPSP publicada de 24.486.549, porque PCPSP es el problema mas rico.'
+              : 'The critical multiplier algorithm needs ONE resource per period. With two, Algorithm 4 relaxes all but one and keeps the smallest of those bounds: still certified, and LOOSER. That matters because a reported gap then mixes two different things, how much the heuristic loses and how much the bound loses. Bienstock-Zuckerberg computes the JOINT bound over all resources at once and separates them. Measured on the published newman1.cpit: Algorithm 4 gives 24,487,410 and BZ gives 24,486,184 in 9 iterations, correctly below the published PCPSP LP bound of 24,486,549, because PCPSP is the richer problem.'}{' '}
+            <Cite id="munoz2017" />
+          </p>
+          <p>
+            {es
+              ? 'La comprobacion mas fuerte del repositorio: sobre una instancia de UN solo recurso, BZ y el multiplicador critico coinciden a precision de maquina. Son dos algoritmos completamente distintos calculando el mismo LP, y si alguna vez difieren, uno esta mal y ninguna salida plausible dira cual.'
+              : 'The strongest check in the repository: on a SINGLE-resource instance, BZ and the critical multiplier algorithm agree to machine precision. They are two entirely different algorithms computing the same LP, and if they ever disagree one of them is wrong and no amount of plausible output will say which.'}
+          </p>
           <Callout variant="note" title={es ? 'Bienstock-Zuckerberg no da una cota mejor' : 'Bienstock-Zuckerberg does not give a better bound'}>
             {es
               ? 'Esta demostrado que Z_BZ = Z_LP, porque el sistema de precedencia es totalmente unimodular. BZ es un resultado de VELOCIDAD en instancias enormes, no una cota mas ajustada. Medido por sus autores: 40 segundos donde CPLEX tomo 954.405 segundos, y CPLEX solo resolvio las cinco instancias mas pequenas de quince.'
@@ -104,10 +115,50 @@ export default function Methodology() {
               : 'The published spread between them is large and is the entire argument for computing the bound: on the authors\' AsiaMine instance with two resource constraints, greedy weights reached 0.138 of the bound and expected-time weights reached 0.972, using the SAME scheduling code.'}
           </p>
           <p>
-            {es ? 'Despues, una busqueda local por desplazamiento: adelantar bloques de valor positivo cuando la precedencia y la capacidad lo permiten, y atrasar bloques de valor negativo cuando sus sucesores lo permiten. Ambos movimientos mejoran estrictamente bajo descuento y preservan la factibilidad. NO es el vecindario exacto C-PIT[D] de la seccion 3.3, que re-resuelve un entero restringido y necesita un solver MILP; eso no esta implementado y se dice.'
-              : 'Then a shift local search: pull positive-value blocks forward when precedence and capacity allow, push negative-value blocks back when their successors allow. Both moves strictly improve under discounting and preserve feasibility. It is NOT the exact C-PIT[D] neighbourhood of section 3.3, which re-solves a restricted integer program and needs a MILP solver; that is not implemented and is said so.'}{' '}
+            {es ? 'Despues, una busqueda local por desplazamiento: adelantar bloques de valor positivo cuando la precedencia y la capacidad lo permiten, y atrasar bloques de valor negativo cuando sus sucesores lo permiten. Ambos movimientos mejoran estrictamente bajo descuento y preservan la factibilidad. NO es el vecindario exacto C-PIT[D] de la seccion 3.3, que re-resuelve un entero restringido y necesita un solver MILP: ese es un peldano aparte, cpitD-local-search, y es el que da el mejor plan sobre la instancia publicada.'
+              : 'Then a shift local search: pull positive-value blocks forward when precedence and capacity allow, push negative-value blocks back when their successors allow. Both moves strictly improve under discounting and preserve feasibility. It is NOT the exact C-PIT[D] neighbourhood of section 3.3, which re-solves a restricted integer program and needs a MILP solver: that is a separate rung, cpitD-local-search, and it is the one that produces the best plan on the published instance.'}{' '}
             <Cite id="lamghari2012" />
           </p>
+        </>
+      ),
+    },
+    {
+      id: 'learned',
+      label: es ? 'Aprendido' : 'Learned',
+      content: (
+        <>
+          <p>
+            {es
+              ? 'Dos modelos, y ninguno certifica nada. La cota certificada siempre viene del multiplicador critico o de Bienstock-Zuckerberg; cada prediccion aprendida se mide contra la cantidad exacta que aproxima, sobre depositos que el modelo nunca vio.'
+              : 'Two models, and neither certifies anything. The certified bound always comes from the critical multiplier algorithm or from Bienstock-Zuckerberg; every learned prediction is scored against the exact quantity it approximates, on deposits the model never saw.'}
+          </p>
+          <h3>{es ? 'Sustituto del tiempo esperado' : 'The expected-time surrogate'}</h3>
+          <p>
+            {es
+              ? 'La mejor heuristica de redondeo publicada necesita primero la relajacion LP, porque su peso por bloque es el tiempo esperado de extraccion, y eso es una secuencia de cierres maximos. Cuando alguien arrastra un control, esa secuencia es lo que se interpone entre el gesto y la respuesta. El sustituto predice ese tiempo directamente desde doce caracteristicas del bloque y del escenario, asi que sale un plan SIN NINGUNA resolucion LP.'
+              : 'The best published rounding heuristic needs the LP relaxation first, because its block weight is the expected extraction time, and that is a sequence of maximum closures. When someone drags a control, that sequence is what stands between the gesture and the answer. The surrogate predicts that time directly from twelve block and scenario features, so a plan comes out with NO LP solve at all.'}
+          </p>
+          <p>
+            {es
+              ? 'Se mide con la correlacion de rangos de Spearman, porque se usa como CLAVE DE ORDEN y lo que importa es el orden y no el valor; y sobre todo con el NPV del plan que produce contra el NPV del plan que producen los tiempos VERDADEROS, en depositos que nunca vio, reportado como mediana, P10 y MINIMO. Un sustituto con una correlacion bonita y un plan peor no sirve, y la media sola esconde exactamente el fallo que un usuario encontraria.'
+              : 'It is scored by Spearman rank correlation, because it is used as a SORT KEY and what matters is the order rather than the value; and above all by the NPV of the plan it produces against the NPV of the plan the TRUE times produce, on deposits it never saw, reported as a median, a P10 and a MINIMUM. A surrogate with a pretty correlation and a worse plan is not useful, and a mean alone hides exactly the failure a user would hit.'}
+          </p>
+          <h3>{es ? 'Sustituto de la cota' : 'The bound surrogate'}</h3>
+          <p>
+            {es
+              ? 'Predice la cota como fraccion del valor del pit final desde estadisticos resumidos del deposito mas el escenario, para dibujar una superficie de sensibilidad al instante en vez de tras unos cientos de cierres. La cota exacta se calcula para el punto seleccionado, asi que la superficie siempre esta anclada por al menos un valor verdadero.'
+              : 'Predicts the bound as a fraction of the ultimate-pit value from deposit summary statistics plus the scenario, so a sensitivity surface can be drawn instantly instead of after a few hundred closures. The exact bound is computed for the selected point, so the surface is always anchored by at least one true value.'}
+          </p>
+          <Callout variant="honest" title={es ? 'La division es por DEPOSITO, nunca por fila' : 'The split is by DEPOSIT, never by row'}>
+            {es
+              ? 'Dos escenarios del mismo deposito comparten casi todas sus caracteristicas por bloque. Una division por filas dejaria al modelo memorizar el deposito y luego medirse sobre una copia, y el numero no significaria nada. Aqui la division es por semilla del generador: doce semillas para entrenar, seis disjuntas retenidas, y el script afirma que los conjuntos son disjuntos en vez de dejarlo a un comentario.'
+              : 'Two scenarios of the same deposit share almost all of their block-level features. A row-wise split would let the model memorise the deposit and then score itself on a copy, and the number would mean nothing. Here the split is by generator seed: twelve seeds for training, six disjoint seeds held out, and the script asserts the sets are disjoint rather than leaving it to a comment.'}
+          </Callout>
+          <Callout variant="honest" title={es ? 'Una metrica que estaba mal' : 'A metric that was wrong'}>
+            {es
+              ? 'La primera version reportaba el NPV contra el codicioso como media de razones por caso. Salio 1,37e14. El codicioso a veces produce un NPV casi nulo en un deposito retenido, y dividir por eso da un numero sin significado que igual habria parecido un triunfo. Ahora es una TASA: la fraccion de casos retenidos donde el plan aprendido gana. La forma general del error vale nombrarla: una razon cuyo denominador puede acercarse a cero no es un estadistico resumen.'
+              : 'The first version reported NPV against greedy as a mean of per-case ratios. It came out as 1.37e14. Greedy occasionally produces a near-zero NPV on a held-out deposit, and dividing by that gives a number with no meaning that would still have looked like a triumph. It is now a RATE: the fraction of held-out cases where the learned plan wins. The general form of the mistake is worth naming: a ratio whose denominator can approach zero is not a summary statistic.'}
+          </Callout>
         </>
       ),
     },

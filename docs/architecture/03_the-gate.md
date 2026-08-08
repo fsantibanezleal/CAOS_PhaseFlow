@@ -1,16 +1,31 @@
-# The live-vs-precompute gate
+# The live-vs-replay gate
 
-`data-pipeline/pipeline/core/gate.py :: classify_lane()`. A case runs **live** in the browser (Pyodide) iff , 
-by MEASUREMENT, never by hand-wave:
+`data-pipeline/pipeline/core/gate.py :: classify_lane()`. It decides, by MEASUREMENT and never by
+judgement, whether a case can be re-solved in the browser or must be replayed from the committed
+artifact. The verdict and every number behind it go into the manifest, and CI fails if `manifest.lane`
+disagrees with the gate, so a case can never be labelled live because someone hoped it was.
 
-- it is **pure-Python**, AND
-- its wheels are a subset of the Pyodide-safe set (`LIVE_WHEELS`, e.g. `{numpy}`), AND
-- `run_ms ≤ RUN_MS_GATE` (interaction budget), AND
-- `trace_bytes ≤ TRACE_BYTES_GATE` (small artifact).
+## The rule
 
-Otherwise the case is **precompute**: the offline pipeline bakes the artifact and the SPA replays it. Either way,
-a committed artifact always exists, so the site replays instantly on first paint (ADR-0054).
+A case is **live** if all of the following hold:
 
-The verdict + the measured numbers are written into the manifest (`gate` field) and CI fails if `manifest.lane`
-disagrees with the gate, so a heavy model can never be mislabeled "live". The EXAMPLE SIR case is pure-Python +
-numpy + small ⇒ classified `live`.
+| condition | budget | why this number |
+|---|---|---|
+| the instance is redistributable | - | MineLib's licence forbids shipping the block data, so a published instance is replay by LICENCE, not by size |
+| blocks | `LIVE_BLOCKS = 30,000` | the TypeScript max-flow holds the residual graph in typed arrays; beyond this the allocation and the solve stop being interactive |
+| precedence arcs | `LIVE_ARCS = 300,000` | the arc arrays dominate memory, and the graph is what actually gets traversed |
+| trace bytes | `LIVE_TRACE_BYTES = 6 MiB` | the per-block schedule has to reach the browser before anything can be re-solved in it |
+
+Otherwise the case is **replay**. Either way a committed artifact ALWAYS exists, so the page paints
+from real numbers on first frame and the live lane only ever improves on that (ADR-0054).
+
+`OFFLINE_MS_GATE = 60,000 ms` is not a lane condition. It is a NOTE: a case whose offline solve passes
+a minute is recorded as such in the manifest, because a bake that quietly grows is a bake nobody will
+notice has grown.
+
+## What the gate does not decide
+
+It does not decide whether the live lane is CORRECT. That is `frontend/test/parity.test.ts`, which
+compares the two lanes on the same instance: the precedence arcs, the pit membership block by block,
+the objective value and the bound. A case that passes the gate and fails parity is a defect, not a
+lane choice.

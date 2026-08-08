@@ -1,4 +1,6 @@
-# Canonical OFFLINE lane: the bake plus the learned-method training and its ONNX export.
+# Canonical OFFLINE lane: the bake, the joint bound, the exact local search, and the learned
+# verticals with their verified ONNX export. Never installed by CI and never by the deploy.
 -r data-pipeline/requirements.txt
-torch==2.6.0
-onnx==1.17.0
+scipy==1.18.0
+onnx==1.22.0
+onnxruntime==1.28.0

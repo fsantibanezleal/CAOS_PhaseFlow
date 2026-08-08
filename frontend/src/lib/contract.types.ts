@@ -75,6 +75,53 @@ export interface TracePublished {
   source?: string;
 }
 
+/** Both bounds and which one every gap on this case is measured against. */
+export interface BoundReport {
+  algorithm4?: number;
+  algorithm4_ms?: number;
+  closure_solves?: number;
+  /** the JOINT Bienstock-Zuckerberg bound, or null where the time-expanded graph was over budget */
+  joint?: number | null;
+  joint_ms?: number | null;
+  joint_iterations?: number | null;
+  joint_converged?: boolean | null;
+  joint_nodes?: number;
+  joint_edges?: number;
+  joint_skipped?: string;
+  joint_error?: string;
+  /** how much tighter the joint bound is, in percent. The part of a gap that belongs to the BOUND. */
+  tightening_pct?: number | null;
+  used?: 'algorithm4' | 'bienstock-zuckerberg';
+}
+
+/** The risk readout: every candidate plan scored on every realisation. */
+export interface EnsembleReport {
+  ran: boolean;
+  reason?: string;
+  nRealisations?: number;
+  sigma?: number;
+  methods?: string[];
+  expected?: number[];
+  p10?: number[];
+  p90?: number[];
+  meanModel?: number[];
+  /** mean-model value minus expected value: positive means the single-model forecast is OPTIMISTIC */
+  optimism?: number[];
+  bestByExpected?: string;
+  bestByP10?: string;
+  valueOfPlanSelection?: number;
+  valueOfReplanning?: number;
+  valueOfReplanningPct?: number;
+  replanningNote?: string;
+  note?: string;
+}
+
+export interface LearnedReport {
+  expectedTime?: Record<string, number | string | number[]>;
+  bound?: Record<string, number | string | number[]>;
+  honesty?: string;
+}
+
 export interface ScheduleTrace {
   schema: string;
   caseId: string;
@@ -100,6 +147,12 @@ export interface ScheduleTrace {
   };
   published: TracePublished;
   controls: TraceControls;
+  // OPTIONAL on purpose. A case baked before these existed is a valid artifact of an older schema,
+  // and typing them as required told every reader they were always there: the Analysis tab read
+  // `bound.algorithm4` on such a case and unmounted the whole app.
+  bound?: BoundReport;
+  ensemble?: EnsembleReport;
+  learned?: LearnedReport;
   contract: { accepted: boolean; flags: { code: string; detail: string }[]; facts: Record<string, number> };
   methods: TraceMethod[];
   blocks?: TraceBlocks;

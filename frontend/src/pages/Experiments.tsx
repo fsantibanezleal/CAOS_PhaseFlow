@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Callout, Cite, Refs, Tabs, useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
-import { loadIndex, loadManifest } from '../lib/artifacts.ts';
+import { fmtInt, loadIndex, loadManifest } from '../lib/artifacts.ts';
 import type { CaseIndex, CaseManifest } from '../lib/contract.types.ts';
 import { MethodBars } from '../viz/Charts.tsx';
 
 export default function Experiments() {
-  const es = useShellLang() === 'es';
+  const lang = useShellLang();
+  const es = lang === 'es';
   const theme = useThemeStore((s) => s.theme);
   const [index, setIndex] = useState<CaseIndex | null>(null);
   const [manifests, setManifests] = useState<CaseManifest[]>([]);
@@ -69,8 +70,8 @@ export default function Experiments() {
                 <tr key={m.case_id}>
                   <td>{m.case_id}</td>
                   <td>{m.category}</td>
-                  <td>{m.instance.n_blocks.toLocaleString()}</td>
-                  <td>{m.instance.n_precedence_arcs.toLocaleString()}</td>
+                  <td>{fmtInt(m.instance.n_blocks, lang)}</td>
+                  <td>{fmtInt(m.instance.n_precedence_arcs, lang)}</td>
                   <td>{m.scenario.periods}</td>
                   <td>{(m.scenario.discount_rate * 100).toFixed(0)}%</td>
                   <td><span className={`pf-badge ${m.lane}`}>{m.lane}</span></td>
