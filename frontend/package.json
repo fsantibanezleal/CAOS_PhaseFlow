@@ -1,7 +1,7 @@
 {
   "name": "phaseflow-frontend",
   "private": true,
-  "version": "0.04.000",
+  "version": "0.04.001",
   "type": "module",
   "scripts": {
     "predev": "node copy-data.mjs",
