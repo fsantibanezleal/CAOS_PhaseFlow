@@ -10,6 +10,7 @@ block model. The ultimate pit answers *which* blocks are worth mining; PhaseFlow
 | **[methods/](methods/README.md)** | the ladder: every rung, what it claims, and what it is not allowed to claim |
 | [methods/02_the_bound.md](methods/02_the_bound.md) | the certified bound, both of them, and why there are two |
 | [methods/09_ladder_results.md](methods/09_ladder_results.md) | how to read the numbers, and which comparisons are legitimate |
+| [methods/10_when_the_surrogate_fails.md](methods/10_when_the_surrogate_fails.md) | the learned rung's worst case is 0.344, and this is WHEN |
 | [cases/README.md](cases/README.md) | the case matrix, each case's ROLE, and the data that is actually reachable |
 | [architecture.md](architecture.md) | the three lanes, the contracts, determinism, the gate, deploy |
 | [guides.md](guides.md) | bake the artifacts, bring your own block model |
@@ -72,5 +73,7 @@ the failure mode is more transferable than the fix:
   ([08](methods/08_uncertainty.md))
 - a learned metric that came out as **1.37e14** because it divided by a near-zero denominator
   ([05](methods/05_learned.md))
+- an archetype story for the learned rung's worst case that six training deposits supported and five
+  held-out ones **refuted** ([10](methods/10_when_the_surrogate_fails.md))
 - two copies of `react-router`, which crashed every route while the HTTP check reported 200
   (`deployments/phaseflow.md` in CAOS_MANAGE)

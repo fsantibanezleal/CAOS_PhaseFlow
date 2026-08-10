@@ -3,6 +3,43 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.03.000] - 2026-08-10
+
+The two things the last release listed as OPEN, closed: the joint bound now runs on every case, and
+the learned rung's worst case has a measured answer to WHEN rather than a caveat.
+
+### Added
+- **The joint bound on every case.** It previously ran on nothing but the published instance: the
+  time-expanded graph of a deposit twin is 109,760 nodes and 972,904 arcs, and a pure-Python max-flow
+  cannot price that in a loop. `oreblocks` 0.4.0 prices with the compiled max-flow and then CERTIFIES
+  the result with one exact solve, because the compiled path rounds its integer capacities and the
+  slack that costs is the same order as the tightening being measured. Measured on `newman1`: the
+  same 24,486,184 as before, now in 746 ms instead of tens of seconds. On the twins the two bounds
+  agree to machine precision, which is a RESULT: on those cases one resource alone determines the LP
+  and Algorithm 4 was never loose.
+- **A measured guard on the learned rung.** The surrogate's worst held-out case is 0.344 of the exact
+  plan. The archetype hypothesis (all six training failures are `core_halo`) is REFUTED by the
+  held-out deposits, three of whose five failures are `vein`. What survives is the scenario, and it
+  is the reading with a mechanism: under heavy discounting the value of a plan depends on precise
+  timing, and a surrogate scored as a SORT KEY has the least to give there. The shipped rule,
+  `discount rate >= 0.15`, catches 5 held-out failures of 5, flags 40 percent of cases, and leaves no
+  unflagged case below 93 percent. It travels WITH the method: `unreliable` in the artifact, a mark
+  in the selector, a sentence beside it, and the numbers in the method note.
+- `docs/methods/10_when_the_surrogate_fails.md`, and the full study committed as
+  `models/learned-failure-modes.json` with every case, both splits, and its covariates.
+- Three new gates: a joint bound that was computed must carry ZERO rounding slack, a case without one
+  must say why in words, and the learned rung must be flagged exactly where the rule says.
+
+### Fixed
+- **A sandbox bake could not use the learned lane.** `--output` redirected the MODELS path too, and
+  the models are an INPUT: trained by a separate script and committed. `--output build/local
+  --learned` failed on a missing file that was never supposed to be there.
+- A tightening of exactly zero printed as `-0.0`, which reads as broken arithmetic rather than as the
+  result it is.
+
+All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
+Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
+
 ## [0.02.001] - 2026-08-08
 
 ### Fixed

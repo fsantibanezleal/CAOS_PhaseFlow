@@ -2065,6 +2065,13 @@
   "holdout_npv_vs_exact_exts_p10": 0.9381267972891387,
   "holdout_beats_greedy_rate": 0.9666666666666667,
   "holdout_worst_case": "train-core_halo-239-12-0.2",
+  "failure_below": 0.9,
+  "failure_rate": 0.041666666666666664,
+  "failure_rule": "discount rate >= 0.15",
+  "failure_rule_precision": 0.10416666666666667,
+  "failure_rule_recall": 1.0,
+  "worst_unflagged": 0.9315169745557275,
+  "refuted": "all 6 training failures are core_halo, which reads as an archetype story; 3 of the 5 held-out failures are vein, so archetype does not generalise",
   "n_train_rows": 241920,
   "n_holdout_rows": 120960,
   "train_seeds": [
@@ -2089,7 +2096,10 @@
    233,
    239
   ],
-  "split": "by deposit seed, never by row"
+  "split": "by deposit seed, never by row",
+  "failure_rule_rate_at_least": 0.15,
+  "failure_rule_flagged_share": 0.4,
+  "failure_rule_worst_unflagged": 0.9315169745557275
  },
  "onnx_parity_max_abs_err": 1.1094013030454875e-07
 }
