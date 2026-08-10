@@ -1,0 +1,2215 @@
+{
+ "purpose": "a THIRD disjoint seed set, used only to measure the rule that already shipped. No threshold is chosen here: the held-out set that refuted the archetype rule also motivated the rule that replaced it, so its numbers are optimistic by construction.",
+ "rule": "archetype == core_halo",
+ "failure_below": 0.9,
+ "validation_seeds": [
+  241,
+  251,
+  257,
+  263,
+  269,
+  271
+ ],
+ "train_seeds": [
+  101,
+  103,
+  107,
+  109,
+  113,
+  127,
+  131,
+  137,
+  139,
+  149,
+  151,
+  157
+ ],
+ "holdout_seeds": [
+  211,
+  223,
+  227,
+  229,
+  233,
+  239
+ ],
+ "n": 216,
+ "failures": 44,
+ "flagged": 54,
+ "true_positive": 36,
+ "false_positive": 18,
+ "false_negative": 8,
+ "true_negative": 154,
+ "precision": 0.6666666666666666,
+ "recall": 0.8181818181818182,
+ "worst_unflagged": 0.7852195245651015,
+ "worst_overall": 0.5651188026007831,
+ "median": 0.9678748734792457,
+ "p10": 0.8212084405049078,
+ "holdout_for_comparison": {
+  "precision": 0.6666666666666666,
+  "recall": 0.9230769230769231,
+  "worst_unflagged": 0.8509360976630992
+ },
+ "rows": [
+  {
+   "case": "train-porphyry-241-6-0.05",
+   "seed": 241,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9959943234277524,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-241-6-0.15",
+   "seed": 241,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9920899929819673,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-241-8-0.05",
+   "seed": 241,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9656020890162584,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-241-8-0.1",
+   "seed": 241,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9939175656575749,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-241-8-0.2",
+   "seed": 241,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9782517979815986,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-241-10-0.1",
+   "seed": 241,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9915977036542497,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-241-10-0.2",
+   "seed": 241,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 1.0862811209258552,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-241-12-0.05",
+   "seed": 241,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 1.0215376256052584,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-241-12-0.15",
+   "seed": 241,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 1.0223771892252174,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-241-6-0.05",
+   "seed": 241,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9904982082364153,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-241-6-0.15",
+   "seed": 241,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9760822593529684,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-241-8-0.05",
+   "seed": 241,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9831489753467925,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-241-8-0.1",
+   "seed": 241,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9958339197745678,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-241-8-0.2",
+   "seed": 241,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9748215409428047,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-241-10-0.1",
+   "seed": 241,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9761299115962337,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-241-10-0.2",
+   "seed": 241,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9749584739399696,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-241-12-0.05",
+   "seed": 241,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.9348846258806668,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-241-12-0.15",
+   "seed": 241,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9875540120953318,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-241-6-0.05",
+   "seed": 241,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9422585591306837,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-241-6-0.15",
+   "seed": 241,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9399045263031733,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-241-8-0.05",
+   "seed": 241,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9808744998033818,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-241-8-0.1",
+   "seed": 241,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9678369751913231,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-241-8-0.2",
+   "seed": 241,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9660704866420309,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-241-10-0.1",
+   "seed": 241,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.950807615073415,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-241-10-0.2",
+   "seed": 241,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9641681655528815,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-241-12-0.05",
+   "seed": 241,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.9696819914552691,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-241-12-0.15",
+   "seed": 241,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9682780633747494,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-core_halo-241-6-0.05",
+   "seed": 241,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.8865170890726162,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-241-6-0.15",
+   "seed": 241,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.8572335649389516,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-241-8-0.05",
+   "seed": 241,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9660106210404694,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-241-8-0.1",
+   "seed": 241,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9383755336720734,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-241-8-0.2",
+   "seed": 241,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 1.0082951417136514,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-241-10-0.1",
+   "seed": 241,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9402854337428008,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-241-10-0.2",
+   "seed": 241,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.6930203145380254,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-241-12-0.05",
+   "seed": 241,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.8198101433637999,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-241-12-0.15",
+   "seed": 241,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9053706483096051,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-porphyry-251-6-0.05",
+   "seed": 251,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.971786316100421,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-251-6-0.15",
+   "seed": 251,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9745437502947096,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-251-8-0.05",
+   "seed": 251,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.989042111587448,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-251-8-0.1",
+   "seed": 251,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 1.002277216547151,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-251-8-0.2",
+   "seed": 251,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9986860184331581,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-251-10-0.1",
+   "seed": 251,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9740632925674314,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-251-10-0.2",
+   "seed": 251,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 1.1345983263806876,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-251-12-0.05",
+   "seed": 251,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 1.0701770461685385,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-251-12-0.15",
+   "seed": 251,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 1.0218841858431384,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-251-6-0.05",
+   "seed": 251,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.8318487101916887,
+   "failed": true,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-251-6-0.15",
+   "seed": 251,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.8309509360190733,
+   "failed": true,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-251-8-0.05",
+   "seed": 251,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.8938904128133909,
+   "failed": true,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-251-8-0.1",
+   "seed": 251,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.8729879726828556,
+   "failed": true,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-251-8-0.2",
+   "seed": 251,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.8697829687846613,
+   "failed": true,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-251-10-0.1",
+   "seed": 251,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.7852195245651015,
+   "failed": true,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-251-10-0.2",
+   "seed": 251,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.8906270298366525,
+   "failed": true,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-251-12-0.05",
+   "seed": 251,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.9084055758439042,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-251-12-0.15",
+   "seed": 251,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.8627878144197889,
+   "failed": true,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-251-6-0.05",
+   "seed": 251,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9644523418185406,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-251-6-0.15",
+   "seed": 251,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.97195162868146,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-251-8-0.05",
+   "seed": 251,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.985637251730767,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-251-8-0.1",
+   "seed": 251,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9937626971160608,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-251-8-0.2",
+   "seed": 251,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9828802894327457,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-251-10-0.1",
+   "seed": 251,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.974507667033922,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-251-10-0.2",
+   "seed": 251,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9898273613782522,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-251-12-0.05",
+   "seed": 251,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 1.002690861151186,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-251-12-0.15",
+   "seed": 251,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9778482038270817,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-core_halo-251-6-0.05",
+   "seed": 251,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9208858729555454,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-251-6-0.15",
+   "seed": 251,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9139785588701285,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-251-8-0.05",
+   "seed": 251,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9186427190556471,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-251-8-0.1",
+   "seed": 251,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.8281618031017605,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-251-8-0.2",
+   "seed": 251,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.890996143159329,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-251-10-0.1",
+   "seed": 251,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.6900216222257375,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-251-10-0.2",
+   "seed": 251,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.5651188026007831,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-251-12-0.05",
+   "seed": 251,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.6624444719138963,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-251-12-0.15",
+   "seed": 251,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.7596653477616663,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-porphyry-257-6-0.05",
+   "seed": 257,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9647627761551847,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-257-6-0.15",
+   "seed": 257,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9608349245991672,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-257-8-0.05",
+   "seed": 257,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9657491494382039,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-257-8-0.1",
+   "seed": 257,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 1.0036098972944987,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-257-8-0.2",
+   "seed": 257,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9804827802110861,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-257-10-0.1",
+   "seed": 257,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9556954257193517,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-257-10-0.2",
+   "seed": 257,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 1.104544933438545,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-257-12-0.05",
+   "seed": 257,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 1.0556717901243935,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-257-12-0.15",
+   "seed": 257,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 1.009311628588437,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-257-6-0.05",
+   "seed": 257,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.989414244904721,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-257-6-0.15",
+   "seed": 257,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.969056940199655,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-257-8-0.05",
+   "seed": 257,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9732331233381615,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-257-8-0.1",
+   "seed": 257,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9660585445448696,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-257-8-0.2",
+   "seed": 257,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9664185909006361,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-257-10-0.1",
+   "seed": 257,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9578420609925894,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-257-10-0.2",
+   "seed": 257,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9284116830121606,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-257-12-0.05",
+   "seed": 257,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.9387096549164926,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-257-12-0.15",
+   "seed": 257,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.956897004384016,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-257-6-0.05",
+   "seed": 257,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9728381167518402,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-257-6-0.15",
+   "seed": 257,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9776174845229421,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-257-8-0.05",
+   "seed": 257,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9988957764504951,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-257-8-0.1",
+   "seed": 257,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9989733041658307,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-257-8-0.2",
+   "seed": 257,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9935016369882044,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-257-10-0.1",
+   "seed": 257,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.978193305391478,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-257-10-0.2",
+   "seed": 257,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9864018671394164,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-257-12-0.05",
+   "seed": 257,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.9978900400029879,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-257-12-0.15",
+   "seed": 257,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9920364691557589,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-core_halo-257-6-0.05",
+   "seed": 257,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.8734928372079374,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-257-6-0.15",
+   "seed": 257,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.7507848327015274,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-257-8-0.05",
+   "seed": 257,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.8508899661765108,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-257-8-0.1",
+   "seed": 257,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.7385012245950898,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-257-8-0.2",
+   "seed": 257,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.715866774829204,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-257-10-0.1",
+   "seed": 257,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.6380964828830692,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-257-10-0.2",
+   "seed": 257,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.6279448546253676,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-257-12-0.05",
+   "seed": 257,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.6658522374102439,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-257-12-0.15",
+   "seed": 257,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.7629964186573761,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-porphyry-263-6-0.05",
+   "seed": 263,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9846777310484937,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-263-6-0.15",
+   "seed": 263,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9829496064616772,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-263-8-0.05",
+   "seed": 263,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9772533378766767,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-263-8-0.1",
+   "seed": 263,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 1.003506571345045,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-263-8-0.2",
+   "seed": 263,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9993014941215383,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-263-10-0.1",
+   "seed": 263,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9869738971134353,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-263-10-0.2",
+   "seed": 263,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 1.1733595586023042,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-263-12-0.05",
+   "seed": 263,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 1.080060314589662,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-263-12-0.15",
+   "seed": 263,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 1.023569067193572,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-263-6-0.05",
+   "seed": 263,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.980445211386811,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-263-6-0.15",
+   "seed": 263,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9649366002580736,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-263-8-0.05",
+   "seed": 263,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9530538461895842,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-263-8-0.1",
+   "seed": 263,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9748462675145202,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-263-8-0.2",
+   "seed": 263,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9510009674633295,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-263-10-0.1",
+   "seed": 263,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9655984099260216,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-263-10-0.2",
+   "seed": 263,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9448315381433237,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-263-12-0.05",
+   "seed": 263,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.9253570024512359,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-263-12-0.15",
+   "seed": 263,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9550735114147322,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-263-6-0.05",
+   "seed": 263,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9451213065103946,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-263-6-0.15",
+   "seed": 263,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9494000305850048,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-263-8-0.05",
+   "seed": 263,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9746051612042295,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-263-8-0.1",
+   "seed": 263,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9751606782075042,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-263-8-0.2",
+   "seed": 263,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9694226955501993,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-263-10-0.1",
+   "seed": 263,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9534798645736329,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-263-10-0.2",
+   "seed": 263,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9708319629358858,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-263-12-0.05",
+   "seed": 263,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.9797697456166583,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-263-12-0.15",
+   "seed": 263,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9705440225184305,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-core_halo-263-6-0.05",
+   "seed": 263,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 1.0305420368752274,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-263-6-0.15",
+   "seed": 263,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 1.0268207669414557,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-263-8-0.05",
+   "seed": 263,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9521071777710038,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-263-8-0.1",
+   "seed": 263,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9205576567480298,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-263-8-0.2",
+   "seed": 263,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9892122164121353,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-263-10-0.1",
+   "seed": 263,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.7385043035835337,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-263-10-0.2",
+   "seed": 263,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.6541882299475162,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-263-12-0.05",
+   "seed": 263,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.7377527456742519,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-263-12-0.15",
+   "seed": 263,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.8435075989460314,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-porphyry-269-6-0.05",
+   "seed": 269,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9931717780658968,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-269-6-0.15",
+   "seed": 269,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9759683362740394,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-269-8-0.05",
+   "seed": 269,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 1.0078197562417504,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-269-8-0.1",
+   "seed": 269,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9878740989156497,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-269-8-0.2",
+   "seed": 269,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 1.0078273593696034,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-269-10-0.1",
+   "seed": 269,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9760266070576993,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-269-10-0.2",
+   "seed": 269,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 1.1437331381565459,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-269-12-0.05",
+   "seed": 269,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 1.0710362081007434,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-269-12-0.15",
+   "seed": 269,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 1.0129645411954016,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-269-6-0.05",
+   "seed": 269,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 1.003708938786351,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-269-6-0.15",
+   "seed": 269,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9795945288108434,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-269-8-0.05",
+   "seed": 269,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9650498416805636,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-269-8-0.1",
+   "seed": 269,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9805882388091949,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-269-8-0.2",
+   "seed": 269,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9644626702617672,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-269-10-0.1",
+   "seed": 269,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9555493551666552,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-269-10-0.2",
+   "seed": 269,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9506561225815865,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-269-12-0.05",
+   "seed": 269,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.9521788246890508,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-269-12-0.15",
+   "seed": 269,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9494451216752272,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-269-6-0.05",
+   "seed": 269,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9450546449832948,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-269-6-0.15",
+   "seed": 269,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.953035896917206,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-269-8-0.05",
+   "seed": 269,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9736562941544984,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-269-8-0.1",
+   "seed": 269,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9712066813731153,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-269-8-0.2",
+   "seed": 269,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9685645377459269,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-269-10-0.1",
+   "seed": 269,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9527624372522568,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-269-10-0.2",
+   "seed": 269,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9653179647154365,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-269-12-0.05",
+   "seed": 269,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.9645321937044279,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-269-12-0.15",
+   "seed": 269,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9679127717671683,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-core_halo-269-6-0.05",
+   "seed": 269,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.858053735892677,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-269-6-0.15",
+   "seed": 269,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.8298631783052235,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-269-8-0.05",
+   "seed": 269,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9392711787142205,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-269-8-0.1",
+   "seed": 269,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9297393474665088,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-269-8-0.2",
+   "seed": 269,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9411613261230949,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-269-10-0.1",
+   "seed": 269,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.8735381259596164,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-269-10-0.2",
+   "seed": 269,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.7125238214847088,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-269-12-0.05",
+   "seed": 269,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.8226067376460159,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-269-12-0.15",
+   "seed": 269,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.8449228379169852,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-porphyry-271-6-0.05",
+   "seed": 271,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9460812294085885,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-271-6-0.15",
+   "seed": 271,
+   "archetype": "porphyry",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9275030109612679,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-271-8-0.05",
+   "seed": 271,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9840873756934877,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-271-8-0.1",
+   "seed": 271,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9754121909662232,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-271-8-0.2",
+   "seed": 271,
+   "archetype": "porphyry",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9898358174419641,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-271-10-0.1",
+   "seed": 271,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9354765615782682,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-271-10-0.2",
+   "seed": 271,
+   "archetype": "porphyry",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 1.1118235840998476,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-271-12-0.05",
+   "seed": 271,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 1.115391141014556,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-porphyry-271-12-0.15",
+   "seed": 271,
+   "archetype": "porphyry",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9768817227811136,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-271-6-0.05",
+   "seed": 271,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 1.0328501324827168,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-271-6-0.15",
+   "seed": 271,
+   "archetype": "vein",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 1.0038877024888946,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-271-8-0.05",
+   "seed": 271,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9270358393134509,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-271-8-0.1",
+   "seed": 271,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 1.025758410192162,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-271-8-0.2",
+   "seed": 271,
+   "archetype": "vein",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9284592917287012,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-271-10-0.1",
+   "seed": 271,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.98033029069236,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-271-10-0.2",
+   "seed": 271,
+   "archetype": "vein",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9784797701234433,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-271-12-0.05",
+   "seed": 271,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.945413207063295,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-vein-271-12-0.15",
+   "seed": 271,
+   "archetype": "vein",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.9862587024781012,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-271-6-0.05",
+   "seed": 271,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.9510054910783121,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-271-6-0.15",
+   "seed": 271,
+   "archetype": "layered",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.9612137614187439,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-271-8-0.05",
+   "seed": 271,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9926256731278476,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-271-8-0.1",
+   "seed": 271,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.9879775283898917,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-271-8-0.2",
+   "seed": 271,
+   "archetype": "layered",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9833259112590242,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-271-10-0.1",
+   "seed": 271,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.9550596568385106,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-271-10-0.2",
+   "seed": 271,
+   "archetype": "layered",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.9749656674747768,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-271-12-0.05",
+   "seed": 271,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.9768702012887782,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-layered-271-12-0.15",
+   "seed": 271,
+   "archetype": "layered",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.98162567987511,
+   "failed": false,
+   "flagged": false
+  },
+  {
+   "case": "train-core_halo-271-6-0.05",
+   "seed": 271,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.05,
+   "vs_true": 0.7446335924554528,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-271-6-0.15",
+   "seed": 271,
+   "archetype": "core_halo",
+   "periods": 6,
+   "rate": 0.15,
+   "vs_true": 0.7852800555966487,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-271-8-0.05",
+   "seed": 271,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.05,
+   "vs_true": 0.9204283208504523,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-271-8-0.1",
+   "seed": 271,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.1,
+   "vs_true": 0.8728694514858325,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-271-8-0.2",
+   "seed": 271,
+   "archetype": "core_halo",
+   "periods": 8,
+   "rate": 0.2,
+   "vs_true": 0.9235160887962948,
+   "failed": false,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-271-10-0.1",
+   "seed": 271,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.1,
+   "vs_true": 0.8396441885118432,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-271-10-0.2",
+   "seed": 271,
+   "archetype": "core_halo",
+   "periods": 10,
+   "rate": 0.2,
+   "vs_true": 0.7649923056647513,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-271-12-0.05",
+   "seed": 271,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.05,
+   "vs_true": 0.7408475797536379,
+   "failed": true,
+   "flagged": true
+  },
+  {
+   "case": "train-core_halo-271-12-0.15",
+   "seed": 271,
+   "archetype": "core_halo",
+   "periods": 12,
+   "rate": 0.15,
+   "vs_true": 0.8742783574442284,
+   "failed": true,
+   "flagged": true
+  }
+ ]
+}

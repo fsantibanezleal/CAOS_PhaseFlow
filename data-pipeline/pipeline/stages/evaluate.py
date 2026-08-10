@@ -14,10 +14,11 @@ A case that fails any of them is a bug, and the app shows the verdict rather tha
 from __future__ import annotations
 
 import oreblocks as ob
+from ..core.manifest import best_comparable
 
 
 def run_controls(instance, results) -> dict:
-    best = max(results, key=lambda r: r.npv) if results else None
+    best = best_comparable(results)
     c = ob.run_controls(
         instance.cpit,
         instance.precedence,

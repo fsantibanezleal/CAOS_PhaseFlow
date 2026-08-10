@@ -1,5 +1,7 @@
 # The bound
 
+![Two certified bounds and the gap between them](../assets/the-two-bounds.svg)
+
 The constrained pit limit problem is NP-hard, so PhaseFlow does not claim an optimum. It computes a
 **certified upper bound** and reports every schedule's distance from it. A schedule shown without its
 gap is a number with no scale.

@@ -34,9 +34,17 @@ def is_emoji(cp: int) -> bool:
     return 0x1F000 <= cp <= 0x1FAFF or cp == EMOJI_SELECTOR
 
 
-TEXT_SUFFIXES = {
-    ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".py", ".md", ".json",
-    ".css", ".html", ".yml", ".yaml", ".toml", ".txt", ".cfg", ".ini", ".svg",
+#: Suffixes that are NOT text. Inverted from an allowlist on purpose.
+#:
+#: The allowlist held 19 extensions and missed `.sh`, `.ps1`, `.service`, `.nginx` and every
+#: extensionless file, so seven em-dashes sat in four tracked files while the CI job named "No
+#: em-dash or emoji in product content" printed OK. A green check that certifies something it never
+#: measured is worse than no check. A denylist covers a new extension by DEFAULT, which is the
+#: direction a guard should fail in.
+BINARY_SUFFIXES = {
+    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".pdf", ".zip", ".gz", ".tgz", ".xz",
+    ".whl", ".onnx", ".npy", ".npz", ".woff", ".woff2", ".ttf", ".otf", ".eot", ".mp4", ".webm",
+    ".so", ".dll", ".dylib", ".pyd", ".exe", ".bin", ".pyc",
 }
 
 
@@ -50,7 +58,7 @@ def tracked_files() -> list[str]:
 def main() -> int:
     hits: list[str] = []
     for rel in tracked_files():
-        if rel == SELF or Path(rel).suffix.lower() not in TEXT_SUFFIXES:
+        if rel == SELF or Path(rel).suffix.lower() in BINARY_SUFFIXES:
             continue
         try:
             lines = (ROOT / rel).read_text(encoding="utf-8").splitlines()

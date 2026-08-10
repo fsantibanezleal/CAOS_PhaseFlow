@@ -80,8 +80,13 @@
   min-height: 0;
 }
 
+/* ONE declaration. There were two, and the second silently dropped the first's 340px floor,
+ * which is the kind of edit that removes a guarantee without touching the line that made it. */
 .pf-stagewrap {
+  position: relative;
+  flex: 1 1 auto;
   min-height: 340px;
+  display: flex;
 }
 
 @media (max-width: 900px) {
@@ -102,12 +107,7 @@
 
 .pf-stage3d canvas { display: block; }
 
-.pf-stagewrap {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-}
+
 
 /* ---------- HUD, overlaid on the stage, never stacked as cards above it ---------- */
 .pf-hud {
@@ -224,7 +224,7 @@
 .pf-scroll-x { overflow-x: auto; min-width: 0; }
 
 .pf-methodbars { display: flex; flex-direction: column; gap: 3px; }
-.pf-mb-row { display: grid; grid-template-columns: 15rem 1fr 5rem 10rem; gap: 8px; align-items: center; font-size: 0.8rem; padding: 2px 4px; border-radius: 5px; }
+.pf-mb-row { display: grid; grid-template-columns: minmax(9ch, 22ch) minmax(0, 1fr) minmax(6ch, 8ch) minmax(0, 14ch); gap: 8px; align-items: center; font-size: 0.8rem; padding: 2px 4px; border-radius: 5px; }
 .pf-mb-row.on { background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
 .pf-mb-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow: hidden; text-overflow: ellipsis; }
 .pf-mb-track { height: 9px; background: color-mix(in srgb, var(--color-fg-subtle) 18%, transparent); border-radius: 999px; overflow: hidden; }

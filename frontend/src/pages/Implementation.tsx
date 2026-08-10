@@ -69,8 +69,8 @@ export default function Implementation() {
       </p>
       <Callout variant="note" title={es ? 'Paridad offline contra vivo' : 'Offline versus live parity'}>
         {es
-          ? 'Un test de paridad afirma que el motor TypeScript reproduce la cota y el NPV de Python sobre un caso comprometido. Sin ese test, en vivo y replay pueden ser dos ciencias distintas presentadas como una.'
-          : 'A parity test asserts that the TypeScript engine reproduces the Python bound and NPV on a committed case. Without it, live and replay can be two different sciences presented as one.'}
+          ? 'Un test de paridad afirma que el motor TypeScript reproduce el pit final de Python bloque a bloque y la cota certificada a 1e-6 sobre un caso comiteado, y que un plan vivo es factible y nunca supera la cota. NO afirma igualdad de NPV, porque el carril vivo y el offline corren metodos distintos.'
+          : 'A parity test asserts that the TypeScript engine reproduces the Python ultimate pit block for block and the certified bound to 1e-6 on a committed case, and that a live schedule is feasible and never beats the bound. It does NOT assert an NPV equality, because the live lane and the offline lane run different methods. Without it, live and replay can be two different sciences presented as one.'}
       </Callout>
 
       <h2>{es ? 'Rendimiento, y de donde salio' : 'Performance, and where it came from'}</h2>

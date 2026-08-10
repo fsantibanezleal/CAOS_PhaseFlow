@@ -119,12 +119,44 @@ export default function Focus() {
   }, [rate, capMine, capMill, periods, slope, model]);
 
   if (st.error) return <div className="pf-focus"><p style={{ padding: 20 }}>{st.error}</p></div>;
-  if (!st.trace || !st.method) return <div className="pf-focus"><p style={{ padding: 20 }}>Loading…</p></div>;
+  // Per-period rows for the LIVE plan, ABOVE the early return because a hook after one is a hook
+  // that is sometimes not called: React counts them per render and this route rendered "more hooks
+  // than during the previous render" the moment the trace was still loading.
+  //
+  // The live solve replaces the plan on screen, so the sentence under the stage has to come from the
+  // live plan too, its own period rows and its own horizon. Handing it the baked method left the
+  // tonnage and the binding resource frozen while the NPV directly above them moved.
+  const livePeriods = useMemo(() => {
+    const tr = st.trace;
+    const md = st.method;
+    if (!live || !tr?.blocks || !md) return null;
+    const horizon = live && periods ? periods : tr.scenario.periods;
+    const nRes = tr.scenario.resources.length;
+    const rows = Array.from({ length: horizon }, (_, t) => ({
+      t: t + 1,
+      minedTonnes: 0,
+      resourceUse: new Array(nRes).fill(0) as number[],
+      resourceLimit: tr.scenario.resources.map((r) => r.limitPerPeriod[t] ?? r.limitPerPeriod[0] ?? 0),
+    }));
+    const ton = tr.blocks.tonnage;
+    const val = tr.blocks.value;
+    for (let b = 0; b < live.periodOfBlock.length; b++) {
+      const t = live.periodOfBlock[b];
+      if (t < 0 || t >= horizon) continue;
+      rows[t].minedTonnes += ton[b];
+      rows[t].resourceUse[0] += ton[b];
+      if (nRes > 1 && val[b] > 0) rows[t].resourceUse[1] += ton[b];
+    }
+    return rows as unknown as typeof md.periods;
+  }, [live, periods, st.trace, st.method]);
+
+  if (!st.trace || !st.method) return <div className="pf-focus"><p style={{ padding: 20 }}>{st.lang === 'es' ? 'Cargando...' : 'Loading...'}</p></div>;
 
   const { trace, method } = st;
   const T = live && periods ? periods : trace.scenario.periods;
   const periodOfBlock = live ? live.periodOfBlock : method.periodOfBlock;
-  const label = stageLabel(trace, method, Math.min(st.cursor, method.periods.length - 1), st.lang);
+  const shown = livePeriods ? ({ ...method, periods: livePeriods, npv: live!.npv } as typeof method) : method;
+  const label = stageLabel(trace, shown, Math.min(st.cursor, shown.periods.length - 1), st.lang, T);
   const npv = live ? live.npv : method.npv;
   const bound = live ? live.bound : method.bound;
   const gap = live ? live.gapPct : method.gapPct;

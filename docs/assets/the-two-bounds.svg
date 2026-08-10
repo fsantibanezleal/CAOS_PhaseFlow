@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img"
+     aria-labelledby="tb-title tb-desc">
+  <title id="tb-title">Two certified bounds and the gap between them</title>
+  <desc id="tb-desc">Algorithm 4 relaxes one resource at a time and keeps the smallest result, which
+  is certified and loose. Bienstock-Zuckerberg computes the joint bound over all resources. The
+  distance between them is the part of a reported gap that belongs to the bound rather than to the
+  plan.</desc>
+
+  <!-- Theme-aware: every colour is a shell token with a light-mode fallback, so the diagram repaints
+       with the page instead of being drawn twice. -->
+  <style>
+    .bg   { fill: var(--color-surface, #f6f8fa); }
+    .line { stroke: var(--color-border, #d0d7de); stroke-width: 1; }
+    .txt  { fill: var(--color-fg, #1f2328); font: 13px system-ui, sans-serif; }
+    .dim  { fill: var(--color-fg-subtle, #656d76); font: 11px system-ui, sans-serif; }
+    .a4   { stroke: var(--color-warn, #d29922); stroke-width: 2.5; }
+    .bz   { stroke: var(--color-accent, #58a6ff); stroke-width: 2.5; }
+    .plan { stroke: var(--color-good, #3fb950); stroke-width: 2.5; }
+    .band { fill: var(--color-accent, #58a6ff); opacity: 0.14; }
+    .gap  { fill: var(--color-good, #3fb950); opacity: 0.12; }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="720" height="300" rx="8"/>
+
+  <!-- value axis -->
+  <line class="line" x1="120" y1="40" x2="120" y2="255"/>
+  <text class="dim" x="60" y="46">value</text>
+
+  <!-- Algorithm 4 -->
+  <line class="a4" x1="120" y1="70" x2="620" y2="70"/>
+  <text class="txt" x="130" y="63">Algorithm 4: relax one resource at a time, keep the smallest</text>
+  <text class="dim" x="130" y="86">certified, and LOOSE. 24,487,410 on newman1</text>
+
+  <!-- the band that belongs to the bound -->
+  <rect class="band" x="120" y="70" width="500" height="40"/>
+  <text class="dim" x="628" y="94">the bound's</text>
+  <text class="dim" x="628" y="106">own slack</text>
+
+  <!-- Bienstock-Zuckerberg -->
+  <line class="bz" x1="120" y1="110" x2="620" y2="110"/>
+  <text class="txt" x="130" y="128">Bienstock-Zuckerberg: the JOINT bound over all resources</text>
+  <text class="dim" x="130" y="146">24,486,184, and it must sit below the published PCPSP LP bound</text>
+
+  <!-- the gap that belongs to the plan -->
+  <rect class="gap" x="120" y="110" width="500" height="90"/>
+  <text class="dim" x="628" y="152">the plan's</text>
+  <text class="dim" x="628" y="164">own gap</text>
+
+  <!-- the best feasible plan -->
+  <line class="plan" x1="120" y1="200" x2="620" y2="200"/>
+  <text class="txt" x="130" y="220">best feasible schedule: 23,875,617</text>
+  <text class="dim" x="130" y="238">every method on the case is measured against ONE of the two lines above</text>
+
+  <text class="dim" x="120" y="272">A gap reported against Algorithm 4 alone mixes two different quantities. Only the joint bound separates them.</text>
+</svg>

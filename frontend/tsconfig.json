@@ -23,6 +23,7 @@
     "verbatimModuleSyntax": false
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ]
 }

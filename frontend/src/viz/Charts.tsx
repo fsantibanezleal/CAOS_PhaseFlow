@@ -9,6 +9,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import uPlot from 'uplot';
+import { useShellLang } from '@fasl-work/caos-app-shell';
 import 'uplot/dist/uPlot.min.css';
 import type { TracePeriod } from '../lib/contract.types.ts';
 import { periodCss } from './colormap.ts';
@@ -26,7 +27,28 @@ interface PlotProps {
   onCursor?: (idx: number | null) => void;
 }
 
+
+/**
+ * Axis and series labels follow the APP's language.
+ *
+ * Every one of these was a bare English string inside the uPlot options, and uPlot renders them into
+ * the axes AND into the live legend under the cursor, so a reader on the Spanish site got Spanish
+ * prose around a chart labelled "period", "cum NPV (M)" and "% of limit".
+ */
+let LANG = 'en';
+
+function L(en: string, es: string): string {
+  return LANG === 'es' ? es : en;
+}
+
+function useChartLang(): void {
+  // Called from UPlotChart itself, so the module global is refreshed before any `build` callback
+  // runs. Exporting a hook nobody calls is how a translation ships that never takes effect.
+  LANG = useShellLang();
+}
+
 export function UPlotChart({ data, build, height = 300, testId, onCursor }: PlotProps) {
+  useChartLang();
   const host = useRef<HTMLDivElement>(null);
   const plot = useRef<uPlot | null>(null);
   useEffect(() => {
@@ -47,7 +69,18 @@ export function UPlotChart({ data, build, height = 300, testId, onCursor }: Plot
     return () => { ro.disconnect(); p.destroy(); plot.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, height]);
-  return <div ref={host} className="pf-chart" data-testid={testId} />;
+    // Focusable and labelled: a chart nobody can reach with a keyboard is a chart half the
+  // audience cannot use, and uPlot draws into a div that takes no focus by default.
+  return (
+    <div
+      ref={host}
+      className="pf-chart"
+      data-testid={testId}
+      tabIndex={0}
+      role="img"
+      aria-label={testId ? testId.replace(/-/g, ' ') : 'chart'}
+    />
+  );
 }
 
 const baseAxes = () => {
@@ -73,15 +106,15 @@ export function ProductionChart({ periods, bound, theme, onCursor }: {
       data={data}
       onCursor={onCursor}
       build={(w, h) => ({
-        width: w, height: h, cursor: { drag: { x: false, y: false } },
+        width: w, height: h, cursor: { drag: { x: true, y: false, uni: 20 } },
         scales: { x: { time: false }, y: {}, npv: {} },
         axes: [
-          { ...baseAxes(), label: 'period' },
-          { ...baseAxes(), label: 'Mt', scale: 'y' },
-          { ...baseAxes(), label: 'cum NPV (M)', scale: 'npv', side: 1 },
+          { ...baseAxes(), label: L('period', 'periodo') },
+          { ...baseAxes(), label: L('Mt', 'Mt'), scale: 'y' },
+          { ...baseAxes(), label: L('cum NPV (M)', 'NPV acum (M)'), scale: 'npv', side: 1 },
         ],
         series: [
-          { label: 'period' },
+          { label: L('period', 'periodo') },
           { label: 'ore + waste (Mt)', scale: 'y', fill: cssVar('--color-fg-subtle', '#8b949e') + '55', stroke: cssVar('--color-fg-subtle', '#8b949e'), paths: uPlot.paths.bars!({ size: [0.82] }) },
           { label: 'ore (Mt)', scale: 'y', fill: periodCss(0.7 * (periods.length - 1), periods.length) + 'cc', stroke: 'transparent', paths: uPlot.paths.bars!({ size: [0.82] }) },
           { label: 'cumulative NPV', scale: 'npv', stroke: cssVar('--color-accent', '#58a6ff'), width: 2.2 },
@@ -111,9 +144,9 @@ export function CapacityChart({ periods, names, theme }: { periods: TracePeriod[
       build={(w, h) => ({
         width: w, height: h,
         scales: { x: { time: false }, y: { range: [0, 105] } },
-        axes: [{ ...baseAxes(), label: 'period' }, { ...baseAxes(), label: '% of limit' }],
+        axes: [{ ...baseAxes(), label: L('period', 'periodo') }, { ...baseAxes(), label: L('% of limit', '% del limite') }],
         series: [
-          { label: 'period' },
+          { label: L('period', 'periodo') },
           ...names.slice(0, nRes).map((n, i) => ({ label: n, stroke: colors[i % colors.length], width: 2, points: { show: true, size: 5 } })),
         ],
         legend: { live: true },
@@ -137,12 +170,12 @@ export function CoherenceChart({ periods, theme }: { periods: TracePeriod[]; the
         width: w, height: h,
         scales: { x: { time: false }, y: {}, pct: { range: [0, 105] } },
         axes: [
-          { ...baseAxes(), label: 'period' },
-          { ...baseAxes(), label: 'components', scale: 'y' },
-          { ...baseAxes(), label: '% in largest', scale: 'pct', side: 1 },
+          { ...baseAxes(), label: L('period', 'periodo') },
+          { ...baseAxes(), label: L('components', 'componentes'), scale: 'y' },
+          { ...baseAxes(), label: L('% in largest', '% en el mayor'), scale: 'pct', side: 1 },
         ],
         series: [
-          { label: 'period' },
+          { label: L('period', 'periodo') },
           { label: 'connected components', scale: 'y', stroke: cssVar('--color-bad', '#f85149'), width: 2, points: { show: true, size: 5 } },
           { label: 'largest component share', scale: 'pct', stroke: cssVar('--color-good', '#3fb950'), width: 2, dash: [4, 3] },
         ],
@@ -167,12 +200,12 @@ export function GradeStripChart({ periods, theme }: { periods: TracePeriod[]; th
         width: w, height: h,
         scales: { x: { time: false }, g: {}, sr: {} },
         axes: [
-          { ...baseAxes(), label: 'period' },
-          { ...baseAxes(), label: 'head grade (%)', scale: 'g' },
-          { ...baseAxes(), label: 'strip ratio', scale: 'sr', side: 1 },
+          { ...baseAxes(), label: L('period', 'periodo') },
+          { ...baseAxes(), label: L('head grade (%)', 'ley de cabeza (%)'), scale: 'g' },
+          { ...baseAxes(), label: L('strip ratio', 'razon esteril:mineral'), scale: 'sr', side: 1 },
         ],
         series: [
-          { label: 'period' },
+          { label: L('period', 'periodo') },
           { label: 'head grade %', scale: 'g', stroke: cssVar('--color-accent', '#58a6ff'), width: 2, points: { show: true, size: 5 } },
           { label: 'strip ratio (waste:ore)', scale: 'sr', stroke: cssVar('--color-warn', '#d29922'), width: 2, dash: [4, 3] },
         ],
@@ -183,7 +216,11 @@ export function GradeStripChart({ periods, theme }: { periods: TracePeriod[]; th
 }
 
 /** Method comparison: the gap to the certified bound, sorted, with the rung shown. */
-export function MethodBars({ rows }: { rows: { method: string; rung: string; gapPct: number; npv: number; runtimeMs: number }[] }) {
+export function MethodBars({
+  rows,
+}: {
+  rows: { method: string; rung: string; gapPct: number; npv: number; runtimeMs: number; comparable?: boolean }[];
+}) {
   const [hover, setHover] = useState<number | null>(null);
   const worst = Math.max(1e-9, ...rows.map((r) => r.gapPct));
   const rungColor: Record<string, string> = {
@@ -199,11 +236,19 @@ export function MethodBars({ rows }: { rows: { method: string; rung: string; gap
           onMouseEnter={() => setHover(i)}
           onMouseLeave={() => setHover(null)}
         >
-          <span className="pf-mb-name">{r.method}</span>
+          <span className="pf-mb-name">
+            {r.comparable === false ? <span title="not comparable: a different problem or an operability view">* </span> : null}
+            {r.method}
+          </span>
           <span className="pf-mb-track">
             <span
               className="pf-mb-fill"
-              style={{ width: `${(100 * r.gapPct) / worst}%`, background: rungColor[r.rung] ?? 'var(--color-fg-subtle)' }}
+              style={{
+                width: `${(100 * r.gapPct) / worst}%`,
+                background: rungColor[r.rung] ?? 'var(--color-fg-subtle)',
+                // a bar that is not in the comparison must not read like one that is
+                opacity: r.comparable === false ? 0.42 : 1,
+              }}
             />
           </span>
           <span className="pf-mb-val">{r.gapPct.toFixed(2)}%</span>

@@ -19,6 +19,103 @@ MANIFEST_SCHEMA = "phaseflow.manifest/v1"
 INDEX_SCHEMA = "phaseflow.index/v1"
 
 
+
+#: Rungs whose plans must satisfy the scenario's capacities. `beyond` is excluded BY NAME and its
+#: overshoot is measured and printed rather than left undiscovered: `min-width` deliberately does not
+#: re-impose capacity (it is an operability view of another plan) and `destination-toposort` solves
+#: PCPSP over a richer feasible set. Both say so in their own notes. What went wrong before was not
+#: that they exist, it was that nothing measured them and the ranking put them first.
+CAPACITY_BOUND_RUNGS = ("classical", "sota", "learned")
+
+#: The relative overshoot tolerated on a capacity-bound rung. Period rows are rounded floats, so an
+#: exact comparison would fail on representation alone.
+CAPACITY_TOL = 1e-6
+
+
+def _capacity_check(cid: str, trace: dict, meth: dict) -> list[str]:
+    """Every committed plan, against the capacity it was solved under.
+
+    Nothing did this before. 23 method rows across 13 cases exceeded a period capacity, by up to
+    447 percent, and every gate was green, because the gates read schemas, ids, byte sizes and the
+    controls block and never once read `resourceUse` against `resourceLimit`.
+    """
+    out: list[str] = []
+    worst = 0.0
+    worst_where = ""
+    for row in meth["periods"]:
+        use = row.get("resourceUse") or []
+        lim = row.get("resourceLimit") or []
+        for r, (u, limit) in enumerate(zip(use, lim, strict=False)):
+            if limit <= 0:
+                continue
+            over = (u - limit) / limit
+            if over > worst:
+                worst, worst_where = over, f"period {row['t']}, resource {r}"
+    if meth["rung"] in CAPACITY_BOUND_RUNGS:
+        if worst > CAPACITY_TOL:
+            out.append(
+                f"{cid}/{meth['method']}: INFEASIBLE, {100 * worst:.2f} percent over capacity at "
+                f"{worst_where}. A {meth['rung']} rung is solved under that capacity"
+            )
+    elif worst > CAPACITY_TOL:
+        # not a failure: a measured fact about a rung that says it does not re-impose capacity
+        print(
+            f"note: {cid}/{meth['method']} ({meth['rung']}) runs {100 * worst:.2f} percent over "
+            f"capacity at {worst_where}, as its notes declare"
+        )
+    return out
+
+
+def _shape_check(cid: str, trace: dict, meth: dict) -> list[str]:
+    """Array lengths. A truncated per-block schedule index-shifts the entire 3D render silently."""
+    out: list[str] = []
+    n = trace["instance"]["nBlocks"]
+    pob = meth.get("periodOfBlock")
+    if pob is not None and len(pob) != n:
+        out.append(f"{cid}/{meth['method']}: periodOfBlock has {len(pob)} entries for {n} blocks")
+    blocks = trace.get("blocks")
+    if blocks:
+        for key, arr in blocks.items():
+            if isinstance(arr, list) and len(arr) != n:
+                out.append(f"{cid}: blocks.{key} has {len(arr)} entries for {n} blocks")
+    return out
+
+
+def _pin_check(manifest: dict) -> list[str]:
+    """The pinned dependency versions must be the ones that produced the artifacts.
+
+    They were not: `requirements.txt` pinned numpy 2.5.0 while all thirteen manifests recorded 2.5.1.
+    A pin that differs from what baked is the difference between a reproducible artifact and one that
+    merely looks reproducible, and nothing compared them.
+    """
+    import re
+
+    out: list[str] = []
+    engine = manifest.get("engine") or {}
+    req = (ROOT / "requirements.txt").read_text(encoding="utf-8")
+    for name in ("numpy", "oreblocks"):
+        baked = engine.get(name)
+        if not baked:
+            continue
+        m = re.search(rf"{name}(?:\[[^\]]*\])?==([\d.]+)", req)
+        if not m:
+            out.append(f"{name} is recorded in the manifest at {baked} and is not pinned")
+        elif m.group(1) != baked:
+            out.append(
+                f"{name} is pinned at {m.group(1)} and the artifacts were baked with {baked}"
+            )
+    return out
+
+
+def _lane_check(cid: str, trace: dict, manifest: dict) -> list[str]:
+    """A live case must carry the data the live lane needs, or the lane label means nothing."""
+    if manifest.get("lane") != "live":
+        return []
+    if not trace.get("blocks"):
+        return [f"{cid}: lane is 'live' but the trace carries no per-block data to re-solve from"]
+    return []
+
+
 def main() -> int:
     fail: list[str] = []
     index_path = MANIFESTS / "index.json"
@@ -62,6 +159,17 @@ def main() -> int:
                 fail.append(f"{cid}/{meth['method']}: feasible objective exceeds the certified bound")
             if len(meth["periods"]) != t["scenario"]["periods"]:
                 fail.append(f"{cid}/{meth['method']}: period rows do not match the horizon")
+            fail.extend(_capacity_check(cid, t, meth))
+            fail.extend(_shape_check(cid, t, meth))
+        fail.extend(_lane_check(cid, t, m))
+        fail.extend(_pin_check(m))
+        # the BEST method a reader is pointed at must be one they could actually run
+        best = m.get("best")
+        if best and best.get("rung") == "beyond":
+            fail.append(
+                f"{cid}: the manifest's best method is {best['method']}, a BEYOND rung. Those are a "
+                "different problem or an operability view and are not capacity-comparable"
+            )
         # the licence assertion: a non-redistributable instance never carries per-block data
         if not t["instance"]["synthetic"]:
             if "blocks" in t:
