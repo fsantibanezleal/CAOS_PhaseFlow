@@ -39,6 +39,8 @@ export interface TraceMethod {
   runtimeMs: number;
   minedBlocks: number;
   notes: string;
+  /** the case falls inside a region where this method is MEASURED to lose */
+  unreliable?: boolean;
   periods: TracePeriod[];
   /** present only for redistributable (synthetic) cases; MineLib cases commit aggregates only */
   periodOfBlock?: number[];
@@ -89,6 +91,12 @@ export interface BoundReport {
   joint_edges?: number;
   joint_skipped?: string;
   joint_error?: string;
+  /** why the joint bound was not adopted, when it ran and was not tighter */
+  joint_note?: string;
+  /** which max-closure path priced the columns */
+  joint_solver?: string;
+  /** rounding slack of the pricing path, absolute. 0 means the bound was certified exactly. */
+  joint_slack?: number;
   /** how much tighter the joint bound is, in percent. The part of a gap that belongs to the BOUND. */
   tightening_pct?: number | null;
   used?: 'algorithm4' | 'bienstock-zuckerberg';

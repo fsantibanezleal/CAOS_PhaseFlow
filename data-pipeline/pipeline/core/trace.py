@@ -53,6 +53,7 @@ def build_trace(
             "runtimeMs": round(r.runtime_ms, 1),
             "minedBlocks": r.mined_blocks,
             "notes": r.notes,
+            "unreliable": bool(getattr(r, "unreliable", False)),
             "periods": [
                 {
                     "t": p.t,
