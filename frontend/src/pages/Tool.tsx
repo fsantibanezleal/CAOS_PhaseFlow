@@ -355,8 +355,22 @@ export default function Tool() {
         <div className="pf-group">
           <h4>{es ? 'Metodo' : 'Method'}</h4>
           <select value={st.methodId} onChange={(e) => st.setMethodId(e.target.value)} aria-label={es ? 'Metodo' : 'Method'}>
-            {trace.methods.map((m) => <option key={m.method} value={m.method}>{m.method} ({m.gapPct.toFixed(2)}%)</option>)}
+            {trace.methods.map((m) => (
+              <option key={m.method} value={m.method}>
+                {m.unreliable ? '! ' : ''}{m.method} ({m.gapPct.toFixed(2)}%)
+              </option>
+            ))}
           </select>
+          {/* The warning belongs WHERE THE METHOD IS CHOSEN. A worst case of 0.344 written on a
+              methodology page is a caveat; the same fact next to the selector is a guard. */}
+          {method.unreliable && (
+            <p className="pf-cap pf-warn">
+              <strong>{es ? 'Poco fiable en este caso.' : 'Unreliable on this case.'}</strong>{' '}
+              {es
+                ? 'Este escenario cae dentro de la region donde el sustituto esta MEDIDO perdiendo: con descuento alto el valor de un plan depende del momento exacto, y un modelo al que solo se le pide el ORDEN es donde menos tiene que dar. La nota del metodo trae los numeros.'
+                : 'This scenario falls inside the region where the surrogate is MEASURED to lose: under heavy discounting the value of a plan depends on precise timing, and a model asked only for the ORDER has the least to give there. The method note carries the numbers.'}
+            </p>
+          )}
           <div className="pf-kpis">
             <div className="pf-kpi"><b>{fmtMoney(method.npv)}</b><span>NPV</span></div>
             <div className="pf-kpi"><b>{method.gapPct.toFixed(2)}%</b><span>gap</span></div>
