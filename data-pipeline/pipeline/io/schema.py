@@ -116,3 +116,9 @@ class MethodResult:
     #: travels with the method because a reader picks a method from a selector, not from a
     #: page of prose somewhere else.
     unreliable: bool = False
+    #: the learned plan as a fraction of the EXACT plan it approximates, on this case. A measurement,
+    #: available whenever both rungs are in the same bake, and preferred over any prediction.
+    measured_vs_exact: float | None = None
+    #: whether the SCENARIO rule would have flagged this case. Kept beside the measurement because the
+    #: two disagreeing is the interesting case, and it is what the live lane has to rely on.
+    flagged_by_rule: bool = False

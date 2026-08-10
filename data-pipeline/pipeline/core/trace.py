@@ -54,6 +54,8 @@ def build_trace(
             "minedBlocks": r.mined_blocks,
             "notes": r.notes,
             "unreliable": bool(getattr(r, "unreliable", False)),
+            "measuredVsExact": getattr(r, "measured_vs_exact", None),
+            "flaggedByRule": bool(getattr(r, "flagged_by_rule", False)),
             "periods": [
                 {
                     "t": p.t,

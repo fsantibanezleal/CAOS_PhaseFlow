@@ -88,8 +88,8 @@ export default function Benchmark() {
 
           <Callout variant="note" title={es ? 'Que dice y que no dice esta tabla' : 'What this table says and does not say'}>
             {es
-              ? 'Dice que el pit final se reproduce exactamente y que la cota certificada cae a una distancia relativa minuscula de la cota publicada, con el residuo en la direccion esperada porque la relajacion de un solo recurso es mas floja que la cota conjunta. Dice tambien que el mejor plan de este producto queda por debajo del mejor conocido, 2,49 por ciento contra 1,26. El vecindario exacto C-PIT[D] SI esta implementado y es justamente el peldano que produce ese 2,49; la distancia que queda es la separacion entre un re-resolver restringido y las horas de branch and bound que hay detras del mejor conocido publicado. No dice que este producto sea el estado del arte en planes factibles.'
-              : 'It says the ultimate pit is reproduced exactly, and that the certified bound lands a tiny relative distance from the published bound, with the residual in the expected direction because a single-resource relaxation is looser than the joint bound. It also says this product’s best schedule sits below the best known, 2.49 percent against 1.26. The exact C-PIT[D] neighbourhood IS implemented and is precisely the rung that produces that 2.49; the distance that remains is the one between a restricted re-solve and the hours of branch and bound behind the published best known. It does not say this product is state of the art at producing feasible schedules.'}
+              ? 'Dice que el pit final se reproduce exactamente y que la cota certificada cae a una distancia relativa minuscula POR DEBAJO de la publicada, que es la direccion que la valida: la cifra publicada es una cota LP de PCPSP y esta es una cota LP de CPIT, y CPIT es el problema menor, asi que su cota tiene que quedar mas abajo. Dice tambien que el mejor plan de este producto queda por debajo del mejor conocido, 2,49 por ciento contra 1,26. El vecindario exacto C-PIT[D] SI esta implementado y es justamente el peldano que produce ese 2,49; la distancia que queda es la separacion entre un re-resolver restringido y las horas de branch and bound que hay detras del mejor conocido publicado. No dice que este producto sea el estado del arte en planes factibles.'
+              : 'It says the ultimate pit is reproduced exactly, and that the certified bound lands a tiny relative distance BELOW the published one, which is the direction that validates it: the published figure is a PCPSP LP bound and this is a CPIT LP bound, and CPIT is the smaller problem, so its bound must sit lower. It also says this product’s best schedule sits below the best known, 2.49 percent against 1.26. The exact C-PIT[D] neighbourhood IS implemented and is precisely the rung that produces that 2.49; the distance that remains is the one between a restricted re-solve and the hours of branch and bound behind the published best known. It does not say this product is state of the art at producing feasible schedules.'}
           </Callout>
         </>
       )}
@@ -197,8 +197,8 @@ export default function Benchmark() {
             </div>
             <p className="pf-cap pf-muted">
               {es
-                ? 'El PEOR caso esta en la tabla a proposito. Una media esconde exactamente el fallo que un usuario encontraria, y un sustituto que produce un plan mucho peor en un deposito de cada seis es una propiedad del metodo, no una nota al pie.'
-                : 'The WORST case is in the table on purpose. A mean hides exactly the failure a user would hit, and a surrogate that produces a much worse plan on one deposit in six is a property of the method rather than a footnote.'}
+                ? 'El PEOR caso esta en la tabla a proposito. Una media esconde exactamente el fallo que un usuario encontraria, y un sustituto cuyo peor plan retenido vale un tercio de la alternativa tiene una propiedad, no una nota al pie.'
+                : 'The WORST case is in the table on purpose. A mean hides exactly the failure a user would hit, and a surrogate whose worst held-out plan is worth a third of the alternative has a property, not a footnote.'}
             </p>
           </>
         );
@@ -215,7 +215,7 @@ export default function Benchmark() {
           </thead>
           <tbody>
             {manifests.map((m) => {
-              const best = m.scoreboard.reduce((a, b) => (a.npv >= b.npv ? a : b));
+              const best = m.scoreboard.filter((x) => x.rung !== 'beyond').reduce((a, b) => (a.npv >= b.npv ? a : b));
               return (
                 <tr key={m.case_id}>
                   <td>{m.case_id}</td><td>{best.method}</td><td>{best.rung}</td>

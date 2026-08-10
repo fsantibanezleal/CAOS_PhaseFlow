@@ -25,7 +25,10 @@ Two implementations of the same algorithm is two chances to be wrong, and the se
 
 - the precedence graph is arc-for-arc identical (53,900 arcs on the hero case, both sides),
 - the ultimate pit membership agrees block by block, with zero disagreements out of 4,621,
-- the objective agrees to 3e-9 and the bound to 1e-6.
+- the certified bound agrees to 1e-6, and a live schedule is asserted FEASIBLE and never above
+  the bound. There is no NPV equality assertion and there should not be one: the live lane and
+  the offline lane run different methods, so equal NPVs would be a coincidence rather than a
+  check.
 
 A port that drifts fails a test rather than showing a plausible number, and a plausible number is the
 only thing a second implementation is actually dangerous for.

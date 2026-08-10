@@ -42,6 +42,9 @@ class Instance:
     upit_value: float
     synthetic: bool
     report: ContractReport
+    #: the orebody shape, for a synthetic twin. The learned guard's rule is about the OREBODY, so it
+    #: needs this; a real deposit has no such label and the guard says so rather than guessing.
+    archetype: str | None = None
 
     @property
     def n_blocks(self) -> int:
@@ -112,6 +115,7 @@ def _twin_instance(case: Case) -> Instance:
         upit_in_pit=twin.upit.in_pit,
         upit_value=float(twin.upit.pit_value),
         synthetic=True,
+        archetype=getattr(spec, "archetype", None),
         report=report,
     )
 

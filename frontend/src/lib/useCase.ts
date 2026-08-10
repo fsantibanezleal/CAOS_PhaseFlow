@@ -65,7 +65,13 @@ export function useCase(initialCaseId?: string): CaseState {
         if (!live) return;
         setManifest(m);
         setTrace(t);
-        const best = t.methods.reduce((a, b) => (a.npv >= b.npv ? a : b));
+        // The default selection may only be a COMPARABLE rung. `min-width` does not re-impose capacity
+    // and `destination-toposort` solves a different problem, and ranking them here opened the 3D pit
+    // on a plan that overshot a period capacity by 18.65 percent on three cases.
+    const comparable = t.methods.filter((m) => m.rung !== 'beyond');
+    const best = (comparable.length ? comparable : t.methods).reduce((a, b) =>
+      a.npv > b.npv || (a.npv === b.npv && a.method >= b.method) ? a : b,
+    );
         setMethodId(best.method);
         setCursor(t.scenario.periods - 1);
         setPlaying(false);
@@ -107,9 +113,23 @@ export function useCase(initialCaseId?: string): CaseState {
 }
 
 /** The state NAMED on the stage, in words, per ADR-0070 clause 4. */
-export function stageLabel(trace: ScheduleTrace, method: TraceMethod, cursor: number, lang: 'en' | 'es'): { title: string; sub: string } {
+/**
+ * The sentence under the stage, describing the schedule that is ON SCREEN.
+ *
+ * `periods` is passed in because the focus route re-solves live and can change the horizon: the HUD
+ * read `Period 12 of 8` while the clock beside it read `12 / 14`, and the tonnage sentence stayed
+ * frozen on the baked plan while the NPV above it followed the live one. A caption that describes a
+ * different schedule from the picture is worse than no caption.
+ */
+export function stageLabel(
+  trace: ScheduleTrace,
+  method: TraceMethod,
+  cursor: number,
+  lang: 'en' | 'es',
+  periods?: number,
+): { title: string; sub: string } {
   const p = method.periods[cursor];
-  const T = trace.scenario.periods;
+  const T = periods ?? trace.scenario.periods;
   const binding = p
     ? p.resourceUse
         .map((u, r) => ({ r, pct: p.resourceLimit[r] > 0 ? (100 * u) / p.resourceLimit[r] : 0 }))
