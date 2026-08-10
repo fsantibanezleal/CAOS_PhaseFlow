@@ -112,3 +112,7 @@ class MethodResult:
     period_of_block: list[int]
     periods: list[PeriodRow]
     notes: str = ""
+    #: set when the case falls inside a region where the method is MEASURED to lose. It
+    #: travels with the method because a reader picks a method from a selector, not from a
+    #: page of prose somewhere else.
+    unreliable: bool = False

@@ -22,6 +22,13 @@ schedule is shown with its gap to that bound.
 | 12 | `min-width` | beyond | [07](07_operability.md) | operability, and what it costs |
 | - | ensemble | beyond | [08](08_uncertainty.md) | what geological uncertainty does to a plan |
 
+## Two pages that are not about a rung
+
+- [09, reading the results](09_ladder_results.md): which comparisons are legitimate and which are not.
+- [10, when the surrogate fails](10_when_the_surrogate_fails.md): the learned rung's worst case is
+  0.344, and this is the measured answer to WHEN, including the archetype hypothesis the held-out
+  deposits refuted.
+
 ## What "rung" means
 
 - **classical**: what a planner or a textbook would do, including the four-step nested-shells chain
