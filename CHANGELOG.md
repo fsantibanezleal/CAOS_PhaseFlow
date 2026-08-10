@@ -3,6 +3,22 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.04.001] - 2026-08-10
+
+### Fixed
+- **A deep link into the focus route never booted the app.** Vite's `base` was `./`, so every asset
+  URL was relative to the CURRENT path: the SPA fallback served at `/focus/<case>` asked for
+  `/focus/assets/index-*.js`, got a 404 and rendered an empty body. ADR-0070 asks for deep links that
+  return 200 and RENDER, and this one had never rendered, for the whole life of the route.
+
+  It survived every gate because the entry control was only ever exercised by CLICKING from the App,
+  which is a client-side navigation with the bundle already loaded. Typed or shared, the same URL was
+  a blank page. The browser gate now navigates COLD and checks both halves separately: no asset 404,
+  and the route actually rendered. 34 checks.
+
+All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
+Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
+
 ## [0.04.000] - 2026-08-10
 
 A seven-dimension audit of the shipped product against every binding rule and against its own claims,
