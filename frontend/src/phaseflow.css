@@ -273,3 +273,7 @@
 /* a panel that failed still looks like a panel, and says so */
 .pf-panel-failed { border-color: var(--color-warn, #d29922); }
 .pf-panel-failed pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+
+/* A measured warning, not a decoration: it appears only where a method is known to lose. */
+.pf-warn { color: var(--color-warn, #d29922); }
+.pf-warn strong { color: inherit; }

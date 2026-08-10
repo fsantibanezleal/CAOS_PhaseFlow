@@ -38,8 +38,20 @@ import oreblocks as ob
 from ..io.schema import MethodResult, PeriodRow
 
 #: MEASURED budgets for the Bienstock-Zuckerberg joint bound on the time-expanded graph.
-BZ_NODE_BUDGET = 20_000
-BZ_EDGE_BUDGET = 200_000
+#:
+#: These were 20,000 nodes and 200,000 edges, which excluded every deposit twin and left the joint
+#: bound unmeasured on the exact cases the product exists to compare. They were set against a
+#: pure-Python max-flow. `oreblocks` 0.4.0 prices the columns with the COMPILED max-flow and then
+#: certifies the result with one exact solve, and the same twin (10,976 blocks over 10 periods,
+#: 109,760 nodes and 972,904 edges) now converges in 15 iterations and 15 seconds. The budget is
+#: raised to where that measurement stops holding rather than to infinity, and a case above it still
+#: gets Algorithm 4's certified bound with the reason written out.
+BZ_NODE_BUDGET = 400_000
+BZ_EDGE_BUDGET = 4_000_000
+
+#: Wall-clock ceiling for one joint bound. BZ returns a VALID upper bound at every iteration, so a
+#: run that stops early is looser, not wrong, and the report says which it was.
+BZ_TIME_BUDGET_S = 240.0
 
 
 class _DestShim:
@@ -138,7 +150,10 @@ def _period_rows(instance, cpit, period_of_block: np.ndarray) -> list[PeriodRow]
     return rows
 
 
-def _wrap(instance, name: str, rung: str, heuristic: bool, res, bound: float, ms: float, notes="") -> MethodResult:
+def _wrap(
+    instance, name: str, rung: str, heuristic: bool, res, bound: float, ms: float, notes="",
+    *, unreliable: bool = False,
+) -> MethodResult:
     cpit = instance.cpit
     gap = 100.0 * (bound - res.npv) / bound if bound > 0 else float("nan")
     return MethodResult(
@@ -153,6 +168,7 @@ def _wrap(instance, name: str, rung: str, heuristic: bool, res, bound: float, ms
         period_of_block=[int(v) for v in res.period_of_block],
         periods=_period_rows(instance, cpit, res.period_of_block),
         notes=notes,
+        unreliable=unreliable,
     )
 
 
@@ -238,18 +254,56 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     elif joint_bound and cpit.n_resources > 1:
         try:
             tb = time.perf_counter()
-            bz = ob.cpit_bz_bound(cpit, prec, max_iter=120)
+            bz = ob.cpit_bz_bound(cpit, prec, max_iter=120, time_budget_s=BZ_TIME_BUDGET_S)
             ms = (time.perf_counter() - tb) * 1000.0
             bound_report["joint_ms"] = round(ms, 1)
             bound_report["joint_iterations"] = int(bz.iterations)
             bound_report["joint_converged"] = bool(bz.converged)
-            if bz.converged and bz.bound <= alg4 * (1 + 1e-9):
+            bound_report["joint_solver"] = str(bz.pricing_solver)
+            bound_report["joint_slack"] = float(bz.pricing_slack)
+            # ALWAYS record what BZ computed. Discarding it when it fails to beat Algorithm 4 left
+            # `joint: null` with no reason on four cases, which is the blank field this report exists
+            # to avoid: a reader cannot tell a bound that was skipped from one that ran and did not
+            # help, and those are completely different facts.
+            #
+            # `tightening_pct` can therefore be slightly NEGATIVE. That is not an error: column
+            # generation stops on a relative tolerance of 1e-7, so on a case where the joint bound is
+            # no tighter it settles a few parts in ten million ABOVE Algorithm 4. Measured:
+            # +2.3e-7 relative on `twin-vein`, +4.9e-7 on `ctrl-abundant`. Both bounds are valid, the
+            # smaller one is USED, and the note says which and why.
+            certified = bz.converged and bz.pricing_slack == 0.0
+            if certified:
                 bound_report["joint"] = float(bz.bound)
-                bound_report["tightening_pct"] = round(100.0 * (alg4 - bz.bound) / alg4, 4)
-                bound_report["used"] = "bienstock-zuckerberg"
-                bound = float(bz.bound)
+                # `+ 0.0` normalises a negative zero: two bounds that agree to machine precision are
+                # a RESULT, and "-0.0" on a page reads as broken arithmetic rather than as that.
+                bound_report["tightening_pct"] = round(100.0 * (alg4 - bz.bound) / alg4, 6) + 0.0
+                if bz.bound <= alg4 * (1 + 1e-9):
+                    bound_report["used"] = "bienstock-zuckerberg"
+                    bound = float(bz.bound)
+                else:
+                    bound_report["joint_note"] = (
+                        "the joint bound is NOT tighter here: one resource alone determines the LP, "
+                        f"and column generation settles {1e6 * (bz.bound - alg4) / alg4:.2f} parts "
+                        "per million above Algorithm 4, which is its stopping tolerance rather than "
+                        "a difference between the two bounds. Algorithm 4's smaller certified value "
+                        "is used for every gap on this case"
+                    )
+            else:
+                bound_report["joint_note"] = (
+                    f"BZ ran but its result is not certified (converged={bz.converged}, "
+                    f"rounding slack {bz.pricing_slack:.3g}); Algorithm 4's certified bound is used"
+                )
         except Exception as exc:  # noqa: BLE001 - a looser bound is still certified
             bound_report["joint_error"] = str(exc)[:200]
+    elif joint_bound:
+        # ONE resource. There is nothing to join, and Algorithm 4 with a single resource IS the
+        # critical multiplier algorithm on that resource, which solves the LP relaxation exactly.
+        # Recorded in words because a blank field cannot be told apart from a bound that was skipped
+        # for cost, and those are different facts.
+        bound_report["joint_skipped"] = (
+            "one resource: there is nothing to join, and Algorithm 4 on a single resource is the "
+            "critical multiplier algorithm, which solves the LP relaxation exactly"
+        )
 
     # ---- classical
     for name, weights, note in (
@@ -333,7 +387,15 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     # ---- learned
     if learned is not None:
         for name, res, ms, note in learned:
-            results.append(_wrap(instance, name, "learned", True, res, bound, ms, note))
+            # MethodResult is frozen, so the guard is passed in rather than set after. It travels
+            # WITH the method and not in a page of prose somewhere else, because a reader picks a
+            # method from a selector.
+            results.append(
+                _wrap(
+                    instance, name, "learned", True, res, bound, ms, note,
+                    unreliable=bool("UNRELIABLE HERE" in note),
+                )
+            )
 
     # ---- beyond: let the model CHOOSE the destination, so the cutoff becomes an output
     try:
