@@ -72,6 +72,8 @@ def test_contract_flags_a_capacity_that_can_never_exhaust_the_pit():
 
 
 def test_bake_writes_a_valid_trace_into_a_sandbox(tmp_path):
+    canonical = ROOT / "data" / "derived" / "twin-porphyry-s" / "trace.json"
+    canonical_before = canonical.read_bytes()
     registry.restrict(["twin-porphyry-s"])
     try:
         m = precompute("twin-porphyry-s", output_root=tmp_path)
@@ -84,7 +86,14 @@ def test_bake_writes_a_valid_trace_into_a_sandbox(tmp_path):
     for meth in trace["methods"]:
         assert meth["npv"] <= meth["bound"] * (1 + 1e-9)
         assert len(meth["periods"]) == trace["scenario"]["periods"]
-    assert not (ROOT / "data" / "derived" / "twin-porphyry-s" / "trace.json").stat().st_mtime > 1e18
+    # The committed trace must be BYTE-IDENTICAL after a sandbox bake. The previous form of this
+    # assertion compared the file's mtime against 1e18 seconds since the epoch, roughly the year
+    # 3.17e10 AD: it was False for every reachable filesystem state, so `not False` passed always. If
+    # `precompute` ever defaulted its output root back to `data/derived`, it would have rewritten all
+    # thirteen committed traces and stayed green.
+    assert canonical.read_bytes() == canonical_before, (
+        "the sandbox bake overwrote the committed evidence"
+    )
 
 
 def test_committed_evidence_passes_its_own_drift_guard():

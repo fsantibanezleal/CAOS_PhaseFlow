@@ -22,4 +22,4 @@ the stage goes blank until the next animation frame.
 
 **What would make us change it.** A stage that needs a hundred thousand blocks at interactive rates,
 where the answer is a custom shader over a texture rather than an instanced mesh. Not the case today:
-the largest committed case is 27,000 blocks.
+the largest committed case is 14,400 blocks.

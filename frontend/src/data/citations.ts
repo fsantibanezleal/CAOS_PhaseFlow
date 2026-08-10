@@ -1,6 +1,6 @@
 // Every source the app cites, with a real DOI or arXiv id. Nothing here is decorative: each entry is
 // used by an inline <Cite> somewhere, and the research dossiers behind them are persisted in
-// CAOS_MANAGE wip/phaseflow/research/.
+// Transcribed from the dated research dossiers, which are kept outside this repo.
 
 import type { Citation } from '@fasl-work/caos-app-shell';
 
@@ -109,7 +109,7 @@ export const CITATIONS: Citation[] = [
   {
     id: 'jelvez2018',
     label: 'Jelvez et al. 2018',
-    citation: 'Jelvez, E., Morales, N. and Nancel-Penard, P. (2019). Open-pit mine production scheduling: improvements to MineLib library problems. Proceedings of MPES 2018, Springer, 223-231.',
+    citation: 'Jelvez, E., Morales, N. and Nancel-Penard, P. (2018). Open-pit mine production scheduling: improvements to MineLib library problems. Proceedings of MPES 2018, Springer, 223-231.',
     doi: '10.1007/978-3-319-99220-4_18',
   },
   {
@@ -121,7 +121,7 @@ export const CITATIONS: Citation[] = [
   {
     id: 'rezakhah2020b',
     label: 'Rezakhah and Newman 2020',
-    citation: 'Rezakhah, M. and Newman, A. (2020). Open pit mine planning with degradation due to stockpiling. Computers and Operations Research 115, 104638.',
+    citation: 'Rezakhah, M. and Newman, A. (2020). Open pit mine planning with degradation due to stockpiling. Computers and Operations Research 115, 104589.',
     doi: '10.1016/j.cor.2018.11.009',
   },
   {

@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-# Smoke: validate the CONTRACT 2 artifacts on disk (index -> manifests -> artifacts consistent). A real product
-# extends this with an HTTP/static check of the built site (canonical routes/assets return 200 + non-empty).
-set -euo pipefail
-cd "$(dirname "$0")/.."
-PY=".venv-pipeline/bin/python"; [ -x "$PY" ] || PY=".venv-pipeline/Scripts/python.exe"
-[ -x "$PY" ] || PY="${PYTHON:-python}"
-"$PY" scripts/check_artifacts.py
+# Superseded by scripts/local/, which is the shape the convention asks for: numbered in
+# the order you run them, each printing the next command. This one described a two-venv
+# layout the product does not use and aborted before it finished.
+echo "Use ./scripts/local/02_generate-data.sh instead. See scripts/local/README.md."
+exit 1

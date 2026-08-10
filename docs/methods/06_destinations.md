@@ -81,3 +81,18 @@ Two results the implementation reproduces and the tests assert:
   identically, so the opportunity cost cancels out of the ore-versus-waste comparison.
 - the economic cutoff **declines over the life of a mine**, because the opportunity cost `d * NPV +
   fixed` falls as there is less value left to delay.
+
+## What this product CALLS, and what it only ships
+
+`destination_toposort` is the rung in the ladder. `solve_opbsp_exact` and `lane_cutoffs` are in the
+engine, are tested there, and are NOT called by PhaseFlow: the exact OPBSP model is a MILP over
+`blocks x destinations x periods` binaries and does not fit the bake's budget, and the cutoff policy
+is reported by the destination rung as an OUTPUT rather than taken from Lane's formula as an input.
+
+They are described on this page because the page is about the destination problem and they are part of
+it. They are not part of what the thirteen committed cases exercise, and that distinction belongs here
+rather than in a reader's assumption.
+
+(`lane_cutoffs` also carried a real error until `oreblocks` 0.5.1: its market-limiting cutoff divided
+the opportunity cost by recovery where Lane multiplies, inflating it by `1/recovery^2`.)
+

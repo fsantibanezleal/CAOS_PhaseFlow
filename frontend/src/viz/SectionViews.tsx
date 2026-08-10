@@ -44,6 +44,25 @@ function useCanvas(draw: (ctx: CanvasRenderingContext2D, w: number, h: number) =
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
     draw(ctx, w, h);
+
+    // RE-MEASURE on a resize. Without this the canvas keeps the pixel size it had at mount, so a
+    // window change or a rail collapse leaves the section stretched by the browser instead of
+    // redrawn: the geometry it shows is then the geometry of a window that is no longer open.
+    const ro = new ResizeObserver(() => {
+      const w2 = parent.clientWidth || w;
+      const h2 = parent.clientHeight || h;
+      if (Math.abs(w2 - w) < 1 && Math.abs(h2 - h) < 1) return;
+      c.width = Math.round(w2 * dpr);
+      c.height = Math.round(h2 * dpr);
+      c.style.width = `${w2}px`;
+      c.style.height = `${h2}px`;
+      const ctx2 = c.getContext('2d')!;
+      ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx2.clearRect(0, 0, w2, h2);
+      draw(ctx2, w2, h2);
+    });
+    ro.observe(parent);
+    return () => ro.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
   return ref;

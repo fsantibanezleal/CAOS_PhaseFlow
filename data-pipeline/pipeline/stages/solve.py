@@ -46,12 +46,32 @@ from ..io.schema import MethodResult, PeriodRow
 #: 109,760 nodes and 972,904 edges) now converges in 15 iterations and 15 seconds. The budget is
 #: raised to where that measurement stops holding rather than to infinity, and a case above it still
 #: gets Algorithm 4's certified bound with the reason written out.
-BZ_NODE_BUDGET = 400_000
-BZ_EDGE_BUDGET = 4_000_000
+#: MEASURED against the CERTIFICATION solve, not against the pricing.
+#:
+#: Pricing is compiled and fast at any of these sizes. The certificate is not: the bound is re-derived
+#: once, EXACTLY, at the best dual vector, and that solve is the pure-Python max-flow. A 10,976-block
+#: twin over 10 periods is 109,760 nodes and certifies in about a second; a 14,153-block instance over
+#: 12 periods is 169,836 and did not finish in fifteen minutes, which is how this budget was found.
+#:
+#: A case above the budget keeps Algorithm 4's certified bound and records why. That is the same
+#: trade as before and it is the right one: an uncertified joint bound carries the rounding slack of
+#: the compiled pricing, which is the same order as the tightening it exists to measure.
+BZ_NODE_BUDGET = 130_000
+BZ_EDGE_BUDGET = 1_400_000
 
 #: Wall-clock ceiling for one joint bound. BZ returns a VALID upper bound at every iteration, so a
 #: run that stops early is looser, not wrong, and the report says which it was.
 BZ_TIME_BUDGET_S = 240.0
+
+#: How large a candidate set the sliding window may build per slide.
+#:
+#: The rung is a MILP per slide since `oreblocks` 0.5.0, because the version before it was a greedy
+#: wearing Cullenbine, Wood and Newman's name: `window` of 1, 2, 3, 5, 8 and T gave bit-identical
+#: schedules. The sub-problem is `cand_max x (window + 1)` binaries, so this is the cost dial. 1500
+#: keeps a 1008-block case near a minute. The larger twins need thousands of candidates to fill a
+#: period's capacity, the engine REFUSES rather than returning a starved schedule, and the reason is
+#: recorded on the case instead of a row quietly disappearing.
+SW_CAND_MAX = 1500
 
 
 class _DestShim:
@@ -150,9 +170,15 @@ def _period_rows(instance, cpit, period_of_block: np.ndarray) -> list[PeriodRow]
     return rows
 
 
+#: A learned plan below this fraction of the exact plan it approximates is a FAILURE. The same line
+#: the training study uses, kept in one place so the artifact and the study cannot drift apart.
+LEARNED_FAILURE_BELOW = 0.90
+
+
 def _wrap(
     instance, name: str, rung: str, heuristic: bool, res, bound: float, ms: float, notes="",
-    *, unreliable: bool = False,
+    *, unreliable: bool = False, measured_vs_exact: float | None = None,
+    flagged_by_rule: bool = False,
 ) -> MethodResult:
     cpit = instance.cpit
     gap = 100.0 * (bound - res.npv) / bound if bound > 0 else float("nan")
@@ -169,6 +195,8 @@ def _wrap(
         periods=_period_rows(instance, cpit, res.period_of_block),
         notes=notes,
         unreliable=unreliable,
+        measured_vs_exact=measured_vs_exact,
+        flagged_by_rule=flagged_by_rule,
     )
 
 
@@ -209,6 +237,9 @@ def _shell_weights(instance) -> np.ndarray:
 def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     """Run every method on one instance. Returns (results, relaxations, bound_report).
 
+    ``bound_report['skipped_methods']`` maps a rung that could not run to the reason, so a table
+    with eleven rows instead of twelve is explained rather than merely shorter.
+
     The bound is computed TWICE where more than one resource binds: once by relaxing all but one
     resource at a time (Algorithm 4, certified but loose) and once JOINTLY by Bienstock-Zuckerberg.
     The tighter one is used for every gap on screen, and the difference between them is reported,
@@ -218,6 +249,8 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     prec = instance.precedence
     allowed = instance.upit_in_pit
     results: list[MethodResult] = []
+    #: rungs that could not run, with the reason. A missing row is never a blank field.
+    skipped: dict[str, str] = {}
 
     t0 = time.perf_counter()
     alg4, relaxations = ob.cpit_bound_two_resources(cpit, prec)
@@ -248,8 +281,9 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     if joint_bound and cpit.n_resources > 1 and (nodes > BZ_NODE_BUDGET or edges > BZ_EDGE_BUDGET):
         bound_report["joint_skipped"] = (
             f"time-expanded graph is {nodes:,} nodes and {edges:,} edges, above the "
-            f"{BZ_NODE_BUDGET:,}/{BZ_EDGE_BUDGET:,} budget for a pure-Python max-flow; Algorithm 4's "
-            "certified but looser bound is used"
+            f"{BZ_NODE_BUDGET:,}/{BZ_EDGE_BUDGET:,} budget. Pricing would be fast, but the bound is only "
+            "worth reporting once it has been CERTIFIED by one exact solve, and that solve is the "
+            "pure-Python max-flow. Algorithm 4's certified but looser bound is used"
         )
     elif joint_bound and cpit.n_resources > 1:
         try:
@@ -356,12 +390,21 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     )
 
     # ---- the industrial baseline: enforce everything inside a window, freeze a period, slide
-    t0 = time.perf_counter()
-    sw = ob.sliding_window_schedule(cpit, prec, window=3, fix=1, allowed=allowed, relaxation=tight)
-    results.append(
-        _wrap(instance, "sliding-window", "classical", True, sw, bound,
-              (time.perf_counter() - t0) * 1000.0, sw.notes)
-    )
+    try:
+        t0 = time.perf_counter()
+        sw = ob.sliding_window_schedule(
+            cpit, prec, window=3, fix=1, allowed=allowed, relaxation=tight,
+            cand_max=SW_CAND_MAX, mip_gap=3e-2,
+        )
+        results.append(
+            _wrap(instance, "sliding-window", "classical", True, sw, bound,
+                  (time.perf_counter() - t0) * 1000.0, sw.notes)
+        )
+    except ValueError as exc:
+        # The engine refuses a candidate set too small to fill a period's capacity, because a starved
+        # sub-problem returns a schedule that mines almost nothing and still looks like a schedule.
+        # A rung that did not run says so; it does not vanish.
+        skipped["sliding-window"] = str(exc)[:240]
 
     # ---- the EXACT restricted re-solve: the rung the shift neighbourhood is not
     best_plan = improved
@@ -370,8 +413,13 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
         # scale the exact re-solve to the instance: a bigger model needs a bigger neighbourhood to
         # move anything, and a bigger neighbourhood needs a longer solve, so both track block count
         rounds = 16 if cpit.n_blocks <= 8_000 else 10
+        # NO WALL-CLOCK BUDGET. `time_limit` is seconds handed to the MILP solver, so how much of
+        # each restricted re-solve completes depends on the machine and its load, and this rung is
+        # the reported best on nine of thirteen cases: the product's headline gap was not
+        # reproducible from (params, seed), which is the one thing core/rng.py says a bake must be.
+        # A relative MIP gap is a property of the PROBLEM and stops in the same place everywhere.
         exact = ob.exact_local_search(
-            cpit, prec, improved, d_max=180, rounds=rounds, time_limit=8, seed=11
+            cpit, prec, improved, d_max=180, rounds=rounds, time_limit=None, mip_gap=1e-4, seed=11
         )
         results.append(
             _wrap(instance, "cpitD-local-search", "sota", True, exact, bound,
@@ -385,15 +433,38 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
         )
 
     # ---- learned
+    #
+    # MEASURE, do not predict. A baked case already contains the plan the learned rung approximates,
+    # `toposort-expected`, solved exactly on the same instance against the same bound. The ratio
+    # between them is therefore a fact about THIS case, and a predicted flag standing in front of an
+    # available measurement is a worse answer dressed as a better one.
+    #
+    # The scenario rule stays, and it is not redundant: it is what the LIVE lane has, where the whole
+    # point of the surrogate is that the exact plan has NOT been solved. Its clean numbers come from a
+    # third seed set that had no part in choosing it (models/guard-validation.json): recall 0.625,
+    # worst unflagged 0.866. The held-out numbers that motivated it said recall 1.00, and that gap is
+    # exactly why the measurement is preferred wherever it exists.
     if learned is not None:
+        exact_ref = next((r for r in results if r.method == "toposort-expected"), None)
         for name, res, ms, note in learned:
+            measured = None
+            if exact_ref is not None and exact_ref.npv > 0:
+                measured = float(res.npv) / float(exact_ref.npv)
+                note = (
+                    f"{note}. MEASURED on this case: {100 * measured:.1f} percent of the exact ExTS "
+                    f"plan it approximates ({exact_ref.method})"
+                )
+            flagged_by_rule = bool("UNRELIABLE HERE" in note)
+            unreliable = (measured < LEARNED_FAILURE_BELOW) if measured is not None else flagged_by_rule
             # MethodResult is frozen, so the guard is passed in rather than set after. It travels
             # WITH the method and not in a page of prose somewhere else, because a reader picks a
             # method from a selector.
             results.append(
                 _wrap(
                     instance, name, "learned", True, res, bound, ms, note,
-                    unreliable=bool("UNRELIABLE HERE" in note),
+                    unreliable=unreliable,
+                    measured_vs_exact=measured,
+                    flagged_by_rule=flagged_by_rule,
                 )
             )
 
@@ -423,11 +494,13 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
 
     # ---- beyond: operability, and what it costs
     try:
+        mw_t0 = time.perf_counter()
         smoothed, rep = ob.enforce_min_width(
             cpit, best_plan, instance.x, instance.y, instance.level, prec, target_width=3
         )
+        mw_ms = (time.perf_counter() - mw_t0) * 1000.0
         results.append(
-            _wrap(instance, "min-width", "beyond", True, smoothed, bound, 0.0,
+            _wrap(instance, "min-width", "beyond", True, smoothed, bound, mw_ms,
                   f"{rep.below_target_before} to {rep.below_target_after} narrow blocks "
                   f"({rep.below_target_reduction_pct:.0f}% fewer) at {rep.npv_cost_pct:.2f}% of NPV; "
                   "operability view, capacity not re-imposed")
@@ -435,4 +508,5 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     except Exception:  # noqa: BLE001, S110 - smoothing is a view, never a blocker
         pass
 
+    bound_report["skipped_methods"] = skipped
     return results, relaxations, bound_report

@@ -59,7 +59,7 @@ export default function Introduction() {
             <tr><td>classical</td><td>toposort-greedy / gershon</td><td>{es ? 'las heuristicas publicadas de base' : 'the published baseline heuristics'}</td></tr>
             <tr><td>sota</td><td>critical multiplier</td><td>{es ? 'una cota certificada, no un plan' : 'a certified bound, not a schedule'}</td></tr>
             <tr><td>sota</td><td>toposort-expected</td><td>{es ? 'el mejor redondeo publicado, sembrado por el LP' : 'the best published rounding, seeded by the LP'}</td></tr>
-            <tr><td>sota</td><td>shift local search</td><td>{es ? 'el mejor plan factible que produce este producto' : 'the best feasible plan this product produces'}</td></tr>
+            <tr><td>sota</td><td>exact C-PIT[D] re-solve</td><td>{es ? 'el mejor plan factible que produce este producto' : 'the best feasible plan this product produces, and it is `cpitD-local-search`'}</td></tr>
             <tr><td>{es ? 'fuera' : 'out'}</td><td>{es ? 'acopios, mezcla, estocastico' : 'stockpiles, blending, stochastic'}</td><td>{es ? 'citados, no reclamados' : 'cited, not claimed'}</td></tr>
           </tbody>
         </table>

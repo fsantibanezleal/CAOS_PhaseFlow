@@ -165,7 +165,7 @@ test('the last mining period is not empty on the default case', () => {
 // ------------------------------------------------------------------------------------------------
 // THE LADDER
 // ------------------------------------------------------------------------------------------------
-test('the ladder spans four rungs and no rung is empty by accident', () => {
+test('the ladder spans its rungs and none is empty by accident', () => {
   const t = load(CASE);
   const rungs = new Set(t.methods.map((m) => m.rung));
   assert.ok(rungs.has('classical'), 'a comparison with no floor in it is a marketing chart');
@@ -179,6 +179,9 @@ test('every schedule is measured against the SAME bound, and the tighter one is 
   const bounds = new Set(t.methods.map((m) => Math.round(m.bound)));
   assert.equal(bounds.size, 1, 'methods are being compared against different bounds');
   const b = t.bound;
+  // `bound` is optional in the mirror because an artifact baked before it existed is a valid older
+  // artifact. On a case in THIS bake it is always present, and saying so here is the assertion.
+  assert.ok(b, `${CASE}: the trace carries no bound block`);
   if (b.joint != null && b.algorithm4 != null) {
     assert.ok(b.joint <= b.algorithm4 * (1 + 1e-9), 'the joint bound must not be looser');
     assert.equal(b.used, 'bienstock-zuckerberg');

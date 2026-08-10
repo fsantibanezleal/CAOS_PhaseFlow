@@ -252,6 +252,9 @@ class LearnedBundle:
 
     expected_time: Mlp
     bound: Mlp
+    #: where the models were loaded from, so the bundle can also read the studies committed beside
+    #: them rather than having the caller pass the same folder twice
+    root: Path | None = None
 
     @classmethod
     def load(cls, models_dir: str | Path) -> LearnedBundle:
@@ -259,6 +262,7 @@ class LearnedBundle:
         return cls(
             expected_time=Mlp.from_json(json.loads((d / "expected-time.json").read_text(encoding="utf-8"))),
             bound=Mlp.from_json(json.loads((d / "bound.json").read_text(encoding="utf-8"))),
+            root=d,
         )
 
     def predict_expected_times(self, instance, scenario: Scenario) -> np.ndarray:
@@ -291,7 +295,7 @@ class LearnedBundle:
 
     def report(self) -> dict:
         """The held-out scores, so the app can show what the learned lane is worth."""
-        return {
+        out = {
             "expectedTime": self.expected_time.metrics,
             "bound": self.bound.metrics,
             "honesty": (
@@ -300,31 +304,66 @@ class LearnedBundle:
                 "exact quantity they approximate, on deposits they never saw, split by deposit seed."
             ),
         }
+        # The guard's CLEAN numbers, from a third seed set that had no part in choosing the rule.
+        # Carried separately from the held-out metrics on purpose: those were measured on the set
+        # that motivated the choice and came out at recall 1.00, and the clean number is 0.625. A
+        # scorecard that shows only the first is showing the flattering half of its own study.
+        validation = (self.root / "guard-validation.json") if self.root else None
+        if validation is not None and validation.exists():
+            import json
 
-    def unreliable_here(self, cpit) -> str | None:
-        """The guard: a sentence when this scenario is one the surrogate is measured to lose in.
+            v = json.loads(validation.read_text(encoding="utf-8"))
+            out["guard"] = {
+                "rule": v.get("rule"),
+                "failure_below": v.get("failure_below"),
+                "validation_n": v.get("n"),
+                "validation_failures": v.get("failures"),
+                "validation_recall": v.get("recall"),
+                "validation_precision": v.get("precision"),
+                "validation_worst_unflagged": v.get("worst_unflagged"),
+                "validation_worst_overall": v.get("worst_overall"),
+                "holdout_recall_for_comparison": (v.get("holdout_for_comparison") or {}).get("recall"),
+                "note": (
+                    "measured on a THIRD disjoint seed set that had no part in choosing the rule. "
+                    "The held-out set that did choose it reported recall 1.00; this is the number "
+                    "that was not chosen on. Where the exact plan is in the same bake the product "
+                    "shows the MEASURED ratio instead of this rule."
+                ),
+            }
+        return out
 
-        A worst case of 0.344 is a footnote until you can say WHEN. The rule comes from the training
-        study (`models/learned-failure-modes.json`) and it is about the SCENARIO, not the orebody:
-        heavy discounting makes the value of a plan depend on precise timing, and a surrogate asked
-        only for the ORDER has the least to give exactly there. Returns None when the case is outside
-        the flagged region, which is not a promise that the plan is good, only the absence of a
-        measured reason to expect it is not.
+    def unreliable_here(self, cpit, archetype: str | None = None) -> str | None:
+        """The rule, when it can be applied at all.
+
+        It is about the OREBODY, not the scenario, and that conclusion cost two measurements. With a
+        five-scenario sweep that ran the discount rate and the plant capacity together at a
+        correlation of -0.735, the training failures were all `core_halo` and the held-out ones looked
+        like they refuted that in favour of the rate. On a crossed nine-scenario sweep the orebody is
+        the signal on BOTH splits (core_halo fails on 80 of 108 training cases and 36 of 54 held out;
+        layered on none of either) and the scenario rule falls to a recall of 0.44.
+
+        Which means the rule needs a LABEL this product has for its own synthetic cases and nobody has
+        for a real deposit. Returning None here is therefore not "it is fine", it is "this rule cannot
+        speak", and the caller says which. Where the exact plan is in the same bake the product does
+        not need the rule at all: it measures the ratio and shows that instead.
         """
         m = self.expected_time.metrics
-        threshold = m.get("failure_rule_rate_at_least", 0.15)
-        if float(cpit.discount_rate) < float(threshold):
+        rule = str(m.get("failure_rule", ""))
+        if not rule.startswith("archetype ==") or archetype is None:
+            return None
+        want = rule.split("==", 1)[1].strip()
+        if archetype != want:
             return None
         below = m.get("failure_below", 0.90)
         recall = m.get("failure_rule_recall")
         worst = m.get("holdout_npv_vs_exact_exts_min")
         parts = [
-            f"discount rate {100 * float(cpit.discount_rate):.0f}% is inside the region where this "
-            f"surrogate is MEASURED to lose: held-out plans below {100 * float(below):.0f}% of the "
-            "exact-ExTS plan concentrate here"
+            f"this deposit is a {want}, the shape where this surrogate is MEASURED to lose: "
+            f"{100 * float(below):.0f} percent of the exact plan is the line, and two thirds of "
+            f"held-out {want} cases fall below it"
         ]
         if recall is not None:
-            parts.append(f"the flag catches {100 * float(recall):.0f}% of them")
+            parts.append(f"the flag catches {100 * float(recall):.0f}% of the failures")
         if worst is not None:
             parts.append(f"the worst held-out case is {100 * float(worst):.1f}%")
         return "; ".join(parts)
@@ -355,7 +394,7 @@ class LearnedBundle:
             "ExTS quality with NO LP solve: the expected extraction times come from a surrogate "
             f"(held-out Spearman {self.expected_time.metrics.get('holdout_spearman', float('nan')):.3f})"
         )
-        warning = self.unreliable_here(cpit)
+        warning = self.unreliable_here(cpit, getattr(instance, "archetype", None))
         if warning:
             note = f"{note}. UNRELIABLE HERE: {warning}"
         out.append(("learned-expected-time", res, ms, note))
