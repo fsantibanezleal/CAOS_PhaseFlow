@@ -24,7 +24,14 @@ interface Trace {
     joint_error?: string;
     joint_note?: string;
   };
-  methods: { method: string; rung: string; unreliable?: boolean; notes: string }[];
+  methods: {
+    method: string;
+    rung: string;
+    unreliable?: boolean;
+    measuredVsExact?: number | null;
+    flaggedByRule?: boolean;
+    notes: string;
+  }[];
 }
 
 function traces(): Trace[] {
@@ -75,32 +82,72 @@ test('a case that skipped the joint bound says why, in words', () => {
   }
 });
 
-test('the learned rung is FLAGGED exactly where the study says it loses', () => {
-  // The rule is `discount rate >= 0.15`: measured recall 1.00 on held-out deposits, and no unflagged
-  // held-out case lost more than 7 percent. If the flag stops travelling with the method, the
-  // warning silently becomes a documentation caveat again.
-  const RATE_AT_LEAST = 0.15;
+test('the learned rung carries a MEASUREMENT of this case, not a prediction about cases like it', () => {
+  // Every baked case contains the exact plan the learned rung approximates, so the ratio between
+  // them is a fact rather than a forecast. The scenario rule stays for the live lane, where that
+  // exact plan is precisely what has not been solved, and its clean third-split numbers are recall
+  // 0.625 with a worst unflagged case of 0.866: good enough to warn with, not good enough to stand
+  // in front of an available measurement.
+  const FAILURE_BELOW = 0.9;
   let seen = 0;
   for (const t of traces()) {
     const learned = t.methods.filter((m) => m.rung === 'learned');
     if (!learned.length) continue;
-    seen += 1;
-    const rate = t.scenario.discountRate ?? t.scenario.rate ?? 0;
-    const expected = rate >= RATE_AT_LEAST;
+    const exact = t.methods.find((m) => m.method === 'toposort-expected');
     for (const m of learned) {
+      seen += 1;
+      assert.ok(
+        m.measuredVsExact != null,
+        `${t.caseId}: ${m.method} has no measurement, and ${exact ? 'the exact rung IS in this bake' : 'the exact rung is missing too'}`,
+      );
       assert.equal(
         Boolean(m.unreliable),
-        expected,
-        `${t.caseId}: rate ${rate} should ${expected ? '' : 'not '}flag ${m.method}`,
+        (m.measuredVsExact as number) < FAILURE_BELOW,
+        `${t.caseId}: the flag disagrees with the measurement ${m.measuredVsExact}`,
       );
-      if (expected) {
-        assert.match(
-          m.notes,
-          /UNRELIABLE HERE/,
-          `${t.caseId}: flagged but the note does not say why`,
-        );
-      }
+      assert.match(
+        m.notes,
+        /MEASURED on this case/,
+        `${t.caseId}: the note does not carry the measurement`,
+      );
     }
   }
   assert.ok(seen > 0, 'no case was baked with the learned lane');
+});
+
+test('the shipped rule is recorded on every learned row, whatever the rule currently is', () => {
+  // Read from the model's own metrics, never restated here. This assertion has been rewritten twice
+  // already, because the study moved twice: a scenario rule chosen on a five-point sweep that ran
+  // rate and capacity together, then an orebody rule once the sweep was crossed. A test that hardcodes
+  // one of them stops testing the moment the science improves, which is exactly when it matters.
+  const metrics = JSON.parse(
+    readFileSync(join(process.cwd(), '..', 'models', 'expected-time.json'), 'utf8'),
+  ).metrics as Record<string, string>;
+  const rule = String(metrics.failure_rule ?? '');
+  assert.ok(rule.length > 0, 'the model carries no failure rule');
+
+  for (const t of traces()) {
+    const learned = t.methods.filter((m) => m.rung === 'learned');
+    if (!learned.length) continue;
+    let expected: boolean;
+    if (rule.startsWith('archetype ==')) {
+      // the rule needs a label the artifact does not carry, so the case id is the only handle here;
+      // the pipeline reads the real one off the instance
+      const want = rule.split('==')[1].trim();
+      expected = t.caseId.includes(want.replace('_', '-')) || t.caseId.includes(want);
+    } else if (rule.includes('discount rate >=')) {
+      const at = Number(rule.split('>=')[1].split(',')[0]);
+      expected = (t.scenario.discountRate ?? 0) >= at;
+    } else {
+      // an unknown rule shape must FAIL rather than silently pass every case
+      assert.fail(`the gate does not know how to apply the shipped rule: ${rule}`);
+    }
+    for (const m of learned) {
+      assert.equal(
+        Boolean(m.flaggedByRule),
+        expected,
+        `${t.caseId}: rule ${rule} should ${expected ? '' : 'not '}flag ${m.method}`,
+      );
+    }
+  }
 });

@@ -51,12 +51,29 @@ MODELS = ROOT / "models"
 TRAIN_SEEDS = [101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157]
 HOLDOUT_SEEDS = [211, 223, 227, 229, 233, 239]
 ARCHETYPES = ["porphyry", "vein", "layered", "core_halo"]
+#: (periods, discount rate, (mining fraction, processing fraction))
+#:
+#: DECORRELATED on purpose, and the previous set was not. It ran rate and capacity together:
+#: 0.08/0.45, 0.10/0.50, 0.15/0.40, 0.10/0.60, 0.20/0.35, a correlation of -0.735 between the
+#: discount rate and the plant capacity. The bound surrogate trained on it scored a 1.40 percent
+#: mean held-out error and was still unusable for the one thing it exists for: asked to hold the
+#: rate and vary capacity, it predicted the bound FALLING as capacity rose, from 0.510 of the
+#: ultimate pit at 0.30 to 0.416 at 1.20. More capacity cannot lower an LP bound. It had learned
+#: capacity as a proxy for rate, because in the training set that is what capacity was.
+#:
+#: A metric can be true and useless: interpolating inside a confounded design is not the same as
+#: knowing which variable did the work. This sweep crosses the two axes so the model can tell them
+#: apart, and `test_bound_surrogate_is_monotone` asserts the physics afterwards.
 SCENARIOS = [
-    (6, 0.08, (0.7, 0.45)),
-    (8, 0.10, (0.8, 0.5)),
-    (8, 0.15, (0.6, 0.4)),
-    (10, 0.10, (0.9, 0.6)),
-    (12, 0.20, (0.55, 0.35)),
+    (6, 0.05, (0.7, 0.40)),
+    (6, 0.15, (0.7, 0.40)),
+    (8, 0.05, (0.8, 0.65)),
+    (8, 0.10, (0.8, 0.50)),
+    (8, 0.20, (0.8, 0.65)),
+    (10, 0.10, (0.9, 0.40)),
+    (10, 0.20, (0.6, 0.50)),
+    (12, 0.05, (0.55, 0.50)),
+    (12, 0.15, (0.9, 0.65)),
 ]
 
 
@@ -175,6 +192,36 @@ def score_cases(model, data: dict) -> list[dict]:
 FAILURE_BELOW = 0.90
 
 
+def _refutation_text(train_rows: list[dict], holdout_rows: list[dict]) -> str:
+    """State what the two splits actually say about the orebody, computed rather than remembered.
+
+    This sentence was hardcoded once and went stale the moment the sweep widened: it still claimed six
+    training failures, all core_halo, refuted by three vein cases out of five, on a study that by then
+    had 88 and 39.
+    """
+    def rate_by(rows: list[dict]) -> dict[str, tuple[int, int]]:
+        out: dict[str, tuple[int, int]] = {}
+        for r in rows:
+            n, f = out.get(r["archetype"], (0, 0))
+            out[r["archetype"]] = (n + 1, f + (1 if r["vs_true"] < FAILURE_BELOW else 0))
+        return out
+
+    tr = rate_by(train_rows)
+    ho = rate_by(holdout_rows)
+    worst = max(ho, key=lambda a: ho[a][1] / max(1, ho[a][0]))
+    parts = [
+        f"{a}: {tr[a][1]}/{tr[a][0]} of training cases fail, {ho[a][1]}/{ho[a][0]} held out"
+        for a in sorted(ho)
+    ]
+    return (
+        "; ".join(parts)
+        + f". The failures concentrate in {worst}, and they do so on BOTH splits, which is what the "
+        "first and much narrower sweep could not show: with five scenarios running rate and capacity "
+        "together at a correlation of -0.735, the scenario looked like the cause and the orebody "
+        "looked refuted."
+    )
+
+
 def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> dict:
     """Find where the surrogate fails, and be honest about which pattern survived contact.
 
@@ -232,6 +279,31 @@ def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> d
                 "surrogate asked only for the ORDER has the least to give there"
             ),
         },
+        "archetype-only": {
+            "statement": "archetype in " + str(sorted({r["archetype"] for r in train_fail})),
+            "test": lambda r, _f=train_fail: r["archetype"] in {x["archetype"] for x in _f},
+            "why": "the orebody shapes the training failures land on, with no scenario condition",
+        },
+        "dominant-archetype": {
+            "statement": (
+                "archetype == "
+                + max(
+                    {r["archetype"] for r in train_rows},
+                    key=lambda a: (
+                        sum(1 for r in train_rows if r["archetype"] == a and r["vs_true"] < FAILURE_BELOW)
+                        / max(1, sum(1 for r in train_rows if r["archetype"] == a))
+                    ),
+                )
+            ),
+            "test": lambda r, _rows=train_rows: r["archetype"] == max(
+                {x["archetype"] for x in _rows},
+                key=lambda a: (
+                    sum(1 for x in _rows if x["archetype"] == a and x["vs_true"] < FAILURE_BELOW)
+                    / max(1, sum(1 for x in _rows if x["archetype"] == a))
+                ),
+            ),
+            "why": "the single orebody shape with the highest failure rate on the training deposits",
+        },
         "aggressive-scenario": {
             "statement": "discount rate >= 0.20 and horizon >= 12",
             "test": lambda r: r["rate"] >= 0.20 and r["periods"] >= 12,
@@ -268,12 +340,26 @@ def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> d
         for name, spec in candidates.items()
     }
 
-    #: The one the product ships. Chosen for RECALL: the cost of a false positive is a warning a
-    #: reader did not need, and the cost of a false negative is a plan a third as valuable presented
-    #: without one. Its held-out numbers are honest but not clean, because the holdout is what
-    #: refuted the archetype rule and therefore also motivated this choice; a third split would be
-    #: needed to call them unbiased, and that is said here rather than left for someone to notice.
-    shipped = "discounting"
+    # The shipped rule is CHOSEN FROM THE TRAINING NUMBERS, by recall first and precision second,
+    # rather than named in advance. Naming it in advance is how the last version shipped a rule with
+    # a held-out recall of 0.44: it was picked when the sweep was five scenarios wide and ran rate and
+    # capacity together at a correlation of -0.735, so the scenario looked like the cause and the
+    # orebody looked refuted. On a crossed, wider sweep the orebody is the signal.
+    def _score(name: str) -> float:
+        """F2: recall weighted four times precision, because of what each error costs.
+
+        A false positive costs a reader a warning they did not need. A false negative costs them a
+        plan worth half the alternative with no warning at all. But recall ALONE is not the criterion
+        either: the rule that maximises it flags 162 of 216 held-out cases, and a warning on three
+        cases in four is not a warning, it is the background. F2 picks the rule that catches 92
+        percent of the failures while flagging a quarter of the cases over the one that catches 100
+        percent while flagging three quarters.
+        """
+        cm = rules[name]["train"]
+        p_, r_ = cm["precision"] or 0.0, cm["recall"] or 0.0
+        return (5 * p_ * r_ / (4 * p_ + r_)) if (p_ + r_) > 0 else 0.0
+
+    shipped = max(rules, key=_score)
 
     return {
         "failure_below": FAILURE_BELOW,
@@ -283,10 +369,7 @@ def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> d
             "chosen after the holdout refuted the archetype rule, so its held-out precision and "
             "recall are optimistic; the direction of the choice is recall, not precision"
         ),
-        "refuted": (
-            "all 6 training failures are core_halo, which reads as an archetype story; 3 of the 5 "
-            "held-out failures are vein, so archetype does not generalise"
-        ),
+        "refuted": _refutation_text(train_rows, holdout_rows),
         "train": {
             "n": len(train_rows),
             "failures": len(train_fail),
@@ -303,6 +386,49 @@ def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> d
             "by_periods": by(holdout_rows, "periods"),
             "rows": holdout_rows,
         },
+    }
+
+
+def _monotonicity_report(model, data: dict) -> dict:
+    """Does the bound surrogate obey the two directions the LP itself obeys?
+
+    More capacity cannot lower an LP bound; a higher discount rate cannot raise it. Both are
+    properties of the problem rather than of the fit, so a model that breaks them is not slightly off,
+    it is answering a different question. Measured per held-out deposit by holding everything else and
+    sweeping one feature.
+    """
+    caps = [0.3, 0.45, 0.6, 0.8, 1.0, 1.3]
+    rates = [0.03, 0.08, 0.12, 0.18, 0.25]
+    cap_ok = 0
+    rate_ok = 0
+    seen = 0
+    for row in data["xd"]:
+        seen += 1
+        x = np.array(row, dtype=np.float64)
+
+        preds = []
+        for c in caps:
+            y = x.copy()
+            y[9] = min(3.0, c) / 3.0
+            preds.append(float(model.forward(y.reshape(1, -1))[0, 0]))
+        if all(b >= a - 1e-6 for a, b in zip(preds, preds[1:], strict=False)):
+            cap_ok += 1
+
+        preds = []
+        for r in rates:
+            y = x.copy()
+            y[7] = r
+            preds.append(float(model.forward(y.reshape(1, -1))[0, 0]))
+        if all(b <= a + 1e-6 for a, b in zip(preds, preds[1:], strict=False)):
+            rate_ok += 1
+
+    return {
+        "monotone_capacity_rate": cap_ok / max(1, seen),
+        "monotone_rate_rate": rate_ok / max(1, seen),
+        "monotone_note": (
+            "more capacity cannot lower an LP bound and a higher discount rate cannot raise it. "
+            "Measured per held-out deposit by holding everything else and sweeping one feature."
+        ),
     }
 
 
@@ -409,6 +535,20 @@ def main() -> int:
         "holdout_seeds": HOLDOUT_SEEDS,
         "split": "by deposit seed, never by row",
     }
+    # ---- the physics the bound surrogate has to obey, checked before it ships
+    #
+    # More capacity cannot LOWER an LP bound, and a higher discount rate cannot RAISE it. The first
+    # version of this model violated the capacity direction on every deposit and still scored a 1.40
+    # percent mean error, because the training sweep ran rate and capacity together and it had
+    # learned one as a proxy for the other. An error metric cannot see that; a monotonicity check can.
+    mono = _monotonicity_report(m2, ho)
+    m2.metrics.update(mono)
+    print("\nbound surrogate monotonicity, on held-out deposits")
+    print(f"  capacity: non-decreasing on {100 * mono['monotone_capacity_rate']:.0f}% of deposits")
+    print(f"  rate:     non-increasing on {100 * mono['monotone_rate_rate']:.0f}% of deposits")
+    if mono["monotone_capacity_rate"] < 0.9 or mono["monotone_rate_rate"] < 0.9:
+        print("  WARNING: the surrogate breaks a direction it cannot break. It must not draw a surface.")
+
     export_onnx(m2, MODELS / "bound.onnx", sample=ho["xd"])
     print(f"\nbound surrogate: holdout mean rel err {rel_err.mean():.4f}, p90 {np.quantile(rel_err, 0.9):.4f}")
 

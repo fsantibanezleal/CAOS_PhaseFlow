@@ -10,4 +10,4 @@
 - [07, deploy](architecture/07_deploy.md)
 - [08, the two data contracts](architecture/08_data-contracts.md)
 
-Binding decision: [ADR-0057](../../conventions/architecture/0-archetype/ADR-0057-product-repo-archetype.md).
+Binding decision: ADR-0057.

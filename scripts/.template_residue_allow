@@ -1,3 +1,7 @@
-docs/architecture
-docs/guides
+# Paths the template-residue gate may skip.
+#
+# `docs/guides` and `docs/architecture` were BOTH listed here, which made the gate blind to
+# the entire docs tree: it printed OK while shipping the template's own instruction sheet as
+# one of the product's three guides. An allowlist that covers the place residue accumulates
+# is not an allowlist, it is an off switch.
 scripts/check_template_residue.py

@@ -14,6 +14,7 @@ import { CapacityChart, CoherenceChart, GradeStripChart, MethodBars, ProductionC
 import { periodCss } from '../viz/colormap.ts';
 import { BoundPanel, LearnedPanel, RiskPanel } from '../viz/Ladder.tsx';
 import { Absent, PanelBoundary } from '../viz/PanelBoundary.tsx';
+import { SensitivitySurface } from '../viz/Sensitivity.tsx';
 
 export default function Tool() {
   const st = useCase();
@@ -44,7 +45,7 @@ export default function Tool() {
   }, [st.method, st.trace, dims]);
 
   if (st.error) return <Callout variant="honest" title="Data">{st.error}</Callout>;
-  if (!st.trace || !st.manifest || !st.method) return <p className="pf-muted">Loading…</p>;
+  if (!st.trace || !st.manifest || !st.method) return <p className="pf-muted">{es ? 'Cargando...' : 'Loading...'}</p>;
 
   const { trace, manifest, method } = st;
   const northingAt = northing ?? defaultNorthing;
@@ -192,11 +193,11 @@ export default function Tool() {
       label: es ? 'Metodos' : 'Methods',
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <MethodBars rows={trace.methods.map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs }))} />
+          <MethodBars rows={trace.methods.map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs, comparable: m.rung !== 'beyond' }))} />
           <Callout variant="note" title={es ? 'Como leer esto' : 'How to read this'}>
             {es
-              ? 'La barra es la brecha a la MISMA cota certificada, asi que los metodos son comparables. La cota no es un plan: es el optimo exacto de la relajacion LP, y ningun plan puede superarla.'
-              : 'The bar is the gap to the SAME certified bound, so the methods are comparable. The bound is not a schedule: it is the exact optimum of the LP relaxation, and no schedule can beat it.'}{' '}
+              ? 'La barra es la brecha a la MISMA cota certificada, asi que estos metodos son comparables. La cota no es un plan: es el optimo exacto de la relajacion LP, y ningun plan CPIT puede superarla. Los dos peldanos BEYOND van atenuados y marcados porque no entran en esa comparacion: min-width no vuelve a imponer capacidad y destination-toposort resuelve un problema mas rico, asi que sus barras responden otra pregunta.'
+              : 'The bar is the gap to the SAME certified bound, so these methods are comparable. The bound is not a schedule: it is the exact optimum of the LP relaxation, and no CPIT schedule can beat it. The two BEYOND rungs are drawn faded and marked, because they are not in that comparison: min-width does not re-impose capacity and destination-toposort solves a richer problem, so their bars answer a different question.'}{' '}
             <Cite id="chicoisne2012" /> <Cite id="munoz2017" />
           </Callout>
           <div className="pf-scroll-x">
@@ -228,13 +229,16 @@ export default function Tool() {
         <div className="pf-split pf-split--wide">
           <PanelBoundary title={es ? 'Las dos cotas' : 'The two bounds'}>
             {trace.bound
-              ? <BoundPanel bound={trace.bound} best={trace.methods.reduce((a, b) => (a.npv >= b.npv ? a : b))} es={es} />
+              ? <BoundPanel bound={trace.bound} best={trace.methods.filter((m) => m.rung !== 'beyond').reduce((a, b) => (a.npv >= b.npv ? a : b))} es={es} />
               : <Absent title={es ? 'Las dos cotas' : 'The two bounds'} what={es ? 'la cota conjunta' : 'the joint bound'} es={es} />}
           </PanelBoundary>
           <PanelBoundary title={es ? 'El carril aprendido' : 'The learned lane'}>
             {trace.learned
               ? <LearnedPanel learned={trace.learned} methods={trace.methods} es={es} />
               : <Absent title={es ? 'El carril aprendido' : 'The learned lane'} what={es ? 'el carril aprendido' : 'the learned lane'} es={es} />}
+          </PanelBoundary>
+          <PanelBoundary title={es ? 'Superficie de sensibilidad' : 'Sensitivity surface'}>
+            <SensitivitySurface trace={trace} theme={st.theme} es={es} />
           </PanelBoundary>
           <PanelBoundary title={es ? 'Riesgo' : 'Risk'}>
             {trace.ensemble
@@ -243,6 +247,13 @@ export default function Tool() {
           </PanelBoundary>
           <div className="pf-panel">
             <h4>{es ? 'Peldanos' : 'Rungs'}</h4>
+            {Object.entries(trace.bound?.skipped_methods ?? {}).map(([name, why]) => (
+              <p className="pf-cap pf-warn" key={name}>
+                <strong>{name}</strong>{' '}
+                {es ? 'no corrio en este caso: ' : 'did not run on this case: '}
+                {why}
+              </p>
+            ))}
             {(['classical', 'sota', 'learned', 'beyond'] as const).map((rung) => {
               const rows = trace.methods.filter((m) => m.rung === rung);
               if (!rows.length) return null;
@@ -361,21 +372,43 @@ export default function Tool() {
               </option>
             ))}
           </select>
-          {/* The warning belongs WHERE THE METHOD IS CHOSEN. A worst case of 0.344 written on a
-              methodology page is a caveat; the same fact next to the selector is a guard. */}
-          {method.unreliable && (
+          {/* The warning belongs WHERE THE METHOD IS CHOSEN. A worst case written on a methodology
+              page is a caveat; the same fact next to the selector is a guard. And where the exact
+              plan is in the same bake, the number shown is a MEASUREMENT of this case rather than a
+              prediction about cases like it. */}
+          {method.measuredVsExact != null && (
+            <p className={`pf-cap ${method.unreliable ? 'pf-warn' : 'pf-muted'}`}>
+              {method.unreliable && (
+                <strong>{es ? 'Poco fiable en este caso. ' : 'Unreliable on this case. '}</strong>
+              )}
+              {es ? 'Medido aqui: ' : 'Measured here: '}
+              <b>{(100 * method.measuredVsExact).toFixed(1)}%</b>{' '}
+              {es
+                ? 'del plan exacto que aproxima. No es una prediccion: ambos peldanos estan en este mismo horneado, contra la misma cota.'
+                : 'of the exact plan it approximates. Not a prediction: both rungs are in this same bake, against the same bound.'}
+              {method.flaggedByRule && (
+                <>
+                  {' '}
+                  {es
+                    ? 'La regla de escenario tambien lo marcaria (tasa de descuento alta).'
+                    : 'The scenario rule would flag it too (high discount rate).'}
+                </>
+              )}
+            </p>
+          )}
+          {method.measuredVsExact == null && method.unreliable && (
             <p className="pf-cap pf-warn">
               <strong>{es ? 'Poco fiable en este caso.' : 'Unreliable on this case.'}</strong>{' '}
               {es
-                ? 'Este escenario cae dentro de la region donde el sustituto esta MEDIDO perdiendo: con descuento alto el valor de un plan depende del momento exacto, y un modelo al que solo se le pide el ORDEN es donde menos tiene que dar. La nota del metodo trae los numeros.'
-                : 'This scenario falls inside the region where the surrogate is MEASURED to lose: under heavy discounting the value of a plan depends on precise timing, and a model asked only for the ORDER has the least to give there. The method note carries the numbers.'}
+                ? 'Sin el plan exacto en este horneado no hay guarda: la regla medida es sobre el cuerpo mineralizado y necesita una etiqueta de arquetipo que un deposito real no trae.'
+                : 'Without the exact plan in this bake there is no guard: the measured rule is about the orebody and needs an archetype label a real deposit does not carry.'}
             </p>
           )}
           <div className="pf-kpis">
             <div className="pf-kpi"><b>{fmtMoney(method.npv)}</b><span>NPV</span></div>
             <div className="pf-kpi"><b>{method.gapPct.toFixed(2)}%</b><span>gap</span></div>
             <div className="pf-kpi"><b>{fmtTonnes(p?.minedTonnes ?? 0)}</b><span>{es ? 'periodo' : 'this period'}</span></div>
-            <div className="pf-kpi"><b>{(p?.largestComponentShare ?? 0 * 100).toFixed(0)}%</b><span>{es ? 'en el mayor' : 'in largest'}</span></div>
+            <div className="pf-kpi"><b>{(100 * (p?.largestComponentShare ?? 0)).toFixed(0)}%</b><span>{es ? 'en el mayor' : 'in largest'}</span></div>
           </div>
         </div>
 

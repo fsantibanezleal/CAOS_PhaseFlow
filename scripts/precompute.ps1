@@ -1,6 +1,5 @@
-# Run the offline pipeline (pass-through args). E.g.:  ./scripts/precompute.ps1 EX02_epidemic --seed 7
-$ErrorActionPreference = "Stop"
-Set-Location (Join-Path $PSScriptRoot "..")
-$vp = Join-Path ".venv-pipeline" "Scripts\python.exe"
-if (-not (Test-Path $vp)) { $vp = Join-Path ".venv-pipeline" "bin/python" }
-& python data-pipeline/run.py @args
+# Superseded by scripts/local/, which is the shape the convention asks for: numbered in
+# the order you run them, each printing the next command. This one described a two-venv
+# layout the product does not use and aborted before it finished.
+Write-Output 'Use .\scripts\local\02_generate-data.ps1 instead. See scripts/local/README.md.'
+exit 1

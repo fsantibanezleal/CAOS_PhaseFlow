@@ -48,8 +48,8 @@ The browser gate lives in the management repo, because it is the same gate for e
 line:
 
 ```bash
-cd _CAOS_MANAGE/tools/visual-verify
-PLAYWRIGHT_BROWSERS_PATH=/e/_Temp/ms-playwright node _pf-gate.mjs https://phaseflow.fasl-work.com /e/_Temp/pf-shots
+# from the visual-verify toolbox (kept outside this repo, it is shared across the product line)
+node _pf-gate.mjs https://phaseflow.fasl-work.com <screenshot-dir>
 ```
 
 It drives the pointer, samples the canvas pixels, and asserts what a status code cannot: that the

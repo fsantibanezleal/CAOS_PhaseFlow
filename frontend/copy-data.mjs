@@ -20,6 +20,17 @@ if (!existsSync(derived)) {
 mkdirSync(join(PUB, 'data'), { recursive: true });
 cpSync(derived, join(PUB, 'data'), { recursive: true });
 
+// The learned models are evidence too: the bound surrogate draws the sensitivity surface in the
+// browser, so its weights have to be served. A few kilobytes of JSON, not the ONNX file, which
+// exists to be portable for someone else rather than to be how this page multiplies.
+const models = join(ROOT, 'models');
+if (existsSync(models)) {
+  mkdirSync(join(PUB, 'models'), { recursive: true });
+  for (const f of readdirSync(models)) {
+    if (f.endsWith('.json')) cpSync(join(models, f), join(PUB, 'models', f));
+  }
+}
+
 const manifests = join(PUB, 'data', 'manifests');
 const index = join(manifests, 'index.json');
 if (!existsSync(index)) {
