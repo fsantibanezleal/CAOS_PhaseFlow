@@ -301,6 +301,34 @@ class LearnedBundle:
             ),
         }
 
+    def unreliable_here(self, cpit) -> str | None:
+        """The guard: a sentence when this scenario is one the surrogate is measured to lose in.
+
+        A worst case of 0.344 is a footnote until you can say WHEN. The rule comes from the training
+        study (`models/learned-failure-modes.json`) and it is about the SCENARIO, not the orebody:
+        heavy discounting makes the value of a plan depend on precise timing, and a surrogate asked
+        only for the ORDER has the least to give exactly there. Returns None when the case is outside
+        the flagged region, which is not a promise that the plan is good, only the absence of a
+        measured reason to expect it is not.
+        """
+        m = self.expected_time.metrics
+        threshold = m.get("failure_rule_rate_at_least", 0.15)
+        if float(cpit.discount_rate) < float(threshold):
+            return None
+        below = m.get("failure_below", 0.90)
+        recall = m.get("failure_rule_recall")
+        worst = m.get("holdout_npv_vs_exact_exts_min")
+        parts = [
+            f"discount rate {100 * float(cpit.discount_rate):.0f}% is inside the region where this "
+            f"surrogate is MEASURED to lose: held-out plans below {100 * float(below):.0f}% of the "
+            "exact-ExTS plan concentrate here"
+        ]
+        if recall is not None:
+            parts.append(f"the flag catches {100 * float(recall):.0f}% of them")
+        if worst is not None:
+            parts.append(f"the worst held-out case is {100 * float(worst):.1f}%")
+        return "; ".join(parts)
+
     def for_instance(self, instance) -> list[tuple]:
         """Produce the learned schedules the ladder asks for, as ``(name, result, ms, note)``."""
         import time
@@ -323,13 +351,12 @@ class LearnedBundle:
         res = ob.toposort_schedule(cpit, instance.precedence, weight=-e_hat, allowed=instance.upit_in_pit)
         ms = (time.perf_counter() - t0) * 1000.0
         res.method = "learned-expected-time"
-        out.append(
-            (
-                "learned-expected-time",
-                res,
-                ms,
-                "ExTS quality with NO LP solve: the expected extraction times come from a surrogate "
-                f"(held-out Spearman {self.expected_time.metrics.get('holdout_spearman', float('nan')):.3f})",
-            )
+        note = (
+            "ExTS quality with NO LP solve: the expected extraction times come from a surrogate "
+            f"(held-out Spearman {self.expected_time.metrics.get('holdout_spearman', float('nan')):.3f})"
         )
+        warning = self.unreliable_here(cpit)
+        if warning:
+            note = f"{note}. UNRELIABLE HERE: {warning}"
+        out.append(("learned-expected-time", res, ms, note))
         return out
