@@ -4,7 +4,7 @@
 maximum closure, the critical multiplier algorithm, Bienstock-Zuckerberg, the TopoSort family, the
 local searches, destinations, operability and the uncertainty ensemble.
 
-**Pin.** `oreblocks[milp]==0.3.1` in `requirements.txt`. The `milp` extra brings scipy, because three
+**Pin.** `oreblocks[milp]==0.5.1` in `requirements.txt`. The `milp` extra brings scipy, because three
 rungs need a solver: the BZ restricted master, the exact C-PIT[D] re-solve, and the exact OPBSP
 destination model. Without it those rungs record NOT RUN with the reason rather than quietly
 substituting a weaker method.
@@ -25,3 +25,10 @@ file path, or an artifact schema.
 **A version that mattered.** 0.3.1 added `solve_cpit(..., bound=False)`. The uncertainty ensemble was
 computing the certified bound once per realisation and never reading it, which made a thirteen-case
 bake run four hours and finish one case.
+
+**Versions that mattered since.** 0.4.0 made the joint bound affordable on a real deposit (compiled
+pricing, one exact certifying solve). 0.5.0 replaced a sliding window whose `window` argument changed
+nothing: it had been a greedy carrying Cullenbine, Wood and Newman's name, and the real one moves the
+best plan on the published instance from a 2.49 percent gap to 1.37. 0.5.1 corrected Lane's
+market-limiting cutoff, which divided by recovery where Lane multiplies.
+

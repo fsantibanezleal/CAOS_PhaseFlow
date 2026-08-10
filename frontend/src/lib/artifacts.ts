@@ -7,7 +7,11 @@ import { INDEX_SCHEMA, MANIFEST_SCHEMA, TRACE_SCHEMA } from './contract.types.ts
 
 export const APP_VERSION = (import.meta.env?.VITE_APP_VERSION as string) ?? '0.01.000';
 
-const BASE = 'data';
+// ROOT-relative. A bare `data/...` resolves against the CURRENT path, so every fetch from
+// `/focus/<case>` went to `/focus/data/...`, hit the SPA fallback, and parsed index.html as JSON:
+// "Unexpected token '<'". It never showed up while the gate clicked through from `/` with a warm
+// cache, and it broke every deep link, which ADR-0070 requires to work.
+const BASE = '/data';
 const cache = new Map<string, unknown>();
 
 async function getJSON<T>(rel: string): Promise<T> {

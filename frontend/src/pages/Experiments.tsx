@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Callout, Cite, Refs, Tabs, useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
+import { Callout, Cite, Refs, Tabs, useShellLang } from '@fasl-work/caos-app-shell';
 import { fmtInt, loadIndex, loadManifest } from '../lib/artifacts.ts';
 import type { CaseIndex, CaseManifest } from '../lib/contract.types.ts';
 import { MethodBars } from '../viz/Charts.tsx';
@@ -7,7 +7,6 @@ import { MethodBars } from '../viz/Charts.tsx';
 export default function Experiments() {
   const lang = useShellLang();
   const es = lang === 'es';
-  const theme = useThemeStore((s) => s.theme);
   const [index, setIndex] = useState<CaseIndex | null>(null);
   const [manifests, setManifests] = useState<CaseManifest[]>([]);
 
@@ -18,7 +17,7 @@ export default function Experiments() {
     });
   }, []);
 
-  if (!index) return <div className="page-body"><p className="pf-muted">Loading…</p></div>;
+  if (!index) return <div className="page-body"><p className="pf-muted">{es ? 'Cargando...' : 'Loading...'}</p></div>;
 
   const byCat = manifests.reduce<Record<string, CaseManifest[]>>((a, m) => {
     (a[m.category] ??= []).push(m); return a;
@@ -147,7 +146,7 @@ export default function Experiments() {
       <h1>{es ? 'Experimentos' : 'Experiments'}</h1>
       <Tabs tabs={tabs} ariaLabel={es ? 'Experimentos' : 'Experiments'} />
       <Refs ids={['espinoza2013', 'jelvez2018', 'morales2015', 'chicoisne2012', 'meagher2014']} label="References" />
-      <p className="pf-cap pf-muted">theme: {theme}</p>
+      
     </div>
   );
 }

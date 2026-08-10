@@ -39,8 +39,12 @@ export interface TraceMethod {
   runtimeMs: number;
   minedBlocks: number;
   notes: string;
-  /** the case falls inside a region where this method is MEASURED to lose */
+  /** this method loses on this case: MEASURED where both rungs are baked, predicted otherwise */
   unreliable?: boolean;
+  /** the learned plan as a fraction of the exact plan it approximates, on this case */
+  measuredVsExact?: number | null;
+  /** whether the scenario rule would have flagged this case, which is all the live lane has */
+  flaggedByRule?: boolean;
   periods: TracePeriod[];
   /** present only for redistributable (synthetic) cases; MineLib cases commit aggregates only */
   periodOfBlock?: number[];
@@ -91,6 +95,9 @@ export interface BoundReport {
   joint_edges?: number;
   joint_skipped?: string;
   joint_error?: string;
+  /** rungs that could not run on this case, mapped to the reason. A shorter table is
+   *  explained here rather than left to look like a shorter ladder. */
+  skipped_methods?: Record<string, string>;
   /** why the joint bound was not adopted, when it ran and was not tighter */
   joint_note?: string;
   /** which max-closure path priced the columns */
@@ -104,6 +111,9 @@ export interface BoundReport {
 
 /** The risk readout: every candidate plan scored on every realisation. */
 export interface EnsembleReport {
+  /** which weight the per-realisation re-solve used. Written since the ensemble stopped
+   *  computing the certified bound it never read; the mirror did not know it existed. */
+  resolveMethod?: string;
   ran: boolean;
   reason?: string;
   nRealisations?: number;

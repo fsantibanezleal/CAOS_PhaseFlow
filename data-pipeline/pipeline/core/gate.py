@@ -11,7 +11,8 @@ budget is the binding one. The browser measures and displays its own actual solv
 re-solve, so the claim is falsifiable by the user in one glance, which is the only kind of
 performance claim worth making.
 
-An offline-vs-live parity test (``tests/test_parity.py`` and ``frontend/test/parity.test.ts``)
+An offline-vs-live parity test (``frontend/test/parity.test.ts``; there is no Python twin, and
+citing one that does not exist is how a reader stops checking)
 asserts the TypeScript engine reproduces the Python bound and NPV on a committed case, so "live" and
 "replay" are the same science and not two different answers.
 """

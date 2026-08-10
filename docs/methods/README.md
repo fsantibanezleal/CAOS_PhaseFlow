@@ -26,8 +26,8 @@ schedule is shown with its gap to that bound.
 
 - [09, reading the results](09_ladder_results.md): which comparisons are legitimate and which are not.
 - [10, when the surrogate fails](10_when_the_surrogate_fails.md): the learned rung's worst case is
-  0.344, and this is the measured answer to WHEN, including the archetype hypothesis the held-out
-  deposits refuted.
+  0.561, and this is the measured answer to WHEN, including the two conclusions the wider sweep
+  produced and the confounded sweep that produced both of them.
 
 ## What "rung" means
 

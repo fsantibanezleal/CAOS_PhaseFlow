@@ -1,7 +1,7 @@
 {
   "name": "phaseflow-frontend",
   "private": true,
-  "version": "0.03.000",
+  "version": "0.04.000",
   "type": "module",
   "scripts": {
     "predev": "node copy-data.mjs",
@@ -16,7 +16,6 @@
     "@fasl-work/caos-app-shell": "^0.5.0",
     "katex": "^0.16.11",
     "lucide-react": "^0.469.0",
-    "onnxruntime-web": "^1.27.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.18.2",

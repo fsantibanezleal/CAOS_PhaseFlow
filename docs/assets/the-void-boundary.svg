@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" role="img"
+     aria-labelledby="vb-title vb-desc">
+  <title id="vb-title">Three ways to draw a block schedule, and why only one of them works</title>
+  <desc id="vb-desc">Drawing the mined blocks gives a growing solid rather than a pit. Carving them
+  away and colouring by grade gives a pit whose final frame shows no schedule at all. Colouring the
+  void boundary by the period of the neighbour that exposed it keeps the object a pit and keeps the
+  schedule visible at every frame including the last.</desc>
+
+  <style>
+    .bg    { fill: var(--color-surface, #f6f8fa); }
+    .line  { stroke: var(--color-border, #d0d7de); stroke-width: 1; fill: none; }
+    .txt   { fill: var(--color-fg, #1f2328); font: 13px system-ui, sans-serif; }
+    .dim   { fill: var(--color-fg-subtle, #656d76); font: 11px system-ui, sans-serif; }
+    .rock  { fill: var(--color-fg-subtle, #656d76); opacity: 0.28; }
+    .p1    { fill: #440154; }
+    .p2    { fill: #31688e; }
+    .p3    { fill: #35b779; }
+    .p4    { fill: #fde725; }
+    .bad   { fill: var(--color-bad, #f85149); font: 11px system-ui, sans-serif; }
+    .good  { fill: var(--color-good, #3fb950); font: 11px system-ui, sans-serif; }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="720" height="300" rx="8"/>
+
+  <!-- A: the mined blocks -->
+  <text class="txt" x="24" y="34">A. draw the MINED blocks</text>
+  <g transform="translate(24,48)">
+    <rect class="p1" x="40" y="60" width="24" height="18"/>
+    <rect class="p2" x="28" y="42" width="48" height="18"/>
+    <rect class="p3" x="16" y="24" width="72" height="18"/>
+    <rect class="p4" x="4"  y="6"  width="96" height="18"/>
+  </g>
+  <text class="bad" x="24" y="164">a growing solid, not a pit</text>
+
+  <!-- B: carve away, colour by grade -->
+  <text class="txt" x="256" y="34">B. carve away, colour by GRADE</text>
+  <g transform="translate(256,48)">
+    <path class="rock" d="M0 0 h200 v78 h-200 z"/>
+    <path d="M4 6 h96 l-12 18 h-72 l-12 18 h-48 l-12 18 h-24 z" fill="var(--color-surface, #f6f8fa)"/>
+    <path class="line" d="M4 6 h96 l-12 18 h-72 l-12 18 h-48 l-12 18 h-24"/>
+  </g>
+  <text class="bad" x="256" y="164">the final frame carries NO schedule</text>
+
+  <!-- C: the void boundary -->
+  <text class="txt" x="488" y="34">C. colour the VOID BOUNDARY</text>
+  <g transform="translate(488,48)">
+    <path class="rock" d="M0 0 h200 v78 h-200 z"/>
+    <path d="M4 6 h96 l-12 18 h-72 l-12 18 h-48 l-12 18 h-24 z" fill="var(--color-surface, #f6f8fa)"/>
+    <rect class="p4" x="4"  y="2" width="96" height="5"/>
+    <rect class="p3" x="16" y="20" width="72" height="5"/>
+    <rect class="p2" x="28" y="38" width="48" height="5"/>
+    <rect class="p1" x="40" y="56" width="24" height="5"/>
+  </g>
+  <text class="good" x="488" y="164">still a pit, and every wall carries its year</text>
+
+  <text class="dim" x="24" y="206">Each standing block next to an already-mined one takes the period of the neighbour that exposed it. The wall is</text>
+  <text class="dim" x="24" y="222">then 100 percent period-coloured at EVERY frame including the last, which is 33 percent of everything visible from</text>
+  <text class="dim" x="24" y="238">outside the model, against 0 percent for B.</text>
+  <text class="dim" x="24" y="266">Chicoisne et al. 2012 figure 1(d) draws the same thing in cross-section, with the period numbers written into the wall.</text>
+</svg>
