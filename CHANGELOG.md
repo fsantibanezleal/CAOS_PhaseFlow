@@ -3,6 +3,117 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.04.000] - 2026-08-10
+
+A seven-dimension audit of the shipped product against every binding rule and against its own claims,
+adversarially verified, then acted on. 72 findings survived verification. What follows is what they
+were, because the list is more useful than the summary.
+
+### Fixed, blockers
+- **A capacity-INFEASIBLE plan was the reported best on three cases, and the DEFAULT selection.**
+  `best = max(results, key=npv)` ranked the `beyond` rungs alongside the rest. `min-width` does not
+  re-impose capacity and `destination-toposort` solves a richer problem; both say so in their own
+  notes, and were ranked anyway. Measured: `min-width` was the reported best on `twin-vein` at a 3.69
+  percent gap while overshooting a period capacity by 18.65 percent, and the real best feasible plan
+  was 4.09. Worse, it opened the 3D pit on that plan. Ranking now excludes those rungs everywhere,
+  ties break by name so a degenerate case is reproducible, and there is no fallback that re-admits
+  them.
+- **The spatial-coherence KPI was 100x wrong.** `(p?.largestComponentShare ?? 0 * 100)` parses as
+  `(share ?? 0)`, so a period where 99.4 percent of the tonnage sits in one component rendered as
+  "1%". The chart beside it was correct, so the same screen disagreed with itself, on one of the four
+  things the front page sells.
+- **The README's trust anchor was two releases stale and denied a shipped capability.** It quoted a
+  bound of 24,487,410 (the product uses 24,486,184), a best plan of 23,873,589 (it is 23,875,617), a
+  gap of 2.51 percent (2.49), and stated that the exact local search was NOT implemented while that
+  rung was number nine of twelve and the best method on that very case.
+- **The README's PowerShell block contained raw NUL, SOH and ETX bytes**, so none of its three
+  commands could run. A script that wrote it had its backslash escapes collapsed on the way in.
+- **Em-dashes in four tracked files while the ADR-0067 gate printed OK.** The gate scanned a
+  nineteen-extension allowlist that omitted `.sh`, `.ps1`, `.service` and `.nginx`. It is a denylist
+  now, so a new extension is covered by default.
+- **The private management repo and a personal drive path were published in a PUBLIC repo**, in six
+  files. The CI guard looked for one string and missed all of them.
+- **`sliding_window_schedule` was a greedy wearing a citation.** See `oreblocks` 0.5.0: `window` of 1,
+  2, 3, 5, 8 and T gave bit-identical schedules. With the real one, the best plan on the published
+  instance moves from a 2.49 percent gap to **1.37**, against a published best-known 1.26.
+- **The Benchmark page explained its own bound difference backwards**, and the Introduction named the
+  wrong method as the product's best.
+
+### Fixed, and each one is a gate that did not exist
+- Nothing checked that a committed schedule was FEASIBLE. 23 method rows across 13 cases exceeded a
+  period capacity, by up to 447 percent, with every gate green. `check_artifacts.py` now checks
+  capacity per rung, array shapes, the live-lane contract, and that the pinned dependencies are the
+  ones that baked.
+- `frontend/test/contract.test.ts` did not exist, while three module docstrings said a drift would
+  fail the build because of it. `tsconfig` did not include `test/` either. Both fixed, and the field
+  names are PARSED from the mirror rather than restated, because a third copy of a schema drifts the
+  same way the second one did. It immediately caught `ensemble.resolveMethod`, written into twelve
+  traces and unknown to the mirror.
+- The guard that committed evidence is never overwritten compared an mtime against `1e18` seconds
+  since the epoch. It could not fail. It now compares bytes.
+- The README's four trust-anchor numbers are read out of the manifest by `check_readme_numbers.py`,
+  which also refuses control bytes.
+- The two product gates the plan promised and nobody wrote: the period cursor must not move the
+  CAMERA (drift measured at 1px of 64), and toggling the theme must change the stage background.
+- Tracked `.sh` files must be mode 100755, and the deploy runs the gates itself so a red main cannot
+  publish.
+
+### Added
+- **The sensitivity surface** the plan promised: the certified bound over discount rate and plant
+  capacity, drawn from the bound surrogate in the browser as a plain forward pass, with the case's own
+  point marked where the bound WAS computed exactly. `onnxruntime-web` was removed rather than wired
+  up: eleven inputs through 24 and 12 hidden units is twenty lines of TypeScript.
+- **And the surface immediately found something, which then overturned a published conclusion of our
+  own.** Asked to hold the rate and vary capacity, the bound surrogate predicted the bound FALLING as
+  capacity rose, on every deposit, while scoring a 1.40 percent mean held-out error. More capacity
+  cannot lower an LP bound. The training sweep ran rate and capacity together at a correlation of
+  **-0.735**, so it had learned one as a proxy for the other.
+
+  The sweep is crossed now (nine scenarios, correlation +0.234) and both models were retrained on it.
+  The bound surrogate is monotone in capacity on **100 percent** of held-out deposits and in rate on
+  100 percent, and its error improved to 1.16 percent. The training script measures both directions
+  and the panel refuses to draw a plane from a model that breaks one.
+
+  And the expected-time study changed its answer. On the narrow sweep the failures looked like the
+  discount rate; on the crossed one they are the OREBODY, on both splits: `core_halo` fails on 80 of
+  108 training cases and 36 of 54 held out, `layered` on none of either. The shipped rule is
+  `archetype == core_halo`, chosen by F2, and on a THIRD split that had no part in choosing it: recall
+  0.82, precision 0.67. The scenario rule it replaces scored 0.44 on that same split. Both wrong
+  answers came from the same five-point confounded sweep.
+- **The learned guard is a MEASUREMENT where one is available.** Every baked case contains the exact
+  plan the learned rung approximates, so the ratio between them is a fact about that case rather than
+  a forecast about cases like it. And the rule cannot travel to the live lane at all: it is about the
+  orebody, and a real deposit does not arrive with an archetype label. The product says that instead
+  of applying a rule with a measured recall of 0.44.
+- `docs/methods/10_when_the_surrogate_fails.md`, two hand-authored theme-aware SVG diagrams, and the
+  studies committed as `models/learned-failure-modes.json` and `models/guard-validation.json`.
+
+### Two more the gate found only once it could reach them
+- **Every artifact fetch was path-relative**, so `/focus/<case>` requested `/focus/data/...`, hit the
+  SPA fallback and parsed `index.html` as JSON. Every deep link into the focus route was broken, which
+  is the one thing ADR-0070 requires of it, and the gate had never seen it because it always clicked
+  through from `/` with a warm cache.
+- **A hook after an early return.** The live per-period rows were computed below the loading guard, so
+  React counted a different number of hooks between renders and the route died with "Rendered more
+  hooks than during the previous render" whenever the trace was still loading.
+
+### Also
+- Chart axis and series labels follow the app language (they were hardcoded English, and uPlot prints
+  them into the live legend). Brush-to-zoom is back on the x axis and the chart host takes focus.
+- The Focus HUD sentence describes the schedule ON SCREEN: it was quoting the baked plan's tonnage
+  while the NPV above it followed the live one, and reading "Period 12 of 8".
+- The 2D sections re-measure on a resize, `.pf-stagewrap` is declared once, and the method bars fit a
+  narrow column.
+- Two citations carried the same article number: verified against Crossref, the degradation paper is
+  104589 and the blending one is 104638.
+- Template residue removed: five publicly served SVGs describing a product this is not, the template's
+  own instruction sheet shipped as one of three guides, an empty package skeleton, and a residue gate
+  that allowlisted the entire docs tree.
+- Engine pinned to `oreblocks[milp]==0.5.1`; `numpy` pinned to what actually bakes.
+
+All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
+Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
+
 ## [0.03.000] - 2026-08-10
 
 The two things the last release listed as OPEN, closed: the joint bound now runs on every case, and
@@ -37,7 +148,6 @@ the learned rung's worst case has a measured answer to WHEN rather than a caveat
 - A tightening of exactly zero printed as `-0.0`, which reads as broken arithmetic rather than as the
   result it is.
 
-All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
 ## [0.02.001] - 2026-08-08
@@ -126,7 +236,6 @@ ensemble, and a docs wiki with the theory behind each.
 - Engine bumped to `oreblocks[milp]` 0.3.0. Three rungs need a MILP solver; without it they record
   NOT RUN with the reason rather than substituting a weaker method under the stronger name.
 
-All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
 ## [0.01.000] - 2026-08-07
@@ -166,5 +275,5 @@ year over the block model.
 ### Notes
 - Both `check_template_residue.py` token lists were stale after the no-internal-packages sweep:
   `data-pipeline/pipeline/` and the word `pipeline` were forbidden, although both are now the
-  CORRECT shape. Corrected here with the reason in the source; the template in CAOS_MANAGE carries
+  CORRECT shape. Corrected here with the reason in the source; the template in the operations toolbox carries
   the same defect.
