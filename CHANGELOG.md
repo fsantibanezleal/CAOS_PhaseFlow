@@ -3,6 +3,34 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.05.000] · 2026-08-18
+
+### Fixed - three defects that made this not at bar
+
+- **The ADR-0071 UI floor had never been applied to this repo.** `.app-shell` measured 1256px tall on a
+  900px viewport with `overflow: visible`, so the shell did not own the viewport at all and the document
+  scrolled instead. Floor applied; shell now locked at 900/900 with every route carrying its own scroll.
+- **The footer ate 29% of the screen.** It measured **263px** because it carries a full paragraph of
+  ADR-0016 provenance. That provenance is required and is not deleted: the footer is capped at 96px and
+  scrolls its own overflow, so nothing is lost and the instrument gets the screen back.
+- **The Profile and Plan charts grew without limit.** `Charts.tsx` attached its ResizeObserver to the
+  element uPlot draws INTO, so resizing the plot changed that element's own content box, which re-fired
+  the observer, which resized again. The chart grew and took the page with it. The observer now watches
+  the PARENT, whose box is set by the layout and does not move when the plot inside it changes, plus a
+  sub-pixel no-change guard. `SectionViews.tsx` already did this correctly and was the reference.
+- **Play did nothing after the animation ended.** The cursor was left on the last period, so the next
+  press started the interval, the first tick immediately re-hit the end condition and playback stopped
+  again. Pressing play at the end now rewinds to period 1 and replays.
+
+Verified by driving the browser: `_reach.mjs` all six routes clean with 0 unreachable, and `_pf-check.mjs`
+3/3 (page height stable across tabs, play restarts after the run ended, no console errors).
+
+### Still outstanding, and NOT fixed here
+Felipe's content review stands: Methodology, Analysis and Controls, Implementation and the Architecture
+modal are all flagged as weak content, with no high-quality SVG diagrams, and the classical / SOTA /
+beyond-SOTA ladder needs validating and showing. **This release fixes the layout and the behaviour. It
+does not make the product publishable.**
+
 ## [0.04.001] - 2026-08-10
 
 ### Fixed
