@@ -234,39 +234,86 @@ export function MethodBars({
   rows: { method: string; rung: string; gapPct: number; npv: number; runtimeMs: number; comparable?: boolean }[];
 }) {
   const [hover, setHover] = useState<number | null>(null);
-  const worst = Math.max(1e-9, ...rows.map((r) => r.gapPct));
+  const es = useShellLang() === 'es';
+
+  // WHY THE BAR IS NPV AND NOT THE GAP.
+  //
+  // This chart used to draw `gapPct / worstGap`, so the WORST method drew the LONGEST bar. On the hero
+  // case that put bench-by-bench (a 50.27 percent gap) at a nearly full track and cpitD-local-search (5.20
+  // percent, the best schedule in the ladder) at a stub, which reads as the exact opposite of the result.
+  //
+  // The fix is not to invert the number, it is to draw the quantity that has a meaning. Every method here
+  // is scored against the SAME certified upper bound, and npv/bound is exactly 1 - gap/100, so the track
+  // can BE the bound: the fill is the NPV the schedule actually captured, and the empty remainder IS the
+  // gap, at the same scale, on every row. Longer is better, the shortfall is visible rather than stated,
+  // and the comparison is honest by construction because the ceiling is shared.
   const rungColor: Record<string, string> = {
     classical: 'var(--color-fg-subtle)', sota: 'var(--color-accent)',
     learned: '#8957e5', beyond: 'var(--color-warn)',
   };
+  const rungLabel: Record<string, string> = {
+    classical: es ? 'clasico' : 'classical', sota: 'SOTA',
+    learned: es ? 'aprendido' : 'learned', beyond: es ? 'mas alla' : 'beyond',
+  };
+  const seen: string[] = [];
+  rows.forEach((r) => { if (!seen.includes(r.rung)) seen.push(r.rung); });
+
   return (
     <div className="pf-methodbars" data-testid="method-bars">
-      {rows.map((r, i) => (
-        <div
-          key={r.method}
-          className={`pf-mb-row${hover === i ? ' on' : ''}`}
-          onMouseEnter={() => setHover(i)}
-          onMouseLeave={() => setHover(null)}
-        >
-          <span className="pf-mb-name">
-            {r.comparable === false ? <span title="not comparable: a different problem or an operability view">* </span> : null}
-            {r.method}
-          </span>
-          <span className="pf-mb-track">
-            <span
-              className="pf-mb-fill"
-              style={{
-                width: `${(100 * r.gapPct) / worst}%`,
-                background: rungColor[r.rung] ?? 'var(--color-fg-subtle)',
-                // a bar that is not in the comparison must not read like one that is
-                opacity: r.comparable === false ? 0.42 : 1,
-              }}
-            />
-          </span>
-          <span className="pf-mb-val">{r.gapPct.toFixed(2)}%</span>
-          <span className="pf-mb-sub">{(r.npv / 1e6).toFixed(1)} M · {r.runtimeMs.toFixed(0)} ms</span>
-        </div>
-      ))}
+      <div className="pf-mb-scale" aria-hidden="true">
+        <span className="pf-mb-name" />
+        <span className="pf-mb-track pf-mb-ruler">
+          <i style={{ left: '0%' }} data-l="0" />
+          <i style={{ left: '50%' }} data-l="50%" />
+          <i style={{ left: '100%' }} data-l={es ? 'cota certificada' : 'certified bound'} />
+        </span>
+        <span className="pf-mb-val" />
+        <span className="pf-mb-sub" />
+      </div>
+
+      {rows.map((r, i) => {
+        const captured = Math.max(0, Math.min(100, 100 - r.gapPct));
+        const off = r.comparable === false;
+        return (
+          <div
+            key={r.method}
+            className={`pf-mb-row${hover === i ? ' on' : ''}`}
+            onMouseEnter={() => setHover(i)}
+            onMouseLeave={() => setHover(null)}
+            title={`${r.method} - ${(r.npv / 1e6).toFixed(1)} M, ${captured.toFixed(2)}% ${
+              es ? 'de la cota certificada' : 'of the certified bound'}, ${es ? 'brecha' : 'gap'} ${r.gapPct.toFixed(2)}%`}
+          >
+            <span className="pf-mb-name">
+              {off ? <span title={es ? 'no comparable: otro problema o una vista de operabilidad' : 'not comparable: a different problem or an operability view'}>* </span> : null}
+              {r.method}
+            </span>
+            <span className="pf-mb-track">
+              <span
+                className="pf-mb-fill"
+                style={{
+                  width: `${captured}%`,
+                  background: rungColor[r.rung] ?? 'var(--color-fg-subtle)',
+                  // a bar that is not in the comparison must not read like one that is
+                  opacity: off ? 0.42 : 1,
+                }}
+              />
+              {/* the remainder of the track IS the gap, at the same scale on every row */}
+              <span className="pf-mb-gap" style={{ left: `${captured}%`, width: `${100 - captured}%` }} />
+            </span>
+            <span className="pf-mb-val">{(r.npv / 1e6).toFixed(1)} M</span>
+            <span className="pf-mb-sub">
+              <b className={off ? 'off' : ''}>{r.gapPct.toFixed(2)}%</b> {es ? 'brecha' : 'gap'} · {r.runtimeMs.toFixed(0)} ms
+            </span>
+          </div>
+        );
+      })}
+
+      <div className="pf-mb-key">
+        {seen.map((g) => (
+          <span key={g}><i style={{ background: rungColor[g] ?? 'var(--color-fg-subtle)' }} />{rungLabel[g] ?? g}</span>
+        ))}
+        <span className="pf-mb-keygap"><i />{es ? 'brecha a la cota' : 'gap to the bound'}</span>
+      </div>
     </div>
   );
 }

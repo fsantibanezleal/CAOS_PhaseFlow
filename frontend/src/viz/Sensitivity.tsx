@@ -65,7 +65,10 @@ export function SensitivitySurface({
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.clearRect(0, 0, w, h);
 
-    const pad = { l: 52, r: 12, t: 10, b: 34 };
+    // A viridis plane with no colour scale asks the reader to guess what yellow means. The right pad
+    // now carries a colorbar, and the left pad grew because the rotated axis label was drawn at x=12
+    // while the tick labels were drawn at x=6, so the two collided and both became unreadable.
+    const pad = { l: 62, r: 84, t: 10, b: 34 };
     const iw = w - pad.l - pad.r;
     const ih = h - pad.t - pad.b;
     const cw = iw / RATES.length;
@@ -113,13 +116,36 @@ export function SensitivitySurface({
       g.fillText(`${Math.round(100 * r)}%`, pad.l + i * cw + 2, h - 20);
     });
     CAPS.forEach((cp, i) => {
-      g.fillText(cp.toFixed(2), 6, pad.t + (CAPS.length - 1 - i) * chh + chh / 2 + 3);
+      g.fillText(cp.toFixed(2), 24, pad.t + (CAPS.length - 1 - i) * chh + chh / 2 + 3);
     });
     g.fillText(es ? 'tasa de descuento' : 'discount rate', pad.l + iw / 2 - 40, h - 6);
     g.save();
-    g.translate(12, pad.t + ih / 2 + 40);
+    g.translate(13, pad.t + ih / 2 + 44);
     g.rotate(-Math.PI / 2);
     g.fillText(es ? 'capacidad de planta' : 'plant capacity', 0, 0);
+    g.restore();
+
+    // THE COLORBAR. Same viridis ramp, same lo..hi domain as the cells, labelled in the same units the
+    // hover readout uses, so the plane can be read without hovering every cell.
+    const bx = w - pad.r + 16;
+    const bw = 13;
+    for (let py = 0; py < ih; py++) {
+      const [r2, g2, b2] = viridis(1 - py / Math.max(1, ih - 1));
+      g.fillStyle = `rgb(${Math.round(255 * r2)},${Math.round(255 * g2)},${Math.round(255 * b2)})`;
+      g.fillRect(bx, pad.t + py, bw, 1.5);
+    }
+    g.strokeStyle = fg;
+    g.globalAlpha = 0.35;
+    g.lineWidth = 1;
+    g.strokeRect(bx, pad.t, bw, ih);
+    g.globalAlpha = 1;
+    g.fillStyle = fg;
+    g.fillText(`${(hi / 1e6).toFixed(0)} M`, bx + bw + 4, pad.t + 8);
+    g.fillText(`${(lo / 1e6).toFixed(0)} M`, bx + bw + 4, pad.t + ih);
+    g.save();
+    g.translate(w - 5, pad.t + ih / 2 + 26);
+    g.rotate(-Math.PI / 2);
+    g.fillText(es ? 'cota predicha' : 'predicted bound', 0, 0);
     g.restore();
   }, [surface, theme, es, trace]);
 
@@ -169,7 +195,9 @@ export function SensitivitySurface({
             const c = ref.current;
             if (!c || surface.length === 0) return;
             const rect = c.getBoundingClientRect();
-            const pad = { l: 52, r: 12, t: 10, b: 34 };
+            // MUST match the drawing pads above; when they drifted apart the readout named a
+            // different cell from the one under the cursor.
+            const pad = { l: 62, r: 84, t: 10, b: 34 };
             const iw = rect.width - pad.l - pad.r;
             const ih = rect.height - pad.t - pad.b;
             const xi = Math.floor(((e.clientX - rect.left - pad.l) / iw) * RATES.length);

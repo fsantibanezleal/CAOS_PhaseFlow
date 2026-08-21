@@ -13,6 +13,7 @@ import { BenchPlan, PitProfile } from '../viz/SectionViews.tsx';
 import { CapacityChart, CoherenceChart, GradeStripChart, MethodBars, ProductionChart } from '../viz/Charts.tsx';
 import { periodCss } from '../viz/colormap.ts';
 import { BoundPanel, LearnedPanel, RiskPanel } from '../viz/Ladder.tsx';
+import { DegeneracyCollapse } from '../viz/Diagrams.tsx';
 import { Absent, PanelBoundary } from '../viz/PanelBoundary.tsx';
 import { SensitivitySurface } from '../viz/Sensitivity.tsx';
 
@@ -196,8 +197,8 @@ export default function Tool() {
           <MethodBars rows={trace.methods.map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs, comparable: m.rung !== 'beyond' }))} />
           <Callout variant="note" title={es ? 'Como leer esto' : 'How to read this'}>
             {es
-              ? 'La barra es la brecha a la MISMA cota certificada, asi que estos metodos son comparables. La cota no es un plan: es el optimo exacto de la relajacion LP, y ningun plan CPIT puede superarla. Los dos peldanos BEYOND van atenuados y marcados porque no entran en esa comparacion: min-width no vuelve a imponer capacidad y destination-toposort resuelve un problema mas rico, asi que sus barras responden otra pregunta.'
-              : 'The bar is the gap to the SAME certified bound, so these methods are comparable. The bound is not a schedule: it is the exact optimum of the LP relaxation, and no CPIT schedule can beat it. The two BEYOND rungs are drawn faded and marked, because they are not in that comparison: min-width does not re-impose capacity and destination-toposort solves a richer problem, so their bars answer a different question.'}{' '}
+              ? 'La pista ES la cota certificada, la misma para todos los metodos de este caso, y el relleno es el NPV que el plan realmente captura. Lo rayado a la derecha es la brecha, a la misma escala en cada fila: no es un numero aparte, es lo que quedo sobre la mesa. La cota no es un plan, es el optimo exacto de la relajacion LP, y ningun plan CPIT puede superarla. Los dos peldanos BEYOND van atenuados y marcados porque no entran en esa comparacion: min-width no vuelve a imponer capacidad y destination-toposort resuelve un problema mas rico, asi que sus barras responden otra pregunta.'
+              : 'The track IS the certified bound, the same one for every method on this case, and the fill is the NPV the schedule actually captured. The hatching on the right is the gap, at the same scale on every row: it is not a separate number, it is what was left on the table. The bound is not a schedule, it is the exact optimum of the LP relaxation, and no CPIT schedule can beat it. The two BEYOND rungs are drawn faded and marked, because they are not in that comparison: min-width does not re-impose capacity and destination-toposort solves a richer problem, so their bars answer a different question.'}{' '}
             <Cite id="chicoisne2012" /> <Cite id="munoz2017" />
           </Callout>
           <div className="pf-scroll-x">
@@ -242,7 +243,7 @@ export default function Tool() {
           </PanelBoundary>
           <PanelBoundary title={es ? 'Riesgo' : 'Risk'}>
             {trace.ensemble
-              ? <RiskPanel ensemble={trace.ensemble} theme={st.theme} es={es} />
+              ? <RiskPanel ensemble={trace.ensemble} es={es} />
               : <Absent title={es ? 'Riesgo' : 'Risk'} what={es ? 'el ensemble de incertidumbre' : 'the uncertainty ensemble'} es={es} />}
           </PanelBoundary>
           <div className="pf-panel">
@@ -278,40 +279,130 @@ export default function Tool() {
       id: 'evidence',
       label: es ? 'Controles' : 'Controls',
       content: (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div className="pf-kpis">
-            <div className="pf-kpi"><b>{trace.controls.dualitySetMatches ? 'PASS' : 'FAIL'}</b><span>{es ? 'dualidad' : 'duality'}</span></div>
-            <div className="pf-kpi"><b>{trace.controls.dualityBoundError.toExponential(1)}</b><span>{es ? 'error de cota' : 'bound error'}</span></div>
-            <div className="pf-kpi"><b>{trace.controls.boundGeqFeasible ? 'PASS' : 'FAIL'}</b><span>{es ? 'cota >= factible' : 'bound >= feasible'}</span></div>
-            <div className="pf-kpi"><b>{trace.controls.orderInvariant ? 'PASS' : 'FAIL'}</b><span>{es ? 'invariante al orden' : 'order invariant'}</span></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* A row of PASS chips is a CLAIM. This tab has to be where the claim is backed, so each
+              control now states what it asserts, what was actually measured on THIS case, and only then
+              the verdict. The four chips read PASS, 0.0e+0, PASS, PASS, with nothing tying the number to
+              the assertion it belonged to and no way to tell what had been compared with what. */}
+          <div className="pf-scroll-x">
+            <table className="pf-table pf-ctrl-table">
+              <thead>
+                <tr>
+                  <th>{es ? 'control' : 'control'}</th>
+                  <th className="wrap">{es ? 'que afirma' : 'what it asserts'}</th>
+                  <th className="wrap">{es ? 'medido en este caso' : 'measured on this case'}</th>
+                  <th>{es ? 'veredicto' : 'verdict'}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>duality-set</code></td>
+                  <td className="wrap">{es
+                    ? 'con tasa cero y capacidad ilimitada, el conjunto que CPIT extrae es exactamente el pit final de Lerchs-Grossmann'
+                    : 'at rate zero with unlimited capacity, the set CPIT mines is exactly the Lerchs-Grossmann ultimate pit'}</td>
+                  <td className="wrap">{es ? 'diferencia simetrica de conjuntos' : 'symmetric set difference'}:{' '}
+                    <b>{trace.controls.dualitySetMatches ? '0' : '\u2260 0'}</b> {es ? 'bloques' : 'blocks'}</td>
+                  <td><span className={'pf-badge ' + (trace.controls.dualitySetMatches ? 'pass' : 'fail')}>{trace.controls.dualitySetMatches ? 'PASS' : 'FAIL'}</span></td>
+                </tr>
+                <tr>
+                  <td><code>duality-value</code></td>
+                  <td className="wrap">{es
+                    ? 'en ese mismo limite la cota certificada iguala el valor del pit final'
+                    : 'in that same limit the certified bound equals the value of the ultimate pit'}</td>
+                  <td className="wrap">{es ? 'error relativo' : 'relative error'}: <b>{trace.controls.dualityBoundError.toExponential(1)}</b></td>
+                  <td><span className={'pf-badge ' + (trace.controls.dualityBoundError < 1e-6 ? 'pass' : 'fail')}>{trace.controls.dualityBoundError < 1e-6 ? 'PASS' : 'FAIL'}</span></td>
+                </tr>
+                <tr>
+                  <td><code>bound-dominates</code></td>
+                  <td className="wrap">{es
+                    ? 'ningun plan factible supera la cota. Un plan que la supera no es un plan mejor: es una cota rota o un plan infactible'
+                    : 'no feasible schedule beats the bound. A schedule that beats it is not a better schedule: it is a broken bound or an infeasible plan'}</td>
+                  <td className="wrap">{es ? 'mejor brecha' : 'best gap'}: <b>{trace.controls.bestGapPct?.toFixed(3) ?? '-'}%</b> ({es ? 'debe ser no negativa' : 'must be non-negative'})</td>
+                  <td><span className={'pf-badge ' + (trace.controls.boundGeqFeasible ? 'pass' : 'fail')}>{trace.controls.boundGeqFeasible ? 'PASS' : 'FAIL'}</span></td>
+                </tr>
+                <tr>
+                  <td><code>order-invariance</code></td>
+                  <td className="wrap">{es
+                    ? 'permutar el orden de entrada de los bloques no cambia el resultado. Si lo cambiara, el motor estaria leyendo el orden del archivo como si fuera informacion'
+                    : 'permuting the input order of the blocks does not change the result. If it did, the engine would be reading file order as though it were information'}</td>
+                  <td className="wrap">{es ? 'deriva de NPV bajo permutacion' : 'NPV drift under permutation'}: <b>{(trace.controls.orderInvarianceError ?? 0).toExponential(1)}</b></td>
+                  <td><span className={'pf-badge ' + (trace.controls.orderInvariant ? 'pass' : 'fail')}>{trace.controls.orderInvariant ? 'PASS' : 'FAIL'}</span></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <Callout variant="note" title={es ? 'Que prueban' : 'What they prove'}>
-            {es
-              ? 'A tasa cero con capacidad ilimitada, CPIT colapsa al pit final. El conjunto extraido debe igualar al pit exacto bloque a bloque, la cota debe igualar su valor, y ningun orden puede cambiar el resultado. Fallar aqui es un error, no un resultado.'
-              : 'At rate zero with unlimited capacity, CPIT collapses to the ultimate pit. The mined set must equal the exact pit block for block, the bound must equal its value, and no ordering can change the result. A failure here is a bug, not a result.'}{' '}
-            <Cite id="lerchs1965" />
-          </Callout>
+
+          <DegeneracyCollapse />
+
+          <div className="pf-split pf-split--wide">
+            <div className="pf-panel">
+              <h4>{es ? 'Envolvente de brechas en este caso' : 'Gap envelope on this case'}</h4>
+              <p className="pf-cap">
+                {es ? 'mejor' : 'best'} <b>{trace.controls.bestGapPct?.toFixed(2) ?? '-'}%</b> {' · '}
+                {es ? 'peor' : 'worst'} <b>{trace.controls.worstGapPct?.toFixed(2) ?? '-'}%</b> {' · '}
+                {es ? 'dispersion' : 'spread'}{' '}
+                <b>{trace.controls.worstGapPct != null && trace.controls.bestGapPct != null
+                  ? (trace.controls.worstGapPct - trace.controls.bestGapPct).toFixed(2)
+                  : '-'}%</b>
+              </p>
+              <p className="pf-cap pf-muted">
+                {es
+                  ? 'La dispersion es un control por si misma. En ctrl-abundant la capacidad casi no limita, todos los metodos deberian encontrar casi el mismo plan y la dispersion deberia colapsar. Si no colapsa, la escalera esta midiendo su propio ruido en vez de una diferencia entre metodos.'
+                  : 'The spread is a control in its own right. On ctrl-abundant capacity barely binds, every method should find nearly the same schedule and the spread should collapse. If it does not collapse, the ladder is measuring its own noise rather than a difference between methods.'}
+              </p>
+            </div>
+
+            <div className="pf-panel">
+              <h4>{es ? 'Hechos del contrato de datos' : 'Data-contract facts'}</h4>
+              <table className="pf-table pf-facts">
+                <tbody>
+                  {Object.entries(trace.contract.facts ?? {}).map(([k, v]) => (
+                    <tr key={k}><td><code>{k}</code></td><td>{fmtInt(Number(v), st.lang)}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="pf-cap pf-muted">
+                {es
+                  ? 'Un modelo de bloques se vuelve instancia solo si pasa el contrato de ingesta. Estos son los numeros con los que paso, no los que se esperaban.'
+                  : 'A block model becomes an instance only if it passes the ingestion contract. These are the numbers it passed with, not the ones that were expected.'}
+              </p>
+            </div>
+          </div>
+
           {trace.contract.flags.length > 0 && (
             <div className="pf-panel">
               <h4>{es ? 'Marcas del contrato de datos' : 'Data-contract flags'}</h4>
+              <p className="pf-cap pf-muted">
+                {es
+                  ? 'Legales pero notables: el caso se acepta y la condicion viaja hasta la pantalla en vez de quedarse en un log.'
+                  : 'Legal but notable: the case is accepted and the condition rides all the way to the screen instead of staying in a log.'}
+              </p>
               <ul className="pf-cap">
                 {trace.contract.flags.map((f) => <li key={f.code}><code>{f.code}</code>: {f.detail}</li>)}
               </ul>
             </div>
           )}
+
           <div className="pf-panel">
             <h4>{es ? 'Carril' : 'Lane'}</h4>
             <p className="pf-cap">
-              <span className={`pf-badge ${manifest.lane}`}>{manifest.lane}</span>{' '}
-              {fmtInt(manifest.gate.n_blocks, st.lang)} {es ? 'bloques' : 'blocks'} ·{' '}
-              {fmtInt(manifest.gate.n_arcs, st.lang)} {es ? 'arcos' : 'arcs'} ·{' '}
-              {(manifest.gate.trace_bytes / 1024).toFixed(0)} kB ·{' '}
+              <span className={'pf-badge ' + manifest.lane}>{manifest.lane}</span>{' '}
+              {fmtInt(manifest.gate.n_blocks, st.lang)} {es ? 'bloques' : 'blocks'} {' · '}
+              {fmtInt(manifest.gate.n_arcs, st.lang)} {es ? 'arcos' : 'arcs'} {' · '}
+              {(manifest.gate.trace_bytes / 1024).toFixed(0)} kB {' · '}
               {(manifest.gate.offline_ms / 1000).toFixed(1)} s {es ? 'offline' : 'offline'}
             </p>
             {manifest.gate.reasons.length > 0 && (
               <ul className="pf-cap pf-muted">{manifest.gate.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
             )}
           </div>
+
+          <Callout variant="note" title={es ? 'Por que estos y no una suite de tests' : 'Why these and not a test suite'}>
+            {es
+              ? 'Un test afirma que el codigo hace lo que su autor creyo. Estos controles afirman algo que se sabe con independencia del codigo: en el limite degenerado la respuesta es el pit final, calculado por otro algoritmo. Es la unica clase de verificacion que sobrevive a que el autor se equivoque en los dos lados a la vez.'
+              : 'A test asserts that the code does what its author believed. These controls assert something known independently of the code: in the degenerate limit the answer is the ultimate pit, computed by a different algorithm. That is the only class of check that survives the author being wrong on both sides at once.'}{' '}
+            <Cite id="lerchs1965" />
+          </Callout>
         </div>
       ),
     },
