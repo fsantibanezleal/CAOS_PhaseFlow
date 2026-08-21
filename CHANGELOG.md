@@ -3,6 +3,63 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.07.000] - 2026-08-20
+
+### Fixed - the footer was not badly styled, it was badly fed
+
+ADR-0016 asks the footer for a ONE-LINE provenance (engine + citation + licence) and a one-line honest
+disclaimer. PhaseFlow was passing an 86-word paragraph and a 60-word paragraph: 174 words. At 0.05.000
+that produced a 263px footer and I "fixed" it by capping the height at 96px with an inner scrollbar,
+which fixed nothing - it hid two thirds of the text behind a scrollbar nobody would find and cut the
+last citation mid-sentence at "Moreno and Newman 2013,". Capping a container is not the same as making
+its contents fit.
+
+The text is now the one-line form the ADR specifies, the height cap is gone, and the chrome is
+tightened (24px padding and a 1.5 line-height over seven line-boxes, plus a `margin-left: auto` on the
+version chip that opened a 271px gap and pushed everything after it onto a fresh row). Footer: 178px to
+**122px**, with `overflow: visible` and nothing hidden. The long-form provenance already lives on
+Implementation and Benchmark and in the architecture modal, where there is room to read it.
+
+### Fixed - the architecture diagrams were hand-placed and one was clipped
+
+Every diagram positioned each box with a literal x, y and width, then poured the label in without ever
+measuring it against the box meant to hold it. That works exactly as long as no string changes length.
+It did not: on "What it is" the closing caption started at x=586 and needed about 224px inside a
+760-unit canvas, so it shipped as "the gap between them is the honest r", cut mid-word. Several other
+labels sat within a few pixels of their own box edge, which is the same defect one translation away
+from firing.
+
+Replaced the coordinates with a small layout engine: nodes size themselves from their content, rows
+distribute the leftover width as equal gaps, and captions are centred rather than positioned. A label
+can now change or be translated into a longer language without running off the drawing.
+
+Also fixed in "The lanes": the artifact-to-live-lane handoff was routed as a down-then-left elbow that
+travelled along the bottom row's centre line and passed straight THROUGH the stage box. It now drops
+into the empty band between the rows and enters `src/engine/` from above.
+
+### Fixed - the rail carried three levels of chrome for four facts
+
+Four bordered cards holding 804px of content in a 715px rail, so it scrolled and the last section was
+cut. The Scenario card alone was 183px to show four short facts, because each fact was a separate `<p>`
+with its own margin, inside a card with its own border, padding and internal gap, inside the rail;
+and inside the Method card the four KPI readouts were themselves bordered boxes inside that box.
+
+Sections now get ONE hairline between them, the KPI readouts use a tint instead of a border, and the
+scenario is a compact label/value list. Scenario 183px to **154px**, rail content 804px to 722px, and
+with the footer height returned the rail shows 689px of it and scrolls itself for the rest, which is
+what ADR-0071 allows a rail to do.
+
+### Added - a gate for the class of defect, not the instance
+
+`frontend/scripts/check-arch-bounds.mjs`, wired into `npm test` and therefore into CI. It evaluates the
+architecture module, and for every label asserts that its span - accounting for `text-anchor` - ends
+inside the viewBox, using deliberately pessimistic advance widths so it trips before a browser would.
+Verified by reintroducing the exact shipped defect: it fails with
+`"the gap between them is the honest numbe" spans x 586..836 (viewBox width 760)`.
+
+There is a browser-driven companion (`tools/visual-verify/_pf-archbounds.mjs`) that checks all five
+tabs in both languages against real text shaping; it catches the same defect on the deployed 0.6.2.
+
 ## [0.06.002] - 2026-08-20
 
 ### Fixed - the reading setting, which is what "ugly UI" was describing
