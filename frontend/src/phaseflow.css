@@ -479,3 +479,59 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
  * body text. */
 .pf-fig > svg { max-width: 760px; margin-inline: auto; }
 .pf-fig > figcaption { max-width: 860px; margin-inline: auto; }
+
+/* The bound table's NOTE column carries a sentence ("14 iterations, 109,760 nodes, compiled pricing,
+ * bound certified by one exact solve"). In an auto-layout table competing with five numeric columns it
+ * was allotted about 9ch and wrapped into an eight-line cell, which made one row taller than the four
+ * numeric columns beside it put together. Give the sentence the room it needs and pin the numbers. */
+.pf-bound-table { table-layout: fixed; width: 100%; }
+.pf-bound-table th:nth-child(1), .pf-bound-table td:nth-child(1) { width: 26%; white-space: normal; }
+.pf-bound-table th:nth-child(2), .pf-bound-table td:nth-child(2) { width: 11%; }
+.pf-bound-table th:nth-child(3), .pf-bound-table td:nth-child(3) { width: 12%; }
+.pf-bound-table th:nth-child(4), .pf-bound-table td:nth-child(4) { width: 9%; }
+.pf-bound-table th:nth-child(5), .pf-bound-table td:nth-child(5) { width: 42%; white-space: normal; line-height: 1.45; }
+.pf-bound-table td { vertical-align: top; }
+
+/* ------------------------------------------------------------------------------------------------
+ * READING MEASURE ON THE PROSE ROUTES
+ *
+ * The content pages ran their paragraphs the full width of the shell: 1392px at a 1440 viewport, which
+ * is roughly 200 characters per line. Typographic practice puts comfortable running text at 45-75
+ * characters, and past about 90 the eye loses the line return, so a reader either re-reads lines or
+ * gives up. The pages were deep and genuinely hard to read, which is what "trash content and ugly UI"
+ * was describing: not the words, the setting of them.
+ *
+ * Only the TEXT is capped. Tables and figures keep their own width, because a wide table wants the room
+ * and a figure is already capped at its design width. The App route is a dashboard, not prose, and is
+ * excluded by the :not(.pf-layout).
+ * --------------------------------------------------------------------------------------------- */
+.page-body:not(.pf-layout) > p,
+.page-body:not(.pf-layout) > ul,
+.page-body:not(.pf-layout) > ol,
+.page-body:not(.pf-layout) > h2,
+.page-body:not(.pf-layout) > h3,
+.page-body:not(.pf-layout) > .callout,
+.tabpanel > p,
+.tabpanel > ul,
+.tabpanel > ol {
+  max-width: 78ch;
+}
+
+/* A sentence in a table cell must read left to right from a straight edge. `.pf-table` right-aligns
+ * every column but the first, which is right for numbers and wrong for prose: the trap descriptions on
+ * Implementation were right-aligned, so each row started at a different horizontal position and the
+ * column had a ragged LEFT edge, which is the edge the eye returns to. */
+.pf-table td.wrap, .pf-table th.wrap,
+.pf-table td:last-child, .pf-table th:last-child {
+  text-align: left;
+}
+.pf-table td:last-child:not(.wrap) { white-space: normal; }
+
+/* With the text capped at 78ch the document sat hard left in a 1392px page with 700px of dead space to
+ * the right, which reads as a broken layout rather than a deliberate measure. Centre the whole content
+ * column so the capped text, the tables and the figures line up as one document. Tables keep the full
+ * column (a numeric table wants the room) and figures stay at their own 760px cap. */
+.page-body:not(.pf-layout) {
+  max-width: 1000px;
+  margin-inline: auto;
+}

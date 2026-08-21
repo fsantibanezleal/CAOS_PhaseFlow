@@ -3,6 +3,27 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.06.002] - 2026-08-20
+
+### Fixed - the reading setting, which is what "ugly UI" was describing
+
+- **The prose ran the full width of the shell.** 1392px at a 1440 viewport is roughly 200 characters per
+  line; comfortable running text is 45-75, and past about 90 the eye loses the line return. Every
+  content page was deep and genuinely hard to read. Text is now capped at 78ch and the whole content
+  column is centred at 1000px so the text, the tables and the figures line up as one document. Tables
+  keep the full column and figures keep their own 760px cap.
+
+- **Sentences in table cells were right-aligned.** `.pf-table` right-aligns every column but the first,
+  which is correct for numbers and wrong for prose: the Implementation trap descriptions each started at
+  a different horizontal position, giving the column a ragged LEFT edge, which is the edge the eye
+  returns to on every line.
+
+- **The bound table's note column wrapped into eight-line cells.** In an auto-layout table competing
+  with five numeric columns, a sentence like "14 iterations, 109,760 nodes, compiled pricing, bound
+  certified by one exact solve" was allotted about 9ch, making one row taller than the four numeric
+  columns beside it put together. Column widths pinned; rows measured 52 and 63px after, against roughly
+  200 before.
+
 ## [0.06.001] - 2026-08-20
 
 ### Fixed
