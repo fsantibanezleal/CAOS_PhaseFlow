@@ -64,8 +64,20 @@ export function UPlotChart({ data, build, height = 300, testId, onCursor }: Plot
     }
     const p = new uPlot(opts, data, el);
     plot.current = p;
-    const ro = new ResizeObserver(() => p.setSize({ width: el.clientWidth || w, height }));
-    ro.observe(el);
+    // Observe the PARENT, never `el`. uPlot draws INTO `el`, so resizing the plot changes `el`'s own
+    // content box, which re-fires an observer attached to `el`, which resizes again: the chart grows
+    // without limit and takes the page with it. Measured on the Profile and Plan tabs. The parent's box
+    // is set by the layout and does not move when the plot inside it changes, which breaks the cycle.
+    // The no-change guard is belt and braces for sub-pixel jitter.
+    let lastW = el.clientWidth || w;
+    const ro = new ResizeObserver(() => {
+      const host = el.parentElement ?? el;
+      const w2 = host.clientWidth || lastW;
+      if (Math.abs(w2 - lastW) < 1) return;
+      lastW = w2;
+      p.setSize({ width: w2, height });
+    });
+    ro.observe(el.parentElement ?? el);
     return () => { ro.disconnect(); p.destroy(); plot.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, height]);

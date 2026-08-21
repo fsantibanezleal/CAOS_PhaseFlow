@@ -84,6 +84,10 @@ export function useCase(initialCaseId?: string): CaseState {
 
   useEffect(() => {
     if (!playing || !trace) return;
+    // Pressing play at the END must REPLAY. Without this the cursor is left on the last period when the
+    // run finishes, so the next press starts the interval, the first tick immediately re-hits the
+    // end condition, playback stops again and the button reads as dead. Rewind on start instead.
+    setCursor((c) => (c + 1 >= trace.scenario.periods ? 0 : c));
     const step = () => {
       setCursor((c) => {
         if (c + 1 >= trace.scenario.periods) { setPlaying(false); return c; }
