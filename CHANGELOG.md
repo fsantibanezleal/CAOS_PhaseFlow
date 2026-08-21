@@ -3,6 +3,20 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.06.001] - 2026-08-20
+
+### Fixed
+
+- **Every deep route returned HTTP 404 on production while rendering perfectly.** The `spa-404.mjs`
+  postbuild copied `index.html` to `404.html`, which is what makes a deep link RENDER on GitHub Pages,
+  and that was mistaken for the whole fix. MEASURED on the deployed site after 0.06.000: `/app`,
+  `/introduction`, `/methodology`, `/implementation`, `/experiments` and `/benchmark` all answered 404
+  with the correct page on screen, so any check that only looks at the screen calls it fine. A shared
+  link was a 404 to every crawler and every link-preview fetcher, and the product spec asks for
+  200-status deep links. The postbuild now writes a real `index.html` at each route path, including the
+  13 `/focus/<caseId>` routes, whose ids are read from the built manifest index rather than hardcoded so
+  they cannot drift when a case is added or removed. 19 routes materialised, all verified 200.
+
 ## [0.06.000] - 2026-08-20
 
 ### Fixed - the App tabs and the content pages, measured on the rendered page
