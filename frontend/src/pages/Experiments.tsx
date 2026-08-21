@@ -3,6 +3,7 @@ import { Callout, Cite, Refs, Tabs, useShellLang } from '@fasl-work/caos-app-she
 import { fmtInt, loadIndex, loadManifest } from '../lib/artifacts.ts';
 import type { CaseIndex, CaseManifest } from '../lib/contract.types.ts';
 import { MethodBars } from '../viz/Charts.tsx';
+import { CaseRoles } from '../viz/Diagrams.tsx';
 
 export default function Experiments() {
   const lang = useShellLang();
@@ -34,6 +35,7 @@ export default function Experiments() {
               ? 'La matriz de casos no es una lista de ejemplos: cada caso tiene un ROL en el argumento, y un caso sin rol es un caso que nadie necesita.'
               : 'The case matrix is not a list of examples: each case has a ROLE in the argument, and a case with no role is a case nobody needs.'}
           </p>
+          <CaseRoles />
           <table className="pf-table">
             <thead><tr><th>{es ? 'categoria' : 'category'}</th><th>{es ? 'que prueba' : 'what it proves'}</th><th>{es ? 'casos' : 'cases'}</th></tr></thead>
             <tbody>

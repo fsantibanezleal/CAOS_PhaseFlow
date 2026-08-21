@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Callout, Cite, Refs, useShellLang } from '@fasl-work/caos-app-shell';
+import { TwoBounds } from '../viz/Diagrams.tsx';
 import { fmtInt, fmtMoney, loadIndex, loadManifest, loadTrace } from '../lib/artifacts.ts';
 import type { CaseManifest, ScheduleTrace } from '../lib/contract.types.ts';
 
@@ -135,6 +136,7 @@ export default function Benchmark() {
           : 'With two capacities per period there are two bounds. Algorithm 4 relaxes the resources one at a time and keeps the smaller: certified, and looser. Bienstock-Zuckerberg computes the JOINT bound. The difference between them is the part of a gap that belongs to the BOUND rather than the plan, and this table separates them case by case. BZ does not run where the time-expanded graph exceeds the budget for a pure-Python max-flow, and the table says so there.'}{' '}
         <Cite id="munoz2017" />
       </p>
+      <TwoBounds />
       <div className="pf-scroll-x">
         <table className="pf-table">
           <thead>

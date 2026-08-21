@@ -4,13 +4,7 @@
 import { Cite } from '@fasl-work/caos-app-shell';
 import { fmtInt, fmtMoney } from '../lib/artifacts.ts';
 import type { BoundReport, EnsembleReport, LearnedReport, TraceMethod } from '../lib/contract.types.ts';
-import { UPlotChart } from './Charts.tsx';
-import uPlot from 'uplot';
 
-function cssVar(name: string, fallback: string): string {
-  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return v || fallback;
-}
 
 /**
  * WHOSE looseness is the gap?
@@ -95,7 +89,7 @@ export function BoundPanel({ bound, best, es }: { bound: BoundReport; best: Trac
 /**
  * What geological uncertainty does to each plan. NOT a stochastic optimiser, and it says so.
  */
-export function RiskPanel({ ensemble, theme, es }: { ensemble: EnsembleReport; theme: string; es: boolean }) {
+export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: boolean }) {
   if (!ensemble.ran || !ensemble.methods) {
     return (
       <div className="pf-panel">
@@ -104,39 +98,104 @@ export function RiskPanel({ ensemble, theme, es }: { ensemble: EnsembleReport; t
       </div>
     );
   }
-  const idx = ensemble.methods.map((_, i) => i + 1);
-  const data: uPlot.AlignedData = [
-    idx,
-    (ensemble.p10 ?? []).map((v) => v / 1e6),
-    (ensemble.expected ?? []).map((v) => v / 1e6),
-    (ensemble.p90 ?? []).map((v) => v / 1e6),
-    (ensemble.meanModel ?? []).map((v) => v / 1e6),
-  ];
+  // WHY THIS IS NOT A LINE CHART ANY MORE.
+  //
+  // It used to plot four uPlot series against the method INDEX, 1..N. That draws a line from
+  // "bench-by-bench" to "nested-shells" to "toposort-greedy" as though the x axis were a continuum,
+  // when it is an unordered list of different algorithms: the slope between two points meant nothing.
+  // The method names never appeared anywhere on it either, so nine ticks read 1..9 and the reader could
+  // not tell which plan was which. The axis was labelled "plan" in both languages, which was the only
+  // hint, and it was not enough.
+  //
+  // What the data actually is: for each method, a P10-to-P90 interval with an expected value inside it.
+  // That is a categorical range comparison, so it is drawn as one - a row per method, names on the left
+  // where there is room for them, intervals on a shared linear scale where they can be compared, and the
+  // two answers the panel exists to separate (best by expected, best by P10) marked ON the rows.
+  const rows = ensemble.methods.map((m, i) => ({
+    method: m,
+    p10: (ensemble.p10?.[i] ?? 0) / 1e6,
+    exp: (ensemble.expected?.[i] ?? 0) / 1e6,
+    p90: (ensemble.p90?.[i] ?? 0) / 1e6,
+    mean: (ensemble.meanModel?.[i] ?? 0) / 1e6,
+  }));
+  const lo = Math.min(...rows.map((r) => Math.min(r.p10, r.mean)));
+  const hi = Math.max(...rows.map((r) => Math.max(r.p90, r.mean)));
+  const span = Math.max(1e-9, hi - lo);
+  const padF = span * 0.08;
+  const dLo = lo - padF;
+  const dHi = hi + padF;
+  const VBW = 620;
+  const NAMEW = 168;
+  const PLOTW = VBW - NAMEW - 58;
+  const ROWH = 22;
+  const H = rows.length * ROWH + 46;
+  const xOf = (v: number) => NAMEW + ((v - dLo) / (dHi - dLo)) * PLOTW;
+  const ticks = [dLo, dLo + (dHi - dLo) / 2, dHi];
+
   return (
     <div className="pf-panel" data-testid="risk-panel">
       <h4>{es ? 'Riesgo geologico' : 'Geological risk'}</h4>
-      <UPlotChart
-        key={`risk-${theme}`}
-        data={data}
-        height={210}
-        build={(w, h) => ({
-          width: w,
-          height: h,
-          scales: { x: { time: false }, y: {} },
-          axes: [
-            { stroke: cssVar('--color-fg-subtle', '#8b949e'), label: es ? 'plan' : 'plan' },
-            { stroke: cssVar('--color-fg-subtle', '#8b949e'), label: 'M' },
-          ],
-          series: [
-            { label: 'plan' },
-            { label: 'P10', stroke: cssVar('--color-bad', '#f85149'), width: 1.6, dash: [4, 3] },
-            { label: es ? 'esperado' : 'expected', stroke: cssVar('--color-accent', '#58a6ff'), width: 2.4 },
-            { label: 'P90', stroke: cssVar('--color-good', '#3fb950'), width: 1.6, dash: [4, 3] },
-            { label: es ? 'modelo medio' : 'mean model', stroke: cssVar('--color-warn', '#d29922'), width: 1.4 },
-          ],
-          legend: { live: true },
+
+      <svg viewBox={`0 0 ${VBW} ${H}`} role="img" className="pf-riskplot"
+           aria-label={es ? 'Intervalo P10 a P90 por metodo' : 'P10 to P90 interval per method'}
+           style={{ width: '100%', height: 'auto', display: 'block' }}>
+        <style>{`
+          .rk-n  { fill: currentColor; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace }
+          .rk-t  { fill: currentColor; font: 10px system-ui, sans-serif; opacity: .7 }
+          .rk-g  { stroke: currentColor; opacity: .16; stroke-width: 1 }
+          .rk-bar{ stroke: var(--color-fg-subtle, currentColor); stroke-width: 5; opacity: .45; stroke-linecap: round }
+          .rk-row:hover .rk-bar { opacity: .8 }
+          .rk-row:hover .rk-n { font-weight: 700 }
+        `}</style>
+
+        {ticks.map((v, i) => (
+          <g key={i}>
+            <line className="rk-g" x1={xOf(v)} y1={16} x2={xOf(v)} y2={H - 28} />
+            <text className="rk-t" x={xOf(v)} y={H - 16} textAnchor={i === 0 ? 'start' : i === 2 ? 'end' : 'middle'}>
+              {v.toFixed(0)} M
+            </text>
+          </g>
+        ))}
+
+        {rows.map((r, i) => {
+          const y = 24 + i * ROWH;
+          const isExp = r.method === ensemble.bestByExpected;
+          const isP10 = r.method === ensemble.bestByP10;
+          return (
+            <g className="rk-row" key={r.method}>
+              <title>
+                {`${r.method}  P10 ${r.p10.toFixed(1)} M  ${es ? 'esperado' : 'expected'} ${r.exp.toFixed(1)} M  P90 ${r.p90.toFixed(1)} M`}
+              </title>
+              <rect x={0} y={y - 10} width={VBW} height={ROWH - 2} fill="transparent" />
+              <text className="rk-n" x={4} y={y + 4}>
+                {r.method.length > 22 ? `${r.method.slice(0, 21)}…` : r.method}
+              </text>
+              {/* the P10..P90 interval */}
+              <line className="rk-bar" x1={xOf(r.p10)} y1={y} x2={xOf(r.p90)} y2={y} />
+              {/* the mean-model value: what you would have believed with no ensemble at all */}
+              <line x1={xOf(r.mean)} y1={y - 6} x2={xOf(r.mean)} y2={y + 6}
+                    stroke="var(--color-warn, #d29922)" strokeWidth={1.6} />
+              {/* expected value */}
+              <circle cx={xOf(r.exp)} cy={y} r={isExp ? 5 : 3.6}
+                      fill="var(--color-accent, #58a6ff)"
+                      stroke={isExp ? 'currentColor' : 'none'} strokeWidth={1.4} />
+              {/* the robust choice is marked at its P10, because that is the number it wins on */}
+              {isP10 && (
+                <circle cx={xOf(r.p10)} cy={y} r={4.4} fill="none"
+                        stroke="var(--color-good, #3fb950)" strokeWidth={2} />
+              )}
+            </g>
+          );
         })}
-      />
+      </svg>
+
+      <div className="pf-mb-key" aria-hidden="true">
+        <span><i style={{ background: 'var(--color-fg-subtle)', opacity: 0.45 }} />P10 - P90</span>
+        <span><i style={{ background: 'var(--color-accent)', borderRadius: '50%', width: 8, height: 8 }} />{es ? 'esperado' : 'expected'}</span>
+        <span><i style={{ background: 'var(--color-warn)', width: 3, height: 11 }} />{es ? 'modelo medio' : 'mean model'}</span>
+        <span><i style={{ background: 'transparent', border: '2px solid var(--color-good)', borderRadius: '50%', width: 9, height: 9 }} />{es ? 'mejor por P10' : 'best by P10'}</span>
+      </div>
+
       <div className="pf-scroll-x">
         <table className="pf-table">
           <thead>
