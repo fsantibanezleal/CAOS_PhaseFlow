@@ -505,16 +505,29 @@ export default function Tool() {
 
         <div className="pf-group">
           <h4>{es ? 'Escenario' : 'Scenario'}</h4>
-          <p className="pf-cap">
-            {T} {es ? 'periodos' : 'periods'} · {es ? 'tasa' : 'rate'} {(trace.scenario.discountRate * 100).toFixed(0)}%
-            {trace.scenario.declared && <> · <span className="pf-badge">{es ? 'escenario declarado' : 'declared scenario'}</span></>}
-          </p>
-          {trace.scenario.resources.map((r) => (
-            <p key={r.id} className="pf-cap pf-muted">{r.name}: {fmtTonnes(r.limitPerPeriod[0])} / {es ? 'periodo' : 'period'}</p>
-          ))}
-          {trace.published.best_known_gap_pct != null && (
-            <p className="pf-cap">
-              {es ? 'Brecha publicada mejor conocida' : 'Published best-known gap'}: <b>{trace.published.best_known_gap_pct}%</b>
+          {/* A label/value list, not a stack of paragraphs. Each of these facts used to be its own <p>
+              with its own margin, which turned four short facts into 183px of rail. They are static
+              context for the case, so they should read as a compact reference block and take the space
+              of one. */}
+          <dl className="pf-kv">
+            <div><dt>{es ? 'periodos' : 'periods'}</dt><dd>{T}</dd></div>
+            <div><dt>{es ? 'tasa' : 'rate'}</dt><dd>{(trace.scenario.discountRate * 100).toFixed(0)}%</dd></div>
+            {trace.scenario.resources.map((r) => (
+              <div key={r.id}>
+                <dt>{r.name}</dt>
+                <dd>{fmtTonnes(r.limitPerPeriod[0])}<i>/{es ? 'per' : 'per'}</i></dd>
+              </div>
+            ))}
+            {trace.published.best_known_gap_pct != null && (
+              <div>
+                <dt>{es ? 'brecha publicada' : 'published gap'}</dt>
+                <dd>{trace.published.best_known_gap_pct}%</dd>
+              </div>
+            )}
+          </dl>
+          {trace.scenario.declared && (
+            <p className="pf-cap pf-muted pf-declared">
+              <span className="pf-badge">{es ? 'escenario declarado' : 'declared scenario'}</span>
             </p>
           )}
         </div>
