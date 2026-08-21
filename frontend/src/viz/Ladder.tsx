@@ -26,7 +26,7 @@ export function BoundPanel({ bound, best, es }: { bound: BoundReport; best: Trac
     <div className="pf-panel" data-testid="bound-panel">
       <h4>{es ? 'De quien es la brecha' : 'Whose looseness is the gap'}</h4>
       <div className="pf-scroll-x">
-        <table className="pf-table">
+        <table className="pf-table pf-bound-table">
           <thead>
             <tr>
               <th>{es ? 'cota' : 'bound'}</th><th>{es ? 'valor' : 'value'}</th>
