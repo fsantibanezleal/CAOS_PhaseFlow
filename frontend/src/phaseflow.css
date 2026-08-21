@@ -415,7 +415,11 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
    viewport: 29% of the screen, permanently, on every route. The provenance is required and must not be
    deleted, so the footer is CAPPED and scrolls its own overflow. Nothing is lost, everything stays
    reachable, and the instrument gets the screen back. */
-.app-shell .site-footer { max-height: 96px; overflow-y: auto; overscroll-behavior: contain; }
+/* The footer no longer needs a height cap. The cap was treating the symptom: a 174-word footer was
+ * squeezed into 96px with an inner scrollbar, so the provenance was present in the DOM and unreadable on
+ * the screen, cut mid-citation. The text is now the one-line provenance and one-line disclaimer that
+ * ADR-0016 asks for, and it fits. A max-height here would only hide the next overrun the same way. */
+.app-shell .site-footer { overscroll-behavior: contain; }
 
 /* Figures on the content pages. Measured before these existed: every content page carried text,
    equations and DOIs and NOT ONE diagram, on a product whose subject is geometry. A figure is bounded
@@ -535,3 +539,70 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
   max-width: 1000px;
   margin-inline: auto;
 }
+
+/* ------------------------------------------------------------------------------------------------
+ * THE RAIL IS A CONTROL SURFACE, SO IT SHOULD BE DENSE
+ *
+ * MEASURED before this: four bordered cards holding 804px of content in a 715px rail, so it scrolled
+ * and the last section was cut off. The Scenario card alone was 183px to display four short facts.
+ *
+ * The cost was nested chrome. Every section was a card with its own 1px border, 8px radius, 10px
+ * padding and 8px internal gap; inside the Method card the four KPI readouts were themselves bordered
+ * boxes; and inside the Scenario card each fact was a separate paragraph with its own margin. Three
+ * levels of separation to group things that are already visually grouped by being next to each other
+ * under a heading.
+ *
+ * One hairline between sections is enough.
+ * --------------------------------------------------------------------------------------------- */
+.pf-rail .pf-group {
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 0 11px;
+  gap: 7px;
+}
+.pf-rail .pf-group:last-child { border-bottom: 0; padding-bottom: 0; }
+.pf-rail .pf-group > h4 { margin-bottom: 1px; }
+
+/* The KPI readouts were boxes inside a box inside a box. A tint separates them from the rail perfectly
+ * well and costs no border, no radius and no extra padding. */
+.pf-rail .pf-kpis { gap: 6px; grid-template-columns: 1fr 1fr; }
+.pf-rail .pf-kpi {
+  border: 0;
+  background: color-mix(in srgb, var(--color-fg-subtle) 9%, transparent);
+  padding: 6px 9px;
+}
+.pf-rail .pf-kpi b { font-size: 0.95rem; }
+
+/* The scenario facts: label left, value right, one tight row each. */
+.pf-kv { margin: 0; display: flex; flex-direction: column; gap: 0; }
+.pf-kv > div {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 3px 0;
+  border-bottom: 1px dotted color-mix(in srgb, var(--color-border) 70%, transparent);
+}
+.pf-kv > div:last-child { border-bottom: 0; }
+.pf-kv dt { font-size: 0.72rem; color: var(--color-fg-subtle); margin: 0; }
+.pf-kv dd {
+  margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem; white-space: nowrap;
+}
+.pf-kv dd i { font-style: normal; color: var(--color-fg-subtle); font-size: 0.68rem; margin-left: 1px; }
+.pf-declared { margin: 2px 0 0; }
+
+/* The case blurb is orientation, not reading matter: it should not out-weigh the control under it. */
+.pf-rail .pf-group > .pf-cap { line-height: 1.4; }
+
+/* The footer content is now the one-line provenance and one-line disclaimer ADR-0016 asks for, and it
+ * is fully readable with nothing hidden. What was left was pure chrome: 24px of padding on every side
+ * and a 21px line box for four short rows, which spent 178px of a 900px viewport on the footer and
+ * took that height straight out of the rail beside the stage. Tightened to the same content in about
+ * two thirds of the space. Text is capped at a reading measure so the citation line does not run the
+ * full 1290px before it wraps. */
+.app-shell .site-footer .footer-inner { padding: 11px 24px; }
+
+/* .footer-meta is a wrapping flex row of spans. Two things were spending rows: a 1.5 line-height on
+ * seven line-boxes, and `margin-left: auto` on the version chip, which opened a 271px gap and pushed
+ * everything after it onto a fresh row. The version keeps its own line here instead of stealing one. */
+.app-shell .site-footer .footer-meta { line-height: 1.42; row-gap: 1px; }
+.app-shell .site-footer .footer-build { margin-left: 14px !important; }
