@@ -1,4 +1,5 @@
 import { Callout, Cite, Equation, InlineMath, Refs, SubTabs, useShellLang } from '@fasl-work/caos-app-shell';
+import { BoundGap, CumulativeStep, PrecedenceCone } from '../viz/Diagrams.tsx';
 
 export default function Methodology() {
   const es = useShellLang() === 'es';
@@ -25,6 +26,8 @@ export default function Methodology() {
             tex={String.raw`x_{bt}\le x_{at}\ \ \forall (a,b)\in\mathcal A,\ \forall t \qquad x_{bt}\le x_{b,t+1} \qquad x_{b0}=0`}
             caption={es ? 'precedencia en CADA periodo, y monotonia: lo extraido no vuelve' : 'precedence in EVERY period, and monotonicity: once mined, it stays mined'}
           />
+          <PrecedenceCone />
+          <CumulativeStep />
           <p>
             {es ? 'con' : 'with'} <InlineMath tex="p_{bt}=p_b/(1+\eta)^{t-1}" />
             {es ? ', es decir el primer periodo NO se descuenta. Esa convencion se fijo por medicion, no por lectura: bajo ella la cota calculada sobre el newman1.cpit publicado da 24.487.410 contra la cota publicada de 24.486.549; la otra convencion da 22.673.528, un 8 por ciento fuera.' : ', that is, the first period is NOT discounted. That convention was settled by measurement rather than by reading: under it the bound computed on the published newman1.cpit gives 24,487,410 against the published 24,486,549; the other convention gives 22,673,528, off by 8 percent.'}
@@ -46,6 +49,7 @@ export default function Methodology() {
       label: es ? 'La cota' : 'The bound',
       content: (
         <>
+          <BoundGap />
           <p>
             {es ? 'La relajacion LP es una cota superior valida, y para una restriccion de recurso por periodo se resuelve EXACTAMENTE sin solver LP. Ese es el Teorema 3.1 de ' : 'The LP relaxation is a valid upper bound, and for one resource constraint per period it is solved EXACTLY with no LP solver. That is Theorem 3.1 of '}
             <Cite id="chicoisne2012" />{es ? ', en ' : ', in '}<InlineMath tex="O(mn\log n)" />.
