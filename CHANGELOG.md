@@ -3,6 +3,78 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.06.000] - 2026-08-20
+
+### Fixed - the App tabs and the content pages, measured on the rendered page
+
+- **The tab row was sliced through the middle on the Analysis tab.** `.tablist` is a flex child with the
+  default `flex-shrink: 1`, so a tall panel won the negative-space fight and squeezed it. MEASURED: the
+  same six-tab row was 48px on Controls, 31px on Methods and 23px on Analysis, and on Analysis it was
+  crushed 9px UNDER its own scrollHeight with `overflow-y: hidden`, so the labels were cut in half and
+  the ACTIVE tab was unreadable. Two things were wrong: a row that clipped its own labels, and nav
+  chrome that changed size depending on which tab you were looking at. Pinned with `flex: 0 0 auto`.
+
+- **The method ladder chart drew the WORST method as the LONGEST bar.** The fill was `gapPct / worstGap`,
+  so on the hero case bench-by-bench (a 50.27 percent gap) nearly filled its track while
+  cpitD-local-search (5.20 percent, the best schedule in the ladder) drew a stub. Longer read as better
+  and longer was worse. Re-encoded so the track IS the certified bound and the fill is the NPV actually
+  captured: `npv/bound` is exactly `1 - gap/100`, so the empty remainder IS the gap, at the same scale
+  on every row, with the ceiling shared by construction. Added a ruler, a rung key, and a hatched gap
+  remainder. The explanatory callout was rewritten in the same commit, because it described the old
+  encoding and would otherwise have contradicted the chart it sits under.
+
+- **Content blocks collapsed to zero height inside the scrolling tab panels.** In a flex column a child
+  whose `overflow` is not `visible` loses its automatic minimum size, so it absorbs ALL the shrink when
+  content exceeds the panel. MEASURED on Controls: the controls table's `.pf-scroll-x` computed to
+  height 0 against a scrollHeight of 268, and the figure wrapper to 26 against 463, so a whole table and
+  a 384px diagram rendered as two empty strips while every `overflow: visible` sibling was untouched.
+
+- **Numeric table and ladder cells wrapped**, turning "153.6 M" and "40648 ms" into two-line cells and
+  doubling those row heights.
+
+### Changed - the Controls tab is now evidence rather than a claim
+
+- Four PASS chips and a bare `0.0e+0`, with nothing tying the number to the assertion it belonged to,
+  became a control-by-control table: what each control asserts, what was measured on THIS case, and only
+  then the verdict. Added the gap envelope (best, worst, spread) with what a collapsing spread means on
+  `ctrl-abundant`, and the data-contract facts, which the trace carried and no screen showed.
+
+### Changed - the sensitivity surface and the risk panel
+
+- The viridis plane had **no colour scale at all**, so the reader could not tell what yellow meant. Added
+  a colorbar labelled in the same units as the hover readout. The rotated y-axis label was drawn at x=12
+  while the tick labels were drawn at x=6 and the two collided; both now clear each other. The hover
+  hit-test pads were realigned with the drawing pads in the same edit, since they must agree.
+
+- The geological-risk panel plotted four uPlot series against the method INDEX, drawing a line from
+  bench-by-bench to nested-shells to toposort-greedy as though the x axis were a continuum, when it is an
+  unordered list of algorithms. The method names appeared nowhere. Redrawn as what the data is: a
+  categorical range plot, one row per method, P10-to-P90 interval on a shared scale, expected value
+  marked inside it, and the best-by-expected and best-by-P10 answers marked ON the rows.
+
+### Added - hand-authored theme-aware diagrams
+
+Every content page carried text, equations and DOIs with nothing drawn. Six figures added, each one
+transcribed from the persisted dossiers and placed against the argument it illustrates:
+
+- `PrecedenceCone` and `CumulativeStep` (Methodology): what a precedence cone is, and what dropping
+  monotonicity silently permits.
+- `BoundGap` (Methodology): bound, true optimum, feasible schedule, and which gap is measurable.
+- `TwoLanes` (Implementation): the offline and live lanes and the gate between them.
+- `TwoBounds` (Benchmark): the SAME schedule against two ceilings, and why the reported gap shrinks
+  without the plan improving by a single block.
+- `DegeneracyCollapse` (App / Controls): what the degeneracy control actually compares.
+- `ThreePressures` (Introduction) and `CaseRoles` (Experiments).
+
+All strokes and fills are `currentColor` or a CSS variable, so they invert with the theme; all are
+`viewBox` plus width 100%, capped at their design width so a supporting figure cannot outshout the H1.
+
+### Fixed - tooling
+
+- `tools/visual-verify/_reach.mjs` defaulted to ChancaDEM's production URL. Running it while checking a
+  different product silently audited ChancaDEM and printed a clean pass. `URL` is now required, and the
+  gate prints and asserts the subject it actually measured.
+
 ## [0.05.000] · 2026-08-18
 
 ### Fixed - three defects that made this not at bar

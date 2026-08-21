@@ -1,4 +1,5 @@
 import { Callout, Cite, Figure, Refs, useShellLang } from '@fasl-work/caos-app-shell';
+import { TwoLanes } from '../viz/Diagrams.tsx';
 
 export default function Implementation() {
   const es = useShellLang() === 'es';
@@ -57,6 +58,7 @@ export default function Implementation() {
       </p>
 
       <h2>{es ? 'Los carriles y la puerta' : 'The lanes and the gate'}</h2>
+      <TwoLanes />
       <p>
         {es
           ? 'El carril offline es Python; el carril en vivo es un puerto TypeScript de los mismos algoritmos, corriendo sobre el modelo de bloques que trae la traza. El modelo NO se regenera en el navegador: hacerlo obligaria a portar un generador de campos aleatorios sembrado y esperar que las dos implementaciones coincidan bit a bit, que es exactamente la divergencia silenciosa que hace que un carril en vivo muestre otra respuesta.'

@@ -80,6 +80,21 @@
   min-height: 0;
 }
 
+/* The tab row is NAV CHROME and must be invariant. MEASURED before the fix: the same six-tab row was
+ * 48px tall on Controls, 31px on Methods and 23px on Analysis, because `.tablist` is a flex child with
+ * the default `flex-shrink: 1` and the panel below it is `flex: 1 1 auto`. A tall panel therefore wins
+ * the negative-space fight and squeezes the row. On Analysis it was crushed 9px UNDER its own
+ * scrollHeight (23 vs 32) with `overflow-y: hidden`, so the tab labels were sliced through the middle
+ * and the ACTIVE tab was unreadable.
+ *
+ * Two things were wrong and both are fixed here: a row that clips its own labels, and a row that
+ * changes size when you switch tabs. `flex: 0 0 auto` pins it to its content on every tab. */
+.pf-main > .tabs > .tablist {
+  flex: 0 0 auto;
+  min-height: 0;
+  overflow: visible;
+}
+
 /* ONE declaration. There were two, and the second silently dropped the first's 340px floor,
  * which is the kind of edit that removes a guarantee without touching the line that made it. */
 .pf-stagewrap {
@@ -224,13 +239,56 @@
 .pf-scroll-x { overflow-x: auto; min-width: 0; }
 
 .pf-methodbars { display: flex; flex-direction: column; gap: 3px; }
-.pf-mb-row { display: grid; grid-template-columns: minmax(9ch, 22ch) minmax(0, 1fr) minmax(6ch, 8ch) minmax(0, 14ch); gap: 8px; align-items: center; font-size: 0.8rem; padding: 2px 4px; border-radius: 5px; }
+
+/* The sub column carried "273.8 M · 40648 ms" in 14ch and wrapped "ms" onto a second line, which made
+ * two rows in the ladder twice as tall as the rest for no reason. Widen it and forbid the wrap. */
+.pf-mb-row, .pf-mb-scale {
+  display: grid;
+  grid-template-columns: minmax(9ch, 22ch) minmax(0, 1fr) minmax(7ch, 9ch) minmax(0, 19ch);
+  gap: 8px; align-items: center; font-size: 0.8rem; padding: 2px 4px; border-radius: 5px;
+}
 .pf-mb-row.on { background: color-mix(in srgb, var(--color-accent) 12%, transparent); }
-.pf-mb-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow: hidden; text-overflow: ellipsis; }
-.pf-mb-track { height: 9px; background: color-mix(in srgb, var(--color-fg-subtle) 18%, transparent); border-radius: 999px; overflow: hidden; }
+.pf-mb-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pf-mb-track { position: relative; height: 9px; background: color-mix(in srgb, var(--color-fg-subtle) 18%, transparent); border-radius: 999px; overflow: hidden; }
 .pf-mb-fill { display: block; height: 100%; }
-.pf-mb-val { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; text-align: right; }
-.pf-mb-sub { color: var(--color-fg-subtle); font-size: 0.72rem; text-align: right; }
+
+/* The gap drawn as itself: the part of the certified bound this schedule did NOT capture. Hatched
+ * rather than filled so it never competes with a real bar for attention. */
+.pf-mb-gap {
+  position: absolute; top: 0; height: 100%;
+  background: repeating-linear-gradient(135deg,
+    color-mix(in srgb, var(--color-fg-subtle) 34%, transparent) 0 2px,
+    transparent 2px 5px);
+}
+
+.pf-mb-val { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; text-align: right; white-space: nowrap; }
+.pf-mb-sub { color: var(--color-fg-subtle); font-size: 0.72rem; text-align: right; white-space: nowrap; }
+.pf-mb-sub b { color: var(--color-fg); font-weight: 600; }
+.pf-mb-sub b.off { color: var(--color-fg-subtle); font-weight: 400; }
+
+/* A bar chart with no scale asks the reader to trust the drawing. These three ticks say what the track
+ * is, which is the whole point of re-encoding it: the right edge is the certified bound, not the worst
+ * method in the table. */
+.pf-mb-scale { padding-bottom: 2px; }
+.pf-mb-ruler { background: none; height: 14px; overflow: visible; }
+.pf-mb-ruler i {
+  position: absolute; top: 6px; width: 1px; height: 6px;
+  background: color-mix(in srgb, var(--color-fg-subtle) 55%, transparent);
+}
+.pf-mb-ruler i::after {
+  content: attr(data-l); position: absolute; top: -8px; left: 0;
+  font-size: 0.64rem; color: var(--color-fg-subtle); white-space: nowrap;
+}
+.pf-mb-ruler i:last-child::after { left: auto; right: 0; }
+
+.pf-mb-key { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 6px 4px 0; font-size: 0.7rem; color: var(--color-fg-subtle); }
+.pf-mb-key span { display: inline-flex; align-items: center; gap: 5px; }
+.pf-mb-key i { width: 14px; height: 8px; border-radius: 2px; display: inline-block; }
+.pf-mb-keygap i {
+  background: repeating-linear-gradient(135deg,
+    color-mix(in srgb, var(--color-fg-subtle) 55%, transparent) 0 2px, transparent 2px 5px);
+  border: 1px solid color-mix(in srgb, var(--color-fg-subtle) 30%, transparent);
+}
 
 .pf-muted { color: var(--color-fg-subtle); }
 .pf-cap { font-size: 0.74rem; line-height: 1.4; }
@@ -358,3 +416,66 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
    deleted, so the footer is CAPPED and scrolls its own overflow. Nothing is lost, everything stays
    reachable, and the instrument gets the screen back. */
 .app-shell .site-footer { max-height: 96px; overflow-y: auto; overscroll-behavior: contain; }
+
+/* Figures on the content pages. Measured before these existed: every content page carried text,
+   equations and DOIs and NOT ONE diagram, on a product whose subject is geometry. A figure is bounded
+   by its container and never pushes it wider. */
+.pf-fig { margin: 1.1rem 0 1.4rem; padding: 0.9rem 1rem 0.6rem; border: 1px solid var(--color-border);
+  border-radius: 10px; background: color-mix(in srgb, var(--color-surface) 55%, transparent);
+  max-width: 100%; overflow: hidden; }
+.pf-fig svg { max-width: 100%; height: auto; }
+.pf-figcap { margin-top: 0.6rem; font-size: 0.76rem; line-height: 1.5; color: var(--color-fg-subtle);
+  border-top: 1px solid var(--color-border); padding-top: 0.55rem; }
+
+/* Numeric cells wrapped "153.6 M" onto two lines and doubled the row height. A money or duration cell
+ * is one token and must never break. */
+.pf-table td, .pf-table th { white-space: nowrap; }
+.pf-table td:last-child, .pf-table td.wrap { white-space: normal; }
+
+/* The controls table carries sentences, not numbers, so it opts back into wrapping and gets a column
+ * layout that keeps the assertion and the measurement side by side instead of on one long line. */
+.pf-ctrl-table { table-layout: fixed; width: 100%; }
+.pf-ctrl-table th:nth-child(1), .pf-ctrl-table td:nth-child(1) { width: 15%; }
+.pf-ctrl-table th:nth-child(2), .pf-ctrl-table td:nth-child(2) { width: 40%; }
+.pf-ctrl-table th:nth-child(3), .pf-ctrl-table td:nth-child(3) { width: 30%; }
+.pf-ctrl-table th:nth-child(4), .pf-ctrl-table td:nth-child(4) { width: 15%; }
+.pf-ctrl-table td.wrap, .pf-ctrl-table th.wrap { white-space: normal; line-height: 1.45; }
+.pf-ctrl-table td { vertical-align: top; padding-top: 8px; padding-bottom: 8px; }
+
+.pf-facts td:first-child { width: 60%; }
+.pf-facts td:last-child { text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+/* The range plot inherits the page colour; it must never be taller than a panel wants to be. */
+.pf-riskplot { max-height: 320px; }
+
+/* CONTENT BLOCKS IN A SCROLLING TAB PANEL MUST NOT SHRINK.
+ *
+ * The tab panel is a flex column that scrolls. In that context a child whose own `overflow` is not
+ * `visible` loses its automatic minimum size (min-height:auto resolves to 0 instead of the content
+ * height), so when the content is taller than the panel that child absorbs ALL of the shrink while its
+ * siblings keep their size.
+ *
+ * MEASURED on the Controls tab: `.pf-scroll-x` around the four-row controls table computed to height 0
+ * against a scrollHeight of 268, and `.pf-fig` around the degeneracy diagram computed to 26 against 463
+ * with overflow:hidden, so a whole table and a 384px diagram rendered as two empty strips. Every
+ * sibling panel and callout, all of them overflow:visible, was untouched. That asymmetry is the
+ * signature of this rule and it is worth naming, because the elements looked missing rather than
+ * collapsed and the obvious first guess is a render error.
+ *
+ * These blocks keep their natural height; the PANEL is what scrolls. */
+.pf-main .tabpanel:not([hidden]) .pf-scroll-x,
+.pf-main .tabpanel:not([hidden]) .pf-fig,
+.pf-main .tabpanel:not([hidden]) .pf-split,
+.pf-main .tabpanel:not([hidden]) .pf-panel,
+.pf-main .tabpanel:not([hidden]) .callout,
+.pf-tabpanel:not([hidden]) .pf-scroll-x,
+.pf-tabpanel:not([hidden]) .pf-fig {
+  flex-shrink: 0;
+}
+
+/* A 620-unit viewBox stretched to a 1392px content column renders a three-arrow diagram at 2.2x, which
+ * makes a supporting figure the loudest thing on the page and its labels larger than the H1. Cap the
+ * drawing near its design width and centre it; the caption keeps the full column so it still reads as
+ * body text. */
+.pf-fig > svg { max-width: 760px; margin-inline: auto; }
+.pf-fig > figcaption { max-width: 860px; margin-inline: auto; }

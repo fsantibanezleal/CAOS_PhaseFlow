@@ -1,4 +1,5 @@
 import { Callout, Cite, Figure, Refs, useShellLang } from '@fasl-work/caos-app-shell';
+import { ThreePressures } from '../viz/Diagrams.tsx';
 
 export default function Introduction() {
   const es = useShellLang() === 'es';
@@ -28,6 +29,8 @@ export default function Introduction() {
           ? 'El descuento quiere todo ahora. La precedencia dice que primero hay que sacar lo que esta encima. La capacidad dice cuanto cabe por ano. Un plan es donde esas tres presiones se equilibran, y el equilibrio es distinto para cada tasa, cada flota y cada planta. Por eso el hoyo cambia de forma cuando mueves un control: la geometria es el resultado del calculo, no una ilustracion de el.'
           : 'Discounting wants everything now. Precedence says the rock on top comes off first. Capacity says how much fits in a year. A schedule is where those three pressures balance, and the balance is different for every rate, every fleet and every plant. That is why the hole changes shape when you move a control: the geometry IS the computed result, not an illustration of it.'}
       </Callout>
+
+      <ThreePressures />
 
       <h2>{es ? 'Quien lo usa' : 'Who it is for'}</h2>
       <p>
