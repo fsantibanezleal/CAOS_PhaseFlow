@@ -3,6 +3,13 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.07.001] - 2026-08-25
+
+### Fixed
+
+- Cap the App-route notes and the caption blocks the paragraph rule could not reach
+- Cap the reading measure on the content routes
+
 ## [0.07.000] - 2026-08-20
 
 ### Fixed - the footer was not badly styled, it was badly fed
