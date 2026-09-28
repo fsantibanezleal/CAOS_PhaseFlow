@@ -16,7 +16,7 @@ method                      rung       claim
 ``cpitD-local-search``      sota       the EXACT restricted re-solve; the best plan here
 ``learned-expected-time``   learned    ExTS quality with NO LP solve at all
 ``destination-toposort``    beyond     PCPSP: the cutoff grade becomes an OUTPUT
-``min-width``               beyond     operability, and what it costs in NPV
+``min-width``               beyond     operability view; capacity is not re-imposed
 ==========================  =========  ==========================================================
 
 The BOUND is separate from all of them and is never produced by a heuristic. Two are computed: the
@@ -24,8 +24,10 @@ critical multiplier bound relaxed one resource at a time (Algorithm 4), and the 
 Bienstock-Zuckerberg bound. Where they differ, the difference is the part of a reported gap that
 belongs to the bound rather than to the heuristic, and every gap on screen uses the tighter one.
 
-Nothing here certifies with a heuristic. The bound is always the exact one; the learned methods are
-scored against the exact quantity they approximate and never replace it.
+Nothing here certifies with a heuristic. The bound comes from a certified relaxation: the joint
+Bienstock-Zuckerberg solve approaches its LP optimum within tolerance when it converges; a case
+outside its budget retains the valid, potentially looser Algorithm 4 bound. Learned methods are
+scored against the exact method they approximate and never replace the bound.
 """
 
 from __future__ import annotations
@@ -87,64 +89,60 @@ class _DestShim:
 
 
 def _as_pcpsp(instance):
-    """Build the two-destination PCPSP that corresponds to this CPIT instance.
+    """Return source-backed destination economics; CPIT cannot reconstruct lost alternatives."""
+    if instance.pcpsp is None:
+        raise ValueError("no matching source PCPSP model or synthetic destination economics")
+    return instance.pcpsp
 
-    CPIT already folded the destination away: its per-block value is the net value at the BEST
-    destination and its processing coefficient is that destination's. The PCPSP form puts the choice
-    back: destination 0 is the dump (mining cost only, no plant capacity), destination 1 is the plant
-    (the CPIT value, and the plant capacity it consumes). Waste blocks, whose best destination was
-    already the dump, are forbidden from the plant so the model cannot invent revenue for them.
+
+def _period_rows(instance, cpit, period_of_block: np.ndarray, *, pcpsp=None,
+                 destination_of_block: np.ndarray | None = None) -> list[PeriodRow]:
+    """Account for a schedule under the model that produced it.
+
+    A destination schedule can send an ore block to waste. Charging that block
+    CPIT's plant coefficient, or crediting its fixed-destination revenue, makes
+    the period chart disagree with the PCPSP objective and invents capacity
+    overruns. Keep CPIT accounting for every other method.
     """
-    cpit = instance.cpit
-    n = cpit.n_blocks
-    v = np.where(np.isfinite(cpit.value), cpit.value, 0.0)
-    ore = v > 0
-    # the dump value of an ore block is what is left after paying to move it: the CPIT value minus the
-    # processing margin it would have earned. For a waste block the CPIT value IS the dump value.
-    dump = np.where(ore, -np.abs(instance.tonnage) * 0.0 + np.minimum(v, 0.0), v)
-    value = np.stack([dump, v], axis=1)
-    forbidden = np.zeros((n, 2), dtype=bool)
-    forbidden[~ore, 1] = True
-
-    n_res = cpit.n_resources
-    coef = np.zeros((n_res, n, 2))
-    coef[0, :, 0] = cpit.coef[0]
-    coef[0, :, 1] = cpit.coef[0]
-    if n_res > 1:
-        coef[1, :, 1] = cpit.coef[1]
-    return ob.Pcpsp(
-        name=f"{cpit.name}-pcpsp",
-        n_blocks=n,
-        n_periods=cpit.n_periods,
-        n_destinations=2,
-        discount_rate=cpit.discount_rate,
-        value=value,
-        forbidden=forbidden,
-        limit=cpit.limit,
-        sense=cpit.sense,
-        coef=coef,
-        period_one_undiscounted=cpit.period_one_undiscounted,
-    )
-
-
-def _period_rows(instance, cpit, period_of_block: np.ndarray) -> list[PeriodRow]:
+    if (pcpsp is None) != (destination_of_block is None):
+        raise ValueError("PCPSP accounting requires both model and destinations")
     v = np.where(np.isfinite(cpit.value), cpit.value, 0.0)
     d = cpit.discount_factors()
     grade = instance.grade
     tonnage = instance.tonnage
-    ore = cpit.value > 0
+    # A fixed plant destination can be preferable to waste even when both net
+    # values are negative. Its processing coefficient, not net-value sign,
+    # identifies the ore route in a two-resource CPIT model.
+    ore = cpit.coef[1] > 0 if cpit.n_resources > 1 else cpit.value > 0
     coh = ob.schedule_coherence(period_of_block, instance.x, instance.y, instance.level, cpit.n_periods)
 
     rows: list[PeriodRow] = []
     cum = 0.0
     for t in range(cpit.n_periods):
         sel = period_of_block == t
+        if pcpsp is not None:
+            # Destination 1 is the plant in _as_pcpsp; destination 0 is waste.
+            plant = sel & (destination_of_block == 1)
+            selected_blocks = np.flatnonzero(sel)
+            selected_destinations = destination_of_block[sel]
+            if np.any(selected_destinations < 0):
+                raise ValueError("mined PCPSP block has no destination")
+            value = float(pcpsp.value[selected_blocks, selected_destinations].sum())
+            resource_use = [
+                float(pcpsp.coef[r, selected_blocks, selected_destinations].sum())
+                for r in range(pcpsp.n_resources)
+            ]
+            resource_limit = [float(pcpsp.limit[r][t]) for r in range(pcpsp.n_resources)]
+        else:
+            plant = sel & ore
+            value = float(v[sel].sum())
+            resource_use = [float(cpit.coef[r][sel].sum()) for r in range(cpit.n_resources)]
+            resource_limit = [float(cpit.limit[r][t]) for r in range(cpit.n_resources)]
         mined_t = float(tonnage[sel].sum())
-        ore_t = float(tonnage[sel & ore].sum())
+        ore_t = float(tonnage[plant].sum())
         waste_t = mined_t - ore_t
-        metal = float((tonnage[sel & ore] * grade[sel & ore]).sum())
+        metal = float((tonnage[plant] * grade[plant]).sum())
         head = metal / ore_t if ore_t > 0 else 0.0
-        value = float(v[sel].sum())
         dcf = d[t] * value
         cum += dcf
         rows.append(
@@ -159,8 +157,8 @@ def _period_rows(instance, cpit, period_of_block: np.ndarray) -> list[PeriodRow]
                 disc_cash_flow=dcf,
                 cum_npv=cum,
                 strip_ratio=(waste_t / ore_t) if ore_t > 0 else 0.0,
-                resource_use=[float(cpit.coef[r][sel].sum()) for r in range(cpit.n_resources)],
-                resource_limit=[float(cpit.limit[r][t]) for r in range(cpit.n_resources)],
+                resource_use=resource_use,
+                resource_limit=resource_limit,
                 components=coh[t].components,
                 largest_component_share=coh[t].largest_share,
                 min_width_blocks=coh[t].min_width_blocks,
@@ -178,7 +176,7 @@ LEARNED_FAILURE_BELOW = 0.90
 def _wrap(
     instance, name: str, rung: str, heuristic: bool, res, bound: float, ms: float, notes="",
     *, unreliable: bool = False, measured_vs_exact: float | None = None,
-    flagged_by_rule: bool = False,
+    flagged_by_rule: bool = False, pcpsp=None,
 ) -> MethodResult:
     cpit = instance.cpit
     gap = 100.0 * (bound - res.npv) / bound if bound > 0 else float("nan")
@@ -192,7 +190,10 @@ def _wrap(
         runtime_ms=float(ms),
         mined_blocks=int(res.mined_blocks),
         period_of_block=[int(v) for v in res.period_of_block],
-        periods=_period_rows(instance, cpit, res.period_of_block),
+        periods=_period_rows(
+            instance, cpit, res.period_of_block, pcpsp=pcpsp,
+            destination_of_block=res.destination_of_block if pcpsp is not None else None,
+        ),
         notes=notes,
         unreliable=unreliable,
         measured_vs_exact=measured_vs_exact,
@@ -444,6 +445,8 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     # third seed set that had no part in choosing it (models/guard-validation.json): recall 0.625,
     # worst unflagged 0.866. The held-out numbers that motivated it said recall 1.00, and that gap is
     # exactly why the measurement is preferred wherever it exists.
+    if learned is None and instance.grade_source is None:
+        skipped["learned-expected-time"] = "no source grade field for the learned input features"
     if learned is not None:
         exact_ref = next((r for r in results if r.method == "toposort-expected"), None)
         for name, res, ms, note in learned:
@@ -485,14 +488,15 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
         to_dump = int((dres.destination_of_block == 0).sum())
         results.append(
             _wrap(instance, "destination-toposort", "beyond", True, shim, bound, ms,
-                  f"PCPSP: {to_plant} blocks to the plant, {to_dump} to the dump, and the cutoff is an "
+                  f"PCPSP from {instance.destination_source}: {to_plant} blocks to the plant, "
+                  f"{to_dump} to the dump, and the cutoff is an "
                   f"OUTPUT rather than an input ({cut}). The NPV is not comparable to the CPIT rungs: "
-                  "it is a different objective over a richer feasible set.")
+                  "it is a different objective over a richer feasible set.", pcpsp=pcpsp)
         )
     except Exception as exc:  # noqa: BLE001
-        _ = exc
+        skipped["destination-toposort"] = str(exc)
 
-    # ---- beyond: operability, and what it costs
+    # ---- beyond: operability view, with capacity not re-imposed
     try:
         mw_t0 = time.perf_counter()
         smoothed, rep = ob.enforce_min_width(

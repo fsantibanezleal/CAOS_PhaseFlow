@@ -15,7 +15,8 @@ from pipeline import registry  # noqa: E402
 from pipeline.io.contract import validate_instance  # noqa: E402
 from pipeline.io.schema import Case, DepositSpec, Scenario  # noqa: E402
 from pipeline.model.instances import build_instance  # noqa: E402
-from pipeline.pipeline import precompute  # noqa: E402
+from pipeline.pipeline import _validate, precompute  # noqa: E402
+from pipeline.stages.solve import _as_pcpsp, _period_rows  # noqa: E402
 
 
 def _tiny_case(**kw) -> Case:
@@ -71,6 +72,49 @@ def test_contract_flags_a_capacity_that_can_never_exhaust_the_pit():
     assert any(f["code"] == "capacity-cannot-exhaust" for f in rep.flagged)
 
 
+def test_destination_periods_use_chosen_destination_values_and_resources():
+    """A block sent to waste cannot consume plant capacity or earn plant revenue."""
+    import oreblocks as ob
+
+    inst = build_instance(_tiny_case())
+    negative_plant = (inst.cpit.coef[1] > 0) & (inst.cpit.value < 0)
+    assert negative_plant.any(), "fixture must include plant-bound blocks with negative net value"
+    pcpsp = _as_pcpsp(inst)
+    reduced = pcpsp.to_cpit()
+    assert np.allclose(reduced.coef, inst.cpit.coef)
+    result = ob.destination_toposort(pcpsp, inst.precedence, grade=inst.grade)
+    rows = _period_rows(
+        inst, inst.cpit, result.period_of_block, pcpsp=pcpsp,
+        destination_of_block=result.destination_of_block,
+    )
+    dumped_ore = ((result.period_of_block >= 0) &
+                  (result.destination_of_block == 0) & (inst.cpit.value > 0))
+    assert dumped_ore.any(), "fixture must exercise an ore block sent to waste"
+    assert sum(row.disc_cash_flow for row in rows) == pytest.approx(result.npv, abs=0.01)
+    for row in rows:
+        for used, limit in zip(row.resource_use, row.resource_limit, strict=True):
+            assert used <= limit + 1e-6
+    assert sum(row.ore_tonnes for row in rows) < sum(row.mined_tonnes for row in rows)
+
+
+def test_artifact_validator_applies_cpit_bound_only_to_comparable_rows(tmp_path):
+    trace_path = tmp_path / "trace.json"
+    manifest_path = tmp_path / "manifest.json"
+    trace = {
+        "schema": "phaseflow.schedule-trace/v1", "caseId": "tiny",
+        "scenario": {"periods": 1}, "instance": {"synthetic": True, "source": "twin"},
+        "methods": [{"method": "min-width", "rung": "beyond", "npv": 11,
+                     "bound": 10, "periods": [{}]}],
+    }
+    trace_path.write_text(json.dumps(trace), encoding="utf-8")
+    manifest_path.write_text(json.dumps({"case_id": "tiny"}), encoding="utf-8")
+    _validate(trace_path, manifest_path)
+    trace["methods"][0]["rung"] = "sota"
+    trace_path.write_text(json.dumps(trace), encoding="utf-8")
+    with pytest.raises(AssertionError, match="exceeds bound"):
+        _validate(trace_path, manifest_path)
+
+
 def test_bake_writes_a_valid_trace_into_a_sandbox(tmp_path):
     canonical = ROOT / "data" / "derived" / "twin-porphyry-s" / "trace.json"
     canonical_before = canonical.read_bytes()
@@ -84,7 +128,8 @@ def test_bake_writes_a_valid_trace_into_a_sandbox(tmp_path):
     assert trace["controls"]["allPass"]
     assert len(trace["methods"]) >= 6
     for meth in trace["methods"]:
-        assert meth["npv"] <= meth["bound"] * (1 + 1e-9)
+        if meth["rung"] in {"classical", "sota", "learned"}:
+            assert meth["npv"] <= meth["bound"] * (1 + 1e-9)
         assert len(meth["periods"]) == trace["scenario"]["periods"]
     # The committed trace must be BYTE-IDENTICAL after a sandbox bake. The previous form of this
     # assertion compared the file's mtime against 1e18 seconds since the epoch, roughly the year
