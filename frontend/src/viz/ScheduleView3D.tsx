@@ -176,6 +176,12 @@ export function ScheduleView3D({
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
+    // On a stacked phone/tablet page, wheel movement over the canvas must reach the document.
+    // OrbitControls otherwise consumes it as zoom and traps the reader above the lower content.
+    const onWheel = (event: WheelEvent) => {
+      if (window.matchMedia('(max-width: 900px)').matches) event.stopPropagation();
+    };
+    el.addEventListener('wheel', onWheel, { capture: true, passive: true });
 
     let raf = 0;
     let until = 0;
@@ -189,7 +195,17 @@ export function ScheduleView3D({
     // has written a single matrix, so a flag set in the render loop alone marks a black frame as
     // drawn: the placeholder disappears over an empty canvas and the gate reads a blank stage as
     // ready. The count is the honest signal.
-    const markDrawn = () => { if (mesh.count > 0) el.dataset.drawn = '1'; };
+    const markDrawn = () => {
+      if (mesh.count === 0) return;
+      el.dataset.drawn = '1';
+      // The browser gate compares the actual camera transform and projection across cursor changes.
+      // A changing pit silhouette cannot measure camera stability because mining changes the geometry.
+      el.dataset.cameraPose = [
+        ...camera.position.toArray(),
+        ...camera.quaternion.toArray(),
+        ...camera.projectionMatrix.elements,
+      ].map((value) => value.toFixed(7)).join(',');
+    };
     const loop = () => {
       raf = requestAnimationFrame(loop);
       controls.update();
@@ -235,6 +251,7 @@ export function ScheduleView3D({
       dispose: () => {
         ro.disconnect();
         document.removeEventListener('visibilitychange', onVis);
+        el.removeEventListener('wheel', onWheel, true);
         if (raf) cancelAnimationFrame(raf);
         controls.dispose();
         geo.dispose();

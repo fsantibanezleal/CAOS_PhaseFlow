@@ -168,7 +168,7 @@
   position: fixed;
   inset: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 330px;
+  grid-template-columns: minmax(0, 1fr) min(315px, 19.5vw);
   background: var(--color-bg);
   color: var(--color-fg);
   overflow: hidden;
@@ -353,6 +353,12 @@
 .app-shell > .page { flex: 1 1 auto; min-height: 0; display: flex; }
 .page-body.pf-layout { max-width: none; width: 100%; flex: 1 1 auto; min-height: 0;
   padding: 1rem 1.25rem; align-items: stretch; }
+@media (min-width: 901px) and (max-width: 1350px) {
+  .pf-layout { --pf-rail: 19vw; }
+  .page-body.pf-layout { padding: 0.125rem 0.5rem; }
+  .pf-rail { gap: 6px; }
+  .pf-rail .pf-group { gap: 4px; padding-bottom: 6px; }
+}
 html, body { overflow-x: hidden; }
 
 /* 1b. THE VIEWPORT LOCK IS FOR THE WORKBENCH ROUTE ONLY.
@@ -528,6 +534,11 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
 }
 .pf-rail .pf-group:last-child { border-bottom: 0; padding-bottom: 0; }
 .pf-rail .pf-group > h4 { margin-bottom: 1px; }
+.pf-rail .pf-scenario { display: block; }
+.pf-rail .pf-scenario > summary { cursor: pointer; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.07rem; text-transform: uppercase; color: var(--color-fg-subtle); }
+.pf-rail .pf-scenario > summary::marker { color: var(--color-accent); }
+.pf-rail .pf-scenario[open] > summary { margin-bottom: 8px; }
 
 /* The KPI readouts were boxes inside a box inside a box. A tint separates them from the rail perfectly
  * well and costs no border, no radius and no extra padding. */
@@ -643,6 +654,61 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
 .page-body.pf-layout p,
 .page-body.pf-layout li {
   max-width: 78ch;
+}
+
+/* At tablet and phone widths the rail and instrument stack. Keeping the desktop viewport lock here
+ * squeezed the 3D stage to 180px while the footer occupied a quarter of the screen. Let the page
+ * grow vertically, reserve a real instrument height, and let the footer follow the work. */
+@media (max-width: 900px) {
+  html, body, #root { height: auto; min-height: 100%; }
+  .app-shell { height: auto; min-height: 100dvh; overflow: visible; }
+  .app-shell > .page { display: block; flex: 0 0 auto; min-height: 0; }
+  main.page:has(> .page-body:not(.pf-layout)) { overflow: visible; }
+  .page-body.pf-layout { height: auto; min-height: 0; display: flex; flex-direction: column;
+    flex: 0 0 auto; padding: 0.75rem; }
+  .pf-rail { max-height: none; overflow: visible; flex: 0 0 auto; }
+  .pf-main { height: auto; min-height: max(62dvh, 500px); flex: 0 0 auto; }
+  .pf-main > .tabs { flex: 0 0 auto; }
+  .pf-main > .tabs > .tablist { overflow-x: auto; overflow-y: hidden; }
+  .pf-main .tabpanel:not([hidden]) { flex: 0 0 auto; overflow: visible; min-height: 440px; }
+  .pf-layout .pf-stagewrap { flex: 0 0 auto; min-height: 0; flex-direction: column; }
+  .pf-layout .pf-stage3d { flex: 0 0 440px; height: 440px; }
+  .pf-layout .pf-hud { position: static; max-width: none; order: 2; pointer-events: auto;
+    margin-top: 8px; }
+  .pf-layout .pf-hud-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pf-layout .pf-hud-row { flex-direction: column; gap: 1px; }
+  .pf-layout .pf-hud-val { min-width: 0; }
+  .pf-stage3d canvas { touch-action: pan-y !important; }
+  .page-body:not(.pf-layout) figure,
+  .page-body:not(.pf-layout) .tabpanel { max-width: 100%; min-width: 0;
+    overflow-x: auto; overscroll-behavior-x: contain; }
+  .app-shell .site-footer { flex: 0 0 auto; }
+  .pf-focus { position: relative; inset: auto; display: flex; flex-direction: column;
+    min-height: 100dvh; height: auto; overflow: visible; }
+  .pf-focus-stage { flex-direction: column; flex: 0 0 auto; }
+  .pf-focus-stage > .pf-stage3d { flex: 0 0 440px; width: 100%; height: 440px; }
+  .pf-focus .pf-hud { position: static; order: 2; max-width: none; pointer-events: auto;
+    margin: 8px 12px; }
+  .pf-focus .pf-hud-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pf-focus .pf-hud-row { flex-direction: column; gap: 1px; }
+  .pf-focus .pf-hud-val { min-width: 0; }
+  .pf-focus-exit { position: static; order: -1; justify-content: flex-end;
+    padding: 7px 12px; }
+  .pf-focus-rail { overflow: visible; flex: 0 0 auto; max-height: none; }
+}
+
+/* The shared shell hides its route navigation below 760px and its one-line desktop row overflows
+ * tablets below 900px. Keep all reading routes reachable in a swipeable second header row. */
+@media (max-width: 900px) {
+  .site-header .header-inner { height: auto; min-height: 48px; padding: 5px 10px;
+    gap: 4px; flex-wrap: wrap; }
+  .site-header .brand { font-size: 0.9rem; }
+  .site-header .header-actions { gap: 0; }
+  .site-header .icon-btn { padding: 4px; }
+  .site-header .header-sep { margin-inline: 2px; }
+  .site-header .main-nav { display: flex; order: 3; flex: 0 0 100%; min-width: 0;
+    overflow-x: auto; white-space: nowrap; scrollbar-width: thin; }
+  .site-header .nav-link { flex: 0 0 auto; padding: 5px 8px; font-size: 0.78rem; }
 }
 
 /* CAPTION BLOCKS THE PARAGRAPH RULE CANNOT REACH
