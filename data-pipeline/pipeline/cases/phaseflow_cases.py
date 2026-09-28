@@ -42,7 +42,7 @@ CASES: list[Case] = [
         ),
         role_es=(
             "El ancla de confianza. Una instancia publicada de MineLib resuelta con sus propios "
-            "periodos, su propia tasa y sus dos capacidades, medida contra la brecha publicada."
+            "períodos, su propia tasa y sus dos capacidades, medida contra la brecha publicada."
         ),
         published={
             "upit_optimum": 26_086_899,
@@ -83,7 +83,7 @@ CASES: list[Case] = [
             periods=10, discount_rate=0.10, capacity_fraction=(0.8, 0.5), resource_names=_TWO
         ),
         role_en="A copper deposit from Arizona, again under a declared scenario. Scale check.",
-        role_es="Un yacimiento de cobre de Arizona, tambien bajo escenario declarado. Prueba de escala.",
+        role_es="Un yacimiento de cobre de Arizona, también bajo escenario declarado. Prueba de escala.",
         published={"upit_optimum": 652_195_037},
     ),
     # ------------------------------------------------------------------ deposits
@@ -91,7 +91,7 @@ CASES: list[Case] = [
         id="twin-porphyry-l",
         category="deposit",
         title_en="Porphyry twin, large",
-        title_es="Gemelo portico, grande",
+        title_es="Gemelo de pórfido, grande",
         deposit=DepositSpec(kind="twin", archetype="porphyry", dims=(28, 28, 14), seed=7),
         scenario=Scenario(
             periods=10, discount_rate=0.10, capacity_fraction=(0.72, 0.45), resource_names=_TWO
@@ -102,7 +102,7 @@ CASES: list[Case] = [
         ),
         role_es=(
             "El caso principal. Suficientemente grande para que la pared se lea como bancos y no "
-            "como voxeles, y libre de licencia, asi que su plan por bloque completo viaja al navegador."
+            "como voxeles, y libre de licencia, así que su plan por bloque completo viaja al navegador."
         ),
         default=True,
     ),
@@ -110,19 +110,19 @@ CASES: list[Case] = [
         id="twin-porphyry-s",
         category="deposit",
         title_en="Porphyry twin, small",
-        title_es="Gemelo portico, pequeno",
+        title_es="Gemelo de pórfido, pequeño",
         deposit=DepositSpec(kind="twin", archetype="porphyry", dims=(24, 24, 12), seed=7),
         scenario=Scenario(
             periods=8, discount_rate=0.10, capacity_fraction=(0.8, 0.5), resource_names=_TWO
         ),
         role_en="The fast case: small enough that every method re-solves in the browser instantly.",
-        role_es="El caso rapido: tan pequeno que cada metodo se resuelve al instante en el navegador.",
+        role_es="El caso rápido: tan pequeño que cada método se resuelve al instante en el navegador.",
     ),
     Case(
         id="twin-vein",
         category="deposit",
         title_en="Vein twin",
-        title_es="Gemelo veta",
+        title_es="Gemelo de veta",
         deposit=DepositSpec(kind="twin", archetype="vein", dims=(30, 30, 16), seed=11),
         scenario=Scenario(
             periods=10, discount_rate=0.10, capacity_fraction=(0.7, 0.4), resource_names=_TWO
@@ -146,13 +146,13 @@ CASES: list[Case] = [
             periods=10, discount_rate=0.10, capacity_fraction=(0.7, 0.45), resource_names=_TWO
         ),
         role_en="Strong stratification: the pushbacks come out as benches rather than as cones.",
-        role_es="Estratificacion fuerte: los pushbacks salen como bancos y no como conos.",
+        role_es="Estratificación fuerte: los pushbacks salen como bancos y no como conos.",
     ),
     Case(
         id="twin-core-halo",
         category="deposit",
         title_en="Core and halo twin",
-        title_es="Gemelo nucleo y halo",
+        title_es="Gemelo de núcleo y halo",
         deposit=DepositSpec(kind="twin", archetype="core_halo", dims=(30, 30, 16), seed=17),
         scenario=Scenario(
             periods=10, discount_rate=0.10, capacity_fraction=(0.7, 0.45), resource_names=_TWO
@@ -162,7 +162,7 @@ CASES: list[Case] = [
             "still does something different, which is the whole point of solving rather than nesting."
         ),
         role_es=(
-            "Ley concentrica. Los pits anidados se ven razonables en este deposito y el plan igual "
+            "Ley concéntrica. Los pits anidados se ven razonables en este depósito y el plan igual "
             "hace algo distinto, que es exactamente el punto de resolver en vez de anidar."
         ),
     ),
@@ -171,7 +171,7 @@ CASES: list[Case] = [
         id="regime-mill-bound",
         category="regime",
         title_en="Mill-bound regime",
-        title_es="Regimen limitado por planta",
+        title_es="Régimen limitado por planta",
         deposit=DepositSpec(kind="twin", archetype="porphyry", dims=(24, 24, 12), seed=7),
         scenario=Scenario(
             periods=12, discount_rate=0.10, capacity_fraction=(1.4, 0.32), resource_names=_TWO
@@ -181,15 +181,15 @@ CASES: list[Case] = [
             "stockpile would pay, and where the app says why it is not offering one."
         ),
         role_es=(
-            "La planta limita cada periodo mientras las palas sobran. Es el regimen donde un acopio "
-            "pagaria, y donde la aplicacion explica por que no lo ofrece."
+            "La planta limita cada período mientras las palas sobran. Es el régimen donde un acopio "
+            "pagaría, y donde la aplicación explica por qué no lo ofrece."
         ),
     ),
     Case(
         id="regime-mining-bound",
         category="regime",
         title_en="Mining-bound regime",
-        title_es="Regimen limitado por mina",
+        title_es="Régimen limitado por mina",
         deposit=DepositSpec(kind="twin", archetype="porphyry", dims=(24, 24, 12), seed=7),
         scenario=Scenario(
             periods=12, discount_rate=0.10, capacity_fraction=(0.45, 0.9), resource_names=_TWO
@@ -211,8 +211,8 @@ CASES: list[Case] = [
             "visibly different shape from the ten percent case on the same deposit."
         ),
         role_es=(
-            "Veinte por ciento por periodo. La alta ley se adelanta con fuerza y el rajo temprano "
-            "tiene una forma visiblemente distinta al caso de diez por ciento en el mismo deposito."
+            "Veinte por ciento por período. La alta ley se adelanta con fuerza y el rajo temprano "
+            "tiene una forma visiblemente distinta al caso de diez por ciento en el mismo depósito."
         ),
     ),
     # ------------------------------------------------------------------ controls
@@ -229,8 +229,8 @@ CASES: list[Case] = [
             "not a result."
         ),
         role_es=(
-            "El caso degenerado. CPIT colapsa al pit final: el conjunto extraido debe igualar al pit "
-            "exacto bloque a bloque y la cota debe igualar su valor. Fallar aqui es un error, no un "
+            "El caso degenerado. CPIT colapsa al pit final: el conjunto extraído debe igualar al pit "
+            "exacto bloque a bloque y la cota debe igualar su valor. Fallar aquí es un error, no un "
             "resultado."
         ),
     ),
@@ -249,9 +249,9 @@ CASES: list[Case] = [
             "shows a large spread here is measuring its own noise."
         ),
         role_es=(
-            "Control negativo de la comparacion de metodos. Con esta holgura todos los metodos "
-            "encuentran casi el mismo plan, asi que la dispersion debe colapsar. Un producto que "
-            "aqui muestra dispersion grande esta midiendo su propio ruido."
+            "Control negativo de la comparación de métodos. Con esta holgura todos los métodos "
+            "encuentran casi el mismo plan, así que la dispersión debe colapsar. Un producto que "
+            "aquí muestra dispersión grande está midiendo su propio ruido."
         ),
     ),
 ]

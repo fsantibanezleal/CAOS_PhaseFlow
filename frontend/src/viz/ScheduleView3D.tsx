@@ -122,7 +122,27 @@ export function ScheduleView3D({
       }
       return d * 1.04;                              // a little air, so nothing sits on the border
     };
-    const dist = fitDistance(W / H);
+    // The HUD is overlaid on the stage, top left. Fitting the model to the WHOLE canvas put the pit's
+    // far rim under the HUD's frosted cards, where it read as a white smear. On a stage wide enough
+    // to spare it, fit the model to the width the HUD leaves free and slide the frustum right by half
+    // the reserve, so the model centres in the free area. On a narrow stage the reserve is zero and
+    // nothing changes.
+    const hudReserve = (w: number): number => {
+      if (w < 760) return 0;
+      let a: HTMLElement | null = el.parentElement;
+      for (let i = 0; i < 3 && a; i++, a = a.parentElement) {
+        const hud = a.querySelector<HTMLElement>(':scope > .pf-hud');
+        if (hud) return Math.min(hud.offsetWidth + 24, w * 0.4);
+      }
+      return 0;
+    };
+    const applyReserve = (w: number, h: number): number => {
+      const r = hudReserve(w);
+      if (r > 0) camera.setViewOffset(w, h, -r / 2, 0, w, h); else camera.clearViewOffset();
+      return r;
+    };
+    const reserve0 = applyReserve(W, H);
+    const dist = fitDistance((W - reserve0) / H);
     camera.position.copy(dir).multiplyScalar(dist);
     camera.lookAt(0, 0, 0);
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -190,12 +210,13 @@ export function ScheduleView3D({
       const w2 = el.clientWidth || W;
       const h2 = height > 0 ? height : Math.max(1, el.clientHeight || H);
       camera.aspect = w2 / h2;
+      const reserve = applyReserve(w2, h2);
       camera.updateProjectionMatrix();
       // Re-fit for the new aspect, keeping whatever direction the reader has orbited to. Scaling the
       // CURRENT position preserves their view; only the distance changes.
       const cur = camera.position.length() || 1;
       const view = camera.position.clone().normalize();
-      camera.position.multiplyScalar(fitDistance(camera.aspect, view) / cur);
+      camera.position.multiplyScalar(fitDistance((w2 - reserve) / h2, view) / cur);
       // setSize CLEARS the drawing buffer, so re-render here and now rather than waiting for the
       // next animation frame. On a software rasteriser that wait is about 100 ms of a stage that has
       // gone completely black, and the layout settles late enough that a reader sees it.
