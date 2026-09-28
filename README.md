@@ -25,20 +25,27 @@ certified bound runs on max-flow machinery, offline in Python and **live in the 
 **The trust anchor is a published instance solved as published.** `newman1.cpit`: its own six
 periods, its own eight percent rate, its own two capacities.
 
-| quantity | PhaseFlow | published |
+| quantity | PhaseFlow CPIT | Jelvez et al. 2018 PCPSP |
 |---|---|---|
 | ultimate pit optimum | 26,086,899 | 26,086,899 |
 | certified LP bound, joint (Bienstock-Zuckerberg) | 24,486,184 | 24,486,549 (PCPSP LP) |
-| best feasible schedule (`sliding-window`) | 24,149,869 | 24,176,861 |
-| optimality gap | 1.37% | 1.26% |
+| best feasible schedule (`sliding-window` for PhaseFlow) | 24,149,869 | 24,176,861 |
+| gap to each problem's LP bound | 1.37% | 1.26% |
 
 The ultimate pit reproduces exactly. The bound ORDERING is the check on the rest: a CPIT LP bound must
 sit BELOW a PCPSP LP bound, because PCPSP is the richer problem, and it does, by 365 units in 24.5
-million. The schedule sits just below the best known. That distance closed from 2.49 percent when the sliding
+million. The schedule sits below the 2018 PCPSP feasible result, but the two gap percentages use
+different LP bounds and must not be read as a like-for-like method contest. The PhaseFlow gap closed from 2.49 percent when the sliding
 time window stopped being a greedy: its `window` argument had changed nothing, so the rung was a
-one-period-at-a-time heuristic carrying a look-ahead method's citation. Published:
-Jelvez, Morales and Nancel-Penard,
-[doi:10.1007/978-3-319-99220-4_18](https://doi.org/10.1007/978-3-319-99220-4_18).
+one-period-at-a-time heuristic carrying a look-ahead method's citation. The 2018 PCPSP numbers are
+from Tables 3 and 4 of [Jelvez, Morales and Nancel-Penard](https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf).
+
+An [external AMPL/Gurobi notebook](https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html)
+later reports an integer optimum of 24,176,864.82 for Newman1 CPIT, with a matching MIP best bound.
+Relative to that external result, PhaseFlow's feasible plan is 0.112% lower. Most of the displayed
+1.37% LP-bound gap is integrality gap rather than a loss of the scheduling method. This external
+certificate was not produced by PhaseFlow; [the source comparison](docs/cases/newman1-external-optimum.md)
+shows the inputs, calculations and limits.
 
 These four numbers are read out of `data/derived/manifests/newman1-published.json` by
 `scripts/check_readme_numbers.py`, which CI runs: the previous version of this table was two releases

@@ -11,7 +11,7 @@ schedule is shown with its gap to that bound.
 | 3 | `toposort-greedy` (GrTS) | classical | [01](01_classical.md) | the obvious baseline |
 | 4 | `toposort-gershon` (GeTS) | classical | [01](01_classical.md) | successor-cone weights, Gershon 1987a |
 | 5 | `sliding-window` | classical | [01](01_classical.md) | Cullenbine et al. 2011, the industrial baseline |
-| - | **critical multiplier** | bound | [02](02_the_bound.md) | the exact CPIT LP relaxation, no LP solver |
+| - | **critical multiplier** | bound | [02](02_the_bound.md) | exact CPIT LP for one resource; a certified relaxation for each resource in Algorithm 4 |
 | - | **Bienstock-Zuckerberg** | bound | [02](02_the_bound.md) | the JOINT bound over all resources |
 | 6 | `toposort-expected` (ExTS) | sota | [03](03_rounding.md) | seeded by the LP expected extraction times |
 | 7 | `exts-two-resource` | sota | [03](03_rounding.md) | Algorithm 4: one relaxation per resource |
