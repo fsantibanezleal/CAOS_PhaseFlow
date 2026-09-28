@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Maximize2 } from 'lucide-react';
 import { Callout, Cite, Tabs } from '@fasl-work/caos-app-shell';
-import { fmtInt, fmtMoney, fmtTonnes } from '../lib/artifacts.ts';
+import { fmtInt, fmtMoney, fmtTonnes, dec, resourceLabel } from '../lib/artifacts.ts';
 import type { CaseIndexEntry } from '../lib/contract.types.ts';
 import { stageLabel, useCase } from '../lib/useCase.ts';
 import { ScheduleView3D, type StageMode } from '../viz/ScheduleView3D.tsx';
@@ -16,6 +16,7 @@ import { BoundPanel, LearnedPanel, RiskPanel } from '../viz/Ladder.tsx';
 import { DegeneracyCollapse } from '../viz/Diagrams.tsx';
 import { Absent, PanelBoundary } from '../viz/PanelBoundary.tsx';
 import { SensitivitySurface } from '../viz/Sensitivity.tsx';
+import { EngineText } from '../lib/EngineText.tsx';
 
 export default function Tool() {
   const st = useCase();
@@ -81,7 +82,7 @@ export default function Tool() {
         <div className="pf-hud-grid">
           <div className="pf-hud-row"><span className="pf-hud-val">{fmtMoney(p?.cumNpv ?? 0)}</span><span className="pf-hud-key">{es ? 'NPV acum' : 'cum NPV'}</span></div>
           <div className="pf-hud-row"><span className="pf-hud-val">{fmtMoney(method.bound)}</span><span className="pf-hud-key">{es ? 'cota' : 'bound'}</span></div>
-          <div className="pf-hud-row"><span className="pf-hud-val">{method.gapPct.toFixed(2)}%</span><span className="pf-hud-key">gap</span></div>
+          <div className="pf-hud-row"><span className="pf-hud-val">{dec(method.gapPct, 2)}%</span><span className="pf-hud-key">{es ? 'brecha' : 'gap'}</span></div>
           <div className="pf-hud-row"><span className="pf-hud-val">{p?.components ?? 0}</span><span className="pf-hud-key">{es ? 'fragmentos' : 'components'}</span></div>
         </div>
       </div>
@@ -89,7 +90,7 @@ export default function Tool() {
   ) : (
     <Callout variant="note" title={es ? 'Sin replay 3D para esta instancia' : 'No 3D replay for this instance'}>
       {es
-        ? 'MineLib concede descarga academica y no redistribucion, asi que ningun plan por bloque de una instancia publicada entra en este repositorio. Este caso muestra numeros y graficos reales, no un deposito distinto disfrazado.'
+        ? 'MineLib concede descarga académica y no redistribución, así que ningún plan por bloque de una instancia publicada entra en este repositorio. Este caso muestra números y gráficos reales, no un depósito distinto disfrazado.'
         : 'MineLib grants an academic download and not redistribution, so no per-block schedule of a published instance enters this repository. This case shows real numbers and charts, not a different deposit dressed up as this one.'}
       <div style={{ marginTop: 6 }}>{trace.instance.licence}</div>
     </Callout>
@@ -104,15 +105,15 @@ export default function Tool() {
           <div className="pf-row">
             {(['schedule', 'grade', 'mined'] as StageMode[]).map((m) => (
               <button key={m} className={`pf-chip${mode === m ? ' on' : ''}`} onClick={() => setMode(m)}>
-                {m === 'schedule' ? (es ? 'paredes por ano' : 'walls by year') : m === 'grade' ? (es ? 'ley' : 'grade') : (es ? 'material extraido' : 'mined material')}
+                {m === 'schedule' ? (es ? 'paredes por año' : 'walls by year') : m === 'grade' ? (es ? 'ley' : 'grade') : (es ? 'material extraído' : 'mined material')}
               </button>
             ))}
             <span className="pf-cap pf-muted">
               {mode === 'schedule'
-                ? (es ? 'Cada bloque en pie junto a uno ya extraido toma el periodo del vecino que lo expuso.' : 'Each standing block next to an already mined one takes the period of the neighbour that exposed it.')
+                ? (es ? 'Cada bloque en pie junto a uno ya extraído toma el período del vecino que lo expuso.' : 'Each standing block next to an already mined one takes the period of the neighbour that exposed it.')
                 : mode === 'grade'
                   ? (es ? 'El remanente sin extraer, coloreado por ley.' : 'The unmined remainder, coloured by grade.')
-                  : (es ? 'El solido extraido. Es la vista honesta del volumen, y no es un rajo.' : 'The extracted solid. An honest view of the volume, and not a pit.')}
+                  : (es ? 'El sólido extraído. Es la vista honesta del volumen, y no es un rajo.' : 'The extracted solid. An honest view of the volume, and not a pit.')}
             </span>
           </div>
           {stage}
@@ -134,7 +135,7 @@ export default function Tool() {
               <PitProfile {...trace.blocks!} periodOfBlock={method.periodOfBlock!} dims={dims} nPeriods={T} cursor={st.cursor} theme={st.theme} northing={northingAt} />
             </div>
             <p className="pf-cap pf-muted">
-              {es ? 'Elevacion contra este, con la topografia y la superficie del rajo por periodo. Es el dibujo que la disciplina lee' : 'Elevation against easting, with the topography and the pit surface per period. This is the drawing the discipline reads'} <Cite id="morales2015" />.
+              {es ? 'Elevación contra este, con la topografía y la superficie del rajo por período. Es el dibujo que la disciplina lee' : 'Elevation against easting, with the topography and the pit surface per period. This is the drawing the discipline reads'} <Cite id="morales2015" />.
             </p>
           </div>
           <div className="pf-panel">
@@ -147,7 +148,7 @@ export default function Tool() {
               <BenchPlan {...trace.blocks!} periodOfBlock={method.periodOfBlock!} dims={dims} nPeriods={T} cursor={st.cursor} theme={st.theme} bench={benchAt} />
             </div>
             <p className="pf-cap pf-muted">
-              {es ? 'Un banco desde arriba, por periodo. Aqui se ve si un ano es un volumen operable o fragmentos sueltos' : 'One bench from above, by period. This is where a year is visibly one workable volume or loose fragments'} <Cite id="bai2018" />.
+              {es ? 'Un banco desde arriba, por período. Aquí se ve si un año es un volumen operable o fragmentos sueltos' : 'One bench from above, by period. This is where a year is visibly one workable volume or loose fragments'} <Cite id="bai2018" />.
             </p>
           </div>
         </div>
@@ -155,35 +156,35 @@ export default function Tool() {
     },
     {
       id: 'production',
-      label: es ? 'Produccion y NPV' : 'Production and NPV',
+      label: es ? 'Producción y NPV' : 'Production and NPV',
       content: (
         <div className="pf-split pf-split--wide">
           <div className="pf-panel">
-            <h4>{es ? 'Produccion y NPV acumulado' : 'Production and cumulative NPV'}</h4>
+            <h4>{es ? 'Producción y NPV acumulado' : 'Production and cumulative NPV'}</h4>
             <ProductionChart periods={method.periods} bound={method.bound} theme={st.theme} />
             <p className="pf-cap pf-muted">
-              {es ? 'Barras de mineral y lastre por periodo, NPV acumulado en el eje derecho, y la cota certificada como referencia' : 'Ore and waste bars per period, cumulative NPV on the right axis, and the certified bound as the reference'} <Cite id="morales2015" />.
+              {es ? 'Barras de mineral y lastre por período, NPV acumulado en el eje derecho, y la cota certificada como referencia' : 'Ore and waste bars per period, cumulative NPV on the right axis, and the certified bound as the reference'} <Cite id="morales2015" />.
             </p>
           </div>
           <div className="pf-panel">
             <h4>{es ? 'Uso de capacidad' : 'Capacity utilisation'}</h4>
-            <CapacityChart periods={method.periods} names={trace.scenario.resources.map((r) => r.name)} theme={st.theme} />
+            <CapacityChart periods={method.periods} names={trace.scenario.resources.map((r) => resourceLabel(r.name))} theme={st.theme} />
             <p className="pf-cap pf-muted">
-              {es ? 'Cual restriccion limita en cada ano. Una capacidad que nunca llega a 100% no esta limitando nada.' : 'Which constraint binds in each year. A capacity that never reaches 100 percent is not limiting anything.'}
+              {es ? 'Qué restricción limita en cada año. Una capacidad que nunca llega a 100% no está limitando nada.' : 'Which constraint binds in each year. A capacity that never reaches 100 percent is not limiting anything.'}
             </p>
           </div>
           <div className="pf-panel">
-            <h4>{es ? 'Ley de cabeza y razon lastre-mineral' : 'Head grade and strip ratio'}</h4>
+            <h4>{es ? 'Ley de cabeza y razón lastre-mineral' : 'Head grade and strip ratio'}</h4>
             <GradeStripChart periods={method.periods} theme={st.theme} />
             <p className="pf-cap pf-muted">
-              {es ? 'El descuento deberia adelantar la alta ley. Si la ley de cabeza no baja con los anos, el plan no esta haciendo eso.' : 'Discounting should pull high grade forward. If head grade does not decline over the years, the plan is not doing that.'}
+              {es ? 'El descuento debería adelantar la alta ley. Si la ley de cabeza no baja con los años, el plan no está haciendo eso.' : 'Discounting should pull high grade forward. If head grade does not decline over the years, the plan is not doing that.'}
             </p>
           </div>
           <div className="pf-panel">
             <h4>{es ? 'Coherencia espacial' : 'Spatial coherence'}</h4>
             <CoherenceChart periods={method.periods} theme={st.theme} />
             <p className="pf-cap pf-muted">
-              {es ? 'Componentes conexas por periodo y la fraccion en la mayor. Chicoisne et al. predicen que un plan por bloque se dispersa; esto lo mide en vez de suponerlo' : 'Connected components per period and the share in the largest. Chicoisne et al. predict a block-level schedule scatters; this measures it instead of assuming'} <Cite id="chicoisne2012" />.
+              {es ? 'Componentes conexas por período y la fracción en la mayor. Chicoisne et al. predicen que un plan por bloque se dispersa; esto lo mide en vez de suponerlo' : 'Connected components per period and the share in the largest. Chicoisne et al. predict a block-level schedule scatters; this measures it instead of assuming'} <Cite id="chicoisne2012" />.
             </p>
           </div>
         </div>
@@ -191,13 +192,13 @@ export default function Tool() {
     },
     {
       id: 'methods',
-      label: es ? 'Metodos' : 'Methods',
+      label: es ? 'Métodos' : 'Methods',
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <MethodBars rows={trace.methods.map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs, comparable: m.rung !== 'beyond' }))} />
           <Callout variant="note" title={es ? 'Como leer esto' : 'How to read this'}>
             {es
-              ? 'La pista ES la cota certificada, la misma para todos los metodos de este caso, y el relleno es el NPV que el plan realmente captura. Lo rayado a la derecha es la brecha, a la misma escala en cada fila: no es un numero aparte, es lo que quedo sobre la mesa. La cota no es un plan, es el optimo exacto de la relajacion LP, y ningun plan CPIT puede superarla. Los dos peldanos BEYOND van atenuados y marcados porque no entran en esa comparacion: min-width no vuelve a imponer capacidad y destination-toposort resuelve un problema mas rico, asi que sus barras responden otra pregunta.'
+              ? 'La pista ES la cota certificada, la misma para todos los métodos de este caso, y el relleno es el NPV que el plan realmente captura. Lo rayado a la derecha es la brecha, a la misma escala en cada fila: no es un número aparte, es lo que quedó sobre la mesa. La cota no es un plan, es el óptimo exacto de la relajación LP, y ningún plan CPIT puede superarla. Los dos peldaños BEYOND van atenuados y marcados porque no entran en esa comparación: min-width no vuelve a imponer capacidad y destination-toposort resuelve un problema más rico, así que sus barras responden otra pregunta.'
               : 'The track IS the certified bound, the same one for every method on this case, and the fill is the NPV the schedule actually captured. The hatching on the right is the gap, at the same scale on every row: it is not a separate number, it is what was left on the table. The bound is not a schedule, it is the exact optimum of the LP relaxation, and no CPIT schedule can beat it. The two BEYOND rungs are drawn faded and marked, because they are not in that comparison: min-width does not re-impose capacity and destination-toposort solves a richer problem, so their bars answer a different question.'}{' '}
             <Cite id="chicoisne2012" /> <Cite id="munoz2017" />
           </Callout>
@@ -205,16 +206,16 @@ export default function Tool() {
             <table className="pf-table">
               <thead>
                 <tr>
-                  <th>{es ? 'metodo' : 'method'}</th><th>{es ? 'peldano' : 'rung'}</th><th>NPV</th><th>{es ? 'cota' : 'bound'}</th>
-                  <th>gap</th><th>ms</th><th>{es ? 'bloques' : 'blocks'}</th><th>{es ? 'notas' : 'notes'}</th>
+                  <th>{es ? 'método' : 'method'}</th><th>{es ? 'peldaño' : 'rung'}</th><th>NPV</th><th>{es ? 'cota' : 'bound'}</th>
+                  <th>{es ? 'brecha' : 'gap'}</th><th>ms</th><th>{es ? 'bloques' : 'blocks'}</th><th>{es ? 'notas' : 'notes'}</th>
                 </tr>
               </thead>
               <tbody>
                 {trace.methods.map((m) => (
                   <tr key={m.method}>
                     <td>{m.method}</td><td>{m.rung}</td><td>{fmtMoney(m.npv)}</td><td>{fmtMoney(m.bound)}</td>
-                    <td>{m.gapPct.toFixed(2)}%</td><td>{m.runtimeMs.toFixed(0)}</td><td>{m.minedBlocks}</td>
-                    <td style={{ textAlign: 'left' }} className="pf-cap pf-muted">{m.notes}</td>
+                    <td>{dec(m.gapPct, 2)}%</td><td>{dec(m.runtimeMs, 0)}</td><td>{m.minedBlocks}</td>
+                    <td style={{ textAlign: 'left' }} className="pf-cap pf-muted"><EngineText text={m.notes} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -225,7 +226,7 @@ export default function Tool() {
     },
     {
       id: 'analysis',
-      label: es ? 'Analisis' : 'Analysis',
+      label: es ? 'Análisis' : 'Analysis',
       content: (
         <div className="pf-split pf-split--wide">
           <PanelBoundary title={es ? 'Las dos cotas' : 'The two bounds'}>
@@ -247,12 +248,12 @@ export default function Tool() {
               : <Absent title={es ? 'Riesgo' : 'Risk'} what={es ? 'el ensemble de incertidumbre' : 'the uncertainty ensemble'} es={es} />}
           </PanelBoundary>
           <div className="pf-panel">
-            <h4>{es ? 'Peldanos' : 'Rungs'}</h4>
+            <h4>{es ? 'Peldaños' : 'Rungs'}</h4>
             {Object.entries(trace.bound?.skipped_methods ?? {}).map(([name, why]) => (
               <p className="pf-cap pf-warn" key={name}>
                 <strong>{name}</strong>{' '}
-                {es ? 'no corrio en este caso: ' : 'did not run on this case: '}
-                {why}
+                {es ? 'no corrió en este caso: ' : 'did not run on this case: '}
+                <EngineText text={String(why)} />
               </p>
             ))}
             {(['classical', 'sota', 'learned', 'beyond'] as const).map((rung) => {
@@ -261,14 +262,14 @@ export default function Tool() {
               const best = rows.reduce((a, b) => (a.npv >= b.npv ? a : b));
               return (
                 <p className="pf-cap" key={rung}>
-                  <b>{rung}</b>: {rows.length} {es ? 'metodos' : 'methods'}, {es ? 'mejor' : 'best'}{' '}
-                  <code>{best.method}</code> {es ? 'con brecha' : 'at a gap of'} {best.gapPct.toFixed(2)}%
+                  <b>{rung}</b>: {rows.length} {es ? 'métodos' : 'methods'}, {es ? 'mejor' : 'best'}{' '}
+                  <code>{best.method}</code> {es ? 'con brecha' : 'at a gap of'} {dec(best.gapPct, 2)}%
                 </p>
               );
             })}
             <p className="pf-cap pf-muted">
               {es
-                ? 'Los peldanos beyond no son comparables con los demas por NPV: destination-toposort resuelve otro problema (PCPSP, con el destino como decision) y min-width es una vista de operabilidad que no re-impone la capacidad.'
+                ? 'Los peldaños beyond no son comparables con los demás por NPV: destination-toposort resuelve otro problema (PCPSP, con el destino como decisión) y min-width es una vista de operabilidad que no re-impone la capacidad.'
                 : 'The beyond rungs are not NPV-comparable with the rest: destination-toposort solves a different problem (PCPSP, with the destination as a decision) and min-width is an operability view that does not re-impose capacity.'}
             </p>
           </div>
@@ -289,7 +290,7 @@ export default function Tool() {
               <thead>
                 <tr>
                   <th>{es ? 'control' : 'control'}</th>
-                  <th className="wrap">{es ? 'que afirma' : 'what it asserts'}</th>
+                  <th className="wrap">{es ? 'qué afirma' : 'what it asserts'}</th>
                   <th className="wrap">{es ? 'medido en este caso' : 'measured on this case'}</th>
                   <th>{es ? 'veredicto' : 'verdict'}</th>
                 </tr>
@@ -300,14 +301,14 @@ export default function Tool() {
                   <td className="wrap">{es
                     ? 'con tasa cero y capacidad ilimitada, el conjunto que CPIT extrae es exactamente el pit final de Lerchs-Grossmann'
                     : 'at rate zero with unlimited capacity, the set CPIT mines is exactly the Lerchs-Grossmann ultimate pit'}</td>
-                  <td className="wrap">{es ? 'diferencia simetrica de conjuntos' : 'symmetric set difference'}:{' '}
+                  <td className="wrap">{es ? 'diferencia simétrica de conjuntos' : 'symmetric set difference'}:{' '}
                     <b>{trace.controls.dualitySetMatches ? '0' : '\u2260 0'}</b> {es ? 'bloques' : 'blocks'}</td>
                   <td><span className={'pf-badge ' + (trace.controls.dualitySetMatches ? 'pass' : 'fail')}>{trace.controls.dualitySetMatches ? 'PASS' : 'FAIL'}</span></td>
                 </tr>
                 <tr>
                   <td><code>duality-value</code></td>
                   <td className="wrap">{es
-                    ? 'en ese mismo limite la cota certificada iguala el valor del pit final'
+                    ? 'en ese mismo límite la cota certificada iguala el valor del pit final'
                     : 'in that same limit the certified bound equals the value of the ultimate pit'}</td>
                   <td className="wrap">{es ? 'error relativo' : 'relative error'}: <b>{trace.controls.dualityBoundError.toExponential(1)}</b></td>
                   <td><span className={'pf-badge ' + (trace.controls.dualityBoundError < 1e-6 ? 'pass' : 'fail')}>{trace.controls.dualityBoundError < 1e-6 ? 'PASS' : 'FAIL'}</span></td>
@@ -315,17 +316,17 @@ export default function Tool() {
                 <tr>
                   <td><code>bound-dominates</code></td>
                   <td className="wrap">{es
-                    ? 'ningun plan factible supera la cota. Un plan que la supera no es un plan mejor: es una cota rota o un plan infactible'
+                    ? 'ningún plan factible supera la cota. Un plan que la supera no es un plan mejor: es una cota rota o un plan infactible'
                     : 'no feasible schedule beats the bound. A schedule that beats it is not a better schedule: it is a broken bound or an infeasible plan'}</td>
-                  <td className="wrap">{es ? 'mejor brecha' : 'best gap'}: <b>{trace.controls.bestGapPct?.toFixed(3) ?? '-'}%</b> ({es ? 'debe ser no negativa' : 'must be non-negative'})</td>
+                  <td className="wrap">{es ? 'mejor brecha' : 'best gap'}: <b>{dec(trace.controls.bestGapPct, 3) ?? '-'}%</b> ({es ? 'debe ser no negativa' : 'must be non-negative'})</td>
                   <td><span className={'pf-badge ' + (trace.controls.boundGeqFeasible ? 'pass' : 'fail')}>{trace.controls.boundGeqFeasible ? 'PASS' : 'FAIL'}</span></td>
                 </tr>
                 <tr>
                   <td><code>order-invariance</code></td>
                   <td className="wrap">{es
-                    ? 'permutar el orden de entrada de los bloques no cambia el resultado. Si lo cambiara, el motor estaria leyendo el orden del archivo como si fuera informacion'
+                    ? 'permutar el orden de entrada de los bloques no cambia el resultado. Si lo cambiara, el motor estaría leyendo el orden del archivo como si fuera información'
                     : 'permuting the input order of the blocks does not change the result. If it did, the engine would be reading file order as though it were information'}</td>
-                  <td className="wrap">{es ? 'deriva de NPV bajo permutacion' : 'NPV drift under permutation'}: <b>{(trace.controls.orderInvarianceError ?? 0).toExponential(1)}</b></td>
+                  <td className="wrap">{es ? 'deriva de NPV bajo permutación' : 'NPV drift under permutation'}: <b>{(trace.controls.orderInvarianceError ?? 0).toExponential(1)}</b></td>
                   <td><span className={'pf-badge ' + (trace.controls.orderInvariant ? 'pass' : 'fail')}>{trace.controls.orderInvariant ? 'PASS' : 'FAIL'}</span></td>
                 </tr>
               </tbody>
@@ -338,16 +339,16 @@ export default function Tool() {
             <div className="pf-panel">
               <h4>{es ? 'Envolvente de brechas en este caso' : 'Gap envelope on this case'}</h4>
               <p className="pf-cap">
-                {es ? 'mejor' : 'best'} <b>{trace.controls.bestGapPct?.toFixed(2) ?? '-'}%</b> {' · '}
-                {es ? 'peor' : 'worst'} <b>{trace.controls.worstGapPct?.toFixed(2) ?? '-'}%</b> {' · '}
-                {es ? 'dispersion' : 'spread'}{' '}
+                {es ? 'mejor' : 'best'} <b>{dec(trace.controls.bestGapPct, 2) ?? '-'}%</b> {' · '}
+                {es ? 'peor' : 'worst'} <b>{dec(trace.controls.worstGapPct, 2) ?? '-'}%</b> {' · '}
+                {es ? 'dispersión' : 'spread'}{' '}
                 <b>{trace.controls.worstGapPct != null && trace.controls.bestGapPct != null
-                  ? (trace.controls.worstGapPct - trace.controls.bestGapPct).toFixed(2)
+                  ? dec((trace.controls.worstGapPct - trace.controls.bestGapPct), 2)
                   : '-'}%</b>
               </p>
               <p className="pf-cap pf-muted">
                 {es
-                  ? 'La dispersion es un control por si misma. En ctrl-abundant la capacidad casi no limita, todos los metodos deberian encontrar casi el mismo plan y la dispersion deberia colapsar. Si no colapsa, la escalera esta midiendo su propio ruido en vez de una diferencia entre metodos.'
+                  ? 'La dispersión es un control por si misma. En ctrl-abundant la capacidad casi no limita, todos los métodos deberían encontrar casi el mismo plan y la dispersión debería colapsar. Si no colapsa, la escalera está midiendo su propio ruido en vez de una diferencia entre métodos.'
                   : 'The spread is a control in its own right. On ctrl-abundant capacity barely binds, every method should find nearly the same schedule and the spread should collapse. If it does not collapse, the ladder is measuring its own noise rather than a difference between methods.'}
               </p>
             </div>
@@ -363,7 +364,7 @@ export default function Tool() {
               </table>
               <p className="pf-cap pf-muted">
                 {es
-                  ? 'Un modelo de bloques se vuelve instancia solo si pasa el contrato de ingesta. Estos son los numeros con los que paso, no los que se esperaban.'
+                  ? 'Un modelo de bloques se vuelve instancia solo si pasa el contrato de ingesta. Estos son los números con los que pasó, no los que se esperaban.'
                   : 'A block model becomes an instance only if it passes the ingestion contract. These are the numbers it passed with, not the ones that were expected.'}
               </p>
             </div>
@@ -374,11 +375,11 @@ export default function Tool() {
               <h4>{es ? 'Marcas del contrato de datos' : 'Data-contract flags'}</h4>
               <p className="pf-cap pf-muted">
                 {es
-                  ? 'Legales pero notables: el caso se acepta y la condicion viaja hasta la pantalla en vez de quedarse en un log.'
+                  ? 'Legales pero notables: el caso se acepta y la condición viaja hasta la pantalla en vez de quedarse en un log.'
                   : 'Legal but notable: the case is accepted and the condition rides all the way to the screen instead of staying in a log.'}
               </p>
               <ul className="pf-cap">
-                {trace.contract.flags.map((f) => <li key={f.code}><code>{f.code}</code>: {f.detail}</li>)}
+                {trace.contract.flags.map((f) => <li key={f.code}><code>{f.code}</code>: <EngineText text={f.detail} /></li>)}
               </ul>
             </div>
           )}
@@ -389,17 +390,17 @@ export default function Tool() {
               <span className={'pf-badge ' + manifest.lane}>{manifest.lane}</span>{' '}
               {fmtInt(manifest.gate.n_blocks, st.lang)} {es ? 'bloques' : 'blocks'} {' · '}
               {fmtInt(manifest.gate.n_arcs, st.lang)} {es ? 'arcos' : 'arcs'} {' · '}
-              {(manifest.gate.trace_bytes / 1024).toFixed(0)} kB {' · '}
-              {(manifest.gate.offline_ms / 1000).toFixed(1)} s {es ? 'offline' : 'offline'}
+              {dec((manifest.gate.trace_bytes / 1024), 0)} kB {' · '}
+              {dec((manifest.gate.offline_ms / 1000), 1)} s {es ? 'offline' : 'offline'}
             </p>
             {manifest.gate.reasons.length > 0 && (
-              <ul className="pf-cap pf-muted">{manifest.gate.reasons.map((r) => <li key={r}>{r}</li>)}</ul>
+              <ul className="pf-cap pf-muted">{manifest.gate.reasons.map((r) => <li key={r}><EngineText text={r} /></li>)}</ul>
             )}
           </div>
 
-          <Callout variant="note" title={es ? 'Por que estos y no una suite de tests' : 'Why these and not a test suite'}>
+          <Callout variant="note" title={es ? 'Por qué estos y no una suite de tests' : 'Why these and not a test suite'}>
             {es
-              ? 'Un test afirma que el codigo hace lo que su autor creyo. Estos controles afirman algo que se sabe con independencia del codigo: en el limite degenerado la respuesta es el pit final, calculado por otro algoritmo. Es la unica clase de verificacion que sobrevive a que el autor se equivoque en los dos lados a la vez.'
+              ? 'Un test afirma que el código hace lo que su autor creyó. Estos controles afirman algo que se sabe con independencia del código: en el límite degenerado la respuesta es el pit final, calculado por otro algoritmo. Es la única clase de verificación que sobrevive a que el autor se equivoque en los dos lados a la vez.'
               : 'A test asserts that the code does what its author believed. These controls assert something known independently of the code: in the degenerate limit the answer is the ultimate pit, computed by a different algorithm. That is the only class of check that survives the author being wrong on both sides at once.'}{' '}
             <Cite id="lerchs1965" />
           </Callout>
@@ -432,9 +433,9 @@ export default function Tool() {
         </div>
 
         <div className="pf-group">
-          <h4>{es ? 'Reloj de periodos' : 'Period clock'}</h4>
+          <h4>{es ? 'Reloj de períodos' : 'Period clock'}</h4>
           <label className="pf-ctl">
-            <span>{es ? 'periodo' : 'period'} <b>{st.cursor + 1} / {T}</b></span>
+            <span>{es ? 'período' : 'period'} <b>{st.cursor + 1} / {T}</b></span>
             <input type="range" min={0} max={T - 1} value={st.cursor} onChange={(e) => { st.setPlaying(false); st.setCursor(+e.target.value); }} data-testid="cursor" />
           </label>
           <div className="pf-row">
@@ -450,16 +451,16 @@ export default function Tool() {
             ))}
           </div>
           <p className="pf-cap pf-muted">
-            {es ? `Vida efectiva: ${lastMining} de ${T} periodos con extraccion.` : `Effective life: ${lastMining} of ${T} periods actually mine.`}
+            {es ? `Vida efectiva: ${lastMining} de ${T} períodos con extracción.` : `Effective life: ${lastMining} of ${T} periods actually mine.`}
           </p>
         </div>
 
         <div className="pf-group">
-          <h4>{es ? 'Metodo' : 'Method'}</h4>
-          <select value={st.methodId} onChange={(e) => st.setMethodId(e.target.value)} aria-label={es ? 'Metodo' : 'Method'}>
+          <h4>{es ? 'Método' : 'Method'}</h4>
+          <select value={st.methodId} onChange={(e) => st.setMethodId(e.target.value)} aria-label={es ? 'Método' : 'Method'}>
             {trace.methods.map((m) => (
               <option key={m.method} value={m.method}>
-                {m.unreliable ? '! ' : ''}{m.method} ({m.gapPct.toFixed(2)}%)
+                {m.unreliable ? '! ' : ''}{m.method} ({dec(m.gapPct, 2)}%)
               </option>
             ))}
           </select>
@@ -472,16 +473,16 @@ export default function Tool() {
               {method.unreliable && (
                 <strong>{es ? 'Poco fiable en este caso. ' : 'Unreliable on this case. '}</strong>
               )}
-              {es ? 'Medido aqui: ' : 'Measured here: '}
-              <b>{(100 * method.measuredVsExact).toFixed(1)}%</b>{' '}
+              {es ? 'Medido aquí: ' : 'Measured here: '}
+              <b>{dec((100 * method.measuredVsExact), 1)}%</b>{' '}
               {es
-                ? 'del plan exacto que aproxima. No es una prediccion: ambos peldanos estan en este mismo horneado, contra la misma cota.'
+                ? 'del plan exacto que aproxima. No es una predicción: ambos peldaños están en este mismo horneado, contra la misma cota.'
                 : 'of the exact plan it approximates. Not a prediction: both rungs are in this same bake, against the same bound.'}
               {method.flaggedByRule && (
                 <>
                   {' '}
                   {es
-                    ? 'La regla de escenario tambien lo marcaria (tasa de descuento alta).'
+                    ? 'La regla de escenario también lo marcaría (tasa de descuento alta).'
                     : 'The scenario rule would flag it too (high discount rate).'}
                 </>
               )}
@@ -491,15 +492,15 @@ export default function Tool() {
             <p className="pf-cap pf-warn">
               <strong>{es ? 'Poco fiable en este caso.' : 'Unreliable on this case.'}</strong>{' '}
               {es
-                ? 'Sin el plan exacto en este horneado no hay guarda: la regla medida es sobre el cuerpo mineralizado y necesita una etiqueta de arquetipo que un deposito real no trae.'
+                ? 'Sin el plan exacto en este horneado no hay guarda: la regla medida es sobre el cuerpo mineralizado y necesita una etiqueta de arquetipo que un depósito real no trae.'
                 : 'Without the exact plan in this bake there is no guard: the measured rule is about the orebody and needs an archetype label a real deposit does not carry.'}
             </p>
           )}
           <div className="pf-kpis">
             <div className="pf-kpi"><b>{fmtMoney(method.npv)}</b><span>NPV</span></div>
-            <div className="pf-kpi"><b>{method.gapPct.toFixed(2)}%</b><span>gap</span></div>
-            <div className="pf-kpi"><b>{fmtTonnes(p?.minedTonnes ?? 0)}</b><span>{es ? 'periodo' : 'this period'}</span></div>
-            <div className="pf-kpi"><b>{(100 * (p?.largestComponentShare ?? 0)).toFixed(0)}%</b><span>{es ? 'en el mayor' : 'in largest'}</span></div>
+            <div className="pf-kpi"><b>{dec(method.gapPct, 2)}%</b><span>{es ? 'brecha' : 'gap'}</span></div>
+            <div className="pf-kpi"><b>{fmtTonnes(p?.minedTonnes ?? 0)}</b><span>{es ? 'período' : 'this period'}</span></div>
+            <div className="pf-kpi"><b>{dec((100 * (p?.largestComponentShare ?? 0)), 0)}%</b><span>{es ? 'en el mayor' : 'in largest'}</span></div>
           </div>
         </div>
 
@@ -510,8 +511,8 @@ export default function Tool() {
               context for the case, so they should read as a compact reference block and take the space
               of one. */}
           <dl className="pf-kv">
-            <div><dt>{es ? 'periodos' : 'periods'}</dt><dd>{T}</dd></div>
-            <div><dt>{es ? 'tasa' : 'rate'}</dt><dd>{(trace.scenario.discountRate * 100).toFixed(0)}%</dd></div>
+            <div><dt>{es ? 'períodos' : 'periods'}</dt><dd>{T}</dd></div>
+            <div><dt>{es ? 'tasa' : 'rate'}</dt><dd>{dec((trace.scenario.discountRate * 100), 0)}%</dd></div>
             {trace.scenario.resources.map((r) => (
               <div key={r.id}>
                 <dt>{r.name}</dt>

@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
-import { loadIndex, loadManifest, loadTrace } from './artifacts.ts';
+import { loadIndex, loadManifest, loadTrace, dec, resourceLabel } from './artifacts.ts';
 import type { CaseIndex, CaseManifest, ScheduleTrace, TraceMethod } from './contract.types.ts';
 
 export interface CaseState {
@@ -139,25 +139,25 @@ export function stageLabel(
         .map((u, r) => ({ r, pct: p.resourceLimit[r] > 0 ? (100 * u) / p.resourceLimit[r] : 0 }))
         .sort((a, b) => b.pct - a.pct)[0]
     : null;
-  const resName = binding ? trace.scenario.resources[binding.r]?.name ?? `r${binding.r}` : '';
+  const resName = binding ? resourceLabel(trace.scenario.resources[binding.r]?.name ?? `r${binding.r}`) : '';
   const dead = p && p.blocks === 0;
 
   if (lang === 'es') {
     return {
-      title: `Periodo ${cursor + 1} de ${T}`,
+      title: `Período ${cursor + 1} de ${T}`,
       sub: dead
-        ? 'Sin extraccion: el rajo termino antes que el horizonte, y el grafico lo dice en vez de ocultarlo.'
-        : `${(p?.minedTonnes ?? 0) / 1e6 > 0 ? ((p!.minedTonnes) / 1e6).toFixed(2) : '0.00'} Mt movidas, ` +
-          `${binding ? `${resName} al ${binding.pct.toFixed(0)}% de su limite` : 'sin limite activo'}. ` +
-          `Cada pared expuesta lleva el color del ano que la descubrio.`,
+        ? 'Sin extracción: el rajo terminó antes que el horizonte, y el gráfico lo dice en vez de ocultarlo.'
+        : `${(p?.minedTonnes ?? 0) / 1e6 > 0 ? dec(((p!.minedTonnes) / 1e6), 2) : '0,00'} Mt movidas, ` +
+          `${binding ? `${resName} al ${dec(binding.pct, 0)}% de su límite` : 'sin límite activo'}. ` +
+          `Cada pared expuesta lleva el color del año que la descubrió.`,
     };
   }
   return {
     title: `Period ${cursor + 1} of ${T}`,
     sub: dead
       ? 'Nothing mined: the pit finished before the horizon did, and the chart says so rather than hiding it.'
-      : `${((p?.minedTonnes ?? 0) / 1e6).toFixed(2)} Mt moved, ` +
-        `${binding ? `${resName} at ${binding.pct.toFixed(0)}% of its limit` : 'no binding limit'}. ` +
+      : `${dec(((p?.minedTonnes ?? 0) / 1e6), 2)} Mt moved, ` +
+        `${binding ? `${resName} at ${dec(binding.pct, 0)}% of its limit` : 'no binding limit'}. ` +
         `Every exposed wall carries the colour of the year that uncovered it.`,
   };
 }

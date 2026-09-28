@@ -2,8 +2,9 @@
 // lane. Each answers a question the method table cannot.
 
 import { Cite } from '@fasl-work/caos-app-shell';
-import { fmtInt, fmtMoney } from '../lib/artifacts.ts';
+import { fmtInt, fmtMoney, dec } from '../lib/artifacts.ts';
 import type { BoundReport, EnsembleReport, LearnedReport, TraceMethod } from '../lib/contract.types.ts';
+import { EngineText } from '../lib/EngineText.tsx';
 
 
 /**
@@ -24,7 +25,7 @@ export function BoundPanel({ bound, best, es }: { bound: BoundReport; best: Trac
 
   return (
     <div className="pf-panel" data-testid="bound-panel">
-      <h4>{es ? 'De quien es la brecha' : 'Whose looseness is the gap'}</h4>
+      <h4>{es ? 'De quién es la brecha' : 'Whose looseness is the gap'}</h4>
       <div className="pf-scroll-x">
         <table className="pf-table pf-bound-table">
           <thead>
@@ -37,10 +38,10 @@ export function BoundPanel({ bound, best, es }: { bound: BoundReport; best: Trac
             <tr>
               <td>Algorithm 4 <span className="pf-muted">({es ? 'un recurso a la vez' : 'one resource at a time'})</span></td>
               <td>{a4 ? fmtMoney(a4) : '-'}</td>
-              <td>{Number.isFinite(gapA4) ? `${gapA4.toFixed(2)}%` : '-'}</td>
-              <td>{bound.algorithm4_ms?.toFixed(0) ?? '-'}</td>
+              <td>{Number.isFinite(gapA4) ? `${dec(gapA4, 2)}%` : '-'}</td>
+              <td>{dec(bound.algorithm4_ms, 0) ?? '-'}</td>
               <td style={{ textAlign: 'left' }} className="pf-cap pf-muted">
-                {bound.closure_solves} {es ? 'cierres maximos' : 'maximum closures'}
+                {bound.closure_solves} {es ? 'cierres máximos' : 'maximum closures'}
               </td>
             </tr>
             <tr>
@@ -48,8 +49,8 @@ export function BoundPanel({ bound, best, es }: { bound: BoundReport; best: Trac
                 Bienstock-Zuckerberg <span className="pf-muted">({es ? 'conjunta' : 'joint'})</span>
               </td>
               <td>{joint ? fmtMoney(joint) : <span className="pf-muted">{es ? 'no corrida' : 'not run'}</span>}</td>
-              <td>{Number.isFinite(gapJoint) ? `${gapJoint.toFixed(2)}%` : '-'}</td>
-              <td>{bound.joint_ms?.toFixed(0) ?? '-'}</td>
+              <td>{Number.isFinite(gapJoint) ? `${dec(gapJoint, 2)}%` : '-'}</td>
+              <td>{dec(bound.joint_ms, 0) ?? '-'}</td>
               <td style={{ textAlign: 'left' }} className="pf-cap pf-muted">
                 {bound.joint_skipped
                   ? bound.joint_skipped
@@ -60,7 +61,7 @@ export function BoundPanel({ bound, best, es }: { bound: BoundReport; best: Trac
                     : `${bound.joint_iterations} ${es ? 'iteraciones' : 'iterations'}, ${fmtInt(bound.joint_nodes ?? 0, es ? 'es' : 'en')} ${es ? 'nodos' : 'nodes'}${
                         bound.joint_solver === 'scipy-maxflow'
                           ? es
-                            ? ', precio compilado y cota certificada con una resolucion exacta'
+                            ? ', precio compilado y cota certificada con una resolución exacta'
                             : ', compiled pricing, bound certified by one exact solve'
                           : ''
                       }`}
@@ -73,12 +74,12 @@ export function BoundPanel({ bound, best, es }: { bound: BoundReport; best: Trac
         {es ? 'Usada para cada brecha de este caso: ' : 'Used for every gap on this case: '}
         <b>{bound.used === 'bienstock-zuckerberg' ? 'Bienstock-Zuckerberg' : 'Algorithm 4'}</b>
         {bound.tightening_pct != null && bound.tightening_pct > 0 && (
-          <> · {es ? 'la cota conjunta es' : 'the joint bound is'} <b>{bound.tightening_pct.toFixed(3)}%</b> {es ? 'mas ajustada' : 'tighter'}</>
+          <> · {es ? 'la cota conjunta es' : 'the joint bound is'} <b>{dec(bound.tightening_pct, 3)}%</b> {es ? 'más ajustada' : 'tighter'}</>
         )}
       </p>
       <p className="pf-cap pf-muted">
         {es
-          ? 'La cota BZ nunca es mas ajustada que la relajacion LP: esta demostrado que Z_BZ = Z_LP, porque el sistema de precedencia es totalmente unimodular. Lo que aporta es la cota CONJUNTA sobre todos los recursos, que Algorithm 4 no puede dar, y velocidad a escalas donde un solver LP no entrega nada.'
+          ? 'La cota BZ nunca es más ajustada que la relajación LP: está demostrado que Z_BZ = Z_LP, porque el sistema de precedencia es totalmente unimodular. Lo que aporta es la cota CONJUNTA sobre todos los recursos, que Algorithm 4 no puede dar, y velocidad a escalas donde un solver LP no entrega nada.'
           : 'The BZ bound is never tighter than the LP relaxation: Z_BZ = Z_LP is proven, because the precedence system is totally unimodular. What it adds is the JOINT bound over all resources, which Algorithm 4 cannot give, and speed at scales where a general LP solver produces nothing.'}{' '}
         <Cite id="munoz2017" /> <Cite id="chicoisne2012" />
       </p>
@@ -93,8 +94,8 @@ export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: bool
   if (!ensemble.ran || !ensemble.methods) {
     return (
       <div className="pf-panel">
-        <h4>{es ? 'Riesgo geologico' : 'Geological risk'}</h4>
-        <p className="pf-cap pf-muted">{ensemble.reason ?? (es ? 'no corrido' : 'not run')}</p>
+        <h4>{es ? 'Riesgo geológico' : 'Geological risk'}</h4>
+        <p className="pf-cap pf-muted">{ensemble.reason ? <EngineText text={ensemble.reason} /> : (es ? 'no corrido' : 'not run')}</p>
       </div>
     );
   }
@@ -134,10 +135,10 @@ export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: bool
 
   return (
     <div className="pf-panel" data-testid="risk-panel">
-      <h4>{es ? 'Riesgo geologico' : 'Geological risk'}</h4>
+      <h4>{es ? 'Riesgo geológico' : 'Geological risk'}</h4>
 
       <svg viewBox={`0 0 ${VBW} ${H}`} role="img" className="pf-riskplot"
-           aria-label={es ? 'Intervalo P10 a P90 por metodo' : 'P10 to P90 interval per method'}
+           aria-label={es ? 'Intervalo P10 a P90 por método' : 'P10 to P90 interval per method'}
            style={{ width: '100%', height: 'auto', display: 'block' }}>
         <style>{`
           .rk-n  { fill: currentColor; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace }
@@ -152,7 +153,7 @@ export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: bool
           <g key={i}>
             <line className="rk-g" x1={xOf(v)} y1={16} x2={xOf(v)} y2={H - 28} />
             <text className="rk-t" x={xOf(v)} y={H - 16} textAnchor={i === 0 ? 'start' : i === 2 ? 'end' : 'middle'}>
-              {v.toFixed(0)} M
+              {dec(v, 0)} M
             </text>
           </g>
         ))}
@@ -164,7 +165,7 @@ export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: bool
           return (
             <g className="rk-row" key={r.method}>
               <title>
-                {`${r.method}  P10 ${r.p10.toFixed(1)} M  ${es ? 'esperado' : 'expected'} ${r.exp.toFixed(1)} M  P90 ${r.p90.toFixed(1)} M`}
+                {`${r.method}  P10 ${dec(r.p10, 1)} M  ${es ? 'esperado' : 'expected'} ${dec(r.exp, 1)} M  P90 ${dec(r.p90, 1)} M`}
               </title>
               <rect x={0} y={y - 10} width={VBW} height={ROWH - 2} fill="transparent" />
               <text className="rk-n" x={4} y={y + 4}>
@@ -219,21 +220,21 @@ export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: bool
       </div>
       <p className="pf-cap">
         {es ? 'Mejor por valor esperado' : 'Best by expected value'}: <b>{ensemble.bestByExpected}</b> ·{' '}
-        {es ? 'mejor por P10 (la eleccion robusta)' : 'best by P10 (the robust choice)'}: <b>{ensemble.bestByP10}</b>
+        {es ? 'mejor por P10 (la elección robusta)' : 'best by P10 (the robust choice)'}: <b>{ensemble.bestByP10}</b>
         {ensemble.bestByExpected !== ensemble.bestByP10 && (
           <> · <span className="pf-badge">{es ? 'no son el mismo plan' : 'not the same plan'}</span></>
         )}
       </p>
       <p className="pf-cap pf-muted">
-        {es ? 'Valor de re-planificar sabiendo la realizacion' : 'Value of re-planning once the realisation is known'}:{' '}
-        <b>{ensemble.valueOfReplanningPct?.toFixed(3)}%</b>. {ensemble.replanningNote}
+        {es ? 'Valor de re-planificar sabiendo la realización' : 'Value of re-planning once the realisation is known'}:{' '}
+        <b>{dec(ensemble.valueOfReplanningPct, 3)}%</b>. <EngineText text={ensemble.replanningNote} />
       </p>
-      <p className="pf-cap pf-muted">{ensemble.note}</p>
+      <p className="pf-cap pf-muted"><EngineText text={ensemble.note} /></p>
       <p className="pf-cap pf-muted">
         {es
-          ? 'Esto NO es un programa entero estocastico de dos etapas. Es lo que hacen los planificadores: resolver muchas instancias deterministas con parametros variados y leer la dispersion'
+          ? 'Esto NO es un programa entero estocástico de dos etapas. Es lo que hacen los planificadores: resolver muchas instancias deterministas con parámetros variados y leer la dispersión'
           : 'This is NOT a two-stage stochastic integer program. It is what planners do: solve many deterministic instances with varied parameters and read the spread'}{' '}
-        <Cite id="blom2024" />. {es ? 'El programa estocastico real es otro modelo' : 'The real stochastic program is a different model'} <Cite id="ramazan2013" />.
+        <Cite id="blom2024" />. {es ? 'El programa estocástico real es otro modelo' : 'The real stochastic program is a different model'} <Cite id="ramazan2013" />.
       </p>
     </div>
   );
@@ -266,7 +267,7 @@ export function LearnedPanel({ learned, methods, es }: { learned: LearnedReport;
     <div className="pf-panel" data-testid="learned-panel">
       <h4>{es ? 'Carril aprendido' : 'Learned lane'}</h4>
       <div className="pf-kpis">
-        <div className="pf-kpi"><b>{num(et.holdout_spearman).toFixed(3)}</b><span>{es ? 'Spearman fuera de muestra' : 'holdout Spearman'}</span></div>
+        <div className="pf-kpi"><b>{dec(num(et.holdout_spearman), 3)}</b><span>{es ? 'Spearman fuera de muestra' : 'holdout Spearman'}</span></div>
         <div className="pf-kpi"><b>{pct(et.holdout_npv_vs_exact_exts_median)}</b><span>{es ? 'NPV vs ExTS (mediana)' : 'NPV vs exact ExTS (median)'}</span></div>
         <div className="pf-kpi"><b>{pct(et.holdout_npv_vs_exact_exts_p10)}</b><span>P10</span></div>
         <div className="pf-kpi"><b>{pct(et.holdout_npv_vs_exact_exts_min)}</b><span>{es ? 'peor caso' : 'worst case'}</span></div>
@@ -275,16 +276,16 @@ export function LearnedPanel({ learned, methods, es }: { learned: LearnedReport;
       </div>
       {learnedRow && exactRow && (
         <p className="pf-cap">
-          {es ? 'En este caso' : 'On this case'}: {learnedRow.method} {fmtMoney(learnedRow.npv)} ({learnedRow.runtimeMs.toFixed(0)} ms,{' '}
-          {es ? 'sin ninguna resolucion LP' : 'with no LP solve at all'}) {es ? 'contra' : 'against'} {exactRow.method}{' '}
-          {fmtMoney(exactRow.npv)} ({exactRow.runtimeMs.toFixed(0)} ms).{' '}
-          <b>{((100 * learnedRow.npv) / exactRow.npv).toFixed(1)}%</b> {es ? 'del NPV por' : 'of the NPV for'}{' '}
-          <b>{((100 * learnedRow.runtimeMs) / Math.max(1, exactRow.runtimeMs)).toFixed(0)}%</b> {es ? 'del tiempo' : 'of the time'}.
+          {es ? 'En este caso' : 'On this case'}: {learnedRow.method} {fmtMoney(learnedRow.npv)} ({dec(learnedRow.runtimeMs, 0)} ms,{' '}
+          {es ? 'sin ninguna resolución LP' : 'with no LP solve at all'}) {es ? 'contra' : 'against'} {exactRow.method}{' '}
+          {fmtMoney(exactRow.npv)} ({dec(exactRow.runtimeMs, 0)} ms).{' '}
+          <b>{dec(((100 * learnedRow.npv) / exactRow.npv), 1)}%</b> {es ? 'del NPV por' : 'of the NPV for'}{' '}
+          <b>{dec(((100 * learnedRow.runtimeMs) / Math.max(1, exactRow.runtimeMs)), 0)}%</b> {es ? 'del tiempo' : 'of the time'}.
         </p>
       )}
       <p className="pf-cap pf-muted">
-        {es ? 'Division por SEMILLA DE DEPOSITO, nunca por fila' : 'Split by DEPOSIT SEED, never by row'}: {String(et.split ?? '')}.{' '}
-        {learned.honesty}
+        {es ? 'División por SEMILLA DE DEPÓSITO, nunca por fila' : 'Split by DEPOSIT SEED, never by row'}: <EngineText text={String(et.split ?? '')} />.{' '}
+        <EngineText text={learned.honesty} />
       </p>
     </div>
   );
