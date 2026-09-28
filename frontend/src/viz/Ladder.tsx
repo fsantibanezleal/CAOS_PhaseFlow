@@ -262,7 +262,7 @@ export function LearnedPanel({ learned, methods, es }: { learned: LearnedReport;
   // exists. A dash says ABSENT, and `learned-keys.test.ts` fails the build so it never gets shipped.
   const num = (v: unknown) => (typeof v === 'number' ? v : NaN);
   const pct = (v: unknown, digits = 1) =>
-    typeof v === 'number' && Number.isFinite(v) ? `${(100 * v).toFixed(digits)}%` : '-';
+    typeof v === 'number' && Number.isFinite(v) ? `${dec(100 * v, digits)}%` : '-';
   return (
     <div className="pf-panel" data-testid="learned-panel">
       <h4>{es ? 'Carril aprendido' : 'Learned lane'}</h4>
