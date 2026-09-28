@@ -78,7 +78,7 @@ export function PrecedenceCone() {
   return (
     <Fig vb="0 0 620 220"
          caption={es
-           ? 'Cono de precedencia: para extraer el bloque marcado hay que haber extraido antes todo el cono sobre el. El angulo del cono es el angulo de talud. La restriccion se impone en CADA periodo, y por eso es una restriccion de planificacion y no de conjunto.'
+           ? 'Cono de precedencia: para extraer el bloque marcado hay que haber extraído antes todo el cono sobre él. El ángulo del cono es el ángulo de talud. La restricción se impone en CADA período, y por eso es una restricción de planificación y no de conjunto.'
            : 'Precedence cone: to mine the highlighted block, the entire cone above it must already have been mined. The cone angle IS the slope angle. The constraint is imposed in EVERY period, which is what makes it a scheduling constraint rather than a set constraint.'}>
       {cells}
       {/* The slope lines must trace the OUTER EDGE of the cone, not cut through it. The top level spans
@@ -91,9 +91,9 @@ export function PrecedenceCone() {
             d={'M' + (cx + 4.5 * cell - 2) + ' ' + (top + 2) + ' L' + (cx + cell / 2 - 2) + ' ' + (baseY + cell - 2)} />
       <text className="dg-tb" x="18" y="30">{es ? 'superficie' : 'surface'}</text>
       <text className="dg-ts" x="18" y="48">{es ? 'se mina primero' : 'mined first'}</text>
-      <text className="dg-ts" x="404" y="46">{es ? 'angulo de talud' : 'slope angle'}</text>
+      <text className="dg-ts" x="404" y="46">{es ? 'ángulo de talud' : 'slope angle'}</text>
       <text className="dg-tb" x="404" y={baseY + 16}>{es ? 'bloque objetivo' : 'target block'}</text>
-      <text className="dg-ts" x="404" y={baseY + 34}>{es ? 'ultimo del cono' : 'last of the cone'}</text>
+      <text className="dg-ts" x="404" y={baseY + 34}>{es ? 'último del cono' : 'last of the cone'}</text>
     </Fig>
   );
 }
@@ -113,19 +113,19 @@ export function CumulativeStep() {
   return (
     <Fig vb="0 0 620 215"
          caption={es
-           ? 'Variables acumuladas: x(b,t)=1 significa extraido AL FINAL del periodo t. La monotonia es una restriccion de verdad. Sin ella el modelo puede des-extraer un bloque, y el plan que sale no es fisico.'
+           ? 'Variables acumuladas: x(b,t)=1 significa extraído AL FINAL del período t. La monotonía es una restricción de verdad. Sin ella el modelo puede des-extraer un bloque, y el plan que sale no es físico.'
            : 'Cumulative variables: x(b,t)=1 means mined BY THE END of period t. Monotonicity is a real constraint. Without it the model can un-mine a block, and the schedule that comes out is not physical.'}>
       <path className="dg-b" d={'M' + bx + ' ' + by + ' L' + (bx + w) + ' ' + by} />
       <path className="dg-b" d={'M' + bx + ' ' + by + ' L' + bx + ' ' + (by - h - 22)} />
       {Array.from({ length: T + 1 }, (_, i) => (
         <text key={i} className="dg-ts" x={bx + i * step - 3} y={by + 18}>{i}</text>
       ))}
-      <text className="dg-ts" x={bx + w / 2 - 26} y={by + 38}>{es ? 'periodo t' : 'period t'}</text>
+      <text className="dg-ts" x={bx + w / 2 - 26} y={by + 38}>{es ? 'período t' : 'period t'}</text>
       <text className="dg-ts" x={bx - 22} y={by - h + 4}>1</text>
       <text className="dg-ts" x={bx - 22} y={by + 4}>0</text>
       <path className="dg-hl" d={path(ok)} />
       <path className="dg-b dg-d" d={path(bad)} />
-      <text className="dg-tb" x={bx + w + 14} y={by - h - 2}>{es ? 'valido' : 'valid'}</text>
+      <text className="dg-tb" x={bx + w + 14} y={by - h - 2}>{es ? 'válido' : 'valid'}</text>
       <text className="dg-ts" x={bx + w + 14} y={by - h + 16}>{es ? 'sube una vez' : 'rises once'}</text>
       <text className="dg-tb" x={bx + w + 14} y={by - 18}>{es ? 'prohibido' : 'forbidden'}</text>
       <text className="dg-ts" x={bx + w + 14} y={by}>{es ? 'baja: des-extrae' : 'falls: un-mines'}</text>
@@ -139,7 +139,7 @@ export function BoundGap() {
   return (
     <Fig vb="0 0 620 230"
          caption={es
-           ? 'La cota LP se alcanza solo con los enteros relajados, asi que el optimo real esta por debajo de ella, y un plan factible esta por debajo del optimo. Lo unico medible es la brecha entre el plan y la cota: acota el arrepentimiento en vez de nombrarlo.'
+           ? 'La cota LP se alcanza solo con los enteros relajados, así que el óptimo real está por debajo de ella, y un plan factible está por debajo del óptimo. Lo único medible es la brecha entre el plan y la cota: acota el arrepentimiento en vez de nombrarlo.'
            : 'The LP bound is attainable only with the integers relaxed, so the true optimum sits below it, and a feasible schedule sits below the optimum. The only measurable quantity is the gap between schedule and bound: it bounds the regret rather than naming it.'}>
       <path className="dg-b" d="M92 32 L92 196" />
       <text className="dg-ts" x="30" y="30">NPV</text>
@@ -148,7 +148,7 @@ export function BoundGap() {
       <text className="dg-tb" x="510" y="54">{es ? 'cota LP' : 'LP bound'}</text>
       <text className="dg-ts" x="510" y="70">{es ? 'certificada' : 'certified'}</text>
       <path className="dg-b dg-d" d="M110 104 L500 104" />
-      <text className="dg-tb" x="510" y="102">{es ? 'optimo real' : 'true optimum'}</text>
+      <text className="dg-tb" x="510" y="102">{es ? 'óptimo real' : 'true optimum'}</text>
       <text className="dg-ts" x="510" y="118">{es ? 'desconocido' : 'unknown'}</text>
       <path className="dg-b" d="M110 162 L500 162" />
       <text className="dg-tb" x="510" y="160">{es ? 'plan factible' : 'feasible plan'}</text>
@@ -178,7 +178,7 @@ export function TwoLanes() {
            ? 'Dos carriles. Offline en Python: construye la instancia, corre la escalera completa y los controles, y escribe una traza commiteada con su manifiesto. En vivo en TypeScript: re-resuelve cuando se mueve un control, sobre el mismo motor. El navegador nunca re-corre la escalera.'
            : 'Two lanes. Offline in Python: builds the instance, runs the whole ladder and the controls, writes a committed trace with its manifest. Live in TypeScript: re-solves when a control moves, on the same engine. The browser never re-runs the ladder.'}>
       {B(18, 26, 178, 60, 'oreblocks (PyPI)', es ? 'motor, dependencia fijada' : 'engine, pinned dependency')}
-      {B(18, 112, 178, 60, es ? 'Instancia' : 'Instance', es ? 'MineLib o sintetica' : 'MineLib or synthetic')}
+      {B(18, 112, 178, 60, es ? 'Instancia' : 'Instance', es ? 'MineLib o sintética' : 'MineLib or synthetic')}
       <path className="dg-a" d="M200 56 L276 70" />
       <path className="dg-a" d="M200 142 L276 104" />
       {B(281, 50, 176, 74, es ? 'Pipeline offline' : 'Offline pipeline', es ? 'escalera + controles' : 'ladder + controls')}
@@ -224,7 +224,7 @@ export function DegeneracyCollapse() {
   return (
     <Fig vb="0 0 620 230"
          caption={es
-           ? 'El control de degeneracion: con tasa cero y capacidad ilimitada, el descuento y las capacidades desaparecen del objetivo y CPIT se reduce al pit final. Los dos conjuntos deben coincidir bloque a bloque y los dos valores a precision de maquina. Es la unica parte del producto con una respuesta conocida de antemano, y por eso fallar aqui es un error y no un resultado.'
+           ? 'El control de degeneración: con tasa cero y capacidad ilimitada, el descuento y las capacidades desaparecen del objetivo y CPIT se reduce al pit final. Los dos conjuntos deben coincidir bloque a bloque y los dos valores a precisión de máquina. Es la única parte del producto con una respuesta conocida de antemano, y por eso fallar aquí es un error y no un resultado.'
            : 'The degeneracy control: at rate zero with unlimited capacity, the discounting and the capacities drop out of the objective and CPIT reduces to the ultimate pit. The two sets must agree block for block and the two values to machine precision. It is the only part of the product with a known answer in advance, which is why a failure here is a bug and not a result.'}>
       <text className="dg-tb" x="52" y="24">CPIT</text>
       <text className="dg-ts" x="52" y="41">{es ? 'tasa 0, capacidad infinita' : 'rate 0, unlimited capacity'}</text>
@@ -257,7 +257,7 @@ export function TwoBounds() {
   return (
     <Fig vb="0 0 620 250"
          caption={es
-           ? 'La misma programacion medida contra dos techos. El Algoritmo 4 relaja un recurso a la vez y se queda con la menor de las dos cotas: certificada y mas floja. Bienstock-Zuckerberg calcula la cota conjunta sobre ambos recursos a la vez, y queda mas abajo. La brecha reportada se achica al cambiar de techo sin que el plan haya mejorado en un solo bloque, y por eso cada caso dice cual cota uso.'
+           ? 'La misma programación medida contra dos techos. El Algoritmo 4 relaja un recurso a la vez y se queda con la menor de las dos cotas: certificada y más floja. Bienstock-Zuckerberg calcula la cota conjunta sobre ambos recursos a la vez, y queda más abajo. La brecha reportada se achica al cambiar de techo sin que el plan haya mejorado en un solo bloque, y por eso cada caso dice cuál cota usó.'
            : 'The same schedule measured against two ceilings. Algorithm 4 relaxes one resource at a time and keeps the smaller of the two bounds: certified, and looser. Bienstock-Zuckerberg computes the joint bound over both resources at once, and it sits lower. The reported gap shrinks when you change ceiling without the schedule improving by a single block, which is why every case states which bound it used.'}>
       <path className="dg-b" d="M96 28 L96 200" />
       <text className="dg-ts" x="34" y="26">NPV</text>
@@ -268,10 +268,10 @@ export function TwoBounds() {
 
       <path className="dg-hl" d={`M${L - 8} ${yBZ} L${R} ${yBZ}`} />
       <text className="dg-tb" x={R + 12} y={yBZ - 2}>{es ? 'cota conjunta BZ' : 'joint BZ bound'}</text>
-      <text className="dg-ts" x={R + 12} y={yBZ + 14}>{es ? 'ambos a la vez, mas ajustada' : 'both at once, tighter'}</text>
+      <text className="dg-ts" x={R + 12} y={yBZ + 14}>{es ? 'ambos a la vez, más ajustada' : 'both at once, tighter'}</text>
 
       <path className="dg-b dg-d" d={`M${L - 8} ${yOpt} L${R} ${yOpt}`} />
-      <text className="dg-ts" x={R + 12} y={yOpt + 4}>{es ? 'optimo real (desconocido)' : 'true optimum (unknown)'}</text>
+      <text className="dg-ts" x={R + 12} y={yOpt + 4}>{es ? 'óptimo real (desconocido)' : 'true optimum (unknown)'}</text>
 
       <path className="dg-b" d={`M${L - 8} ${yPlan} L${R} ${yPlan}`} />
       <text className="dg-tb" x={R + 12} y={yPlan + 4}>{es ? 'el MISMO plan' : 'the SAME schedule'}</text>
@@ -302,7 +302,7 @@ export function ThreePressures() {
   return (
     <Fig vb="0 0 620 250"
          caption={es
-           ? 'Un plan es el punto donde se equilibran tres presiones que tiran en direcciones distintas. Mover un control mueve una de las tres, el equilibrio se desplaza y la forma del hoyo cambia con el: la geometria ES el resultado del calculo, no una ilustracion de el.'
+           ? 'Un plan es el punto donde se equilibran tres presiones que tiran en direcciones distintas. Mover un control mueve una de las tres, el equilibrio se desplaza y la forma del hoyo cambia con él: la geometría ES el resultado del cálculo, no una ilustración de él.'
            : 'A schedule is the point where three pressures pulling in different directions balance. Moving a control moves one of the three, the balance shifts and the shape of the hole moves with it: the geometry IS the computed result, not an illustration of it.'}>
       <circle cx={cx} cy={cy} r={62} fill="var(--color-accent, #58a6ff)" fillOpacity={0.12}
               stroke="var(--color-accent, #58a6ff)" strokeWidth={1.8} />
@@ -319,7 +319,7 @@ export function ThreePressures() {
       <path className="dg-a" d={`M486 78 L${cx + 52} ${cy - 34}`} />
 
       <text className="dg-tb" x={cx} y="238" textAnchor="middle">{es ? 'Capacidad' : 'Capacity'}</text>
-      <text className="dg-ts" x={cx} y="222" textAnchor="middle">{es ? 'cuanto cabe por ano' : 'how much fits in a year'}</text>
+      <text className="dg-ts" x={cx} y="222" textAnchor="middle">{es ? 'cuánto cabe por año' : 'how much fits in a year'}</text>
       <path className="dg-a" d={`M${cx} 208 L${cx} ${cy + 68}`} />
     </Fig>
   );
@@ -332,19 +332,21 @@ export function CaseRoles() {
   const rows: [string, string, string][] = es
     ? [['published', 'una instancia publicada, resuelta tal como se publica', 'se compara contra una cota PUBLICADA'],
        ['declared', 'un modelo de bloques real bajo un escenario que declaramos', 'realismo de datos sin fingir comparabilidad'],
-       ['deposit', 'cuatro arquetipos sembrados', 'la forma del deposito cambia la forma del plan'],
-       ['regime', 'el mismo deposito, distintos escenarios', 'cambia CUAL restriccion limita'],
+       ['deposit', 'cuatro arquetipos sembrados', 'la forma del depósito cambia la forma del plan'],
+       ['regime', 'el mismo depósito, distintos escenarios', 'cambia CUÁL restricción limita'],
        ['control', 'degenerado y abundante', 'tiene respuesta conocida: PUEDE fallar']]
     : [['published', 'a published instance, solved as published', 'measured against a PUBLISHED bound'],
        ['declared', 'a real block model under a scenario we declare', 'data realism without faking comparability'],
        ['deposit', 'four seeded archetypes', 'deposit shape changes schedule shape'],
        ['regime', 'the same deposit, different scenarios', 'changes WHICH constraint binds'],
        ['control', 'degenerate and abundant', 'has a known answer: it CAN fail']];
-  const RH = 34, top = 30;
+  // Two lines per row: the three texts side by side collided in the "declared" row in English and in
+  // most rows in Spanish, whose strings run about a third longer.
+  const RH = 50, top = 30;
   return (
     <Fig vb={`0 0 620 ${top + rows.length * RH + 44}`}
          caption={es
-           ? 'Cada categoria compra una clase distinta de confianza, y solo una se mide contra el estado del arte publicado. Las dos ultimas filas son las que pueden fallar: un producto cuyos controles no pueden fallar no esta siendo revisado, solo esta siendo mostrado.'
+           ? 'Cada categoría compra una clase distinta de confianza, y solo una se mide contra el estado del arte publicado. La última fila es la que puede fallar: un producto cuyos controles no pueden fallar no está siendo revisado, solo está siendo mostrado.'
            : 'Each category buys a different kind of confidence, and only one is measured against the published state of the art. The last row is the one that can fail: a product whose controls cannot fail is not being checked, it is only being shown.'}>
       {rows.map(([id, what, proves], i) => {
         const y = top + i * RH;
@@ -352,15 +354,15 @@ export function CaseRoles() {
         const isPub = id === 'published';
         return (
           <g key={id}>
-            <rect x={10} y={y} width={600} height={RH - 5} rx={4}
+            <rect x={10} y={y} width={600} height={RH - 6} rx={4}
                   fill={isCtrl || isPub ? 'var(--color-accent, #58a6ff)' : 'currentColor'}
                   fillOpacity={isCtrl || isPub ? 0.1 : 0.04}
                   stroke={isCtrl || isPub ? 'var(--color-accent, #58a6ff)' : 'currentColor'}
                   strokeWidth={isCtrl || isPub ? 1.2 : 0.6}
                   strokeOpacity={isCtrl || isPub ? 0.8 : 0.2} />
-            <text className="dg-tb" x={22} y={y + 19}>{id}</text>
-            <text className="dg-ts" x={116} y={y + 19}>{what}</text>
-            <text className="dg-ts" x={368} y={y + 19}>{proves}</text>
+            <text className="dg-tb" x={22} y={y + 27}>{id}</text>
+            <text className="dg-ts" x={126} y={y + 19}>{what}</text>
+            <text className="dg-ts" x={126} y={y + 36} fillOpacity={0.7}>{proves}</text>
           </g>
         );
       })}

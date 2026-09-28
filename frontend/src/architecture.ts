@@ -229,20 +229,20 @@ function svgContracts(): string {
 
 export const architecture: ArchitectureConfig = {
   title_en: 'Architecture: how PhaseFlow is built',
-  title_es: 'Arquitectura: como esta construido PhaseFlow',
+  title_es: 'Arquitectura: cómo está construido PhaseFlow',
   tabs: [
     {
       id: 'what',
       en: 'What it is',
-      es: 'Que es',
+      es: 'Qué es',
       body_en:
         'PhaseFlow solves an open-pit PRODUCTION SCHEDULE and then animates it. The ultimate pit answers which blocks are worth mining; this answers when, subject to slope precedence in every period and per-period mining and processing capacity, maximising discounted NPV.\n\n' +
         'The problem is the constrained pit limit problem (CPIT). It is NP-hard, so what ships is a CERTIFIED UPPER BOUND plus FEASIBLE HEURISTIC schedules, with the gap between them reported on every screen. A schedule shown without its gap is a number with no scale.\n\n' +
         'The trust anchor is a published MineLib instance solved as published: newman1, its own six periods, its own eight percent rate, its own two capacities. Everything else is measured against our own bound; that one is measured against somebody else\'s.',
       body_es:
-        'PhaseFlow resuelve un PLAN DE PRODUCCION de rajo abierto y luego lo anima. El pit final responde que bloques vale la pena extraer; esto responde cuando, sujeto a precedencia de talud en cada periodo y a capacidad de mina y planta por periodo, maximizando el NPV descontado.\n\n' +
-        'El problema es el pit limite restringido (CPIT). Es NP-duro, asi que lo que se entrega es una COTA SUPERIOR CERTIFICADA mas planes HEURISTICOS FACTIBLES, con la brecha entre ambos reportada en cada pantalla. Un plan sin su brecha es un numero sin escala.\n\n' +
-        'El ancla de confianza es una instancia publicada de MineLib resuelta tal como se publica: newman1, sus seis periodos, su tasa de ocho por ciento, sus dos capacidades. Todo lo demas se mide contra nuestra propia cota; esa se mide contra la de otros.',
+        'PhaseFlow resuelve un PLAN DE PRODUCCIÓN de rajo abierto y luego lo anima. El pit final responde qué bloques vale la pena extraer; esto responde cuándo, sujeto a precedencia de talud en cada período y a capacidad de mina y planta por período, maximizando el NPV descontado.\n\n' +
+        'El problema es el pit límite restringido (CPIT). Es NP-duro, así que lo que se entrega es una COTA SUPERIOR CERTIFICADA más planes HEURÍSTICOS FACTIBLES, con la brecha entre ambos reportada en cada pantalla. Un plan sin su brecha es un número sin escala.\n\n' +
+        'El ancla de confianza es una instancia publicada de MineLib resuelta tal como se publica: newman1, sus seis períodos, su tasa de ocho por ciento, sus dos capacidades. Todo lo demás se mide contra nuestra propia cota; esa se mide contra la de otros.',
       svg: svgWhat(),
     },
     {
@@ -254,9 +254,9 @@ export const architecture: ArchitectureConfig = {
         'LIVE (TypeScript): the same algorithms, ported, running in the browser on the block model the trace carries. This is what makes the focus view honest: moving the discount rate re-solves the problem rather than fetching a different baked answer, and the HUD shows the measured solve time.\n\n' +
         'A case is LIVE only when the browser can genuinely re-solve it inside an interaction budget, and REPLAY otherwise. A MineLib case is always replay, because its per-block data may not be redistributed and therefore never reaches the browser at all.',
       body_es:
-        'OFFLINE (Python): el pipeline construye cada instancia, corre toda la escalera de metodos, corre los tres controles y escribe una traza comprometida mas un manifiesto. El solver es oreblocks, un paquete publicado en PyPI, consumido como dependencia fijada; PhaseFlow no declara paquete propio.\n\n' +
+        'OFFLINE (Python): el pipeline construye cada instancia, corre toda la escalera de métodos, corre los tres controles y escribe una traza comprometida más un manifiesto. El solver es oreblocks, un paquete publicado en PyPI, consumido como dependencia fijada; PhaseFlow no declara paquete propio.\n\n' +
         'EN VIVO (TypeScript): los mismos algoritmos, portados, corriendo en el navegador sobre el modelo de bloques que trae la traza. Eso es lo que hace honesta la vista enfocada: mover la tasa vuelve a resolver el problema en vez de traer otra respuesta horneada, y el HUD muestra el tiempo medido.\n\n' +
-        'Un caso es EN VIVO solo cuando el navegador puede resolverlo de verdad dentro de un presupuesto de interaccion, y REPLAY en caso contrario. Un caso MineLib es siempre replay, porque sus datos por bloque no pueden redistribuirse y nunca llegan al navegador.',
+        'Un caso es EN VIVO solo cuando el navegador puede resolverlo de verdad dentro de un presupuesto de interacción, y REPLAY en caso contrario. Un caso MineLib es siempre replay, porque sus datos por bloque no pueden redistribuirse y nunca llegan al navegador.',
       svg: svgLanes(),
     },
     {
@@ -268,9 +268,9 @@ export const architecture: ArchitectureConfig = {
         'The bound is also the seed of the plan. The LP\'s expected extraction time per block is the weight that drives the best published rounding heuristic. On the authors\' own instances, greedy weights reached 0.138 of the bound where expected-time weights reached 0.972, using the same scheduling code.\n\n' +
         'Bienstock-Zuckerberg is a speed result, not a tighter bound: Z_BZ equals Z_LP, proven, because the precedence system is totally unimodular. It is cited and not claimed.',
       body_es:
-        'La cota certificada no necesita solver LP. Chicoisne et al. 2012, Teorema 3.1: con una restriccion de recurso por periodo, la relajacion LP de CPIT se resuelve exactamente en O(mn log n). La suma de Abel convierte el objetivo por periodo en una suma de pesos positivos sobre valores de pit acumulados; la capacidad acumulada desacopla los periodos; y cada subproblema es una combinacion convexa de dos pits anidados consecutivos, que son cierres maximos, que son cortes minimos.\n\n' +
-        'La cota es ademas la semilla del plan. El tiempo esperado de extraccion por bloque que da el LP es el peso que impulsa la mejor heuristica de redondeo publicada. En las instancias de los propios autores, los pesos codiciosos llegaron a 0,138 de la cota donde los pesos de tiempo esperado llegaron a 0,972, con el mismo codigo de planificacion.\n\n' +
-        'Bienstock-Zuckerberg es un resultado de velocidad, no una cota mas ajustada: Z_BZ es igual a Z_LP, demostrado, porque el sistema de precedencia es totalmente unimodular. Se cita y no se reclama.',
+        'La cota certificada no necesita solver LP. Chicoisne et al. 2012, Teorema 3.1: con una restricción de recurso por período, la relajación LP de CPIT se resuelve exactamente en O(mn log n). La suma de Abel convierte el objetivo por período en una suma de pesos positivos sobre valores de pit acumulados; la capacidad acumulada desacopla los períodos; y cada subproblema es una combinación convexa de dos pits anidados consecutivos, que son cierres máximos, que son cortes mínimos.\n\n' +
+        'La cota es además la semilla del plan. El tiempo esperado de extracción por bloque que da el LP es el peso que impulsa la mejor heurística de redondeo publicada. En las instancias de los propios autores, los pesos codiciosos llegaron a 0,138 de la cota donde los pesos de tiempo esperado llegaron a 0,972, con el mismo código de planificación.\n\n' +
+        'Bienstock-Zuckerberg es un resultado de velocidad, no una cota más ajustada: Z_BZ es igual a Z_LP, demostrado, porque el sistema de precedencia es totalmente unimodular. Se cita y no se reclama.',
       svg: svgScience(),
     },
     {
@@ -283,8 +283,8 @@ export const architecture: ArchitectureConfig = {
         'So PhaseFlow colours the VOID BOUNDARY: each standing block adjacent to an already-mined one takes the period of the neighbour that exposed it. Every block touching the excavated void then carries period colour BY CONSTRUCTION, and the object stays a pit. Measured on the shipping case at the FINAL frame: the pit wall is 100 percent period-coloured, and it is 33 percent of everything visible from outside (the rest is the model box, which is not the pit) against 0 percent for the carve-away rendering at that same frame. This is not an invention. Chicoisne et al. 2012 Figure 1(d) is a pit cross-section with the period numbers written into bands climbing the wall, and Morales et al. 2015 present nine pit profiles per period. The discipline draws the void boundary; this is that drawing in three dimensions.',
       body_es:
         'Hay tres cosas que se pueden dibujar de un plan por bloque y solo una es honesta.\n\n' +
-        'Dibuja los bloques EXTRAIDOS y obtienes un solido que crece, no un rajo. Quitalos y colorea lo que queda por ley y obtienes un rajo sin plan adentro: medido sobre un motor real, cerca del 25 por ciento del modelo es visible alguna vez, el 65 por ciento de esa superficie no lleva color de periodo a mitad de animacion, y el cuadro FINAL no lleva ninguno.\n\n' +
-        'Por eso PhaseFlow colorea la FRONTERA DEL VACIO: cada bloque en pie junto a uno ya extraido toma el periodo del vecino que lo expuso. Todo bloque que toca el vacio excavado lleva entonces color de periodo POR CONSTRUCCION, y el objeto sigue siendo un rajo. Medido sobre el caso que se publica, en el cuadro FINAL: la pared del rajo esta 100 por ciento coloreada por periodo, y es el 33 por ciento de todo lo visible desde afuera (el resto es la caja del modelo, que no es el rajo), contra 0 por ciento del dibujo por remocion en ese mismo cuadro. No es un invento. La Figura 1(d) de Chicoisne et al. 2012 es una seccion de rajo con los numeros de periodo escritos en bandas que suben la pared, y Morales et al. 2015 presentan nueve perfiles de rajo por periodo. La disciplina dibuja la frontera del vacio; esto es ese dibujo en tres dimensiones.',
+        'Dibuja los bloques EXTRAÍDOS y obtienes un sólido que crece, no un rajo. Quítalos y colorea lo que queda por ley y obtienes un rajo sin plan adentro: medido sobre un motor real, cerca del 25 por ciento del modelo es visible alguna vez, el 65 por ciento de esa superficie no lleva color de período a mitad de animación, y el cuadro FINAL no lleva ninguno.\n\n' +
+        'Por eso PhaseFlow colorea la FRONTERA DEL VACÍO: cada bloque en pie junto a uno ya extraído toma el período del vecino que lo expuso. Todo bloque que toca el vacío excavado lleva entonces color de período POR CONSTRUCCIÓN, y el objeto sigue siendo un rajo. Medido sobre el caso que se publica, en el cuadro FINAL: la pared del rajo está 100 por ciento coloreada por período, y es el 33 por ciento de todo lo visible desde afuera (el resto es la caja del modelo, que no es el rajo), contra 0 por ciento del dibujo por remoción en ese mismo cuadro. No es un invento. La Figura 1(d) de Chicoisne et al. 2012 es una sección de rajo con los números de período escritos en bandas que suben la pared, y Morales et al. 2015 presentan nueve perfiles de rajo por período. La disciplina dibuja la frontera del vacío; esto es ese dibujo en tres dimensiones.',
       svg: svgRender(),
     },
     {
@@ -295,8 +295,8 @@ export const architecture: ArchitectureConfig = {
         'CONTRACT 1, ingestion. A block model becomes an instance only after it passes: dense block ids, precedence arcs that exist and point UPWARD (levels increase upward and predecessors sit above), non-negative resource coefficients with a strictly positive extraction tonnage on every block, no NaN in the objective, and an answerable scenario. Legal but notable conditions are FLAGGED rather than rejected, and the flags ride into the manifest and onto the screen: a capacity that can never exhaust the pit is a real scenario and a common mistake, so the app says so.\n\n' +
         'CONTRACT 2, artifact. The trace and manifest schemas are mirrored in frontend/src/lib/contract.types.ts, so a drift fails the build, and the pipeline re-reads what it wrote and checks it before finishing. One assertion in that re-read is a licence assertion: a non-redistributable instance must never carry per-block data.',
       body_es:
-        'CONTRATO 1, ingesta. Un modelo de bloques se vuelve instancia solo si pasa: identificadores densos, arcos de precedencia que existen y apuntan HACIA ARRIBA (los niveles crecen hacia arriba y los predecesores estan encima), coeficientes de recurso no negativos con tonelaje de extraccion estrictamente positivo en cada bloque, sin NaN en el objetivo, y un escenario respondible. Las condiciones legales pero notables se MARCAN en vez de rechazarse, y las marcas viajan al manifiesto y a la pantalla: una capacidad que nunca puede agotar el pit es un escenario real y un error comun, asi que la aplicacion lo dice.\n\n' +
-        'CONTRATO 2, artefacto. Los esquemas de traza y manifiesto estan espejados en frontend/src/lib/contract.types.ts, asi que una divergencia rompe el build, y el pipeline vuelve a leer lo que escribio y lo verifica antes de terminar. Una de esas verificaciones es de licencia: una instancia no redistribuible nunca debe llevar datos por bloque.',
+        'CONTRATO 1, ingesta. Un modelo de bloques se vuelve instancia solo si pasa: identificadores densos, arcos de precedencia que existen y apuntan HACIA ARRIBA (los niveles crecen hacia arriba y los predecesores están encima), coeficientes de recurso no negativos con tonelaje de extracción estrictamente positivo en cada bloque, sin NaN en el objetivo, y un escenario respondible. Las condiciones legales pero notables se MARCAN en vez de rechazarse, y las marcas viajan al manifiesto y a la pantalla: una capacidad que nunca puede agotar el pit es un escenario real y un error común, así que la aplicación lo dice.\n\n' +
+        'CONTRATO 2, artefacto. Los esquemas de traza y manifiesto están espejados en frontend/src/lib/contract.types.ts, así que una divergencia rompe el build, y el pipeline vuelve a leer lo que escribió y lo verifica antes de terminar. Una de esas verificaciones es de licencia: una instancia no redistribuible nunca debe llevar datos por bloque.',
       svg: svgContracts(),
     },
   ],

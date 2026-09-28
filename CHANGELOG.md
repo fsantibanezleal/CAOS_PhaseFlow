@@ -3,6 +3,50 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.07.002] - 2026-09-28
+
+### Fixed - the Benchmark page contradicted its own table
+
+- The note under the published-instance table said the best plan sat 2.49 percent from the bound and
+  that the C-PIT[D] neighbourhood was the rung that produced it. The table above it, read from the
+  artifact, said 1.37 percent from `sliding-window`. The sentence now reads the best method and its
+  gap from the same artifact as the table. `docs/README.md` and `docs/methods/04_local_search.md`
+  carried the same stale 2.49 and are corrected from the committed `newman1-published` numbers.
+
+### Fixed - the Spanish surface
+
+- Accents were missing across the Spanish text of every route, the architecture modal, the charts and
+  the case titles: 637 words corrected (`período`, `método`, `año`, `está`, `qué`, `cuándo`, the verb
+  forms `terminó`, `descubrió`, `calculó` and the rest), each ambiguous word decided in its sentence.
+- "Gemelo portico" (a porch) is "Gemelo de pórfido" (porphyry) for both porphyry cases.
+- Numbers on the Spanish page printed a decimal point (292.8 M, 5.20%). A language-aware `dec()`
+  formatter now carries every displayed decimal, including chart ticks: 292,8 M and 5,20% in Spanish.
+- English left on the Spanish page is translated: the chart series and legends (`ore + waste`,
+  `cumulative NPV`, `certified bound`), the resource names in the period readout and the capacity
+  legend (`mining`, `processing` become `mina`, `planta`), the section-canvas labels, `gap`, `lane`.
+- Text the engine writes into the artifacts (method notes, contract flags, skip and lane reasons) stays
+  English because it is the provenance record; on the Spanish page it is now marked as engine output
+  in English instead of reading as an untranslated sentence.
+
+### Fixed - drawings
+
+- The production chart's bar axis started at 0.6 Mt, so a 0.68 Mt year read as a tenth of a 1.4 Mt year
+  when it is half of it. Bars start at zero. The ore bars drew as blank outlines because their fill was
+  `rgb(...)` with a hex alpha appended, which is not a colour; they now fill.
+- The pit-profile canvas fed its own height back to its host and grew to 1216 px, leaving the section
+  as a thin line at the bottom of an empty panel. The host takes a definite height and the canvas sits
+  out of flow inside it.
+- The pit's far rim sat under the frosted HUD cards and read as a white smear. On a stage wide enough to
+  spare it, the camera now fits the model to the width the HUD leaves free.
+- The bound table's "best plan gap" header ran into the next column ("BEST PLAMGAP"); numeric headers wrap.
+- The case-roles diagram overlapped its columns in the "declared" row (and in most Spanish rows); each
+  row now has two lines. Its Spanish caption said the last TWO rows can fail; it is the last one.
+
+### Pending
+
+- The case titles and roles are corrected in the pipeline; the committed artifacts carry them after the
+  next release bake.
+
 ## [0.07.001] - 2026-08-25
 
 ### Fixed
