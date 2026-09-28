@@ -189,10 +189,14 @@ export default function Tool() {
             </p>
           </div>
           <div className="pf-panel">
-            <h4>{es ? 'Ley de cabeza y razón lastre-mineral' : 'Head grade and strip ratio'}</h4>
-            <GradeStripChart periods={method.periods} theme={st.theme} />
+            <h4>{trace.instance.gradeSource
+              ? (es ? 'Ley de cabeza y razón lastre-mineral' : 'Head grade and strip ratio')
+              : (es ? 'Razón lastre-mineral' : 'Strip ratio')}</h4>
+            <GradeStripChart periods={method.periods} theme={st.theme} gradeAvailable={Boolean(trace.instance.gradeSource)} />
             <p className="pf-cap pf-muted">
-              {es ? 'El descuento debería adelantar la alta ley. Si la ley de cabeza no baja con los años, el plan no está haciendo eso.' : 'Discounting should pull high grade forward. If head grade does not decline over the years, the plan is not doing that.'}
+              {trace.instance.gradeSource
+                ? (es ? 'La ley procede del modelo de bloques o de la semilla sintética. El descuento puede adelantar mineral de mayor ley; la curva permite verificarlo.' : `Source grade: ${trace.instance.gradeSource}. Discounting can pull higher grade forward; the curve lets you check.`)
+                : (es ? 'La fuente MineLib no proporciona ley por bloque para este caso. Se muestra solo la razón lastre-mineral.' : 'The MineLib source has no block grade for this case. Only strip ratio is shown.')}
             </p>
           </div>
           <div className="pf-panel">

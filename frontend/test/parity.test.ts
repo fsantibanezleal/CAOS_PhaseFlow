@@ -39,6 +39,9 @@ test('the ultimate pit matches the offline lane block for block', () => {
 test('the certified bound matches the offline lane', () => {
   const t = load(CASE);
   const model = toLiveModel(t.blocks!, t.instance.dims);
+  const negativePlant = t.blocks!.value.findIndex((v, b) => v < 0 && t.blocks!.processTonnage[b] > 0);
+  assert.ok(negativePlant >= 0, 'fixture must include a negative-net-value block fixed to the plant');
+  assert.equal(model.processTonnage[negativePlant], t.blocks!.processTonnage[negativePlant]);
   const prec = buildPrecedence(t.instance.dims[0], t.instance.dims[1], t.instance.dims[2], 45);
   const upl = solveUltimatePit(model.value, prec.pstart, prec.plist);
 

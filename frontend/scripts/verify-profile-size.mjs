@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
 
-const sizes = [[1600, 900], [1280, 800], [390, 844]];
+const sizes = [[1600, 900], [1280, 800], [768, 900], [390, 844], [320, 700]];
 const baseOverride = process.env.PHASEFLOW_BASE;
 let server;
 let browser;
@@ -84,6 +84,11 @@ try {
     for (let j = 0; j < 2; j++) {
       assert.ok(Math.abs(restored[j].canvas - initial[j].canvas) <= 2,
         `${width}x${height}: section ${j} did not redraw at restored viewport size`);
+    }
+    if (width === 390) {
+      await page.locator('button').filter({ hasText: /^en$/ }).click();
+      await page.locator('button', { hasText: 'Perfil y planta' }).click();
+      check(await measure(page), height, '390x844 Spanish profile');
     }
     assert.deepEqual(errors, [], `${width}x${height}: browser errors`);
     console.log(`PASS Profile and plan ${width}x${height}: bounded after time, controls and resize`);

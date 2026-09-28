@@ -14,8 +14,15 @@ surface affordable.
 
 **The bound surrogate.** Predicts the bound as a fraction of the ultimate-pit value from eleven
 deposit summary statistics plus the scenario, so a sensitivity surface can be drawn immediately
-instead of after a few hundred closures. The exact bound is always computed for the SELECTED point,
-so the surface is anchored by at least one true value.
+instead of after a few hundred closures. A certified relaxation bound is computed for the selected
+point, so the surface is anchored by an actual solve; the bound can be looser than the joint LP
+optimum when the joint solve is outside its budget.
+
+The retained model's `ore_fraction` and `strip_ratio` training inputs count blocks with **positive
+net value** as a proxy for plant tonnage. That proxy differs from the source fixed-destination
+processing coefficients for blocks that prefer the plant while both destination values are negative.
+The live CPIT solver now reads those coefficients from the trace. The surrogate surface remains
+exploratory until it is retrained and evaluated on the corrected resource features.
 
 ## The split is by DEPOSIT, never by row
 

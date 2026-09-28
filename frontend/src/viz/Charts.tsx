@@ -205,27 +205,27 @@ export function CoherenceChart({ periods, theme }: { periods: TracePeriod[]; the
 }
 
 /** Head grade and strip ratio by period: does the schedule really pull high grade forward. */
-export function GradeStripChart({ periods, theme }: { periods: TracePeriod[]; theme: string }) {
+export function GradeStripChart({ periods, theme, gradeAvailable = true }: { periods: TracePeriod[]; theme: string; gradeAvailable?: boolean }) {
   const t = periods.map((p) => p.t);
   const g = periods.map((p) => p.headGrade * 100);
   const sr = periods.map((p) => p.stripRatio);
-  const data: uPlot.AlignedData = [t, g, sr];
+  const data: uPlot.AlignedData = gradeAvailable ? [t, g, sr] : [t, sr];
   return (
     <UPlotChart
-      key={`gs-${theme}`}
+      key={`gs-${theme}-${gradeAvailable}`}
       testId="grade-strip-chart"
       data={data}
       build={(w, h) => ({
         width: w, height: h,
-        scales: { x: { time: false }, g: {}, sr: {} },
+        scales: { x: { time: false }, ...(gradeAvailable ? { g: {} } : {}), sr: {} },
         axes: [
           { ...baseAxes(), label: L('period', 'período') },
-          { ...baseAxes(), label: L('head grade (%)', 'ley de cabeza (%)'), scale: 'g' },
+          ...(gradeAvailable ? [{ ...baseAxes(), label: L('head grade (%)', 'ley de cabeza (%)'), scale: 'g' }] : []),
           { ...baseAxes(), label: L('strip ratio', 'razón lastre:mineral'), scale: 'sr', side: 1 },
         ],
         series: [
           { label: L('period', 'período') },
-          { label: L('head grade %', 'ley de cabeza %'), scale: 'g', stroke: cssVar('--color-accent', '#58a6ff'), width: 2, points: { show: true, size: 5 } },
+          ...(gradeAvailable ? [{ label: L('head grade %', 'ley de cabeza %'), scale: 'g', stroke: cssVar('--color-accent', '#58a6ff'), width: 2, points: { show: true, size: 5 } }] : []),
           { label: L('strip ratio (waste:ore)', 'razón lastre:mineral'), scale: 'sr', stroke: cssVar('--color-warn', '#d29922'), width: 2, dash: [4, 3] },
         ],
         legend: { live: true },
@@ -246,8 +246,8 @@ export function MethodBars({
   // WHY THE BAR IS NPV AND NOT THE GAP.
   //
   // This chart used to draw `gapPct / worstGap`, so the WORST method drew the LONGEST bar. On the hero
-  // case that put bench-by-bench (a 50.27 percent gap) at a nearly full track and cpitD-local-search (5.20
-  // percent, the best schedule in the ladder) at a stub, which reads as the exact opposite of the result.
+  // case that put a poor bench-by-bench schedule at a nearly full track and the strongest local
+  // search schedule at a stub, which reads as the opposite of the result.
   //
   // The fix is not to invert the number, it is to draw the quantity that has a meaning. Every method here
   // is scored against the SAME certified upper bound, and npv/bound is exactly 1 - gap/100, so the track
