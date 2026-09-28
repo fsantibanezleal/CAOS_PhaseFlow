@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { Minimize2 } from 'lucide-react';
 import { LanguageToggle, ThemeToggle } from '@fasl-work/caos-app-shell';
-import { fmtMoney } from '../lib/artifacts.ts';
+import { fmtMoney, dec } from '../lib/artifacts.ts';
 import { stageLabel, useCase } from '../lib/useCase.ts';
 import { ScheduleView3D, type StageMode } from '../viz/ScheduleView3D.tsx';
 import { periodCss } from '../viz/colormap.ts';
@@ -181,7 +181,7 @@ export default function Focus() {
           />
         ) : (
           <div style={{ padding: 24 }}>
-            <p>{es ? 'Esta instancia no es redistribuible, asi que no hay modelo de bloques que resolver en el navegador.' : 'This instance is not redistributable, so there is no block model to solve in the browser.'}</p>
+            <p>{es ? 'Esta instancia no es redistribuible, así que no hay modelo de bloques que resolver en el navegador.' : 'This instance is not redistributable, so there is no block model to solve in the browser.'}</p>
             <p className="pf-muted pf-cap">{trace.instance.licence}</p>
           </div>
         )}
@@ -194,9 +194,9 @@ export default function Focus() {
           <div className="pf-hud-grid">
             <div className="pf-hud-row"><span className="pf-hud-val">{fmtMoney(npv)}</span><span className="pf-hud-key">NPV</span></div>
             <div className="pf-hud-row"><span className="pf-hud-val">{fmtMoney(bound)}</span><span className="pf-hud-key">{es ? 'cota certificada' : 'certified bound'}</span></div>
-            <div className="pf-hud-row"><span className="pf-hud-val">{gap.toFixed(2)}%</span><span className="pf-hud-key">gap</span></div>
+            <div className="pf-hud-row"><span className="pf-hud-val">{dec(gap, 2)}%</span><span className="pf-hud-key">{es ? 'brecha' : 'gap'}</span></div>
             <div className="pf-hud-row">
-              <span className="pf-hud-val">{live ? `${live.ms.toFixed(0)} ms` : (es ? 'horneado' : 'baked')}</span>
+              <span className="pf-hud-val">{live ? `${dec(live.ms, 0)} ms` : (es ? 'horneado' : 'baked')}</span>
               <span className="pf-hud-key">{es ? 'resuelto' : 'solved'}</span>
             </div>
             {live && (
@@ -222,7 +222,7 @@ export default function Focus() {
         </div>
 
         <div className="pf-row">
-          <button className={`pf-chip${advanced ? '' : ' on'}`} onClick={() => setAdvanced(false)}>{es ? 'basico' : 'basic'}</button>
+          <button className={`pf-chip${advanced ? '' : ' on'}`} onClick={() => setAdvanced(false)}>{es ? 'básico' : 'basic'}</button>
           <button className={`pf-chip${advanced ? ' on' : ''}`} onClick={() => setAdvanced(true)}>{es ? 'avanzado' : 'advanced'}</button>
           {busy && <span className="pf-cap pf-muted">{es ? 'resolviendo…' : 'solving…'}</span>}
         </div>
@@ -230,7 +230,7 @@ export default function Focus() {
         <div className="pf-group">
           <h4>{es ? 'Reloj' : 'Clock'}</h4>
           <label className="pf-ctl">
-            <span>{es ? 'periodo' : 'period'} <b>{Math.min(st.cursor, T - 1) + 1} / {T}</b></span>
+            <span>{es ? 'período' : 'period'} <b>{Math.min(st.cursor, T - 1) + 1} / {T}</b></span>
             <input type="range" min={0} max={T - 1} value={Math.min(st.cursor, T - 1)} onChange={(e) => { st.setPlaying(false); st.setCursor(+e.target.value); }} data-testid="focus-cursor" />
           </label>
           <div className="pf-row">
@@ -243,34 +243,34 @@ export default function Focus() {
         </div>
 
         <div className="pf-group">
-          <h4>{es ? 'Economia' : 'Economics'}</h4>
+          <h4>{es ? 'Economía' : 'Economics'}</h4>
           <label className="pf-ctl">
-            <span>{es ? 'tasa de descuento' : 'discount rate'} <b>{((rate ?? 0) * 100).toFixed(0)}%</b></span>
+            <span>{es ? 'tasa de descuento' : 'discount rate'} <b>{dec(((rate ?? 0) * 100), 0)}%</b></span>
             <input type="range" min={0} max={0.3} step={0.01} value={rate ?? 0} onChange={(e) => setRate(+e.target.value)} data-testid="rate" />
           </label>
           <label className="pf-ctl">
-            <span>{es ? 'capacidad mina' : 'mining capacity'} <b>{((capMine ?? 1) * 100).toFixed(0)}%</b></span>
+            <span>{es ? 'capacidad mina' : 'mining capacity'} <b>{dec(((capMine ?? 1) * 100), 0)}%</b></span>
             <input type="range" min={0.3} max={2.5} step={0.05} value={capMine ?? 1} onChange={(e) => setCapMine(+e.target.value)} data-testid="cap-mine" />
           </label>
           <label className="pf-ctl">
-            <span>{es ? 'capacidad planta' : 'plant capacity'} <b>{((capMill ?? 1) * 100).toFixed(0)}%</b></span>
+            <span>{es ? 'capacidad planta' : 'plant capacity'} <b>{dec(((capMill ?? 1) * 100), 0)}%</b></span>
             <input type="range" min={0.2} max={2.5} step={0.05} value={capMill ?? 1} onChange={(e) => setCapMill(+e.target.value)} />
           </label>
           {advanced && (
             <>
               <label className="pf-ctl">
-                <span>{es ? 'angulo de talud' : 'slope angle'} <b>{slope}°</b></span>
+                <span>{es ? 'ángulo de talud' : 'slope angle'} <b>{slope}°</b></span>
                 <input type="range" min={30} max={70} step={1} value={slope} onChange={(e) => setSlope(+e.target.value)} data-testid="slope" />
               </label>
               <label className="pf-ctl">
-                <span>{es ? 'periodos' : 'periods'} <b>{periods ?? 0}</b></span>
+                <span>{es ? 'períodos' : 'periods'} <b>{periods ?? 0}</b></span>
                 <input type="range" min={3} max={16} step={1} value={periods ?? 8} onChange={(e) => setPeriods(+e.target.value)} />
               </label>
             </>
           )}
           <p className="pf-cap pf-muted">
             {es
-              ? 'Cada control vuelve a resolver el problema completo: la cota certificada por multiplicador critico y el redondeo TopoSort, sobre el mismo modelo de bloques. El angulo de talud cambia el grafo de precedencia, asi que cambia la forma del rajo, no solo su color.'
+              ? 'Cada control vuelve a resolver el problema completo: la cota certificada por multiplicador crítico y el redondeo TopoSort, sobre el mismo modelo de bloques. El ángulo de talud cambia el grafo de precedencia, así que cambia la forma del rajo, no solo su color.'
               : 'Every control re-solves the whole problem: the critical multiplier bound and the TopoSort rounding, on the same block model. The slope angle changes the precedence graph, so it changes the shape of the pit rather than only its colour.'}
           </p>
         </div>
@@ -280,7 +280,7 @@ export default function Focus() {
           <div className="pf-chips">
             {(['schedule', 'grade', 'mined'] as StageMode[]).map((m) => (
               <button key={m} className={`pf-chip${mode === m ? ' on' : ''}`} onClick={() => setMode(m)}>
-                {m === 'schedule' ? (es ? 'paredes' : 'walls') : m === 'grade' ? (es ? 'ley' : 'grade') : (es ? 'extraido' : 'mined')}
+                {m === 'schedule' ? (es ? 'paredes' : 'walls') : m === 'grade' ? (es ? 'ley' : 'grade') : (es ? 'extraído' : 'mined')}
               </button>
             ))}
           </div>
@@ -288,7 +288,7 @@ export default function Focus() {
 
         {live && (
           <div className="pf-group">
-            <h4>{es ? 'Coherencia por periodo' : 'Coherence per period'}</h4>
+            <h4>{es ? 'Coherencia por período' : 'Coherence per period'}</h4>
             <p className="pf-cap pf-muted">
               {es ? 'componentes conexas' : 'connected components'}: {live.components.join(' · ')}
             </p>
@@ -299,7 +299,7 @@ export default function Focus() {
           <h4>{es ? 'Procedencia' : 'Provenance'}</h4>
           <p className="pf-cap pf-muted">
             {es
-              ? 'Motor: oreblocks (PyPI, MIT) offline y su puerto TypeScript en vivo. Cota: relajacion LP exacta por multiplicador critico (Chicoisne et al. 2012). Plan: heuristica TopoSort mas busqueda local por desplazamiento. La cota nunca la produce una heuristica.'
+              ? 'Motor: oreblocks (PyPI, MIT) offline y su puerto TypeScript en vivo. Cota: relajación LP exacta por multiplicador crítico (Chicoisne et al. 2012). Plan: heurística TopoSort más búsqueda local por desplazamiento. La cota nunca la produce una heurística.'
               : 'Engine: oreblocks (PyPI, MIT) offline and its TypeScript port live. Bound: exact LP relaxation by the critical multiplier algorithm (Chicoisne et al. 2012). Schedule: TopoSort heuristic plus a shift local search. The bound is never produced by a heuristic.'}
           </p>
         </div>

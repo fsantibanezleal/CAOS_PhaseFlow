@@ -13,6 +13,7 @@ import { useShellLang } from '@fasl-work/caos-app-shell';
 import 'uplot/dist/uPlot.min.css';
 import type { TracePeriod } from '../lib/contract.types.ts';
 import { periodCss } from './colormap.ts';
+import { dec } from '../lib/artifacts.ts';
 
 function cssVar(name: string, fallback: string): string {
   const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -98,7 +99,10 @@ export function UPlotChart({ data, build, height = 300, testId, onCursor }: Plot
 const baseAxes = () => {
   const fg = cssVar('--color-fg-subtle', '#8b949e');
   const grid = cssVar('--color-border', '#30363d');
-  return { stroke: fg, grid: { stroke: grid, width: 1 }, ticks: { stroke: grid } };
+  // Tick numbers follow the app's language too: uPlot writes 1.4, a Spanish page must read 1,4.
+  const values = (_u: uPlot, splits: number[]) =>
+    splits.map((v) => (v == null ? '' : LANG === 'es' ? String(+v.toFixed(6)).replace('.', ',') : String(+v.toFixed(6))));
+  return { stroke: fg, grid: { stroke: grid, width: 1 }, ticks: { stroke: grid }, values };
 };
 
 /** Ore and waste per period as stacked bars, cumulative NPV as a line, the bound as a reference. */
@@ -119,18 +123,21 @@ export function ProductionChart({ periods, bound, theme, onCursor }: {
       onCursor={onCursor}
       build={(w, h) => ({
         width: w, height: h, cursor: { drag: { x: true, y: false, uni: 20 } },
-        scales: { x: { time: false }, y: {}, npv: {} },
+        // Bars are lengths, so their axis starts at zero: a 0.6 floor made a 0.68 Mt year look like a
+        // tenth of a 1.4 Mt year when it is half of it. The ore fill is rgba, not `rgb(...)` + 'cc':
+        // that string is not a colour, and the ore bars drew as blank outlines under the waste.
+        scales: { x: { time: false }, y: { range: (_u: uPlot, _min: number, max: number) => [0, max * 1.06] }, npv: { range: (_u: uPlot, _min: number, max: number) => [0, max * 1.06] } },
         axes: [
-          { ...baseAxes(), label: L('period', 'periodo') },
+          { ...baseAxes(), label: L('period', 'período') },
           { ...baseAxes(), label: L('Mt', 'Mt'), scale: 'y' },
           { ...baseAxes(), label: L('cum NPV (M)', 'NPV acum (M)'), scale: 'npv', side: 1 },
         ],
         series: [
-          { label: L('period', 'periodo') },
-          { label: 'ore + waste (Mt)', scale: 'y', fill: cssVar('--color-fg-subtle', '#8b949e') + '55', stroke: cssVar('--color-fg-subtle', '#8b949e'), paths: uPlot.paths.bars!({ size: [0.82] }) },
-          { label: 'ore (Mt)', scale: 'y', fill: periodCss(0.7 * (periods.length - 1), periods.length) + 'cc', stroke: 'transparent', paths: uPlot.paths.bars!({ size: [0.82] }) },
-          { label: 'cumulative NPV', scale: 'npv', stroke: cssVar('--color-accent', '#58a6ff'), width: 2.2 },
-          { label: 'certified bound', scale: 'npv', stroke: cssVar('--color-warn', '#d29922'), width: 1.4, dash: [5, 4] },
+          { label: L('period', 'período') },
+          { label: L('ore + waste (Mt)', 'mineral + lastre (Mt)'), scale: 'y', fill: cssVar('--color-fg-subtle', '#8b949e') + '55', stroke: cssVar('--color-fg-subtle', '#8b949e'), paths: uPlot.paths.bars!({ size: [0.82] }) },
+          { label: L('ore (Mt)', 'mineral (Mt)'), scale: 'y', fill: periodCss(0.7 * (periods.length - 1), periods.length).replace('rgb(', 'rgba(').replace(')', ',0.8)'), stroke: 'transparent', paths: uPlot.paths.bars!({ size: [0.82] }) },
+          { label: L('cumulative NPV', 'NPV acumulado'), scale: 'npv', stroke: cssVar('--color-accent', '#58a6ff'), width: 2.2 },
+          { label: L('certified bound', 'cota certificada'), scale: 'npv', stroke: cssVar('--color-warn', '#d29922'), width: 1.4, dash: [5, 4] },
         ],
         legend: { live: true },
       })}
@@ -156,9 +163,9 @@ export function CapacityChart({ periods, names, theme }: { periods: TracePeriod[
       build={(w, h) => ({
         width: w, height: h,
         scales: { x: { time: false }, y: { range: [0, 105] } },
-        axes: [{ ...baseAxes(), label: L('period', 'periodo') }, { ...baseAxes(), label: L('% of limit', '% del limite') }],
+        axes: [{ ...baseAxes(), label: L('period', 'período') }, { ...baseAxes(), label: L('% of limit', '% del límite') }],
         series: [
-          { label: L('period', 'periodo') },
+          { label: L('period', 'período') },
           ...names.slice(0, nRes).map((n, i) => ({ label: n, stroke: colors[i % colors.length], width: 2, points: { show: true, size: 5 } })),
         ],
         legend: { live: true },
@@ -182,14 +189,14 @@ export function CoherenceChart({ periods, theme }: { periods: TracePeriod[]; the
         width: w, height: h,
         scales: { x: { time: false }, y: {}, pct: { range: [0, 105] } },
         axes: [
-          { ...baseAxes(), label: L('period', 'periodo') },
+          { ...baseAxes(), label: L('period', 'período') },
           { ...baseAxes(), label: L('components', 'componentes'), scale: 'y' },
           { ...baseAxes(), label: L('% in largest', '% en el mayor'), scale: 'pct', side: 1 },
         ],
         series: [
-          { label: L('period', 'periodo') },
-          { label: 'connected components', scale: 'y', stroke: cssVar('--color-bad', '#f85149'), width: 2, points: { show: true, size: 5 } },
-          { label: 'largest component share', scale: 'pct', stroke: cssVar('--color-good', '#3fb950'), width: 2, dash: [4, 3] },
+          { label: L('period', 'período') },
+          { label: L('connected components', 'componentes conexos'), scale: 'y', stroke: cssVar('--color-bad', '#f85149'), width: 2, points: { show: true, size: 5 } },
+          { label: L('largest component share', 'fracción en el mayor'), scale: 'pct', stroke: cssVar('--color-good', '#3fb950'), width: 2, dash: [4, 3] },
         ],
         legend: { live: true },
       })}
@@ -212,14 +219,14 @@ export function GradeStripChart({ periods, theme }: { periods: TracePeriod[]; th
         width: w, height: h,
         scales: { x: { time: false }, g: {}, sr: {} },
         axes: [
-          { ...baseAxes(), label: L('period', 'periodo') },
+          { ...baseAxes(), label: L('period', 'período') },
           { ...baseAxes(), label: L('head grade (%)', 'ley de cabeza (%)'), scale: 'g' },
-          { ...baseAxes(), label: L('strip ratio', 'razon esteril:mineral'), scale: 'sr', side: 1 },
+          { ...baseAxes(), label: L('strip ratio', 'razón lastre:mineral'), scale: 'sr', side: 1 },
         ],
         series: [
-          { label: L('period', 'periodo') },
-          { label: 'head grade %', scale: 'g', stroke: cssVar('--color-accent', '#58a6ff'), width: 2, points: { show: true, size: 5 } },
-          { label: 'strip ratio (waste:ore)', scale: 'sr', stroke: cssVar('--color-warn', '#d29922'), width: 2, dash: [4, 3] },
+          { label: L('period', 'período') },
+          { label: L('head grade %', 'ley de cabeza %'), scale: 'g', stroke: cssVar('--color-accent', '#58a6ff'), width: 2, points: { show: true, size: 5 } },
+          { label: L('strip ratio (waste:ore)', 'razón lastre:mineral'), scale: 'sr', stroke: cssVar('--color-warn', '#d29922'), width: 2, dash: [4, 3] },
         ],
         legend: { live: true },
       })}
@@ -252,8 +259,8 @@ export function MethodBars({
     learned: '#8957e5', beyond: 'var(--color-warn)',
   };
   const rungLabel: Record<string, string> = {
-    classical: es ? 'clasico' : 'classical', sota: 'SOTA',
-    learned: es ? 'aprendido' : 'learned', beyond: es ? 'mas alla' : 'beyond',
+    classical: es ? 'clásico' : 'classical', sota: 'SOTA',
+    learned: es ? 'aprendido' : 'learned', beyond: es ? 'más allá' : 'beyond',
   };
   const seen: string[] = [];
   rows.forEach((r) => { if (!seen.includes(r.rung)) seen.push(r.rung); });
@@ -280,8 +287,8 @@ export function MethodBars({
             className={`pf-mb-row${hover === i ? ' on' : ''}`}
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(null)}
-            title={`${r.method} - ${(r.npv / 1e6).toFixed(1)} M, ${captured.toFixed(2)}% ${
-              es ? 'de la cota certificada' : 'of the certified bound'}, ${es ? 'brecha' : 'gap'} ${r.gapPct.toFixed(2)}%`}
+            title={`${r.method} - ${dec((r.npv / 1e6), 1)} M, ${dec(captured, 2)}% ${
+              es ? 'de la cota certificada' : 'of the certified bound'}, ${es ? 'brecha' : 'gap'} ${dec(r.gapPct, 2)}%`}
           >
             <span className="pf-mb-name">
               {off ? <span title={es ? 'no comparable: otro problema o una vista de operabilidad' : 'not comparable: a different problem or an operability view'}>* </span> : null}
@@ -300,9 +307,9 @@ export function MethodBars({
               {/* the remainder of the track IS the gap, at the same scale on every row */}
               <span className="pf-mb-gap" style={{ left: `${captured}%`, width: `${100 - captured}%` }} />
             </span>
-            <span className="pf-mb-val">{(r.npv / 1e6).toFixed(1)} M</span>
+            <span className="pf-mb-val">{dec((r.npv / 1e6), 1)} M</span>
             <span className="pf-mb-sub">
-              <b className={off ? 'off' : ''}>{r.gapPct.toFixed(2)}%</b> {es ? 'brecha' : 'gap'} · {r.runtimeMs.toFixed(0)} ms
+              <b className={off ? 'off' : ''}>{dec(r.gapPct, 2)}%</b> {es ? 'brecha' : 'gap'} · {dec(r.runtimeMs, 0)} ms
             </span>
           </div>
         );
