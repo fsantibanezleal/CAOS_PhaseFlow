@@ -229,7 +229,12 @@
 .pf-kpi b { display: block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.02rem; }
 .pf-kpi span { font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-fg-subtle); }
 
-.pf-canvas-host { width: 100%; height: 100%; min-height: 200px; }
+/* The section canvases size themselves to this host, so the host must not size itself to them: an
+ * in-flow canvas fed the host its own height back and the pit profile grew to 1216px, leaving the
+ * drawing a thin line at the bottom of an empty panel. The host takes a definite height from the
+ * viewport and the canvas sits out of flow inside it. */
+.pf-canvas-host { position: relative; width: 100%; height: clamp(260px, 50vh, 480px); overflow: hidden; }
+.pf-canvas-host > canvas { position: absolute; inset: 0; }
 .pf-chart { width: 100%; }
 
 .pf-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
@@ -495,6 +500,9 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
 .pf-bound-table th:nth-child(4), .pf-bound-table td:nth-child(4) { width: 9%; }
 .pf-bound-table th:nth-child(5), .pf-bound-table td:nth-child(5) { width: 42%; white-space: normal; line-height: 1.45; }
 .pf-bound-table td { vertical-align: top; }
+/* Numeric headers are a phrase ("best plan gap") inside a 12% column: nowrap made it run into the
+ * next header and read as "BEST PLAMGAP". Headers wrap; the numbers under them stay on one line. */
+.pf-bound-table thead th { white-space: normal; vertical-align: bottom; }
 
 
 /* ------------------------------------------------------------------------------------------------
@@ -653,3 +661,6 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
 .page-body figcaption {
   max-width: 78ch;
 }
+
+/* Engine output shown on the Spanish page: marked, not translated (see lib/EngineText.tsx). */
+.pf-engine-tag { font-size: 0.62rem; letter-spacing: 0.04em; text-transform: uppercase; padding: 0 4px; border: 1px solid var(--color-border); border-radius: 4px; color: var(--color-fg-subtle); white-space: nowrap; }

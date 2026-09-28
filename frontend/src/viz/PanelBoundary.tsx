@@ -59,7 +59,7 @@ export function Absent({ title, what, es }: { title: string; what: string; es: b
       <h4>{title}</h4>
       <p className="pf-cap pf-muted">
         {es
-          ? `Este caso fue horneado antes de que existiera ${what}, asi que el artefacto no lo trae. No es un cero: no esta.`
+          ? `Este caso fue horneado antes de que existiera ${what}, así que el artefacto no lo trae. No es un cero: no está.`
           : `This case was baked before ${what} existed, so the artifact does not carry it. That is not a zero, it is an absence.`}
       </p>
     </div>
