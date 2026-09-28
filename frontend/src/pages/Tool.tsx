@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Maximize2 } from 'lucide-react';
 import { Callout, Cite, Tabs } from '@fasl-work/caos-app-shell';
-import { fmtInt, fmtMoney, fmtTonnes, dec, resourceLabel } from '../lib/artifacts.ts';
+import { fmtInt, fmtMoney, fmtTonnes, dec, exp, resourceLabel } from '../lib/artifacts.ts';
 import type { CaseIndexEntry } from '../lib/contract.types.ts';
 import { stageLabel, useCase } from '../lib/useCase.ts';
 import { ScheduleView3D, type StageMode } from '../viz/ScheduleView3D.tsx';
@@ -331,7 +331,7 @@ export default function Tool() {
                   <td className="wrap">{es
                     ? 'en ese mismo límite la cota certificada iguala el valor del pit final'
                     : 'in that same limit the certified bound equals the value of the ultimate pit'}</td>
-                  <td className="wrap">{es ? 'error relativo' : 'relative error'}: <b>{trace.controls.dualityBoundError.toExponential(1)}</b></td>
+                  <td className="wrap">{es ? 'error relativo' : 'relative error'}: <b>{exp(trace.controls.dualityBoundError, 1)}</b></td>
                   <td><span className={'pf-badge ' + (trace.controls.dualityBoundError < 1e-6 ? 'pass' : 'fail')}>{trace.controls.dualityBoundError < 1e-6 ? 'PASS' : 'FAIL'}</span></td>
                 </tr>
                 <tr>
@@ -347,7 +347,7 @@ export default function Tool() {
                   <td className="wrap">{es
                     ? 'permutar el orden de entrada de los bloques no cambia el resultado. Si lo cambiara, el motor estaría leyendo el orden del archivo como si fuera información'
                     : 'permuting the input order of the blocks does not change the result. If it did, the engine would be reading file order as though it were information'}</td>
-                  <td className="wrap">{es ? 'deriva de NPV bajo permutación' : 'NPV drift under permutation'}: <b>{(trace.controls.orderInvarianceError ?? 0).toExponential(1)}</b></td>
+                  <td className="wrap">{es ? 'deriva de NPV bajo permutación' : 'NPV drift under permutation'}: <b>{exp(trace.controls.orderInvarianceError ?? 0, 1)}</b></td>
                   <td><span className={'pf-badge ' + (trace.controls.orderInvariant ? 'pass' : 'fail')}>{trace.controls.orderInvariant ? 'PASS' : 'FAIL'}</span></td>
                 </tr>
               </tbody>
@@ -548,7 +548,7 @@ export default function Tool() {
             {trace.published.best_known_gap_pct != null && (
               <div>
                 <dt>{es ? 'brecha publicada' : 'published gap'}</dt>
-                <dd>{trace.published.best_known_gap_pct}%</dd>
+                <dd>{dec(trace.published.best_known_gap_pct, 2)}%</dd>
               </div>
             )}
           </dl>
