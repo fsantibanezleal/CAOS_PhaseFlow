@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Callout, Cite, Refs, useShellLang } from '@fasl-work/caos-app-shell';
 import { TwoBounds } from '../viz/Diagrams.tsx';
-import { fmtInt, fmtMoney, loadIndex, loadManifest, loadTrace, dec } from '../lib/artifacts.ts';
+import { fmtInt, fmtMoney, loadIndex, loadManifest, loadTrace, dec, exp } from '../lib/artifacts.ts';
 import type { CaseManifest, ScheduleTrace } from '../lib/contract.types.ts';
 
 export default function Benchmark() {
@@ -47,7 +47,7 @@ export default function Benchmark() {
                   <td>{published.published.upit_optimum ? fmtMoney(published.published.upit_optimum) : '-'}</td>
                   <td>
                     {published.published.upit_optimum
-                      ? `${(100 * Math.abs(published.instance.upit_value - published.published.upit_optimum) / published.published.upit_optimum).toExponential(1)}%`
+                      ? `${exp(100 * Math.abs(published.instance.upit_value - published.published.upit_optimum) / published.published.upit_optimum, 1)}%`
                       : '-'}
                   </td>
                 </tr>
@@ -57,7 +57,7 @@ export default function Benchmark() {
                   <td>{published.published.lp_bound ? fmtMoney(published.published.lp_bound) : '-'}</td>
                   <td>
                     {published.published.lp_bound
-                      ? `${(100 * Math.abs((published.scoreboard[0]?.bound ?? 0) - published.published.lp_bound) / published.published.lp_bound).toExponential(1)}%`
+                      ? `${exp(100 * Math.abs((published.scoreboard[0]?.bound ?? 0) - published.published.lp_bound) / published.published.lp_bound, 1)}%`
                       : '-'}
                   </td>
                 </tr>
@@ -74,7 +74,7 @@ export default function Benchmark() {
                 <tr>
                   <td>{es ? 'brecha de optimalidad' : 'optimality gap'}</td>
                   <td>{published.best ? `${dec(published.best.gap_pct, 2)}%` : '-'}</td>
-                  <td>{published.published.best_known_gap_pct != null ? `${published.published.best_known_gap_pct}%` : '-'}</td>
+                  <td>{published.published.best_known_gap_pct != null ? `${dec(published.published.best_known_gap_pct, 2)}%` : '-'}</td>
                   <td>-</td>
                 </tr>
               </tbody>
@@ -123,7 +123,7 @@ export default function Benchmark() {
                 <td>{m.published.upit_optimum ? fmtMoney(m.published.upit_optimum) : '-'}</td>
                 <td>
                   {m.published.upit_optimum
-                    ? (Math.abs(m.instance.upit_value - m.published.upit_optimum) / m.published.upit_optimum).toExponential(1)
+                    ? exp(Math.abs(m.instance.upit_value - m.published.upit_optimum) / m.published.upit_optimum, 1)
                     : '-'}
                 </td>
                 <td>{m.best ? `${dec(m.best.gap_pct, 2)}%` : '-'}{m.scenario.declared ? ` (${es ? 'declarado' : 'declared'})` : ''}</td>
