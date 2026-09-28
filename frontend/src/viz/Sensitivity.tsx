@@ -1,11 +1,11 @@
 // The sensitivity surface the plan promised: the certified bound against the discount rate and
-// against capacity, on one plane, with the EXACT value at the case's own point drawn on top.
+// against capacity, on one plane, with a certified bound at the case's own point drawn on top.
 //
 // Why it can exist at all: the exact bound is a parametric family of maximum closures, a few hundred
 // per point, which is fine once and impossible across a grid. The bound surrogate predicts it from
 // eleven deposit statistics plus the scenario, so the plane is one forward pass per cell. Its
 // held-out error is 1.40 percent mean and 3.99 percent at the ninetieth percentile, which is why the
-// exact anchor is not decoration: it is the only thing that makes the rest of the plane readable.
+// certified anchor is not decoration: it is the only direct solve on the plane.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Callout } from '@fasl-work/caos-app-shell';
@@ -95,7 +95,7 @@ export function SensitivitySurface({
       const perPeriod = r.limitPerPeriod[0] ?? 0;
       let oreT = 0;
       for (let i = 0; i < trace.blocks.value.length; i++) {
-        if (trace.blocks.value[i] > 0 && trace.blocks.inPit[i]) oreT += trace.blocks.tonnage[i];
+        if (trace.blocks.inPit[i]) oreT += trace.blocks.processTonnage[i];
       }
       return oreT > 0 ? (perPeriod * trace.scenario.periods) / oreT : null;
     })();
@@ -223,8 +223,13 @@ export function SensitivitySurface({
       </p>
       <p className="pf-cap pf-muted">
         {es
-          ? 'PREDICHA, no certificada. La cota exacta es una familia paramétrica de cierres máximos, unos cientos por punto: bien una vez, imposible sobre una grilla. El sustituto tiene 1,40 por ciento de error medio retenido y 3,99 en el percentil noventa, y el recuadro marca el punto propio de este caso, donde la cota SÍ se calculó exacta. Sin ese ancla la superficie no sería legible.'
-          : 'PREDICTED, not certified. The exact bound is a parametric family of maximum closures, a few hundred per point: fine once, impossible across a grid. The surrogate has a 1.40 percent mean held-out error and 3.99 at the ninetieth percentile, and the box marks this case’s own point, where the bound WAS computed exactly. Without that anchor the surface would not be readable.'}
+          ? 'PREDICHA, no certificada. Una cota de relajación requiere numerosos cierres máximos por punto; el sustituto permite dibujar la grilla. Su error medio en el conjunto retenido fue 1,40 por ciento y el percentil noventa 3,99. El recuadro marca este caso, donde se calculó una cota certificada; puede ser más holgada que el óptimo LP conjunto.'
+          : 'PREDICTED, not certified. A relaxation bound requires many maximum-closure solves per point; the surrogate makes the grid affordable. Its held-out mean error was 1.40 percent and its ninetieth percentile 3.99 percent. The box marks this case, where a certified bound was computed; that bound can be looser than the joint LP optimum.'}
+      </p>
+      <p className="pf-cap pf-muted">
+        {es
+          ? 'El modelo retenido usa el tonelaje de bloques con valor neto positivo como sustituto del tonelaje a planta. La superficie es exploratoria; los coeficientes de planta del plan en vivo sí proceden del artefacto.'
+          : 'The retained model uses positive-net-value tonnage as a proxy for plant tonnage. This surface is exploratory; the live schedule uses processing coefficients from the artifact.'}
       </p>
     </div>
   );

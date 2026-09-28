@@ -131,7 +131,7 @@ Measured here on the published `newman1.cpit`:
 | bound | value | work | time |
 |---|---|---|---|
 | Algorithm 4 | 24,487,410 | 79 closures | 1.3 s |
-| **Bienstock-Zuckerberg** | **24,486,184** | 9 iterations | 1.9 s |
+| **Bienstock-Zuckerberg** | **24,486,184** | 9 iterations | 10.5 s in the 0.07.002 trace |
 | published (PCPSP LP) | 24,486,549 | | |
 
 The ordering is the check. The CPIT LP bound must sit BELOW the PCPSP LP bound, because PCPSP is the
@@ -146,12 +146,14 @@ Python. The budget is measured, not guessed:
 
 | instance | time-expanded nodes | edges | BZ |
 |---|---|---|---|
-| `newman1`, 6 periods | 6,360 | 28,832 | converges in 1.9 s |
-| 6912-block twin, 8 periods | 55,296 | 479,000 | above budget |
+| `newman1`, 6 periods | 6,360 | 28,832 | converges; 10.5 s in the 0.07.002 trace |
+| `twin-porphyry-s`, 8 periods | 55,296 | 479,584 | converges; 7.6 s in the 0.07.002 trace |
+| `twin-core-halo`, 10 periods | 144,000 | 1,291,200 | above the 130,000-node budget |
 
 Where the budget is exceeded, the bound report says so in words and Algorithm 4's certified but looser
-bound is used for every gap on that case. A blank field would have been the dishonest option, and an
-un-noted silent fallback would have been worse.
+bound is used for every gap on that case. On near-degenerate controls, BZ can terminate a fraction
+of a part per million above Algorithm 4 within its tolerance; the smaller certified value is used.
+The trace records both numbers and the selected one.
 
 ## The gap
 
@@ -161,5 +163,7 @@ gap = (bound - npv) / bound
 
 which is the definition MineLib results are published under (Jelvez, Morales and Nancel-Penard,
 [doi:10.1007/978-3-319-99220-4_18](https://doi.org/10.1007/978-3-319-99220-4_18), equation 12). The App
-shows both bounds and names which one it used, so the reader can see how much of a gap belongs to the
-plan and how much belongs to the yardstick.
+shows both bounds and names which one it used. When BZ is tighter, their difference measures the
+extra looseness of Algorithm 4. The selected-bound-to-plan distance can still contain relaxation
+looseness, integrality gap and method shortfall. The [external Newman1 solve](../cases/newman1-external-optimum.md)
+separates the latter two for that case; the degenerate control has a zero gap by construction.

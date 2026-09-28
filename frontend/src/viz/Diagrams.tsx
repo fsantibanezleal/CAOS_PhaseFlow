@@ -139,17 +139,17 @@ export function BoundGap() {
   return (
     <Fig vb="0 0 620 230"
          caption={es
-           ? 'La cota LP se alcanza solo con los enteros relajados, así que el óptimo real está por debajo de ella, y un plan factible está por debajo del óptimo. Lo único medible es la brecha entre el plan y la cota: acota el arrepentimiento en vez de nombrarlo.'
-           : 'The LP bound is attainable only with the integers relaxed, so the true optimum sits below it, and a feasible schedule sits below the optimum. The only measurable quantity is the gap between schedule and bound: it bounds the regret rather than naming it.'}>
+           ? 'La cota certificada está sobre el óptimo entero y un plan factible está bajo él. La brecha cota-plan acota la pérdida del método, pero también puede contener flojedad de la relajación e integralidad. Newman1 tiene una referencia entera externa; el control degenerado tiene óptimo exacto por construcción.'
+           : 'The certified bound sits above the integer optimum, and a feasible schedule sits below it. The bound-to-schedule gap bounds method loss but can also contain relaxation looseness and integrality. Newman1 has an external integer reference; the degenerate control has an exact optimum by construction.'}>
       <path className="dg-b" d="M92 32 L92 196" />
       <text className="dg-ts" x="30" y="30">NPV</text>
       <rect className="dg-f" x="196" y="56" width="118" height="106" />
       <path className="dg-hl" d="M110 56 L500 56" />
-      <text className="dg-tb" x="510" y="54">{es ? 'cota LP' : 'LP bound'}</text>
+      <text className="dg-tb" x="510" y="54">{es ? 'cota' : 'bound'}</text>
       <text className="dg-ts" x="510" y="70">{es ? 'certificada' : 'certified'}</text>
       <path className="dg-b dg-d" d="M110 104 L500 104" />
       <text className="dg-tb" x="510" y="102">{es ? 'óptimo real' : 'true optimum'}</text>
-      <text className="dg-ts" x="510" y="118">{es ? 'desconocido' : 'unknown'}</text>
+      <text className="dg-ts" x="510" y="118">{es ? 'según caso' : 'case dependent'}</text>
       <path className="dg-b" d="M110 162 L500 162" />
       <text className="dg-tb" x="510" y="160">{es ? 'plan factible' : 'feasible plan'}</text>
       <text className="dg-ts" x="510" y="176">{es ? 'lo que se entrega' : 'what ships'}</text>
@@ -257,10 +257,12 @@ export function TwoBounds() {
   return (
     <Fig vb="0 0 620 250"
          caption={es
-           ? 'La misma programación medida contra dos techos. El Algoritmo 4 relaja un recurso a la vez y se queda con la menor de las dos cotas: certificada y más floja. Bienstock-Zuckerberg calcula la cota conjunta sobre ambos recursos a la vez, y queda más abajo. La brecha reportada se achica al cambiar de techo sin que el plan haya mejorado en un solo bloque, y por eso cada caso dice cuál cota usó.'
-           : 'The same schedule measured against two ceilings. Algorithm 4 relaxes one resource at a time and keeps the smaller of the two bounds: certified, and looser. Bienstock-Zuckerberg computes the joint bound over both resources at once, and it sits lower. The reported gap shrinks when you change ceiling without the schedule improving by a single block, which is why every case states which bound it used.'}>
+           ? 'La misma programación medida contra dos techos. El Algoritmo 4 relaja un recurso a la vez; Bienstock-Zuckerberg aproxima la cota conjunta. Cuando BZ queda más abajo, la brecha reportada se achica sin que el plan mejore. En controles casi degenerados ambas pueden coincidir dentro de la tolerancia y se usa la menor. Esquema sin escala numérica.'
+           : 'The same schedule measured against two ceilings. Algorithm 4 relaxes one resource at a time; Bienstock-Zuckerberg approximates the joint bound. When BZ sits lower, the reported gap shrinks without the schedule improving. On near-degenerate controls the two may coincide within tolerance and the smaller is used. Schematic, not to numeric scale.'}>
       <path className="dg-b" d="M96 28 L96 200" />
       <text className="dg-ts" x="34" y="26">NPV</text>
+      <rect x={L - 8} y={yA4} width={R - L + 8} height={yBZ - yA4}
+            fill="var(--color-accent, currentColor)" fillOpacity="0.13" />
 
       <path className="dg-b dg-d" d={`M${L - 8} ${yA4} L${R} ${yA4}`} />
       <text className="dg-tb" x={R + 12} y={yA4 - 2}>{es ? 'cota Algoritmo 4' : 'Algorithm 4 bound'}</text>
@@ -268,10 +270,11 @@ export function TwoBounds() {
 
       <path className="dg-hl" d={`M${L - 8} ${yBZ} L${R} ${yBZ}`} />
       <text className="dg-tb" x={R + 12} y={yBZ - 2}>{es ? 'cota conjunta BZ' : 'joint BZ bound'}</text>
-      <text className="dg-ts" x={R + 12} y={yBZ + 14}>{es ? 'ambos a la vez, más ajustada' : 'both at once, tighter'}</text>
+      <text className="dg-ts" x={R + 12} y={yBZ + 14}>{es ? 'conjunta, con tolerancia' : 'joint, within tolerance'}</text>
 
       <path className="dg-b dg-d" d={`M${L - 8} ${yOpt} L${R} ${yOpt}`} />
-      <text className="dg-ts" x={R + 12} y={yOpt + 4}>{es ? 'óptimo real (desconocido)' : 'true optimum (unknown)'}</text>
+      <text className="dg-tb" x={R + 12} y={yOpt + 4}>{es ? 'óptimo entero' : 'integer optimum'}</text>
+      <text className="dg-ts" x={R + 12} y={yOpt + 20}>{es ? 'Newman1: externo' : 'Newman1: external'}</text>
 
       <path className="dg-b" d={`M${L - 8} ${yPlan} L${R} ${yPlan}`} />
       <text className="dg-tb" x={R + 12} y={yPlan + 4}>{es ? 'el MISMO plan' : 'the SAME schedule'}</text>
@@ -283,8 +286,7 @@ export function TwoBounds() {
       <path className="dg-a" d={`M${L + 176} ${yPlan - 4} L${L + 176} ${yBZ + 4}`} />
       <text className="dg-ts" x={L + 184} y={yBZ + 30}>{es ? 'brecha contra BZ' : 'gap vs BZ'}</text>
 
-      {/* the band between the ceilings IS the part of a gap that belongs to the bound */}
-      <rect className="dg-f" x={L - 8} y={yA4} width={R - L + 8} height={yBZ - yA4} />
+      {/* The band between the ceilings measures Algorithm 4's extra relaxation. */}
       <text className="dg-ts" x={L + 6} y={yA4 - 8}>
         {es ? 'esta banda es flojedad de la cota, no del plan' : 'this band is looseness in the bound, not in the plan'}
       </text>
@@ -334,12 +336,12 @@ export function CaseRoles() {
        ['declared', 'un modelo de bloques real bajo un escenario que declaramos', 'realismo de datos sin fingir comparabilidad'],
        ['deposit', 'cuatro arquetipos sembrados', 'la forma del depósito cambia la forma del plan'],
        ['regime', 'el mismo depósito, distintos escenarios', 'cambia CUÁL restricción limita'],
-       ['control', 'degenerado y abundante', 'tiene respuesta conocida: PUEDE fallar']]
+       ['control', 'identidad exacta y capacidad holgada', 'una identidad; un diagnóstico de sensibilidad']]
     : [['published', 'a published instance, solved as published', 'measured against a PUBLISHED bound'],
        ['declared', 'a real block model under a scenario we declare', 'data realism without faking comparability'],
        ['deposit', 'four seeded archetypes', 'deposit shape changes schedule shape'],
        ['regime', 'the same deposit, different scenarios', 'changes WHICH constraint binds'],
-       ['control', 'degenerate and abundant', 'has a known answer: it CAN fail']];
+       ['control', 'exact identity and loose capacity', 'one identity; one sensitivity diagnostic']];
   // Two lines per row: the three texts side by side collided in the "declared" row in English and in
   // most rows in Spanish, whose strings run about a third longer.
   const RH = 50, top = 30;
