@@ -45,8 +45,8 @@ percent discount rate, its own two capacities.
 |---|---|---|
 | ultimate pit optimum | 26,086,899 | 26,086,899 |
 | certified LP bound (BZ, joint) | 24,486,184 | 24,486,549 (PCPSP LP) |
-| best feasible schedule | 23,876,000 approx | 24,176,861 |
-| optimality gap | 2.49% | 1.26% |
+| best feasible schedule (`sliding-window`) | 24,149,869 | 24,176,861 |
+| optimality gap | 1.37% | 1.26% |
 
 The bound ordering is the check: the CPIT LP bound must sit below the PCPSP LP bound, because PCPSP is
 the richer problem.
