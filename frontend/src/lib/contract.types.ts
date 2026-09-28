@@ -74,6 +74,9 @@ export interface TraceControls {
 }
 
 export interface TracePublished {
+  /** Problem solved by the cited feasible objective and LP bound; not necessarily this case's CPIT. */
+  problem?: 'CPIT' | 'PCPSP';
+  source_tables?: string;
   upit_optimum?: number;
   lp_bound?: number;
   best_known?: number;

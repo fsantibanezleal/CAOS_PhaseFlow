@@ -11,13 +11,13 @@ nobody needs, so every row states what it is for.
 | `declared` | a real MineLib block model under a scenario we declare, because the published `.cpit` for it is not reachable. Honest, and NOT comparable to a published gap. |
 | `deposit` | the four seeded archetypes. License-free, so the full per-block schedule ships to the browser. |
 | `regime` | the same deposit under scenarios that change WHICH constraint binds. |
-| `control` | the degenerate and negative controls. A product that cannot fail its own controls is not being checked. |
+| `control` | an exact one-period, zero-rate identity and a loose-capacity sensitivity diagnostic. The former has a zero-gap oracle; the latter measures how methods differ after capacities are relaxed. |
 
 ## The matrix
 
 | case | category | data | periods | rate | role |
 |---|---|---|---|---|---|
-| `newman1-published` | published | real | 6 | 0.08 | The trust anchor. A published MineLib instance solved with its own periods, its own discount rate and its own two capacities, scored against the published best-known gap. |
+| `newman1-published` | published | real | 6 | 0.08 | The trust anchor. The published MineLib CPIT scenario is preserved. The 2018 PCPSP result is a distinct cross-problem comparison; an external notebook reports a separate CPIT integer optimum. |
 | `zuck-small-declared` | declared | real | 8 | 0.10 | A real block model at ten times the scale, under a scenario we declare because the published .cpit for it is not reachable. The gap here is against OUR bound, not a published one. |
 | `kd-declared` | declared | real | 10 | 0.10 | A copper deposit from Arizona, again under a declared scenario. Scale check. |
 | `twin-porphyry-l` | deposit | synthetic | 10 | 0.10 | The hero case. Big enough that the pit wall reads as benches rather than voxels, and license-free, so its whole per-block schedule ships to the browser. |
@@ -29,7 +29,10 @@ nobody needs, so every row states what it is for.
 | `regime-mining-bound` | regime | synthetic | 12 | 0.10 | The fleet binds and the plant idles: the mirror image, and a different pit shape. |
 | `regime-high-discount` | regime | synthetic | 8 | 0.20 | Twenty percent per period. High grade is pulled forward hard and the early pit is a visibly different shape from the ten percent case on the same deposit. |
 | `ctrl-degenerate` | control | synthetic | 1 | 0.00 | The degenerate case. CPIT collapses to the ultimate pit: the mined set must equal the exact pit block for block and the bound must equal its value. A failure here is a bug, not a result. |
-| `ctrl-abundant` | control | synthetic | 8 | 0.10 | Negative control on the method comparison. With capacity this loose every method finds nearly the same plan, so the spread between them must collapse. A product that still shows a large spread here is measuring its own noise. |
+| `ctrl-abundant` | control | synthetic | 8 | 0.10 | Loose-capacity diagnostic. The best comparable schedule is 0.36% below the certified bound, but classical schedules range from 4.45% to 7.49%. Discounted timing and precedence still matter. The 24.14% `destination-toposort` gap belongs to a different problem and is excluded from CPIT comparison. `ctrl-degenerate` is the exact collapse control. |
+
+The [Newman1 source comparison](newman1-external-optimum.md) separates the LP bound,
+an externally reported integer optimum and PhaseFlow's feasible schedule.
 
 ## Data availability, measured 2026-08-06
 

@@ -113,6 +113,12 @@ export const CITATIONS: Citation[] = [
     doi: '10.1007/978-3-319-99220-4_18',
   },
   {
+    id: 'amplminelib',
+    label: 'AMPL MineLib notebook',
+    citation: 'AMPL Colaboratory. MineLib in AMPL and amplpy, Newman1 CPIT solve with Gurobi 13.0.0, MIP gap tolerance 1e-9. External executable notebook and solver log, accessed 2026-09-28.',
+    url: 'https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html',
+  },
+  {
     id: 'rezakhah2020a',
     label: 'Rezakhah et al. 2020',
     citation: 'Rezakhah, M., Moreno, E. and Newman, A. (2020). Practical performance of an open pit mine scheduling model considering blending and stockpiling. Computers and Operations Research 115, 104638.',

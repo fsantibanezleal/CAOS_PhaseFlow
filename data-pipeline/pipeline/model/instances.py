@@ -42,6 +42,8 @@ class Instance:
     upit_value: float
     synthetic: bool
     report: ContractReport
+    pcpsp: ob.Pcpsp | None = None
+    destination_source: str | None = None
     #: the orebody shape, for a synthetic twin. The learned guard's rule is about the OREBODY, so it
     #: needs this; a real deposit has no such label and the guard says so rather than guessing.
     archetype: str | None = None
@@ -70,14 +72,16 @@ def _twin_instance(case: Case) -> Instance:
     grid = dep.grid
     ix, iy, level = grid.coord_arrays()
     values = twin.values.astype(np.float64)
+    waste = -twin.econ.mining_cost * dep.tonnage
+    plant = (dep.grade * twin.econ.recovery * twin.econ.price
+             - twin.econ.processing_cost) * dep.tonnage + waste
 
     n_res = case.scenario.n_resources
     coef = np.zeros((n_res, values.shape[0]), dtype=np.float64)
     coef[0] = dep.tonnage
     if n_res > 1:
-        # the processing resource is consumed only by blocks whose optimal destination is the plant,
-        # which for the .upit semantics is exactly the blocks with a positive net value
-        coef[1] = np.where(values > 0, dep.tonnage, 0.0)
+        # Plant choice is relative to waste value, even when both net values are negative.
+        coef[1] = np.where(plant > waste, dep.tonnage, 0.0)
 
     limit = _limits(case.scenario, coef, twin.upit.in_pit)
     cpit = ob.Cpit(
@@ -92,6 +96,27 @@ def _twin_instance(case: Case) -> Instance:
         resource_names=case.scenario.resource_names,
         period_one_undiscounted=case.scenario.period_one_undiscounted,
     )
+    destination_coef = np.zeros((n_res, values.size, 2), dtype=np.float64)
+    destination_coef[0, :, :] = dep.tonnage[:, None]
+    if n_res > 1:
+        destination_coef[1, :, 1] = dep.tonnage
+    pcpsp = ob.Pcpsp(
+        name=f"{case.id}-synthetic-destinations",
+        n_blocks=values.size,
+        n_periods=cpit.n_periods,
+        n_destinations=2,
+        discount_rate=cpit.discount_rate,
+        value=np.stack([waste, plant], axis=1),
+        forbidden=np.zeros((values.size, 2), dtype=bool),
+        limit=cpit.limit.copy(),
+        sense=cpit.sense.copy(),
+        coef=destination_coef,
+        period_one_undiscounted=cpit.period_one_undiscounted,
+    )
+    reduced = pcpsp.to_cpit()
+    if not (np.allclose(reduced.value, cpit.value, atol=1e-6)
+            and np.allclose(reduced.coef, cpit.coef, atol=1e-6)):
+        raise ValueError(f"{case.id}: synthetic destination economics disagree with CPIT")
     report = validate_instance(
         values=values,
         pstart=twin.precedence.pstart,
@@ -117,6 +142,8 @@ def _twin_instance(case: Case) -> Instance:
         synthetic=True,
         archetype=getattr(spec, "archetype", None),
         report=report,
+        pcpsp=pcpsp,
+        destination_source="seeded synthetic mining and processing economics",
     )
 
 
@@ -183,6 +210,23 @@ def _minelib_instance(case: Case) -> Instance:
             period_one_undiscounted=case.scenario.period_one_undiscounted,
         )
 
+    pcpsp = None
+    destination_source = None
+    pcpsp_path = stem.with_suffix(".pcpsp")
+    if case.category == "published" and pcpsp_path.exists():
+        candidate = ob.read_pcpsp(pcpsp_path)
+        reduced = candidate.to_cpit()
+        if not (candidate.n_destinations == 2
+                and reduced.n_blocks == cpit.n_blocks
+                and reduced.n_periods == cpit.n_periods
+                and reduced.discount_rate == cpit.discount_rate
+                and np.allclose(reduced.value, cpit.value, atol=1e-6)
+                and np.allclose(reduced.coef, cpit.coef, atol=1e-6)
+                and np.allclose(reduced.limit, cpit.limit, atol=1e-6)):
+            raise ValueError(f"{case.id}: published PCPSP does not reduce to the CPIT case")
+        pcpsp = candidate
+        destination_source = "published MineLib PCPSP model"
+
     exact = ob.solve_upit(cpit.value, prec)
     tonnage = cpit.coef[0]
     grade = np.zeros(n, dtype=np.float64)
@@ -215,6 +259,8 @@ def _minelib_instance(case: Case) -> Instance:
         upit_value=float(exact.pit_value),
         synthetic=False,
         report=report,
+        pcpsp=pcpsp,
+        destination_source=destination_source,
     )
 
 
