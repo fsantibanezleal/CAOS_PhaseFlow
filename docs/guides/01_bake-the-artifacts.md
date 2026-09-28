@@ -7,8 +7,8 @@
 ```
 
 Outputs land as `data/derived/<case>/trace.json`, `data/derived/manifests/<case>.json` and
-`index.json`. The run is deterministic in its inputs and its seed: the same inputs give a
-byte-identical artifact.
+`index.json`. Scientific outputs are deterministic for fixed inputs and seeds; measured wall times
+and resulting byte counts can change between bakes.
 
 ## Sandbox by default, and why
 
@@ -19,8 +19,9 @@ consistent and passes every per-case check there is.
 
 ## What it costs
 
-About ninety minutes for all thirteen on one core, dominated by the certified bound. It prints a line
-per case as each lands, so a slow bake and a stuck bake are distinguishable. If you need to know where
+Plan for a long run on one core, dominated by the certified bound on `zuck-small-declared` and
+`kd-declared`. It prints a line per case as each lands, so a slow bake and a stuck bake are
+distinguishable. If you need to know where
 it is inside a case:
 
 ```bash
@@ -44,9 +45,16 @@ per-block data: a published case ships numbers and charts, not a 3D replay, and 
 ## After a release bake
 
 ```bash
-.venv/Scripts/python.exe scripts/check_artifacts.py    # CONTRACT 2 on disk
+.venv/Scripts/python.exe scripts/check_artifacts.py --root build/release-candidate
+.venv/Scripts/python.exe scripts/compare_rebake.py build/release-candidate --output build/rebake-comparison.json
+# Inspect the report before promoting the complete candidate into data/derived.
+.venv/Scripts/python.exe scripts/check_artifacts.py    # CONTRACT 2 on the committed tree
 cd frontend && npm test                                # parity against the offline lane
 ```
+
+`compare_rebake.py` permits only titles, roles, version stamps, byte counts and measured times to
+change without review. A changed bound, NPV, schedule, control or lane fails it. The artifact guard
+also compares the published case metadata and product version with the source registry.
 
 The parity test is the one that matters after an engine change: it rebuilds the same instance in
 TypeScript and compares the precedence arcs, the pit membership block by block, the objective and the
