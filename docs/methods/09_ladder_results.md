@@ -4,10 +4,10 @@ How to read the numbers the ladder produces, and which comparisons are legitimat
 
 ## Only compare through the same bound
 
-Two schedules are comparable when they are measured against the same yardstick. Every method on a case
-carries the SAME bound, and the App shows which of the two bounds that is. The test
-`every schedule is measured against the SAME bound` asserts it, because a table whose rows quietly use
-different denominators looks exactly like a table whose rows do not.
+Two CPIT schedules are comparable when they solve the same case and are measured against the same
+certified CPIT bound. The App shows which bound it selected. The destination and operability rows
+retain the case bound in the artifact for schema consistency, but the App does not display a CPIT
+gap for them or place them in the bound chart.
 
 ## Which comparisons are legitimate
 
@@ -17,7 +17,8 @@ different denominators looks exactly like a table whose rows do not.
 | learned against `toposort-expected`, same case | yes | that is what it approximates |
 | `beyond` against anything, by NPV | **no** | see below |
 | a gap on a `declared` case against a published gap | **no** | different scenario |
-| the `published` case against the published gap | yes | that is the whole point of it |
+| Newman1 CPIT against the 2018 PCPSP gap | **no** | the published 2018 objective and LP bound are for PCPSP |
+| Newman1 CPIT against the attributed external CPIT integer result | qualified | same named CPIT model, subject to source-model parity |
 
 ## Why the `beyond` rungs are not NPV-comparable
 
@@ -27,23 +28,27 @@ than a CPIT plan's and neither direction means what it looks like. What it is FO
 cutoff it produces, which is a number CPIT cannot produce at all.
 
 **`min-width`** does not re-impose capacity after moving blocks. It is an operability VIEW of a plan,
-and its NPV is the price of that operability rather than a competing answer.
+and its NPV records the transformed geometry rather than a competing feasible answer. It can even
+exceed the CPIT upper bound because the transformed schedule can breach a period capacity.
 
 Both carry a note saying so, and a test asserts the note exists.
 
 ## Which gap belongs to whom
 
-On a case with two binding capacities, a gap of, say, 13 percent is not 13 percent of heuristic loss.
-Part of it is the bound. The Analysis tab and the Benchmark page report both bounds and the tightening
-between them, so the reader can split it:
+Let `V` be a feasible CPIT schedule value, `U_A` the Algorithm 4 bound, `U_J` the joint LP bound,
+and `Z_IP` the unknown integer optimum. In objective-value units, the accounting identity is
 
 ```
-gap against Algorithm 4  =  (heuristic loss)  +  (bound looseness)
-gap against the joint BZ bound  =  (heuristic loss)   [as far as the LP relaxation can say]
+U_A - V = (U_A - U_J) + (U_J - Z_IP) + (Z_IP - V).
 ```
 
-And even the joint bound is the LP bound, not the integer optimum: the remaining distance to a true
-optimum is the integrality gap, which nothing here computes and nothing here claims.
+The two recorded bounds measure the first term when the joint bound tightens Algorithm 4. The
+second term is the LP integrality gap; the third is loss of the feasible method. Neither is known
+without an integer optimum. An [external exact solve for Newman1](../cases/newman1-external-optimum.md)
+reports that optimum, so the terms can be shown for that one case with explicit attribution.
+Percent gaps use their own bound as denominator, so percentages cannot simply be added.
+For other cases, the Analysis tab shows the bounds and their difference without claiming the
+unmeasured two terms are known.
 
 ## What a large gap actually tells you
 
@@ -55,8 +60,14 @@ Three different things, and the case matrix is designed to separate them:
 3. **The instance is hard.** Visible when both bounds agree and every method sits far from them, which
    is the honest case where a better answer needs a better method rather than a better implementation.
 
-## The control that should collapse
+## What the controls actually show
 
-`ctrl-abundant` loosens capacity until it barely binds. There every method should find nearly the same
-plan and the spread between them should collapse toward zero. A product that still shows a large spread
-on that case is measuring its own noise, and the case exists so a reader can check that it does not.
+`ctrl-degenerate` has one period, zero discount, and unlimited capacity. Its schedules and bound
+agree with the exact ultimate pit: the recorded gap range is zero. That is the collapse control.
+
+`ctrl-abundant` relaxes capacity but retains eight periods, positive discount, and slope precedence.
+Its best comparable method is 0.26% below the certified bound, while the classical methods are
+5.57% to 7.02% below. Loose capacity alone does not make their choices of extraction period equal.
+The `destination-toposort` row solves a different problem and is excluded from this comparison.
+These numbers come from the committed `ctrl-abundant` manifest and
+must be checked again after a rebake.

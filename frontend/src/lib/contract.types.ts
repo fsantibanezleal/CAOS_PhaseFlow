@@ -56,6 +56,7 @@ export interface TraceBlocks {
   level: number[];
   grade: number[];
   tonnage: number[];
+  processTonnage: number[];
   value: number[];
   inPit: number[];
 }
@@ -74,6 +75,9 @@ export interface TraceControls {
 }
 
 export interface TracePublished {
+  /** Problem solved by the cited feasible objective and LP bound; not necessarily this case's CPIT. */
+  problem?: 'CPIT' | 'PCPSP';
+  source_tables?: string;
   upit_optimum?: number;
   lp_bound?: number;
   best_known?: number;
@@ -151,6 +155,7 @@ export interface ScheduleTrace {
     synthetic: boolean;
     nBlocks: number;
     nPrecedenceArcs: number;
+    gradeSource: string | null;
     dims: number[];
     upitValue: number;
     upitBlocks: number;

@@ -1,7 +1,7 @@
 {
   "name": "phaseflow-frontend",
   "private": true,
-  "version": "0.7.4",
+  "version": "0.7.5",
   "type": "module",
   "scripts": {
     "predev": "node copy-data.mjs",
@@ -11,7 +11,10 @@
     "postbuild": "node spa-404.mjs",
     "preview": "vite preview",
     "test": "node --import tsx --test && node --import tsx scripts/check-arch-bounds.mjs",
-    "check:arch": "node --import tsx scripts/check-arch-bounds.mjs"
+    "check:arch": "node --import tsx scripts/check-arch-bounds.mjs",
+    "verify:profile": "node scripts/verify-profile-size.mjs",
+    "verify:grade": "node scripts/verify-grade-source.mjs",
+    "verify:focus": "node scripts/verify-focus-capacity.mjs"
   },
   "dependencies": {
     "@fasl-work/caos-app-shell": "^0.5.0",
@@ -30,6 +33,7 @@
     "@types/react-dom": "^19.0.0",
     "@types/three": "^0.171.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "playwright": "1.61.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vite": "^6.0.7"
