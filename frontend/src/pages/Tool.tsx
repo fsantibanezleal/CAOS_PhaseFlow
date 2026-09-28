@@ -96,8 +96,8 @@ export default function Tool() {
         </div>
         <div className="pf-hud-grid">
           <div className="pf-hud-row"><span className="pf-hud-val">{fmtMoney(p?.cumNpv ?? 0)}</span><span className="pf-hud-key">{es ? 'NPV acum' : 'cum NPV'}</span></div>
-          <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '—' : fmtMoney(method.bound)}</span><span className="pf-hud-key">{es ? 'cota' : 'bound'}</span></div>
-          <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '—' : `${dec(method.gapPct, 2)}%`}</span><span className="pf-hud-key">{es ? 'brecha' : 'gap'}</span></div>
+          <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '-' : fmtMoney(method.bound)}</span><span className="pf-hud-key">{es ? 'cota' : 'bound'}</span></div>
+          <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</span><span className="pf-hud-key">{es ? 'brecha' : 'gap'}</span></div>
           <div className="pf-hud-row"><span className="pf-hud-val">{p?.components ?? 0}</span><span className="pf-hud-key">{es ? 'fragmentos' : 'components'}</span></div>
         </div>
       </div>
@@ -232,8 +232,8 @@ export default function Tool() {
               <tbody>
                 {trace.methods.map((m) => (
                   <tr key={m.method}>
-                    <td>{m.method}</td><td>{m.rung}</td><td>{fmtMoney(m.npv)}</td><td>{m.rung === 'beyond' ? '—' : fmtMoney(m.bound)}</td>
-                    <td>{m.rung === 'beyond' ? '—' : `${dec(m.gapPct, 2)}%`}</td><td>{dec(m.runtimeMs, 0)}</td><td>{m.minedBlocks}</td>
+                    <td>{m.method}</td><td>{m.rung}</td><td>{fmtMoney(m.npv)}</td><td>{m.rung === 'beyond' ? '-' : fmtMoney(m.bound)}</td>
+                    <td>{m.rung === 'beyond' ? '-' : `${dec(m.gapPct, 2)}%`}</td><td>{dec(m.runtimeMs, 0)}</td><td>{m.minedBlocks}</td>
                     <td style={{ textAlign: 'left' }} className="pf-cap pf-muted"><EngineText text={m.notes} /></td>
                   </tr>
                 ))}
@@ -523,7 +523,7 @@ export default function Tool() {
           )}
           <div className="pf-kpis">
             <div className="pf-kpi"><b>{fmtMoney(method.npv)}</b><span>NPV</span></div>
-            <div className="pf-kpi"><b>{method.rung === 'beyond' ? '—' : `${dec(method.gapPct, 2)}%`}</b><span>{es ? 'brecha' : 'gap'}</span></div>
+            <div className="pf-kpi"><b>{method.rung === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</b><span>{es ? 'brecha' : 'gap'}</span></div>
             <div className="pf-kpi"><b>{fmtTonnes(p?.minedTonnes ?? 0)}</b><span>{es ? 'período' : 'this period'}</span></div>
             <div className="pf-kpi"><b>{dec((100 * (p?.largestComponentShare ?? 0)), 0)}%</b><span>{es ? 'en el mayor' : 'in largest'}</span></div>
           </div>
