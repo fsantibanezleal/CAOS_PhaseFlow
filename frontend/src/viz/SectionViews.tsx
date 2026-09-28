@@ -14,6 +14,7 @@
 //    coherence number becomes a thing you can see rather than a statistic.
 
 import { useEffect, useRef } from 'react';
+import { useShellLang } from '@fasl-work/caos-app-shell';
 import { periodCss } from './colormap.ts';
 
 interface Common {
@@ -76,6 +77,7 @@ function cssVar(name: string, fallback: string): string {
 /** Elevation against easting at a chosen northing: the pit surface per period. */
 export function PitProfile({ x, y, level, periodOfBlock, dims, nPeriods, cursor, theme, northing }: Common & { northing: number }) {
   const [nx, , nz] = dims;
+  const es = useShellLang() === 'es';
   const ref = useCanvas((ctx, w, h) => {
     const fg = cssVar('--color-fg', '#c9d1d9');
     const muted = cssVar('--color-fg-subtle', '#8b949e');
@@ -140,9 +142,9 @@ export function PitProfile({ x, y, level, periodOfBlock, dims, nPeriods, cursor,
     ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + ih); ctx.lineTo(pad.l + iw, pad.t + ih);
     ctx.stroke();
     ctx.fillStyle = fg;
-    ctx.fillText('bench', 2, pad.t + 9);
-    ctx.fillText('easting', pad.l + iw - 42, h - 6);
-  }, [x, y, level, periodOfBlock, cursor, northing, nPeriods, theme]);
+    ctx.fillText(es ? 'banco' : 'bench', 2, pad.t + 9);
+    ctx.fillText(es ? 'este' : 'easting', pad.l + iw - 42, h - 6);
+  }, [x, y, level, periodOfBlock, cursor, northing, nPeriods, theme, es]);
   return <div className="pf-canvas-host"><canvas ref={ref} data-testid="pit-profile" /></div>;
 }
 

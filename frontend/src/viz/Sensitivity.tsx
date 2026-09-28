@@ -10,7 +10,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Callout } from '@fasl-work/caos-app-shell';
 
-import { APP_VERSION } from '../lib/artifacts.ts';
+import { APP_VERSION, dec } from '../lib/artifacts.ts';
 import type { ScheduleTrace } from '../lib/contract.types.ts';
 import { boundSurface, loadBoundSurrogate, type Mlp } from '../engine/boundSurrogate.ts';
 import { viridis } from './colormap.ts';
@@ -116,7 +116,7 @@ export function SensitivitySurface({
       g.fillText(`${Math.round(100 * r)}%`, pad.l + i * cw + 2, h - 20);
     });
     CAPS.forEach((cp, i) => {
-      g.fillText(cp.toFixed(2), 24, pad.t + (CAPS.length - 1 - i) * chh + chh / 2 + 3);
+      g.fillText(dec(cp, 2), 24, pad.t + (CAPS.length - 1 - i) * chh + chh / 2 + 3);
     });
     g.fillText(es ? 'tasa de descuento' : 'discount rate', pad.l + iw / 2 - 40, h - 6);
     g.save();
@@ -140,8 +140,8 @@ export function SensitivitySurface({
     g.strokeRect(bx, pad.t, bw, ih);
     g.globalAlpha = 1;
     g.fillStyle = fg;
-    g.fillText(`${(hi / 1e6).toFixed(0)} M`, bx + bw + 4, pad.t + 8);
-    g.fillText(`${(lo / 1e6).toFixed(0)} M`, bx + bw + 4, pad.t + ih);
+    g.fillText(`${dec((hi / 1e6), 0)} M`, bx + bw + 4, pad.t + 8);
+    g.fillText(`${dec((lo / 1e6), 0)} M`, bx + bw + 4, pad.t + ih);
     g.save();
     g.translate(w - 5, pad.t + ih / 2 + 26);
     g.rotate(-Math.PI / 2);
@@ -153,7 +153,7 @@ export function SensitivitySurface({
     return (
       <Callout variant="honest" title={es ? 'Sin datos por bloque' : 'No per-block data'}>
         {es
-          ? 'Esta superficie se calcula desde los estadisticos del deposito, y esta instancia no puede redistribuir sus bloques (licencia MineLib). Se dibuja en los casos sinteticos.'
+          ? 'Esta superficie se calcula desde los estadísticos del depósito, y esta instancia no puede redistribuir sus bloques (licencia MineLib). Se dibuja en los casos sintéticos.'
           : 'This surface is computed from the deposit statistics, and this instance may not redistribute its blocks (the MineLib licence). It is drawn on the synthetic cases.'}
       </Callout>
     );
@@ -171,14 +171,14 @@ export function SensitivitySurface({
     return (
       <Callout variant="honest" title={es ? 'La superficie no se dibuja' : 'The surface is not drawn'}>
         {es
-          ? 'El sustituto de la cota rompe una direccion que el LP no puede romper: mas capacidad no puede bajar una cota. Con eso, la superficie seria confiadamente falsa, asi que no se dibuja y se dice por que.'
+          ? 'El sustituto de la cota rompe una dirección que el LP no puede romper: más capacidad no puede bajar una cota. Con eso, la superficie sería confiadamente falsa, así que no se dibuja y se dice por qué.'
           : 'The bound surrogate breaks a direction the LP itself cannot break: more capacity cannot lower a bound. A surface built on that would be confidently wrong, so it is not drawn and this says why.'}
       </Callout>
     );
   }
   if (err) {
     return (
-      <Callout variant="honest" title={es ? 'El sustituto no cargo' : 'The surrogate did not load'}>
+      <Callout variant="honest" title={es ? 'El sustituto no cargó' : 'The surrogate did not load'}>
         {err}
       </Callout>
     );
@@ -211,9 +211,9 @@ export function SensitivitySurface({
       <p className="pf-cap">
         {hover ? (
           <>
-            {es ? 'tasa' : 'rate'} <b>{(100 * hover.rate).toFixed(0)}%</b>, {es ? 'capacidad' : 'capacity'}{' '}
-            <b>{hover.cap.toFixed(2)}</b>: {es ? 'cota predicha' : 'predicted bound'}{' '}
-            <b>{(hover.bound / 1e6).toFixed(1)} M</b>
+            {es ? 'tasa' : 'rate'} <b>{dec((100 * hover.rate), 0)}%</b>, {es ? 'capacidad' : 'capacity'}{' '}
+            <b>{dec(hover.cap, 2)}</b>: {es ? 'cota predicha' : 'predicted bound'}{' '}
+            <b>{dec((hover.bound / 1e6), 1)} M</b>
           </>
         ) : (
           <span className="pf-muted">
@@ -223,7 +223,7 @@ export function SensitivitySurface({
       </p>
       <p className="pf-cap pf-muted">
         {es
-          ? 'PREDICHA, no certificada. La cota exacta es una familia parametrica de cierres maximos, unos cientos por punto: bien una vez, imposible sobre una grilla. El sustituto tiene 1,40 por ciento de error medio retenido y 3,99 en el percentil noventa, y el recuadro marca el punto propio de este caso, donde la cota SI se calculo exacta. Sin ese ancla la superficie no seria legible.'
+          ? 'PREDICHA, no certificada. La cota exacta es una familia paramétrica de cierres máximos, unos cientos por punto: bien una vez, imposible sobre una grilla. El sustituto tiene 1,40 por ciento de error medio retenido y 3,99 en el percentil noventa, y el recuadro marca el punto propio de este caso, donde la cota SÍ se calculó exacta. Sin ese ancla la superficie no sería legible.'
           : 'PREDICTED, not certified. The exact bound is a parametric family of maximum closures, a few hundred per point: fine once, impossible across a grid. The surrogate has a 1.40 percent mean held-out error and 3.99 at the ninetieth percentile, and the box marks this case’s own point, where the bound WAS computed exactly. Without that anchor the surface would not be readable.'}
       </p>
     </div>

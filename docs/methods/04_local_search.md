@@ -48,13 +48,16 @@ On the published `newman1.cpit`, with the joint Bienstock-Zuckerberg bound as th
 |---|---|
 | `toposort-expected` | 2.54% |
 | `shift-local-search` | 2.50% |
-| `cpitD-local-search` | **2.49%** |
+| `cpitD-local-search` | 2.49% |
+| `sliding-window` | **1.37%** |
 | published best known | 1.26% |
 
-The exact neighbourhood wins, and the margin is small on this instance because `newman1` is nearly
-closed to begin with. The remaining distance to the published best known is the honest cost of running
-sixteen restricted re-solves rather than a long metaheuristic campaign, and it is on the Benchmark page
-rather than in a footnote.
+Among the local searches the exact neighbourhood wins, and the margin is small on this instance because
+`newman1` is nearly closed to begin with. The best plan on the case is not a local search: the sliding
+time window (Cullenbine, Wood and Newman 2011) re-solves a moving window of periods exactly and
+lands at 1.37 percent. The remaining distance to the published best known is the cost of a restricted
+re-solve rather than a long branch-and-bound campaign, and it is on the Benchmark page rather than in a
+footnote. These figures are the committed `newman1-published` artifact.
 
 ## Requirements
 
