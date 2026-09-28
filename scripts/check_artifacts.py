@@ -51,11 +51,14 @@ def _capacity_check(cid: str, trace: dict, meth: dict) -> list[str]:
             over = (u - limit) / limit
             if over > worst:
                 worst, worst_where = over, f"period {row['t']}, resource {r}"
-    if meth["rung"] in CAPACITY_BOUND_RUNGS:
+    # destination-toposort solves PCPSP, but its *own* destination-specific
+    # resource accounting must still satisfy PCPSP capacities. The min-width
+    # operability view alone deliberately does not re-impose capacity.
+    if meth["rung"] in CAPACITY_BOUND_RUNGS or meth["method"] == "destination-toposort":
         if worst > CAPACITY_TOL:
             out.append(
                 f"{cid}/{meth['method']}: INFEASIBLE, {100 * worst:.2f} percent over capacity at "
-                f"{worst_where}. A {meth['rung']} rung is solved under that capacity"
+                f"{worst_where}. Its {meth['rung']} model is solved under that capacity"
             )
     elif worst > CAPACITY_TOL:
         # not a failure: a measured fact about a rung that says it does not re-impose capacity
@@ -152,24 +155,73 @@ def main() -> int:
             fail.append(f"{cid}: trace is {size} bytes, manifest says {m['artifact']['bytes']}")
         if not m["controls"]["allPass"]:
             fail.append(f"{cid}: a control FAILED; a case that fails its controls must not ship")
+        if t.get("controls") != m.get("controls"):
+            fail.append(f"{cid}: trace and manifest disagree on the controls")
         if not t["methods"]:
             fail.append(f"{cid}: no method produced a result")
+        bound_report = t["bound"]
+        bound_options = {"algorithm4": bound_report["algorithm4"]}
+        if bound_report.get("joint") is not None:
+            bound_options["bienstock-zuckerberg"] = bound_report["joint"]
+            if bound_report["joint"] > bound_report["algorithm4"] * (1 + 5e-6):
+                fail.append(f"{cid}: joint LP bound exceeds Algorithm 4 beyond solver tolerance")
+        used = bound_report.get("used")
+        if used not in bound_options:
+            fail.append(f"{cid}: bound.used is {used}, not an available certified bound")
+            selected_bound = min(bound_options.values())
+        else:
+            selected_bound = bound_options[used]
+            if selected_bound > min(bound_options.values()) * (1 + 1e-6):
+                fail.append(f"{cid}: selected bound is looser than an available certified bound")
         for meth in t["methods"]:
-            if meth["npv"] > meth["bound"] * (1 + 1e-9) + 1e-6:
+            if meth["rung"] in CAPACITY_BOUND_RUNGS and meth["npv"] > meth["bound"] * (1 + 1e-9) + 1e-6:
                 fail.append(f"{cid}/{meth['method']}: feasible objective exceeds the certified bound")
+            if abs(meth["bound"] - selected_bound) > 1e-6 * max(1.0, abs(selected_bound)):
+                fail.append(f"{cid}/{meth['method']}: method bound differs from selected case bound")
             if len(meth["periods"]) != t["scenario"]["periods"]:
                 fail.append(f"{cid}/{meth['method']}: period rows do not match the horizon")
+            cash_total = sum(row["discCashFlow"] for row in meth["periods"])
+            cash_tolerance = 0.01 * (len(meth["periods"]) + 1)
+            if abs(cash_total - meth["npv"]) > cash_tolerance:
+                fail.append(
+                    f"{cid}/{meth['method']}: period cash flow {cash_total:.2f} "
+                    f"does not add to method NPV {meth['npv']:.2f}"
+                )
+            if meth["periods"] and abs(meth["periods"][-1]["cumNpv"] - meth["npv"]) > 0.02:
+                fail.append(f"{cid}/{meth['method']}: final cumulative NPV differs from method NPV")
             fail.extend(_capacity_check(cid, t, meth))
             fail.extend(_shape_check(cid, t, meth))
         fail.extend(_lane_check(cid, t, m))
         fail.extend(_pin_check(m))
-        # the BEST method a reader is pointed at must be one they could actually run
+        # Every number used to summarise CPIT methods must come from CPIT-comparable
+        # rows. A previous gap envelope used a PCPSP destination row as the worst
+        # CPIT schedule, even while the best-method selection excluded it.
+        comparable = [row for row in m["scoreboard"] if row["rung"] in CAPACITY_BOUND_RUNGS]
+        if not comparable:
+            fail.append(f"{cid}: no comparable CPIT method in the scoreboard")
+        else:
+            expected_best = max(comparable, key=lambda row: (row["npv"], row["method"]))
+            expected_worst_gap = max(row["gap_pct"] for row in comparable)
+            if abs(m["controls"]["worstGapPct"] - expected_worst_gap) > 1e-3:
+                fail.append(
+                    f"{cid}: worstGapPct includes an incomparable method or disagrees with "
+                    f"the scoreboard ({m['controls']['worstGapPct']:.4f} vs {expected_worst_gap:.4f})"
+                )
+            if abs(m["controls"]["bestGapPct"] - expected_best["gap_pct"]) > 1e-3:
+                fail.append(f"{cid}: bestGapPct disagrees with the best comparable method")
+            if (m.get("best") or {}).get("method") != expected_best["method"]:
+                fail.append(f"{cid}: best method is not the best comparable CPIT schedule")
         best = m.get("best")
-        if best and best.get("rung") == "beyond":
-            fail.append(
-                f"{cid}: the manifest's best method is {best['method']}, a BEYOND rung. Those are a "
-                "different problem or an operability view and are not capacity-comparable"
-            )
+        if cid == "newman1-published" and best:
+            if m.get("published", {}).get("problem") != "PCPSP":
+                fail.append(f"{cid}: the 2018 published comparator must identify PCPSP")
+            # External AMPL Colaboratory/Gurobi exact CPIT result, with equal MIP
+            # best bound and 1e-9 gap tolerance. This is an external oracle, not
+            # a certificate generated here. See docs/cases/newman1-external-optimum.md.
+            exact_external = 24_176_864.82482
+            selected = next((row for row in m["scoreboard"] if row["method"] == best["method"]), None)
+            if selected and selected["npv"] > exact_external + 0.01:
+                fail.append(f"{cid}: a feasible schedule exceeds the external integer optimum")
         # the licence assertion: a non-redistributable instance never carries per-block data
         if not t["instance"]["synthetic"]:
             if "blocks" in t:

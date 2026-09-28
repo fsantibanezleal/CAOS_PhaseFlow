@@ -33,17 +33,20 @@ Both carry a note saying so, and a test asserts the note exists.
 
 ## Which gap belongs to whom
 
-On a case with two binding capacities, a gap of, say, 13 percent is not 13 percent of heuristic loss.
-Part of it is the bound. The Analysis tab and the Benchmark page report both bounds and the tightening
-between them, so the reader can split it:
+Let `V` be a feasible CPIT schedule value, `U_A` the Algorithm 4 bound, `U_J` the joint LP bound,
+and `Z_IP` the unknown integer optimum. In objective-value units, the accounting identity is
 
 ```
-gap against Algorithm 4  =  (heuristic loss)  +  (bound looseness)
-gap against the joint BZ bound  =  (heuristic loss)   [as far as the LP relaxation can say]
+U_A - V = (U_A - U_J) + (U_J - Z_IP) + (Z_IP - V).
 ```
 
-And even the joint bound is the LP bound, not the integer optimum: the remaining distance to a true
-optimum is the integrality gap, which nothing here computes and nothing here claims.
+The two recorded bounds measure the first term when the joint bound tightens Algorithm 4. The
+second term is the LP integrality gap; the third is loss of the feasible method. Neither is known
+without an integer optimum. An [external exact solve for Newman1](../cases/newman1-external-optimum.md)
+reports that optimum, so the terms can be shown for that one case with explicit attribution.
+Percent gaps use their own bound as denominator, so percentages cannot simply be added.
+For other cases, the Analysis tab shows the bounds and their difference without claiming the
+unmeasured two terms are known.
 
 ## What a large gap actually tells you
 
@@ -55,8 +58,14 @@ Three different things, and the case matrix is designed to separate them:
 3. **The instance is hard.** Visible when both bounds agree and every method sits far from them, which
    is the honest case where a better answer needs a better method rather than a better implementation.
 
-## The control that should collapse
+## What the controls actually show
 
-`ctrl-abundant` loosens capacity until it barely binds. There every method should find nearly the same
-plan and the spread between them should collapse toward zero. A product that still shows a large spread
-on that case is measuring its own noise, and the case exists so a reader can check that it does not.
+`ctrl-degenerate` has one period, zero discount, and unlimited capacity. Its schedules and bound
+agree with the exact ultimate pit: the recorded gap range is zero. That is the collapse control.
+
+`ctrl-abundant` relaxes capacity but retains eight periods, positive discount, and slope precedence.
+Its best comparable method is 0.36% below the certified bound, while the classical methods are
+4.45% to 7.49% below. Loose capacity alone does not make their choices of extraction period equal.
+The `destination-toposort` row has a 24.14% numerical gap, but solves a different problem and is
+excluded from this comparison. These numbers come from the committed `ctrl-abundant` manifest and
+must be checked again after a rebake.

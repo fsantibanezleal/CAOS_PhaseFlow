@@ -93,7 +93,7 @@ function svgWhat(): string {
   const dep = node('Deposit', 'blocks, grades, slope precedence');
   const sce = node('Scenario', 'periods, rate, capacities');
   const cpit = node('CPIT', 'when to mine each block');
-  const bnd = node('Certified bound', 'exact LP relaxation');
+  const bnd = node('Certified bound', 'resource relaxation');
   const pln = node('Feasible plan', 'heuristic, with its gap');
 
   col([dep, sce], M, 26);

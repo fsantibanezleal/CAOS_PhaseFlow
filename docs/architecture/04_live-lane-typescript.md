@@ -33,6 +33,22 @@ Two implementations of the same algorithm is two chances to be wrong, and the se
 A port that drifts fails a test rather than showing a plausible number, and a plausible number is the
 only thing a second implementation is actually dangerous for.
 
+## Profile and plan sizing
+
+The pit profile and bench plan canvases are pixel buffers inside `.pf-canvas-host`.
+The host has a viewport-bounded height (`clamp(260px, 50vh, 480px)`); the canvas
+is absolutely positioned so writing its pixel dimensions cannot increase the
+host height and trigger an endless `ResizeObserver` loop. The observer remembers
+the *last* drawn size, including after a window shrink. Comparing only with the
+mount size missed a return to the original viewport and left a smaller drawing
+inside the restored host.
+
+`npm run verify:profile` measures both host and bitmap at 1600x900, 1280x800
+and 390x844 after time, slider changes, shrink and restore. It identifies the
+PhaseFlow page before checking sizes. The restore assertion fails against the
+0.07.002 production bundle (430 px canvas in a 450 px host after return) and
+passes against the corrected local source.
+
 ## What the live lane does NOT do
 
 It does not run the MILP rungs (the exact C-PIT[D] re-solve, the exact OPBSP destination model), it

@@ -299,8 +299,8 @@ export default function Focus() {
           <h4>{es ? 'Procedencia' : 'Provenance'}</h4>
           <p className="pf-cap pf-muted">
             {es
-              ? 'Motor: oreblocks (PyPI, MIT) offline y su puerto TypeScript en vivo. Cota: relajación LP exacta por multiplicador crítico (Chicoisne et al. 2012). Plan: heurística TopoSort más búsqueda local por desplazamiento. La cota nunca la produce una heurística.'
-              : 'Engine: oreblocks (PyPI, MIT) offline and its TypeScript port live. Bound: exact LP relaxation by the critical multiplier algorithm (Chicoisne et al. 2012). Schedule: TopoSort heuristic plus a shift local search. The bound is never produced by a heuristic.'}
+              ? 'Motor: oreblocks (PyPI, MIT) offline y su puerto TypeScript en vivo. Cota: relajación certificada por multiplicador crítico (Chicoisne et al. 2012); con varios recursos puede ser más holgada que el óptimo LP conjunto. Plan: heurística TopoSort más búsqueda local por desplazamiento.'
+              : 'Engine: oreblocks (PyPI, MIT) offline and its TypeScript port live. Bound: certified critical-multiplier relaxation (Chicoisne et al. 2012); with multiple resources it may be looser than the joint LP optimum. Schedule: TopoSort heuristic plus shift local search.'}
           </p>
         </div>
 

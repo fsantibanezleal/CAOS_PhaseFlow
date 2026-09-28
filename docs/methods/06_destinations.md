@@ -20,12 +20,24 @@ In CPIT the cutoff grade is a number somebody decided in advance and baked into 
 model sends a block to the plant only while plant capacity remains and the plant is worth more than
 the dump for that block. When the plant fills, the same block goes to waste.
 
-So the **effective cutoff rises exactly in the periods where processing binds**, and it comes out of
-the schedule rather than into it. On screen that is blocks changing destination when the mill-capacity
-slider moves, which is the reason the distinction matters to a viewer rather than only to a reader.
+The **effective cutoff is measured from the blocks actually sent to the plant**. Its period pattern
+depends on capacity, precedence and block economics; a binding mill alone does not prove that the
+cutoff rises. The destination schedule makes this choice visible.
 
 `destination_toposort` reports the effective cutoff per period: the lowest grade actually sent to the
 plant in that period.
+
+## Source of destination values
+
+The published Newman1 case reads its cached MineLib `.pcpsp` file and checks that fixing every block
+to its best destination reproduces the `.cpit` values, capacities and resource coefficients. Synthetic
+cases build both destination values from their seeded mining cost, processing cost, grade, recovery
+and metal price, then run the same CPIT reduction check. The period chart charges the selected
+destination's value and resources, including when a nominal ore block goes to waste.
+
+The declared KD and Zuck scenarios have no corresponding source PCPSP model or declared processing
+economics. Their destination rung is explicitly skipped; a fixed-destination CPIT net value cannot
+recover the alternative destination value that was discarded.
 
 ## `opbsp-exact`: the same problem solved exactly
 
@@ -95,4 +107,3 @@ rather than in a reader's assumption.
 
 (`lane_cutoffs` also carried a real error until `oreblocks` 0.5.1: its market-limiting cutoff divided
 the opportunity cost by recovery where Lane multiplies, inflating it by `1/recovery^2`.)
-

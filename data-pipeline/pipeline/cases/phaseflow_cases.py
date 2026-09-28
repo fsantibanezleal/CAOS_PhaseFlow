@@ -38,18 +38,22 @@ CASES: list[Case] = [
         ),
         role_en=(
             "The trust anchor. A published MineLib instance solved with its own periods, its own "
-            "discount rate and its own two capacities, scored against the published best-known gap."
+            "discount rate and its own two capacities. The 2018 comparison is a PCPSP result, "
+            "while an external AMPL notebook reports a separate CPIT integer optimum."
         ),
         role_es=(
             "El ancla de confianza. Una instancia publicada de MineLib resuelta con sus propios "
-            "períodos, su propia tasa y sus dos capacidades, medida contra la brecha publicada."
+            "períodos, su propia tasa y sus dos capacidades. La comparación de 2018 es PCPSP; "
+            "un cuaderno externo de AMPL informa por separado un óptimo entero CPIT."
         ),
         published={
+            "problem": "PCPSP",
+            "source_tables": "Tables 3-4",
             "upit_optimum": 26_086_899,
             "lp_bound": 24_486_549,
             "best_known": 24_176_861,
             "best_known_gap_pct": 1.26,
-            "source": "Jelvez, Morales and Nancel-Penard, MPES 2018, doi:10.1007/978-3-319-99220-4_18",
+            "source": "Jelvez, Morales and Nancel-Penard, MPES 2018, PCPSP Tables 3-4, doi:10.1007/978-3-319-99220-4_18",
         },
     ),
     # ------------------------------------------------------------------ declared
@@ -244,14 +248,16 @@ CASES: list[Case] = [
             periods=8, discount_rate=0.10, capacity_fraction=(2.5, 2.0), resource_names=_TWO
         ),
         role_en=(
-            "Negative control on the method comparison. With capacity this loose every method finds "
-            "nearly the same plan, so the spread between them must collapse. A product that still "
-            "shows a large spread here is measuring its own noise."
+            "Loose-capacity diagnostic. The best CPIT schedule approaches the certified bound, but "
+            "classical schedules still lose value because period timing and slope precedence matter "
+            "at a positive discount rate. Compare only CPIT-feasible methods; the zero-rate, "
+            "single-period ctrl-degenerate case is the exact collapse control."
         ),
         role_es=(
-            "Control negativo de la comparación de métodos. Con esta holgura todos los métodos "
-            "encuentran casi el mismo plan, así que la dispersión debe colapsar. Un producto que "
-            "aquí muestra dispersión grande está midiendo su propio ruido."
+            "Diagnóstico con capacidad holgada. El mejor plan CPIT se acerca a la cota certificada, "
+            "pero los planes clásicos pierden valor porque el período de extracción y la precedencia "
+            "importan con descuento positivo. Compare solo métodos CPIT factibles; ctrl-degenerate, "
+            "con tasa cero y un período, es el control de colapso exacto."
         ),
     ),
 ]
