@@ -56,6 +56,7 @@ export interface TraceBlocks {
   level: number[];
   grade: number[];
   tonnage: number[];
+  processTonnage: number[];
   value: number[];
   inPit: number[];
 }
@@ -154,6 +155,7 @@ export interface ScheduleTrace {
     synthetic: boolean;
     nBlocks: number;
     nPrecedenceArcs: number;
+    gradeSource: string | null;
     dims: number[];
     upitValue: number;
     upitBlocks: number;

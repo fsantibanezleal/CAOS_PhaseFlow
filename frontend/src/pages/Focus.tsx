@@ -33,6 +33,7 @@ interface LiveOut {
   boundMs: number;
   solves: number;
   components: number[];
+  resourceLimit: number[][];
 }
 
 export default function Focus() {
@@ -67,7 +68,7 @@ export default function Focus() {
     const perMine = t.scenario.resources[0]?.limitPerPeriod[0] ?? 0;
     const perMill = t.scenario.resources[1]?.limitPerPeriod[0] ?? 0;
     setCapMine(mined > 0 ? (perMine * t.scenario.periods) / mined : 1);
-    const oreT = t.blocks ? t.blocks.tonnage.reduce((s, v, i) => s + (t.blocks!.inPit[i] && t.blocks!.value[i] > 0 ? v : 0), 0) : 0;
+    const oreT = t.blocks ? t.blocks.processTonnage.reduce((s, v, i) => s + (t.blocks!.inPit[i] ? v : 0), 0) : 0;
     setCapMill(oreT > 0 ? (perMill * t.scenario.periods) / oreT : 1);
     setLive(null);
   }, [st.trace]);
@@ -101,6 +102,7 @@ export default function Focus() {
           boundMs: out.boundMs,
           solves: out.relaxations.reduce((s, r) => s + r.closureSolves, 0),
           components: coh.map((c) => c.components),
+          resourceLimit: inst.limit.slice(0, st.trace?.scenario.resources.length ?? 0).map((row) => Array.from(row)),
         });
         if (st.cursor >= periods) st.setCursor(periods - 1);
       } finally {
@@ -136,16 +138,16 @@ export default function Focus() {
       t: t + 1,
       minedTonnes: 0,
       resourceUse: new Array(nRes).fill(0) as number[],
-      resourceLimit: tr.scenario.resources.map((r) => r.limitPerPeriod[t] ?? r.limitPerPeriod[0] ?? 0),
+      resourceLimit: tr.scenario.resources.map((_, r) => live.resourceLimit[r]?.[t] ?? 0),
     }));
     const ton = tr.blocks.tonnage;
-    const val = tr.blocks.value;
+    const process = tr.blocks.processTonnage;
     for (let b = 0; b < live.periodOfBlock.length; b++) {
       const t = live.periodOfBlock[b];
       if (t < 0 || t >= horizon) continue;
       rows[t].minedTonnes += ton[b];
       rows[t].resourceUse[0] += ton[b];
-      if (nRes > 1 && val[b] > 0) rows[t].resourceUse[1] += ton[b];
+      if (nRes > 1) rows[t].resourceUse[1] += process[b];
     }
     return rows as unknown as typeof md.periods;
   }, [live, periods, st.trace, st.method]);
@@ -252,10 +254,10 @@ export default function Focus() {
             <span>{es ? 'capacidad mina' : 'mining capacity'} <b>{dec(((capMine ?? 1) * 100), 0)}%</b></span>
             <input type="range" min={0.3} max={2.5} step={0.05} value={capMine ?? 1} onChange={(e) => setCapMine(+e.target.value)} data-testid="cap-mine" />
           </label>
-          <label className="pf-ctl">
+          {trace.scenario.resources.length > 1 && <label className="pf-ctl">
             <span>{es ? 'capacidad planta' : 'plant capacity'} <b>{dec(((capMill ?? 1) * 100), 0)}%</b></span>
             <input type="range" min={0.2} max={2.5} step={0.05} value={capMill ?? 1} onChange={(e) => setCapMill(+e.target.value)} />
-          </label>
+          </label>}
           {advanced && (
             <>
               <label className="pf-ctl">

@@ -44,6 +44,7 @@ class Instance:
     report: ContractReport
     pcpsp: ob.Pcpsp | None = None
     destination_source: str | None = None
+    grade_source: str | None = None
     #: the orebody shape, for a synthetic twin. The learned guard's rule is about the OREBODY, so it
     #: needs this; a real deposit has no such label and the guard says so rather than guessing.
     archetype: str | None = None
@@ -144,6 +145,7 @@ def _twin_instance(case: Case) -> Instance:
         report=report,
         pcpsp=pcpsp,
         destination_source="seeded synthetic mining and processing economics",
+        grade_source="seeded synthetic grade field",
     )
 
 
@@ -229,9 +231,19 @@ def _minelib_instance(case: Case) -> Instance:
 
     exact = ob.solve_upit(cpit.value, prec)
     tonnage = cpit.coef[0]
-    grade = np.zeros(n, dtype=np.float64)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        grade = np.where(tonnage > 0, np.maximum(cpit.value, 0.0) / np.maximum(tonnage, 1e-9), 0.0)
+    # MineLib documents Newman1 column 5 as grade and KD column 7 as CU %.
+    # Zuck Small publishes cost, value, rock tonnes and ore tonnes but no grade.
+    if spec.minelib_id == "newman1":
+        grade = blocks["free"][:, 1] / 100.0
+        grade_source = "MineLib Newman1 .blocks grade column (percent)"
+    elif spec.minelib_id == "kd":
+        grade = blocks["free"][:, 3] / 100.0
+        grade_source = "MineLib KD .blocks CU percent column"
+    else:
+        grade = np.zeros(n, dtype=np.float64)
+        grade_source = None
+    if not (np.isfinite(grade).all() and (grade >= 0).all() and (grade <= 1).all()):
+        raise ValueError(f"{case.id}: grade field is not a finite mass fraction")
     report = validate_instance(
         values=cpit.value,
         pstart=prec.pstart,
@@ -261,6 +273,7 @@ def _minelib_instance(case: Case) -> Instance:
         report=report,
         pcpsp=pcpsp,
         destination_source=destination_source,
+        grade_source=grade_source,
     )
 
 

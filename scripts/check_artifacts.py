@@ -19,13 +19,9 @@ TRACE_SCHEMA = "phaseflow.schedule-trace/v1"
 MANIFEST_SCHEMA = "phaseflow.manifest/v1"
 INDEX_SCHEMA = "phaseflow.index/v1"
 
-
-
-#: Rungs whose plans must satisfy the scenario's capacities. `beyond` is excluded BY NAME and its
-#: overshoot is measured and printed rather than left undiscovered: `min-width` deliberately does not
-#: re-impose capacity (it is an operability view of another plan) and `destination-toposort` solves
-#: PCPSP over a richer feasible set. Both say so in their own notes. What went wrong before was not
-#: that they exist, it was that nothing measured them and the ranking put them first.
+#: Rungs that solve the scenario's CPIT capacities. `destination-toposort` is
+#: checked separately against its own PCPSP destination-specific use and limits.
+#: `min-width` is an operability view and does not re-impose capacity.
 CAPACITY_BOUND_RUNGS = ("classical", "sota", "learned")
 
 #: The relative overshoot tolerated on a capacity-bound rung. Period rows are rounded floats, so an
@@ -79,6 +75,13 @@ def _shape_check(cid: str, trace: dict, meth: dict) -> list[str]:
         out.append(f"{cid}/{meth['method']}: periodOfBlock has {len(pob)} entries for {n} blocks")
     blocks = trace.get("blocks")
     if blocks:
+        if "processTonnage" not in blocks:
+            out.append(f"{cid}: redistributable trace lacks fixed-destination processing coefficients")
+        else:
+            for b, (process, tonnes) in enumerate(zip(blocks["processTonnage"], blocks["tonnage"], strict=False)):
+                if process < 0 or process > tonnes + 0.2:
+                    out.append(f"{cid}: block {b} processing coefficient is outside [0, tonnage]")
+                    break
         for key, arr in blocks.items():
             if isinstance(arr, list) and len(arr) != n:
                 out.append(f"{cid}: blocks.{key} has {len(arr)} entries for {n} blocks")
@@ -187,6 +190,11 @@ def main(root: Path = DERIVED) -> int:
             fail.append(f"{cid}: trace and manifest disagree on the controls")
         if not t["methods"]:
             fail.append(f"{cid}: no method produced a result")
+        if t["instance"].get("gradeSource") is None:
+            if any(row["rung"] == "learned" for row in t["methods"]):
+                fail.append(f"{cid}: learned method used an absent source grade field")
+            if any(row["method"] == "destination-toposort" for row in t["methods"]):
+                fail.append(f"{cid}: destination cutoff used an absent source grade field")
         bound_report = t["bound"]
         bound_options = {"algorithm4": bound_report["algorithm4"]}
         if bound_report.get("joint") is not None:
@@ -217,6 +225,12 @@ def main(root: Path = DERIVED) -> int:
                 )
             if meth["periods"] and abs(meth["periods"][-1]["cumNpv"] - meth["npv"]) > 0.02:
                 fail.append(f"{cid}/{meth['method']}: final cumulative NPV differs from method NPV")
+            for row in meth["periods"]:
+                if t["instance"].get("gradeSource") is None:
+                    if row["headGrade"] != 0 or row["metal"] != 0:
+                        fail.append(f"{cid}/{meth['method']}: inferred metal or grade without a source grade")
+                elif abs(row["headGrade"] * row["oreTonnes"] - row["metal"]) > 2e-6 * row["oreTonnes"] + 0.2:
+                    fail.append(f"{cid}/{meth['method']}: head grade and metal do not reconcile")
             fail.extend(_capacity_check(cid, t, meth))
             fail.extend(_shape_check(cid, t, meth))
         fail.extend(_lane_check(cid, t, m))

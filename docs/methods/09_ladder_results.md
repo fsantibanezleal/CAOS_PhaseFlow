@@ -4,10 +4,10 @@ How to read the numbers the ladder produces, and which comparisons are legitimat
 
 ## Only compare through the same bound
 
-Two schedules are comparable when they are measured against the same yardstick. Every method on a case
-carries the SAME bound, and the App shows which of the two bounds that is. The test
-`every schedule is measured against the SAME bound` asserts it, because a table whose rows quietly use
-different denominators looks exactly like a table whose rows do not.
+Two CPIT schedules are comparable when they solve the same case and are measured against the same
+certified CPIT bound. The App shows which bound it selected. The destination and operability rows
+retain the case bound in the artifact for schema consistency, but the App does not display a CPIT
+gap for them or place them in the bound chart.
 
 ## Which comparisons are legitimate
 
@@ -17,7 +17,8 @@ different denominators looks exactly like a table whose rows do not.
 | learned against `toposort-expected`, same case | yes | that is what it approximates |
 | `beyond` against anything, by NPV | **no** | see below |
 | a gap on a `declared` case against a published gap | **no** | different scenario |
-| the `published` case against the published gap | yes | that is the whole point of it |
+| Newman1 CPIT against the 2018 PCPSP gap | **no** | the published 2018 objective and LP bound are for PCPSP |
+| Newman1 CPIT against the attributed external CPIT integer result | qualified | same named CPIT model, subject to source-model parity |
 
 ## Why the `beyond` rungs are not NPV-comparable
 
@@ -27,7 +28,8 @@ than a CPIT plan's and neither direction means what it looks like. What it is FO
 cutoff it produces, which is a number CPIT cannot produce at all.
 
 **`min-width`** does not re-impose capacity after moving blocks. It is an operability VIEW of a plan,
-and its NPV is the price of that operability rather than a competing answer.
+and its NPV records the transformed geometry rather than a competing feasible answer. It can even
+exceed the CPIT upper bound because the transformed schedule can breach a period capacity.
 
 Both carry a note saying so, and a test asserts the note exists.
 
@@ -64,8 +66,8 @@ Three different things, and the case matrix is designed to separate them:
 agree with the exact ultimate pit: the recorded gap range is zero. That is the collapse control.
 
 `ctrl-abundant` relaxes capacity but retains eight periods, positive discount, and slope precedence.
-Its best comparable method is 0.36% below the certified bound, while the classical methods are
-4.45% to 7.49% below. Loose capacity alone does not make their choices of extraction period equal.
-The `destination-toposort` row has a 24.14% numerical gap, but solves a different problem and is
-excluded from this comparison. These numbers come from the committed `ctrl-abundant` manifest and
+Its best comparable method is 0.26% below the certified bound, while the classical methods are
+5.57% to 7.02% below. Loose capacity alone does not make their choices of extraction period equal.
+The `destination-toposort` row solves a different problem and is excluded from this comparison.
+These numbers come from the committed `ctrl-abundant` manifest and
 must be checked again after a rebake.

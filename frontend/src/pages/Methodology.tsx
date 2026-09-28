@@ -150,8 +150,8 @@ export default function Methodology() {
           <h3>{es ? 'Sustituto de la cota' : 'The bound surrogate'}</h3>
           <p>
             {es
-              ? 'Predice la cota como fracción del valor del pit final desde estadísticos resumidos del depósito más el escenario, para dibujar una superficie de sensibilidad al instante en vez de tras unos cientos de cierres. La cota exacta se calcula para el punto seleccionado, así que la superficie siempre está anclada por al menos un valor verdadero.'
-              : 'Predicts the bound as a fraction of the ultimate-pit value from deposit summary statistics plus the scenario, so a sensitivity surface can be drawn instantly instead of after a few hundred closures. The exact bound is computed for the selected point, so the surface is always anchored by at least one true value.'}
+              ? 'Predice la cota como fracción del valor del pit final desde estadísticos resumidos del depósito más el escenario. Una cota certificada se calcula para el punto seleccionado y ancla la superficie. El modelo retenido usa tonelaje con valor neto positivo como sustituto de tonelaje a planta; la superficie es exploratoria hasta reentrenar y evaluar esa característica.'
+              : 'Predicts the bound as a fraction of the ultimate-pit value from deposit summary statistics plus the scenario. A certified relaxation bound is computed for the selected point and anchors the surface. The retained model uses positive-net-value tonnage as a proxy for plant tonnage; the surface remains exploratory until that feature is retrained and evaluated.'}
           </p>
           <Callout variant="honest" title={es ? 'La división es por DEPÓSITO, nunca por fila' : 'The split is by DEPOSIT, never by row'}>
             {es

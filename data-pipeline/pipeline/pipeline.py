@@ -71,7 +71,7 @@ def precompute(case_id: str, *, output_root: str | Path | None = None, learned=N
 
     t0 = time.perf_counter()
     instance = build_instance(case)
-    predictions = None if learned is None else learned.for_instance(instance)
+    predictions = None if learned is None or instance.grade_source is None else learned.for_instance(instance)
     results, relaxations, bound_report = solve_stage.run_ladder(instance, learned=predictions)
     controls = evaluate_stage.run_controls(instance, results)
     ensemble = evaluate_stage.run_ensemble(instance, results)
@@ -125,7 +125,7 @@ def _validate(artifact_path: Path, manifest_path: Path) -> None:
     if not trace["methods"]:
         raise AssertionError(f"{artifact_path}: no method produced a result")
     for m in trace["methods"]:
-        if m["npv"] > m["bound"] * (1 + 1e-9) + 1e-6:
+        if m["rung"] in {"classical", "sota", "learned"} and m["npv"] > m["bound"] * (1 + 1e-9) + 1e-6:
             raise AssertionError(f"{m['method']}: feasible {m['npv']} exceeds bound {m['bound']}")
         if len(m["periods"]) != trace["scenario"]["periods"]:
             raise AssertionError(f"{m['method']}: period rows do not match the declared horizon")
