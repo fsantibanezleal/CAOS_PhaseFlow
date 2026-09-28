@@ -47,8 +47,8 @@ export default function Introduction() {
       <h2>{es ? 'La honestidad primero' : 'Honesty first'}</h2>
       <p>
         {es
-          ? 'Ningún plan aquí es óptimo, y ninguno pretende serlo. Lo que se entrega es una COTA SUPERIOR CERTIFICADA (el óptimo exacto de la relajación lineal) y planes factibles heurísticos, con la brecha entre ambos en pantalla en todo momento. La brecha es la única forma de saber si un NPV es bueno: sin ella, un número grande y un número correcto se ven igual.'
-          : 'No schedule here is optimal, and none pretends to be. What ships is a CERTIFIED UPPER BOUND (the exact optimum of the linear relaxation) plus feasible heuristic schedules, with the gap between them on screen at all times. The gap is the only way to know whether an NPV is good: without it, a large number and a correct number look identical.'}
+          ? 'Los planes de los casos generales son heurísticos: la app no afirma que alcancen el óptimo entero. Muestra una COTA SUPERIOR CERTIFICADA y la brecha de cada plan factible. Cuando la relajación conjunta converge, la cota aproxima el óptimo LP dentro de su tolerancia; en otros casos se usa una relajación más holgada. La brecha mezcla flojedad de la cota, integralidad y pérdida del método. El caso degenerado sí tiene brecha cero, y Newman1 dispone de una referencia entera externa identificada por separado.'
+          : 'Schedules for the general cases are heuristic: the app does not claim they reach the integer optimum. It shows a CERTIFIED UPPER BOUND and each feasible schedule’s gap. When the joint relaxation converges, the bound approximates the LP optimum within its tolerance; otherwise a looser relaxation is used. The gap combines bound looseness, integrality and method loss. The degenerate control has zero gap, and Newman1 has a separately attributed external integer reference.'}
       </p>
 
       <Figure caption={es ? 'La escalera: clásico, SOTA, aprendido, y lo que queda fuera a propósito.' : 'The ladder: classical, SOTA, learned, and what is deliberately left out.'}>
@@ -62,7 +62,7 @@ export default function Introduction() {
             <tr><td>classical</td><td>toposort-greedy / gershon</td><td>{es ? 'las heurísticas publicadas de base' : 'the published baseline heuristics'}</td></tr>
             <tr><td>sota</td><td>critical multiplier</td><td>{es ? 'una cota certificada, no un plan' : 'a certified bound, not a schedule'}</td></tr>
             <tr><td>sota</td><td>toposort-expected</td><td>{es ? 'el mejor redondeo publicado, sembrado por el LP' : 'the best published rounding, seeded by the LP'}</td></tr>
-            <tr><td>sota</td><td>exact C-PIT[D] re-solve</td><td>{es ? 'el mejor plan factible que produce este producto' : 'the best feasible plan this product produces, and it is `cpitD-local-search`'}</td></tr>
+            <tr><td>sota</td><td>exact C-PIT[D] re-solve</td><td>{es ? 'una búsqueda local con subproblema entero exacto' : 'local search with an exact integer subproblem'}</td></tr>
             <tr><td>{es ? 'fuera' : 'out'}</td><td>{es ? 'acopios, mezcla, estocástico' : 'stockpiles, blending, stochastic'}</td><td>{es ? 'citados, no reclamados' : 'cited, not claimed'}</td></tr>
           </tbody>
         </table>

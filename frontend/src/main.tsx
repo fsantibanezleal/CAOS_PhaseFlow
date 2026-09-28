@@ -26,7 +26,7 @@ const config: ShellConfig = {
     { path: '/methodology', en: 'Methodology', es: 'Metodología' },
     { path: '/implementation', en: 'Implementation', es: 'Implementación' },
     { path: '/experiments', en: 'Experiments', es: 'Experimentos' },
-    { path: '/benchmark', en: 'Benchmark', es: 'Benchmark' },
+    { path: '/benchmark', en: 'Benchmark', es: 'Comparación' },
   ],
   links: { github: 'https://github.com/fsantibanezleal/CAOS_PhaseFlow' },
   version: APP_VERSION,
@@ -38,20 +38,20 @@ const config: ShellConfig = {
     // and in the architecture modal, where there is room to read it.
     provenance: {
       en:
-        'Engine: oreblocks (PyPI, MIT). Certified bound: exact LP relaxation, critical multiplier ' +
-        'algorithm (Chicoisne et al. 2012, doi:10.1287/opre.1120.1050). Real lane: MineLib ' +
+        'Engine: oreblocks (PyPI, MIT). Certified CPIT bound: critical multiplier and, where ' +
+        'available, joint BZ relaxation (Chicoisne et al. 2012). Real lane: MineLib ' +
         '(doi:10.1007/s10479-012-1258-3), not redistributed.',
       es:
-        'Motor: oreblocks (PyPI, MIT). Cota certificada: relajación LP exacta, algoritmo del ' +
-        'multiplicador crítico (Chicoisne et al. 2012, doi:10.1287/opre.1120.1050). Carril real: ' +
+        'Motor: oreblocks (PyPI, MIT). Cota CPIT certificada: multiplicador crítico y, cuando ' +
+        'está disponible, relajación conjunta BZ (Chicoisne et al. 2012). Carril real: ' +
         'MineLib (doi:10.1007/s10479-012-1258-3), no redistribuido.',
     },
     disclaimer: {
       en:
-        'Every schedule is a heuristic, shown with its gap to the certified bound. No stockpiles, no ' +
+        'General-case schedules are heuristic, shown with gaps to a certified bound. No stockpiles, no ' +
         'blending, no stochastic optimisation. Not for production mine planning.',
       es:
-        'Cada plan es una heurística y se muestra con su brecha a la cota certificada. Sin acopios, sin ' +
+        'Los planes de casos generales son heurísticos, con brechas frente a una cota certificada. Sin acopios, sin ' +
         'mezcla, sin optimización estocástica. No apto para planificación minera de producción.',
     },
   },

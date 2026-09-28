@@ -3,7 +3,8 @@
 // The block model is not regenerated in the browser. Regenerating it would mean porting a seeded
 // random field generator and hoping the two implementations agree bit for bit, which is exactly the
 // kind of silent divergence that makes a "live" lane show a different answer from the baked one.
-// Instead the trace carries the per-block arrays (x, y, level, grade, tonnage, value, inPit) for
+// Instead the trace carries the per-block arrays (x, y, level, grade, tonnage, processTonnage,
+// value, inPit) for
 // every redistributable case, and the browser rebuilds only what is cheap and exactly reproducible:
 // the slope precedence, which is a deterministic template over the grid.
 
@@ -95,8 +96,10 @@ export function toLiveModel(blocks: TraceBlocks, dims: number[]): LiveModel {
   const n = blocks.value.length;
   const value = Float64Array.from(blocks.value);
   const tonnage = Float64Array.from(blocks.tonnage);
-  const processTonnage = new Float64Array(n);
-  for (let b = 0; b < n; b++) processTonnage[b] = value[b] > 0 ? tonnage[b] : 0;
+  if (!blocks.processTonnage || blocks.processTonnage.length !== n) {
+    throw new Error('trace processing coefficients do not match the block count');
+  }
+  const processTonnage = Float64Array.from(blocks.processTonnage);
   return {
     blocks,
     dims: [dims[0], dims[1], dims[2]],

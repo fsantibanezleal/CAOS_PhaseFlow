@@ -59,6 +59,12 @@ export default function Tool() {
   if (!st.trace || !st.manifest || !st.method) return <p className="pf-muted">{es ? 'Cargando...' : 'Loading...'}</p>;
 
   const { trace, manifest, method } = st;
+  // The baked controls in older releases included the PCPSP and operability
+  // rows in this envelope. Derive the displayed range from comparable CPIT
+  // schedules so a stale artifact cannot repeat that misleading comparison.
+  const comparableGaps = trace.methods.filter((m) => m.rung !== 'beyond').map((m) => m.gapPct);
+  const bestGap = comparableGaps.length ? Math.min(...comparableGaps) : null;
+  const worstGap = comparableGaps.length ? Math.max(...comparableGaps) : null;
   const northingAt = northing ?? defaultNorthing;
   const benchAt = bench ?? defaultBench;
   const T = trace.scenario.periods;
@@ -90,8 +96,8 @@ export default function Tool() {
         </div>
         <div className="pf-hud-grid">
           <div className="pf-hud-row"><span className="pf-hud-val">{fmtMoney(p?.cumNpv ?? 0)}</span><span className="pf-hud-key">{es ? 'NPV acum' : 'cum NPV'}</span></div>
-          <div className="pf-hud-row"><span className="pf-hud-val">{fmtMoney(method.bound)}</span><span className="pf-hud-key">{es ? 'cota' : 'bound'}</span></div>
-          <div className="pf-hud-row"><span className="pf-hud-val">{dec(method.gapPct, 2)}%</span><span className="pf-hud-key">{es ? 'brecha' : 'gap'}</span></div>
+          <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '-' : fmtMoney(method.bound)}</span><span className="pf-hud-key">{es ? 'cota' : 'bound'}</span></div>
+          <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</span><span className="pf-hud-key">{es ? 'brecha' : 'gap'}</span></div>
           <div className="pf-hud-row"><span className="pf-hud-val">{p?.components ?? 0}</span><span className="pf-hud-key">{es ? 'fragmentos' : 'components'}</span></div>
         </div>
       </div>
@@ -183,10 +189,14 @@ export default function Tool() {
             </p>
           </div>
           <div className="pf-panel">
-            <h4>{es ? 'Ley de cabeza y razón lastre-mineral' : 'Head grade and strip ratio'}</h4>
-            <GradeStripChart periods={method.periods} theme={st.theme} />
+            <h4>{trace.instance.gradeSource
+              ? (es ? 'Ley de cabeza y razón lastre-mineral' : 'Head grade and strip ratio')
+              : (es ? 'Razón lastre-mineral' : 'Strip ratio')}</h4>
+            <GradeStripChart periods={method.periods} theme={st.theme} gradeAvailable={Boolean(trace.instance.gradeSource)} />
             <p className="pf-cap pf-muted">
-              {es ? 'El descuento debería adelantar la alta ley. Si la ley de cabeza no baja con los años, el plan no está haciendo eso.' : 'Discounting should pull high grade forward. If head grade does not decline over the years, the plan is not doing that.'}
+              {trace.instance.gradeSource
+                ? (es ? 'La ley procede del modelo de bloques o de la semilla sintética. El descuento puede adelantar mineral de mayor ley; la curva permite verificarlo.' : `Source grade: ${trace.instance.gradeSource}. Discounting can pull higher grade forward; the curve lets you check.`)
+                : (es ? 'La fuente MineLib no proporciona ley por bloque para este caso. Se muestra solo la razón lastre-mineral.' : 'The MineLib source has no block grade for this case. Only strip ratio is shown.')}
             </p>
           </div>
           <div className="pf-panel">
@@ -204,11 +214,11 @@ export default function Tool() {
       label: es ? 'Métodos' : 'Methods',
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <MethodBars rows={trace.methods.map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs, comparable: m.rung !== 'beyond' }))} />
+          <MethodBars rows={trace.methods.filter((m) => m.rung !== 'beyond').map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs }))} />
           <Callout variant="note" title={es ? 'Como leer esto' : 'How to read this'}>
             {es
-              ? 'La pista ES la cota certificada, la misma para todos los métodos de este caso, y el relleno es el NPV que el plan realmente captura. Lo rayado a la derecha es la brecha, a la misma escala en cada fila: no es un número aparte, es lo que quedó sobre la mesa. La cota no es un plan, es el óptimo exacto de la relajación LP, y ningún plan CPIT puede superarla. Los dos peldaños BEYOND van atenuados y marcados porque no entran en esa comparación: min-width no vuelve a imponer capacidad y destination-toposort resuelve un problema más rico, así que sus barras responden otra pregunta.'
-              : 'The track IS the certified bound, the same one for every method on this case, and the fill is the NPV the schedule actually captured. The hatching on the right is the gap, at the same scale on every row: it is not a separate number, it is what was left on the table. The bound is not a schedule, it is the exact optimum of the LP relaxation, and no CPIT schedule can beat it. The two BEYOND rungs are drawn faded and marked, because they are not in that comparison: min-width does not re-impose capacity and destination-toposort solves a richer problem, so their bars answer a different question.'}{' '}
+              ? 'La pista es la cota certificada CPIT usada para este caso y el relleno es el NPV capturado por cada plan CPIT. Lo rayado muestra la brecha a la misma escala. La cota no es un plan: BZ aproxima el óptimo LP dentro de su tolerancia cuando converge; en otros casos puede usarse la cota más holgada del Algoritmo 4. Los resultados BEYOND aparecen en la tabla porque min-width no vuelve a imponer capacidad y destination-toposort resuelve PCPSP.'
+              : 'The track is the certified CPIT bound for this case; the fill is the NPV captured by each CPIT plan, and hatching shows its gap on the same scale. The bound is not a plan: BZ approximates the LP optimum within tolerance when it converges; otherwise the looser Algorithm 4 bound may be used. BEYOND results are in the table because min-width does not re-impose capacity and destination-toposort solves PCPSP.'}{' '}
             <Cite id="chicoisne2012" /> <Cite id="munoz2017" />
           </Callout>
           <div className="pf-scroll-x">
@@ -222,8 +232,8 @@ export default function Tool() {
               <tbody>
                 {trace.methods.map((m) => (
                   <tr key={m.method}>
-                    <td>{m.method}</td><td>{m.rung}</td><td>{fmtMoney(m.npv)}</td><td>{fmtMoney(m.bound)}</td>
-                    <td>{dec(m.gapPct, 2)}%</td><td>{dec(m.runtimeMs, 0)}</td><td>{m.minedBlocks}</td>
+                    <td>{m.method}</td><td>{m.rung}</td><td>{fmtMoney(m.npv)}</td><td>{m.rung === 'beyond' ? '-' : fmtMoney(m.bound)}</td>
+                    <td>{m.rung === 'beyond' ? '-' : `${dec(m.gapPct, 2)}%`}</td><td>{dec(m.runtimeMs, 0)}</td><td>{m.minedBlocks}</td>
                     <td style={{ textAlign: 'left' }} className="pf-cap pf-muted"><EngineText text={m.notes} /></td>
                   </tr>
                 ))}
@@ -272,7 +282,9 @@ export default function Tool() {
               return (
                 <p className="pf-cap" key={rung}>
                   <b>{rung}</b>: {rows.length} {es ? 'métodos' : 'methods'}, {es ? 'mejor' : 'best'}{' '}
-                  <code>{best.method}</code> {es ? 'con brecha' : 'at a gap of'} {dec(best.gapPct, 2)}%
+                  {rung === 'beyond'
+                    ? <span>{es ? 'resultados con objetivos diferentes' : 'results with different objectives'}</span>
+                    : <><code>{best.method}</code> {es ? 'con brecha' : 'at a gap of'} {dec(best.gapPct, 2)}%</>}
                 </p>
               );
             })}
@@ -346,19 +358,23 @@ export default function Tool() {
 
           <div className="pf-split pf-split--wide">
             <div className="pf-panel">
-              <h4>{es ? 'Envolvente de brechas en este caso' : 'Gap envelope on this case'}</h4>
+              <h4>{es ? 'Brechas CPIT comparables en este caso' : 'Comparable CPIT gaps on this case'}</h4>
               <p className="pf-cap">
-                {es ? 'mejor' : 'best'} <b>{dec(trace.controls.bestGapPct, 2) ?? '-'}%</b> {' · '}
-                {es ? 'peor' : 'worst'} <b>{dec(trace.controls.worstGapPct, 2) ?? '-'}%</b> {' · '}
+                {es ? 'mejor' : 'best'} <b>{dec(bestGap, 2) ?? '-'}%</b> {' · '}
+                {es ? 'peor' : 'worst'} <b>{dec(worstGap, 2) ?? '-'}%</b> {' · '}
                 {es ? 'dispersión' : 'spread'}{' '}
-                <b>{trace.controls.worstGapPct != null && trace.controls.bestGapPct != null
-                  ? dec((trace.controls.worstGapPct - trace.controls.bestGapPct), 2)
+                <b>{worstGap != null && bestGap != null
+                  ? dec((worstGap - bestGap), 2)
                   : '-'}%</b>
               </p>
               <p className="pf-cap pf-muted">
-                {es
-                  ? 'La dispersión es un control por si misma. En ctrl-abundant la capacidad casi no limita, todos los métodos deberían encontrar casi el mismo plan y la dispersión debería colapsar. Si no colapsa, la escalera está midiendo su propio ruido en vez de una diferencia entre métodos.'
-                  : 'The spread is a control in its own right. On ctrl-abundant capacity barely binds, every method should find nearly the same schedule and the spread should collapse. If it does not collapse, the ladder is measuring its own noise rather than a difference between methods.'}
+                {trace.caseId === 'ctrl-abundant'
+                  ? (es
+                    ? 'La capacidad holgada no elimina las diferencias de período con descuento positivo. Los métodos clásicos siguen por detrás del mejor plan. ctrl-degenerate, con tasa cero y un período, es el control donde las brechas sí colapsan.'
+                    : 'Loose capacity does not erase timing differences with positive discounting. Classical methods still trail the best schedule. The zero-rate, one-period ctrl-degenerate case is the control whose gaps collapse.')
+                  : (es
+                    ? 'Solo se incluyen planes CPIT comparables. Los métodos más allá resuelven otro problema o relajan la factibilidad y quedan fuera de este rango.'
+                    : 'Only comparable CPIT plans enter this range. Beyond methods solve another problem or relax feasibility and are excluded.')}
               </p>
             </div>
 
@@ -469,7 +485,7 @@ export default function Tool() {
           <select value={st.methodId} onChange={(e) => st.setMethodId(e.target.value)} aria-label={es ? 'Método' : 'Method'}>
             {trace.methods.map((m) => (
               <option key={m.method} value={m.method}>
-                {m.unreliable ? '! ' : ''}{m.method} ({dec(m.gapPct, 2)}%)
+                {m.unreliable ? '! ' : ''}{m.method}{m.rung === 'beyond' ? '' : ` (${dec(m.gapPct, 2)}%)`}
               </option>
             ))}
           </select>
@@ -507,7 +523,7 @@ export default function Tool() {
           )}
           <div className="pf-kpis">
             <div className="pf-kpi"><b>{fmtMoney(method.npv)}</b><span>NPV</span></div>
-            <div className="pf-kpi"><b>{dec(method.gapPct, 2)}%</b><span>{es ? 'brecha' : 'gap'}</span></div>
+            <div className="pf-kpi"><b>{method.rung === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</b><span>{es ? 'brecha' : 'gap'}</span></div>
             <div className="pf-kpi"><b>{fmtTonnes(p?.minedTonnes ?? 0)}</b><span>{es ? 'período' : 'this period'}</span></div>
             <div className="pf-kpi"><b>{dec((100 * (p?.largestComponentShare ?? 0)), 0)}%</b><span>{es ? 'en el mayor' : 'in largest'}</span></div>
           </div>

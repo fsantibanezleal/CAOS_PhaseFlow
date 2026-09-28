@@ -23,7 +23,8 @@ solver's state:
 | `bound` | both bounds, which one was used, and the tightening between them |
 | `ensemble` | the uncertainty readout, or the reason it did not run |
 | `learned` | the held-out scores of the learned lane, or absent |
-| `blocks` | x, y, level, grade, inPit, per block. **Only for redistributable instances** |
+| `blocks` | x, y, level, grade, tonnage, processTonnage, value and inPit per block. **Only for redistributable instances**; the live solver reads the baked processing coefficient instead of inferring it from net-value sign. |
+| `instance.gradeSource` | Names the source of the grade field, or is null when the source has no grade. No economic-value proxy is labelled as a measured grade. |
 
 `blocks` is the expensive key and it is conditional: MineLib's licence does not permit shipping the
 block data, so a published instance ships numbers and charts and NOT a 3D replay, and the app says so

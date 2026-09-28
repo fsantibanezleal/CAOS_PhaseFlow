@@ -71,13 +71,28 @@ def main() -> int:
         if dead in text:
             fail.append(f"README.md: still says {dead!r}, and that rung ships as {best_name}")
 
+    control = json.loads(
+        (ROOT / "data" / "derived" / "manifests" / "ctrl-abundant.json").read_text(encoding="utf-8")
+    )
+    classical = [row["gap_pct"] for row in control["scoreboard"] if row["rung"] == "classical"]
+    control_values = (
+        f"{control['controls']['bestGapPct']:.2f}%",
+        f"{min(classical):.2f}%",
+        f"{max(classical):.2f}%",
+    )
+    for rel in ("docs/cases/README.md", "docs/methods/09_ladder_results.md"):
+        doc = (ROOT / rel).read_text(encoding="utf-8")
+        for value in control_values:
+            if value not in doc:
+                fail.append(f"{rel}: ctrl-abundant artifact value {value} is missing")
+
     if fail:
         for f in fail:
             print(f"::error::{f}", file=sys.stderr)
         return 1
     print(
         f"README numbers OK: the trust-anchor table matches {ANCHOR_CASE} "
-        f"(best {best_name} at {expected['gap']}), no control bytes"
+        f"(best {best_name} at {expected['gap']}), ctrl-abundant wiki numbers match, no control bytes"
     )
     return 0
 
