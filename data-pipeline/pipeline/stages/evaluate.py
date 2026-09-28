@@ -14,7 +14,7 @@ A case that fails any of them is a bug, and the app shows the verdict rather tha
 from __future__ import annotations
 
 import oreblocks as ob
-from ..core.manifest import best_comparable
+from ..core.manifest import COMPARABLE_RUNGS, best_comparable
 
 
 def run_controls(instance, results) -> dict:
@@ -31,7 +31,11 @@ def run_controls(instance, results) -> dict:
         if best
         else None,
     )
-    worst_gap = max((r.gap_pct for r in results), default=float("nan"))
+    # The envelope and the best plan must use the same CPIT comparison set.
+    # A PCPSP destination plan or an uncapacitated operability view can have a
+    # numerical gap, but it cannot define the worst CPIT scheduling result.
+    worst_gap = max((r.gap_pct for r in results if r.rung in COMPARABLE_RUNGS),
+                    default=float("nan"))
     return {
         "dualitySetMatches": bool(c.duality_set_matches),
         "dualityBoundError": float(c.duality_bound_error),

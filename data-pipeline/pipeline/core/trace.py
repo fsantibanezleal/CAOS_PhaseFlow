@@ -93,6 +93,7 @@ def build_trace(
             "synthetic": synthetic,
             "nBlocks": instance.n_blocks,
             "nPrecedenceArcs": int(instance.precedence.n_arcs),
+            "gradeSource": instance.grade_source,
             "dims": list(instance.dims),
             "upitValue": round(instance.upit_value, 2),
             "upitBlocks": int(instance.upit_in_pit.sum()),
@@ -136,6 +137,10 @@ def build_trace(
             "level": [int(v) for v in instance.level],
             "grade": _round(instance.grade, 5),
             "tonnage": _round(instance.tonnage, 1),
+            "processTonnage": _round(
+                instance.cpit.coef[1] if instance.cpit.n_resources > 1
+                else np.zeros(instance.n_blocks), 1,
+            ),
             "value": _round(instance.cpit.value, 1),
             "inPit": [int(v) for v in instance.upit_in_pit],
         }

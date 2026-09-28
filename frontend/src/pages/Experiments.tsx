@@ -43,7 +43,7 @@ export default function Experiments() {
               <tr><td>declared</td><td>{es ? 'un modelo de bloques real bajo un escenario que declaramos, porque el .cpit publicado no es alcanzable' : 'a real block model under a scenario we declare, because the published .cpit is not reachable'}</td><td>{(byCat.declared ?? []).length}</td></tr>
               <tr><td>deposit</td><td>{es ? 'los cuatro arquetipos sembrados: la forma del depósito cambia la forma del plan' : 'the four seeded archetypes: the shape of the deposit changes the shape of the plan'}</td><td>{(byCat.deposit ?? []).length}</td></tr>
               <tr><td>regime</td><td>{es ? 'el mismo depósito bajo escenarios que cambian qué restricción limita' : 'the same deposit under scenarios that change which constraint binds'}</td><td>{(byCat.regime ?? []).length}</td></tr>
-              <tr><td>control</td><td>{es ? 'los controles degenerado y negativo: un producto que no puede fallar sus controles no está siendo revisado' : 'the degenerate and negative controls: a product that cannot fail its controls is not being checked'}</td><td>{(byCat.control ?? []).length}</td></tr>
+              <tr><td>control</td><td>{es ? 'una identidad exacta con tasa cero y un diagnóstico de sensibilidad con capacidad holgada' : 'an exact zero-rate identity and a loose-capacity sensitivity diagnostic'}</td><td>{(byCat.control ?? []).length}</td></tr>
             </tbody>
           </table>
           <Callout variant="honest" title={es ? 'Brechas comparables y brechas que no lo son' : 'Comparable gaps, and gaps that are not'}>
@@ -93,7 +93,7 @@ export default function Experiments() {
           {manifests.map((m) => (
             <div className="pf-panel" key={m.case_id}>
               <h4>{m.case_id}</h4>
-              <MethodBars rows={m.scoreboard.map((s) => ({ method: s.method, rung: s.rung, gapPct: s.gap_pct, npv: s.npv, runtimeMs: s.runtime_ms }))} />
+              <MethodBars rows={m.scoreboard.map((s) => ({ method: s.method, rung: s.rung, gapPct: s.gap_pct, npv: s.npv, runtimeMs: s.runtime_ms, comparable: s.rung !== 'beyond' }))} />
             </div>
           ))}
         </div>
@@ -116,21 +116,23 @@ export default function Experiments() {
               </thead>
               <tbody>
                 {(byCat.regime ?? []).concat(byCat.control ?? []).map((m) => {
-                  const best = m.scoreboard.reduce((a, b) => (a.npv >= b.npv ? a : b));
+                  const best = m.scoreboard.find((row) => row.method === m.best?.method);
                   return (
                     <tr key={m.case_id}>
                       <td>{m.case_id}</td><td>{m.scenario.periods}</td><td>{dec((m.scenario.discount_rate * 100), 0)}%</td>
-                      <td>{dec((best.npv / 1e6), 1)} M</td><td>{dec((best.bound / 1e6), 1)} M</td><td>{dec(best.gap_pct, 2)}%</td>
+                      <td>{best ? `${dec((best.npv / 1e6), 1)} M` : '-'}</td>
+                      <td>{best ? `${dec((best.bound / 1e6), 1)} M` : '-'}</td>
+                      <td>{best ? `${dec(best.gap_pct, 2)}%` : '-'}</td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
           </div>
-          <Callout variant="note" title={es ? 'El control negativo' : 'The negative control'}>
+          <Callout variant="note" title={es ? 'Lectura de los controles' : 'Reading the controls'}>
             {es
-              ? 'ctrl-abundant afloja la capacidad hasta que casi no limita. Ahí todos los métodos deben encontrar casi el mismo plan y la dispersión entre ellos debe colapsar. Un producto que aquí sigue mostrando dispersión grande está midiendo su propio ruido.'
-              : 'ctrl-abundant loosens capacity until it barely binds. There every method should find nearly the same plan and the spread between them should collapse. A product that still shows a large spread here is measuring its own noise.'}
+              ? 'ctrl-degenerate tiene un período, tasa cero y capacidad ilimitada: allí las brechas colapsan exactamente. ctrl-abundant mantiene ocho períodos y descuento positivo; aunque la capacidad es holgada, los métodos clásicos siguen perdiendo valor por sus decisiones de secuencia. Los métodos más allá quedan fuera de esa comparación.'
+              : 'ctrl-degenerate has one period, zero discount and unlimited capacity: its gaps collapse exactly. ctrl-abundant keeps eight periods and positive discounting; even with loose capacity, classical methods lose value through their sequencing choices. Beyond methods are outside that comparison.'}
           </Callout>
           <p className="pf-cap pf-muted">
             {es

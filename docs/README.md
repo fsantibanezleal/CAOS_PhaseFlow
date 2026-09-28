@@ -1,5 +1,10 @@
 # PhaseFlow docs
 
+The [software design document](design/SDD.md) records the product contracts,
+lanes, evaluation oracle and named gates. Proposed feature designs under
+`design/features/` cover the remaining learned guard, destination policy and
+sliding-window scale work; their gates are not yet satisfied.
+
 An open-pit **production schedule**, solved with a certified bound and animated year by year over the
 block model. The ultimate pit answers *which* blocks are worth mining; PhaseFlow answers *when*.
 
@@ -12,6 +17,7 @@ block model. The ultimate pit answers *which* blocks are worth mining; PhaseFlow
 | [methods/09_ladder_results.md](methods/09_ladder_results.md) | how to read the numbers, and which comparisons are legitimate |
 | [methods/10_when_the_surrogate_fails.md](methods/10_when_the_surrogate_fails.md) | the learned rung's worst case is 0.561, and this is WHEN, after two wrong answers |
 | [cases/README.md](cases/README.md) | the case matrix, each case's ROLE, and the data that is actually reachable |
+| [cases/newman1-external-optimum.md](cases/newman1-external-optimum.md) | Newman1's externally reported integer optimum and the three distinct sources of its bound-to-plan gap |
 | [architecture.md](architecture.md) | the three lanes, the contracts, determinism, the gate, deploy |
 | [guides.md](guides.md) | bake the artifacts, bring your own block model |
 | [frameworks.md](frameworks.md) | one card per engine: what, why this one, the exact pin |
@@ -41,15 +47,17 @@ spatial-coherence measurement per period, and an uncertainty ensemble.
 The published MineLib `newman1.cpit`, solved **as published**: its own six periods, its own eight
 percent discount rate, its own two capacities.
 
-| quantity | PhaseFlow | published |
+| quantity | PhaseFlow CPIT | Jelvez et al. 2018 PCPSP |
 |---|---|---|
 | ultimate pit optimum | 26,086,899 | 26,086,899 |
 | certified LP bound (BZ, joint) | 24,486,184 | 24,486,549 (PCPSP LP) |
-| best feasible schedule (`sliding-window`) | 24,149,869 | 24,176,861 |
-| optimality gap | 1.37% | 1.26% |
+| best feasible schedule (`sliding-window` for PhaseFlow) | 24,149,869 | 24,176,861 |
+| gap to each problem's LP bound | 1.37% | 1.26% |
 
 The bound ordering is the check: the CPIT LP bound must sit below the PCPSP LP bound, because PCPSP is
-the richer problem.
+the richer problem. The schedule values come from different feasible sets and
+the two gaps use different LP bounds. The later external CPIT integer reference
+is analysed in [cases/newman1-external-optimum.md](cases/newman1-external-optimum.md).
 
 ## What is deliberately not here
 

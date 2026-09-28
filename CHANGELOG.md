@@ -3,6 +3,21 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.07.005] - 2026-09-28
+
+### Fixed
+
+- Bound the Profile and plan plot hosts and redraw after viewport restoration; verify stable canvas
+  dimensions across desktop, tablet and phone widths.
+- Recompute CPIT comparisons from comparable methods. Identify the 2018 Newman1 numbers as PCPSP
+  and show the separate attributed CPIT integer reference.
+- Use source PCPSP economics for published Newman1 and the seeded economics for synthetic cases.
+  Account for the chosen destination's cash and capacity, and explain when the destination method is
+  unavailable on declared scenarios.
+- Validate every baked schedule's period cash, cumulative NPV, source role and capacities; keep
+  destination and operability results outside the CPIT bound chart.
+- Add the PhaseFlow design specification, feature gates and source-linked methods wiki.
+
 ## [0.07.004] - 2026-09-28
 
 ### Fixed
