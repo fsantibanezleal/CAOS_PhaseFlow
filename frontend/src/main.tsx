@@ -42,8 +42,8 @@ const config: ShellConfig = {
         'algorithm (Chicoisne et al. 2012, doi:10.1287/opre.1120.1050). Real lane: MineLib ' +
         '(doi:10.1007/s10479-012-1258-3), not redistributed.',
       es:
-        'Motor: oreblocks (PyPI, MIT). Cota certificada: relajacion LP exacta, algoritmo del ' +
-        'multiplicador critico (Chicoisne et al. 2012, doi:10.1287/opre.1120.1050). Carril real: ' +
+        'Motor: oreblocks (PyPI, MIT). Cota certificada: relajación LP exacta, algoritmo del ' +
+        'multiplicador crítico (Chicoisne et al. 2012, doi:10.1287/opre.1120.1050). Carril real: ' +
         'MineLib (doi:10.1007/s10479-012-1258-3), no redistribuido.',
     },
     disclaimer: {
@@ -51,8 +51,8 @@ const config: ShellConfig = {
         'Every schedule is a heuristic, shown with its gap to the certified bound. No stockpiles, no ' +
         'blending, no stochastic optimisation. Not for production mine planning.',
       es:
-        'Cada plan es una heuristica y se muestra con su brecha a la cota certificada. Sin acopios, sin ' +
-        'mezcla, sin optimizacion estocastica. No apto para planificacion minera de produccion.',
+        'Cada plan es una heurística y se muestra con su brecha a la cota certificada. Sin acopios, sin ' +
+        'mezcla, sin optimización estocástica. No apto para planificación minera de producción.',
     },
   },
 };
