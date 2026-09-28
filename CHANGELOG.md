@@ -3,7 +3,7 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
-## [0.07.004] - 2026-09-28
+## [0.07.005] - 2026-09-28
 
 ### Fixed
 
@@ -17,6 +17,14 @@ Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry th
 - Validate every baked schedule's period cash, cumulative NPV, source role and capacities; keep
   destination and operability results outside the CPIT bound chart.
 - Add the PhaseFlow design specification, feature gates and source-linked methods wiki.
+
+## [0.07.004] - 2026-09-28
+
+### Fixed
+
+- Format the published best-known gap, learned-lane percentages, and small control/benchmark errors
+  with the selected language. Spanish now shows decimal commas throughout these views. The complete
+  case set was re-baked and compared field by field against 0.07.003 before release.
 
 ## [0.07.003] - 2026-09-28
 

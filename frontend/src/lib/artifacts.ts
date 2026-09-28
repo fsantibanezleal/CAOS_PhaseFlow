@@ -60,6 +60,12 @@ export function dec(v: number | null | undefined, digits: number): string | unde
   return useLangStore.getState().lang === 'es' ? s.replace('.', ',') : s;
 }
 
+/** Preserve the exponent while localising its mantissa for very small errors. */
+export function exp(v: number, digits: number): string {
+  const s = v.toExponential(digits);
+  return useLangStore.getState().lang === 'es' ? s.replace('.', ',') : s;
+}
+
 /** Resource names are data keys (`mining`, `processing`); a Spanish page must not print them raw. */
 const RESOURCE_ES: Record<string, string> = { mining: 'mina', processing: 'planta' };
 export function resourceLabel(name: string): string {
