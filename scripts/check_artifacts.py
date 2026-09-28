@@ -6,6 +6,7 @@ what is committed and asserts the invariants a stale or hand-edited artifact wou
 """
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -119,9 +120,15 @@ def _lane_check(cid: str, trace: dict, manifest: dict) -> list[str]:
     return []
 
 
-def main() -> int:
+def main(root: Path = DERIVED) -> int:
+    root = root.resolve()
+    manifests = root / "manifests"
+    product_version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    sys.path.insert(0, str(ROOT / "data-pipeline"))
+    from pipeline import registry
+
     fail: list[str] = []
-    index_path = MANIFESTS / "index.json"
+    index_path = manifests / "index.json"
     if not index_path.exists():
         print(f"missing {index_path}; run 'python data-pipeline/run.py' first", file=sys.stderr)
         return 1
@@ -129,8 +136,11 @@ def main() -> int:
     if index["schema"] != INDEX_SCHEMA:
         fail.append(f"index schema {index['schema']}")
 
-    on_disk = {p.name for p in DERIVED.iterdir() if p.is_dir() and p.name != "manifests"}
+    on_disk = {p.name for p in root.iterdir() if p.is_dir() and p.name != "manifests"}
     declared = {c["case_id"] for c in index["cases"]}
+    cases = {case.id: case for case in registry.list_cases()}
+    if declared != set(cases):
+        fail.append(f"index declares {sorted(declared)} but source defines {sorted(cases)}")
     if on_disk != declared:
         fail.append(f"index declares {sorted(declared)} but disk holds {sorted(on_disk)}")
 
@@ -140,8 +150,26 @@ def main() -> int:
 
     for entry in index["cases"]:
         cid = entry["case_id"]
-        m = json.loads((MANIFESTS / f"{cid}.json").read_text(encoding="utf-8"))
-        t = json.loads((DERIVED / cid / "trace.json").read_text(encoding="utf-8"))
+        m = json.loads((manifests / f"{cid}.json").read_text(encoding="utf-8"))
+        t = json.loads((root / cid / "trace.json").read_text(encoding="utf-8"))
+        if m.get("engine", {}).get("version") != product_version:
+            fail.append(f"{cid}: artifact version differs from VERSION {product_version}")
+        source = cases.get(cid)
+        if source is not None:
+            expected_title = {"en": source.title_en, "es": source.title_es}
+            expected_role = {"en": source.role_en, "es": source.role_es}
+            if entry.get("title") != expected_title or t.get("title") != expected_title:
+                fail.append(f"{cid}: published title differs from the current case source")
+            if t.get("role") != expected_role:
+                fail.append(f"{cid}: published role differs from the current case source")
+            if (
+                entry.get("category") != source.category
+                or m.get("category") != source.category
+                or t.get("category") != source.category
+                or entry.get("default") != source.default
+                or m.get("default") != source.default
+            ):
+                fail.append(f"{cid}: category or default differs from the current case source")
         if m["schema"] != MANIFEST_SCHEMA:
             fail.append(f"{cid}: manifest schema {m['schema']}")
         if t["schema"] != TRACE_SCHEMA:
@@ -150,7 +178,7 @@ def main() -> int:
             fail.append(f"{cid}: manifest and trace disagree on the case id")
         if m["lane"] != entry["lane"]:
             fail.append(f"{cid}: index lane {entry['lane']} but manifest lane {m['lane']}")
-        size = (DERIVED / cid / "trace.json").stat().st_size
+        size = (root / cid / "trace.json").stat().st_size
         if size != m["artifact"]["bytes"]:
             fail.append(f"{cid}: trace is {size} bytes, manifest says {m['artifact']['bytes']}")
         if not m["controls"]["allPass"]:
@@ -238,4 +266,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=DERIVED, help="artifact tree to validate")
+    raise SystemExit(main(parser.parse_args().root))

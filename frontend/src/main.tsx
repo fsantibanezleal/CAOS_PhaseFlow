@@ -1,8 +1,8 @@
-import { StrictMode } from 'react';
+import { StrictMode, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { CalendarClock } from 'lucide-react';
-import { AppShell, applyTheme, CitationsProvider, readTheme, type ShellConfig } from '@fasl-work/caos-app-shell';
+import { AppShell, applyTheme, CitationsProvider, readTheme, useShellLang, type ShellConfig } from '@fasl-work/caos-app-shell';
 import '@fasl-work/caos-app-shell/styles.css';
 import './phaseflow.css';
 import { CITATIONS } from './data/citations.ts';
@@ -57,10 +57,17 @@ const config: ShellConfig = {
   },
 };
 
+function DocumentLanguage() {
+  const lang = useShellLang();
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  return null;
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <CitationsProvider items={CITATIONS}>
+        <DocumentLanguage />
         <Routes>
           {/* ADR-0070: the focus view renders OUTSIDE the shell. The header and footer are exactly the
               chrome a focus view exists to escape, so it cannot be a child of AppShell. */}

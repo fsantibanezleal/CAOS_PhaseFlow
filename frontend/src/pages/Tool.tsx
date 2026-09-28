@@ -1,7 +1,7 @@
 // The App route: land on the tool. One selected case, the stage, the drawings a planner reads, and
 // the numbers that say how far this plan is from the certified bound.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Maximize2 } from 'lucide-react';
 import { Callout, Cite, Tabs } from '@fasl-work/caos-app-shell';
@@ -26,6 +26,15 @@ export default function Tool() {
   // entirely outside the pit: the panel drew a correct and completely empty rectangle.
   const [northing, setNorthing] = useState<number | null>(null);
   const [bench, setBench] = useState<number | null>(null);
+  // Static scenario facts begin folded in the viewport-locked workbench, so all actions can fit
+  // without rail scrolling. They begin open in the vertically scrolling phone/tablet layout.
+  const [scenarioOpen, setScenarioOpen] = useState(() => window.matchMedia('(max-width: 900px)').matches);
+  useEffect(() => {
+    const stacked = window.matchMedia('(max-width: 900px)');
+    const resize = () => setScenarioOpen(stacked.matches);
+    stacked.addEventListener('change', resize);
+    return () => stacked.removeEventListener('change', resize);
+  }, []);
   const es = st.lang === 'es';
 
   const dims = useMemo<[number, number, number]>(
@@ -516,8 +525,9 @@ export default function Tool() {
           </div>
         </div>
 
-        <div className="pf-group">
-          <h4>{es ? 'Escenario' : 'Scenario'}</h4>
+        <details className="pf-group pf-scenario" open={scenarioOpen}
+          onToggle={(event) => setScenarioOpen(event.currentTarget.open)}>
+          <summary>{es ? 'Escenario' : 'Scenario'}</summary>
           {/* A label/value list, not a stack of paragraphs. Each of these facts used to be its own <p>
               with its own margin, which turned four short facts into 183px of rail. They are static
               context for the case, so they should read as a compact reference block and take the space
@@ -543,7 +553,7 @@ export default function Tool() {
               <span className="pf-badge">{es ? 'escenario declarado' : 'declared scenario'}</span>
             </p>
           )}
-        </div>
+        </details>
       </aside>
 
       <section className="pf-main">

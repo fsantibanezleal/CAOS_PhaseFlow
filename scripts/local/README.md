@@ -31,9 +31,9 @@ carries a README saying so.
 ## Why `02` refuses a partial release bake
 
 A release bake writes `data/derived/`, which is the committed evidence the deployed site replays. The
-index is built from the manifests ON DISK, so a tree that mixes two engine versions is internally
-consistent and passes every per-case check there is. `-Release` therefore only accepts the whole case
-set. All thirteen take about ninety minutes and print a line per case as each lands.
+index is built from the manifests ON DISK, so a tree that mixes two engine versions can look internally
+consistent. `-Release` therefore only accepts the whole case set. The source-aware artifact gate also
+checks each case's title, role and version. The full run prints a line per case as each lands.
 
 ## The gates, before you push
 
@@ -50,8 +50,11 @@ line:
 ```bash
 # from the visual-verify toolbox (kept outside this repo, it is shared across the product line)
 node _pf-gate.mjs https://phaseflow.fasl-work.com <screenshot-dir>
+node _pf-mobile-gate.mjs https://phaseflow.fasl-work.com <mobile-screenshot-dir>
 ```
 
 It drives the pointer, samples the canvas pixels, and asserts what a status code cannot: that the
 stage draws, that what it draws carries period colour, that nothing is clipped by its own frame, and
-that the focus route round-trips by clicking.
+that the focus route round-trips by clicking. The phone gate also checks document scrolling, all six
+App tabs, route navigation, language, case titles and an unobscured pit at 320 and 390 pixels in
+English and Spanish, light and dark.
