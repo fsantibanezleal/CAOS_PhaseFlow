@@ -3,6 +3,26 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.07.003] - 2026-09-28
+
+### Fixed
+
+- Re-bake all thirteen cases with the corrected bilingual case titles and roles. The published index,
+  manifests, and traces now match the case registry, and the artifact gate checks that relationship
+  and the recorded product version before deployment.
+- Check the 3D camera transform itself when the period changes. Mining changes the pit silhouette,
+  so its bounding box was an invalid proxy for camera movement and caused two false browser failures.
+- Preserve a direct visual-change check in the same browser gate so a stable camera cannot mask a
+  stage that stopped rendering.
+- At phone and tablet widths, let the document scroll, keep all reading routes in a swipeable header
+  row, give the pit a full-height canvas, and put the HUD beneath it on both the App and focus routes.
+  The narrow-screen gate verifies every route, the focus round trip, all six App tabs, both languages
+  and themes at 320, 390, 768 and 900 px. The HTML language now follows the selected language for
+  assistive technology.
+- At desktop widths, size the App and focus rails so the pit reaches the ADR-0071 50 percent and
+  ADR-0070 80 percent viewport-area floors at 1280, 1600 and 2560 px. Keep all App actions visible;
+  static scenario facts fold into an expandable section on desktop and remain open in the stacked layout.
+
 ## [0.07.002] - 2026-09-28
 
 ### Fixed - the Benchmark page contradicted its own table
