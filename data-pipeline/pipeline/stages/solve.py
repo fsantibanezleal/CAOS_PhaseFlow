@@ -16,7 +16,7 @@ method                      rung       claim
 ``cpitD-local-search``      sota       the EXACT restricted re-solve; the best plan here
 ``learned-expected-time``   learned    ExTS quality with NO LP solve at all
 ``destination-toposort``    beyond     PCPSP: the cutoff grade becomes an OUTPUT
-``min-width``               beyond     operability, and what it costs in NPV
+``min-width``               beyond     operability view; capacity is not re-imposed
 ==========================  =========  ==========================================================
 
 The BOUND is separate from all of them and is never produced by a heuristic. Two are computed: the
@@ -110,7 +110,10 @@ def _period_rows(instance, cpit, period_of_block: np.ndarray, *, pcpsp=None,
     d = cpit.discount_factors()
     grade = instance.grade
     tonnage = instance.tonnage
-    ore = cpit.value > 0
+    # A fixed plant destination can be preferable to waste even when both net
+    # values are negative. Its processing coefficient, not net-value sign,
+    # identifies the ore route in a two-resource CPIT model.
+    ore = cpit.coef[1] > 0 if cpit.n_resources > 1 else cpit.value > 0
     coh = ob.schedule_coherence(period_of_block, instance.x, instance.y, instance.level, cpit.n_periods)
 
     rows: list[PeriodRow] = []
@@ -442,6 +445,8 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     # third seed set that had no part in choosing it (models/guard-validation.json): recall 0.625,
     # worst unflagged 0.866. The held-out numbers that motivated it said recall 1.00, and that gap is
     # exactly why the measurement is preferred wherever it exists.
+    if learned is None and instance.grade_source is None:
+        skipped["learned-expected-time"] = "no source grade field for the learned input features"
     if learned is not None:
         exact_ref = next((r for r in results if r.method == "toposort-expected"), None)
         for name, res, ms, note in learned:
@@ -491,7 +496,7 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     except Exception as exc:  # noqa: BLE001
         skipped["destination-toposort"] = str(exc)
 
-    # ---- beyond: operability, and what it costs
+    # ---- beyond: operability view, with capacity not re-imposed
     try:
         mw_t0 = time.perf_counter()
         smoothed, rep = ob.enforce_min_width(

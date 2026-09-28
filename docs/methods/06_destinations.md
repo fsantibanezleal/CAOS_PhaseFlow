@@ -39,6 +39,12 @@ The declared KD and Zuck scenarios have no corresponding source PCPSP model or d
 economics. Their destination rung is explicitly skipped; a fixed-destination CPIT net value cannot
 recover the alternative destination value that was discarded.
 
+MineLib [documents Newman1 grade](https://minelib.org/v1/newman1.xhtml) and
+[KD copper percentage](https://minelib.org/v1/kd.xhtml) in their block files. Their grade charts use
+those fields as mass fractions. [Zuck Small](https://minelib.org/v1/zuck_small.xhtml) supplies cost,
+value, rock tonnes and ore tonnes but no grade; its chart shows strip ratio alone and its learned
+grade-dependent method is skipped. Net value divided by tonnage is economic intensity, not grade.
+
 ## `opbsp-exact`: the same problem solved exactly
 
 Jelvez et al.'s fully binary formulation, their equations (3)-(10): a block goes to exactly one

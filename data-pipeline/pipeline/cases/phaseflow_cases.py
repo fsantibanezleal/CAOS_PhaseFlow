@@ -2,9 +2,8 @@
 
 Categories:
 
-- ``published``   a real MineLib instance solved as published, scored against the published gap. The
-                  trust anchor: everything else is measured against our own bound, this one is
-                  measured against somebody else's.
+- ``published``   a real MineLib CPIT instance under its published scenario, scored against our
+                  certified CPIT bound with external CPIT and PCPSP references kept distinct.
 - ``declared``    a real MineLib block model under a scenario we declare, because the published
                   ``.cpit`` for it is not reachable. Honest, and NOT comparable to a published gap.
 - ``deposit``     seeded synthetic twins across the four archetypes. License-free, so the full

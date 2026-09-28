@@ -25,6 +25,8 @@ Two implementations of the same algorithm is two chances to be wrong, and the se
 
 - the precedence graph is arc-for-arc identical (53,900 arcs on the hero case, both sides),
 - the ultimate pit membership agrees block by block, with zero disagreements out of 4,621,
+- the plant-use coefficient comes from `blocks.processTonnage`, the same fixed destination chosen
+  offline; a block can prefer plant even when its net value is negative,
 - the certified bound agrees to 1e-6, and a live schedule is asserted FEASIBLE and never above
   the bound. There is no NPV equality assertion and there should not be one: the live lane and
   the offline lane run different methods, so equal NPVs would be a coincidence rather than a
@@ -43,10 +45,10 @@ the *last* drawn size, including after a window shrink. Comparing only with the
 mount size missed a return to the original viewport and left a smaller drawing
 inside the restored host.
 
-`npm run verify:profile` measures both host and bitmap at 1600x900, 1280x800
-and 390x844 after time, slider changes, shrink and restore. It identifies the
+`npm run verify:profile` measures both host and bitmap at 1600x900, 1280x800,
+768x900, 390x844 and 320x700 after time, slider changes, shrink and restore. It identifies the
 PhaseFlow page before checking sizes. The restore assertion fails against the
-0.07.002 production bundle (430 px canvas in a 450 px host after return) and
+0.07.003 production bundle (430 px canvas in a 450 px host after return) and
 passes against the corrected local source.
 
 ## What the live lane does NOT do

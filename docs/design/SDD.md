@@ -97,10 +97,13 @@ No single HTTP 200 or green build substitutes for this chain.
 | P-03 | THE app SHALL derive CPIT best and worst from classical, SOTA and learned rows only. | `scripts/check_artifacts.py` comparable envelope check; browser Controls readout |
 | P-04 | WHEN a case lacks a certified joint bound, THE app SHALL show the fallback and its reason. | frontend contract tests; Benchmark bound table browser QA |
 | P-05 | WHEN a MineLib case is shipped, THE trace SHALL contain no per-block arrays or per-block schedule. | `scripts/check_artifacts.py` licence boundary |
-| P-06 | WHEN a Profile and plan panel is resized or its controls change, THE canvases SHALL remain bounded and stable. | `npm run verify:profile` at 1600x900, 1280x800 and 390x844 |
+| P-06 | WHEN a Profile and plan panel is resized or its controls change, THE canvases SHALL remain bounded and stable. | `npm run verify:profile` at 1600x900, 1280x800, 768x900, 390x844 and 320x700 |
 | P-07 | WHEN Newman1 evidence is displayed, THE app SHALL distinguish the CPIT LP bound, the 2018 PCPSP result and the attributed external CPIT integer optimum. | `scripts/check_artifacts.py` provenance check; EN/ES Benchmark browser QA; `scripts/check_readme_numbers.py` |
 | P-08 | THE learned lane SHALL report held-out and independent validation evidence without presenting a surrogate as a certificate. | `scripts/validate_guard.py`; ONNX parity; `npm test` |
 | P-09 | THE deployment SHALL load direct routes and all committed case artifacts over HTTPS. | `npm run build` route materialisation; production browser and data requests |
+| P-10 | WHEN the destination rung runs, ITS alternative values and resources SHALL come from a source PCPSP model or seeded synthetic economics, and each period's cash and capacity SHALL reconcile. | `tests/test_pipeline.py::test_destination_periods_use_chosen_destination_values_and_resources`; `scripts/check_artifacts.py` cash and capacity gates |
+| P-11 | WHEN a source block model lacks grade, THE trace SHALL name that absence, omit a measured grade curve and skip grade-dependent learned output. | `scripts/check_artifacts.py` grade-source gate; `npm run verify:grade`; EN/ES Zuck Small browser QA |
+| P-12 | WHEN a synthetic case enters the live lane, THE browser SHALL use the baked fixed-destination processing coefficient for every block; a positive net-value test is not equivalent. | `scripts/check_artifacts.py` processing-array gate; `frontend/test/parity.test.ts` bound and feasibility checks; `npm run verify:focus` |
 
 ## Risks and stop conditions
 
