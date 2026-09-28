@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Callout, Cite, Refs, useShellLang } from '@fasl-work/caos-app-shell';
 import { TwoBounds } from '../viz/Diagrams.tsx';
-import { fmtInt, fmtMoney, loadIndex, loadManifest, loadTrace, dec } from '../lib/artifacts.ts';
+import { fmtInt, fmtMoney, loadIndex, loadManifest, loadTrace, dec, exp } from '../lib/artifacts.ts';
 import type { CaseManifest, ScheduleTrace } from '../lib/contract.types.ts';
 
 // External, attributed reference result. The value is not a PhaseFlow output
@@ -142,7 +142,7 @@ export default function Benchmark() {
                 <td>{m.published.upit_optimum ? fmtMoney(m.published.upit_optimum) : '-'}</td>
                 <td>
                   {m.published.upit_optimum
-                    ? (Math.abs(m.instance.upit_value - m.published.upit_optimum) / m.published.upit_optimum).toExponential(1)
+                    ? exp(Math.abs(m.instance.upit_value - m.published.upit_optimum) / m.published.upit_optimum, 1)
                     : '-'}
                 </td>
                 <td>{m.best ? `${dec(m.best.gap_pct, 2)}%` : '-'}{m.scenario.declared ? ` (${es ? 'declarado' : 'declared'})` : ''}</td>
