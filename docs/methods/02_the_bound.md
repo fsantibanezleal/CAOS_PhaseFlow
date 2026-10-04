@@ -132,10 +132,13 @@ Measured here on the published `newman1.cpit`:
 |---|---|---|---|
 | Algorithm 4 | 24,487,410 | 79 closures | 1.3 s |
 | **Bienstock-Zuckerberg** | **24,486,184** | 9 iterations | 10.5 s in the 0.07.002 trace |
+| MineLib results (CPIT LP, rounded to the unit) | 24,486,184 | | |
 | published (PCPSP LP) | 24,486,549 | | |
 
-The ordering is the check. The CPIT LP bound must sit BELOW the PCPSP LP bound, because PCPSP is the
-richer problem, and it does. And on a single-resource instance BZ and the critical multiplier algorithm
+The direct check is the MineLib row: [MineLib's results page](https://minelib.org/v1/Results.xhtml)
+lists the CPIT LP upper bound of `newman1`, and BZ reproduces it to the unit. The ordering is a second
+check. The CPIT LP bound must sit BELOW the PCPSP LP bound, because PCPSP is the richer problem, and
+it does. And on a single-resource instance BZ and the critical multiplier algorithm
 agree to **machine precision**, which is two entirely different algorithms computing the same LP and
 the strongest correctness evidence in the repository.
 

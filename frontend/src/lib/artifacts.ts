@@ -3,6 +3,7 @@
 // shows last release's numbers with this release's labels.
 
 import type { CaseIndex, CaseManifest, ScheduleTrace } from './contract.types.ts';
+import type { CapacityOverrun } from './feasibility.ts';
 import { INDEX_SCHEMA, MANIFEST_SCHEMA, TRACE_SCHEMA } from './contract.types.ts';
 import { useLangStore } from '@fasl-work/caos-app-shell';
 
@@ -70,6 +71,18 @@ export function exp(v: number, digits: number): string {
 const RESOURCE_ES: Record<string, string> = { mining: 'mina', processing: 'planta' };
 export function resourceLabel(name: string): string {
   return useLangStore.getState().lang === 'es' ? RESOURCE_ES[name] ?? name : name;
+}
+
+/** The infeasibility label: the largest overrun, its resource and its period, in the app's language.
+ *  `short` is for a select option or a table cell, where the resource and period do not fit. */
+export function overrunText(o: CapacityOverrun, resources: readonly { name: string }[], short = false): string {
+  const es = useLangStore.getState().lang === 'es';
+  const pct = `+${dec(o.pct, 1)}%`;
+  if (short) return es ? `infactible ${pct}` : `infeasible ${pct}`;
+  const res = resourceLabel(resources[o.resource]?.name ?? String(o.resource));
+  return es
+    ? `infactible: ${pct} sobre la capacidad de ${res}, período ${o.period}`
+    : `infeasible: ${pct} over ${res} capacity, period ${o.period}`;
 }
 
 export function fmtMoney(v: number): string {

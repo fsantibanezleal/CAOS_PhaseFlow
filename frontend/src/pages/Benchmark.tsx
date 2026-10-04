@@ -8,6 +8,12 @@ import type { CaseManifest, ScheduleTrace } from '../lib/contract.types.ts';
 // and does not replace the 2018 published row in the committed manifest.
 const AMPL_NEWMAN_CPIT_OPTIMUM = 24_176_864.82482;
 
+// MineLib's own CPIT results for newman1, read from its results page on 2026-10-02. This is the one
+// external check on the SAME problem as PhaseFlow's bound: the 2018 row above is PCPSP. The page
+// publishes values rounded to the unit and still lists the older best known feasible value; see
+// docs/cases/newman1-external-optimum.md for why that value is shown with its source and date.
+const MINELIB_NEWMAN1_CPIT = { upit: 26_086_899, lpBound: 24_486_184, bestKnown: 23_483_671, gapPct: 4.1 };
+
 export default function Benchmark() {
   const lang = useShellLang();
   const es = lang === 'es';
@@ -28,6 +34,7 @@ export default function Benchmark() {
   const exact = (value: number) => new Intl.NumberFormat(es ? 'es-CL' : 'en-US', {
     maximumFractionDigits: 2,
   }).format(value);
+  const signed = (value: number) => `${value > 0 ? '+' : value < 0 ? '-' : ''}${exact(Math.abs(value))}`;
   const boundDifference = published?.published.lp_bound != null
     ? dec(published.published.lp_bound - (published.scoreboard[0]?.bound ?? 0), 0)
     : '-';
@@ -38,8 +45,8 @@ export default function Benchmark() {
 
       <p>
         {es
-          ? 'Newman1 conserva su escenario publicado de seis períodos. Esta tabla muestra la solución CPIT de PhaseFlow junto al resultado PCPSP de Jélvez et al. (2018). Son problemas distintos: el segundo permite decidir el destino de cada bloque. La referencia entera CPIT externa aparece debajo por separado.'
-          : 'Newman1 retains its published six-period scenario. This table places PhaseFlow’s CPIT result beside the PCPSP result of Jélvez et al. (2018). These are different problems: the latter can choose each block’s destination. The external CPIT integer reference is identified separately below.'}{' '}
+          ? 'Newman1 conserva su escenario publicado de seis períodos. Esta tabla muestra la solución CPIT de PhaseFlow junto al resultado PCPSP de Jélvez et al. (2018). Son problemas distintos: el segundo permite decidir el destino de cada bloque. Los valores CPIT de MineLib, sobre el mismo problema, siguen en una segunda tabla, y la referencia entera CPIT externa aparece debajo por separado.'
+          : 'Newman1 retains its published six-period scenario. This table places PhaseFlow’s CPIT result beside the PCPSP result of Jélvez et al. (2018). These are different problems: the latter can choose each block’s destination. MineLib’s own CPIT values, on the same problem, follow in a second table, and the external CPIT integer reference is identified separately below.'}{' '}
         <Cite id="espinoza2013" /> <Cite id="jelvez2018" />
       </p>
 
@@ -91,6 +98,51 @@ export default function Benchmark() {
               </tbody>
             </table>
           </div>
+          <h3>{es ? 'Frente a los resultados CPIT de MineLib' : 'Against MineLib’s own CPIT results'}</h3>
+          <p className="pf-cap pf-muted">
+            {es
+              ? 'Esta es la comparación sobre el MISMO problema: MineLib publica, para newman1, la cota superior LP CPIT y la mejor solución CPIT factible conocida. Los valores de MineLib están redondeados a la unidad.'
+              : 'This is the comparison on the SAME problem: MineLib publishes, for newman1, the CPIT LP upper bound and the best known feasible CPIT solution. MineLib’s values are rounded to the unit.'}{' '}
+            <Cite id="minelibresults" />
+          </p>
+          <div className="pf-scroll-x">
+            <table className="pf-table" data-testid="minelib-cpit">
+              <thead>
+                <tr><th>{es ? 'cantidad' : 'quantity'}</th><th>PhaseFlow CPIT</th><th>MineLib CPIT</th><th>{es ? 'PhaseFlow menos MineLib' : 'PhaseFlow minus MineLib'}</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{es ? 'óptimo del pit final' : 'ultimate pit optimum'}</td>
+                  <td>{exact(published.instance.upit_value)}</td>
+                  <td>{exact(MINELIB_NEWMAN1_CPIT.upit)}</td>
+                  <td>{signed(published.instance.upit_value - MINELIB_NEWMAN1_CPIT.upit)}</td>
+                </tr>
+                <tr>
+                  <td>{es ? 'cota superior LP CPIT' : 'CPIT LP upper bound'}</td>
+                  <td>{exact(published.scoreboard[0]?.bound ?? 0)}</td>
+                  <td>{exact(MINELIB_NEWMAN1_CPIT.lpBound)}</td>
+                  <td>{signed((published.scoreboard[0]?.bound ?? 0) - MINELIB_NEWMAN1_CPIT.lpBound)}</td>
+                </tr>
+                <tr>
+                  <td>{es ? 'mejor plan factible' : 'best feasible schedule'}</td>
+                  <td>{publishedBest ? exact(publishedBest.npv) : '-'}</td>
+                  <td>{exact(MINELIB_NEWMAN1_CPIT.bestKnown)}</td>
+                  <td>{publishedBest ? signed(publishedBest.npv - MINELIB_NEWMAN1_CPIT.bestKnown) : '-'}</td>
+                </tr>
+                <tr>
+                  <td>{es ? 'brecha frente a la cota LP CPIT' : 'gap to the CPIT LP bound'}</td>
+                  <td>{published.best ? `${dec(published.best.gap_pct, 2)}%` : '-'}</td>
+                  <td>{`${dec(MINELIB_NEWMAN1_CPIT.gapPct, 1)}%`}</td>
+                  <td>-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="pf-cap pf-muted">
+            {es
+              ? 'Las diferencias de las dos primeras filas son el redondeo de MineLib: el pit final y la cota LP CPIT se reproducen a la unidad, y la cota no necesita un solver LP. El mejor valor factible que MineLib todavía lista es anterior a los resultados de 2018 y al óptimo entero externo de abajo; el plan de PhaseFlow lo supera y queda bajo ese óptimo.'
+              : 'The differences in the first two rows are MineLib’s rounding: the ultimate pit and the CPIT LP bound are reproduced to the unit, and the bound needs no LP solver. The best feasible value MineLib still lists predates the 2018 results and the external integer optimum below; PhaseFlow’s plan is above it and below that optimum.'}
+          </p>
           {publishedBest && (
             <Callout variant="note" title={es ? 'Referencia entera externa' : 'External integer reference'}>
               {es
@@ -260,7 +312,7 @@ export default function Benchmark() {
         <Cite id="munoz2017" />
       </Callout>
 
-      <Refs ids={['espinoza2013', 'jelvez2018', 'chicoisne2012', 'munoz2017', 'morales2015']} label="References" />
+      <Refs ids={['espinoza2013', 'minelibresults', 'jelvez2018', 'amplminelib', 'chicoisne2012', 'munoz2017', 'morales2015']} label="References" />
     </div>
   );
 }
