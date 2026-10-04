@@ -279,37 +279,44 @@ export function MethodBars({
       </div>
 
       {rows.map((r, i) => {
-        const captured = Math.max(0, Math.min(100, 100 - r.gapPct));
         const off = r.comparable === false;
+        // A row outside the comparison draws no captured share and prints no gap. min-width does not
+        // re-impose capacity, and on twin-vein its NPV is ABOVE the bound: a fill clipped at 100% and a
+        // gap of -1.23% read as the best plan on the case, for a plan that cannot be run.
+        const captured = off ? 0 : Math.max(0, Math.min(100, 100 - r.gapPct));
         return (
           <div
             key={r.method}
             className={`pf-mb-row${hover === i ? ' on' : ''}`}
+            data-comparable={off ? 'false' : 'true'}
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(null)}
-            title={`${r.method} - ${dec((r.npv / 1e6), 1)} M, ${dec(captured, 2)}% ${
-              es ? 'de la cota certificada' : 'of the certified bound'}, ${es ? 'brecha' : 'gap'} ${dec(r.gapPct, 2)}%`}
+            title={off
+              ? `${r.method} - ${dec((r.npv / 1e6), 1)} M, ${es ? 'no se compara con la cota certificada' : 'not compared with the certified bound'}`
+              : `${r.method} - ${dec((r.npv / 1e6), 1)} M, ${dec(captured, 2)}% ${
+                es ? 'de la cota certificada' : 'of the certified bound'}, ${es ? 'brecha' : 'gap'} ${dec(r.gapPct, 2)}%`}
           >
             <span className="pf-mb-name">
               {off ? <span title={es ? 'no comparable: otro problema o una vista de operabilidad' : 'not comparable: a different problem or an operability view'}>* </span> : null}
               {r.method}
             </span>
             <span className="pf-mb-track">
-              <span
-                className="pf-mb-fill"
-                style={{
-                  width: `${captured}%`,
-                  background: rungColor[r.rung] ?? 'var(--color-fg-subtle)',
-                  // a bar that is not in the comparison must not read like one that is
-                  opacity: off ? 0.42 : 1,
-                }}
-              />
-              {/* the remainder of the track IS the gap, at the same scale on every row */}
-              <span className="pf-mb-gap" style={{ left: `${captured}%`, width: `${100 - captured}%` }} />
+              {!off && (
+                <>
+                  <span
+                    className="pf-mb-fill"
+                    style={{ width: `${captured}%`, background: rungColor[r.rung] ?? 'var(--color-fg-subtle)' }}
+                  />
+                  {/* the remainder of the track IS the gap, at the same scale on every row */}
+                  <span className="pf-mb-gap" style={{ left: `${captured}%`, width: `${100 - captured}%` }} />
+                </>
+              )}
             </span>
             <span className="pf-mb-val">{dec((r.npv / 1e6), 1)} M</span>
             <span className="pf-mb-sub">
-              <b className={off ? 'off' : ''}>{dec(r.gapPct, 2)}%</b> {es ? 'brecha' : 'gap'} · {dec(r.runtimeMs, 0)} ms
+              {off
+                ? <b className="off">{es ? 'no comparable' : 'not comparable'}</b>
+                : <><b>{dec(r.gapPct, 2)}%</b> {es ? 'brecha' : 'gap'}</>} · {dec(r.runtimeMs, 0)} ms
             </span>
           </div>
         );
