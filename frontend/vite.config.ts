@@ -2,7 +2,9 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { readFileSync } from 'node:fs';
 
-const version = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version;
+// The display form from the repo's VERSION file (0.07.006), not package.json: npm requires semver there
+// (0.7.6), and the footer printed that form. The same string cache-busts every artifact fetch.
+const version = readFileSync(new URL('../VERSION', import.meta.url), 'utf8').trim();
 
 export default defineConfig({
   // ROOT base, and the comment it replaces was the bug. `./` makes every asset URL relative to the
