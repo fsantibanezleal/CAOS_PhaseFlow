@@ -286,6 +286,22 @@
 }
 .pf-mb-ruler i:last-child::after { left: auto; right: 0; }
 
+/* THE LADDER IN A NARROW PANEL
+ *
+ * The four columns above need about 410px before the track gets anything: 22ch of name, 9ch of value
+ * and 19ch of gap and runtime, all sized to their maximum before the `1fr` track is resolved. In the
+ * Experiments ladder each case sat in a 290px panel, so the track resolved to 0px on every row (no bar
+ * was drawn at all, measured on the live 0.07.005 page) and the runtime ran into the next panel. Below
+ * 560px of chart the gap and runtime move to a second line under the bar, which leaves the track at
+ * least 200px in a 460px panel and about 110px on a phone. */
+.pf-methodbars { container-type: inline-size; }
+@container (max-width: 560px) {
+  .pf-mb-row, .pf-mb-scale { grid-template-columns: minmax(8ch, 20ch) minmax(48px, 1fr) auto; row-gap: 0; }
+  .pf-mb-sub { grid-column: 2 / -1; text-align: left; }
+  .pf-mb-scale .pf-mb-sub { display: none; }
+  .pf-mb-ruler i:nth-child(2)::after { display: none; }
+}
+
 .pf-mb-key { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 6px 4px 0; font-size: 0.7rem; color: var(--color-fg-subtle); }
 .pf-mb-key span { display: inline-flex; align-items: center; gap: 5px; }
 .pf-mb-key i { width: 14px; height: 8px; border-radius: 2px; display: inline-block; }
@@ -298,12 +314,13 @@
 .pf-muted { color: var(--color-fg-subtle); }
 .pf-cap { font-size: 0.74rem; line-height: 1.4; }
 .pf-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.pf-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; min-width: 0; }
+/* `min(..., 100%)`: a column minimum wider than the container pushed the grid past a phone's right edge. */
+.pf-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 12px; min-width: 0; }
 /* Four charts across a 1220px stage leaves each one 290px wide and 130px of plot, with 250px of
  * empty page underneath. Two columns give each chart 600x300 and use the height the tab already
  * has. ADR-0071 rule 8 is about the INSTRUMENT filling its route, and a row of postage stamps above
  * an empty half-page satisfies the letter of it and none of the point. */
-.pf-split--wide { grid-template-columns: repeat(auto-fit, minmax(460px, 1fr)); align-content: start; }
+.pf-split--wide { grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr)); align-content: start; }
 .pf-split > * { min-width: 0; }
 .pf-panel { border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .pf-panel > h4 { margin: 0; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-fg-subtle); }
@@ -730,3 +747,16 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
 
 /* Engine output shown on the Spanish page: marked, not translated (see lib/EngineText.tsx). */
 .pf-engine-tag { font-size: 0.62rem; letter-spacing: 0.04em; text-transform: uppercase; padding: 0 4px; border: 1px solid var(--color-border); border-radius: 4px; color: var(--color-fg-subtle); white-space: nowrap; }
+
+/* NATIVE CONTROLS FOLLOW THE THEME
+ *
+ * The shell (0.5.0) declares no `color-scheme` (CAOS_MANAGE conventions/shell-known-defects.md entry 13;
+ * upstream CAOS_APP_SHELL #29), so the browser draws native controls with their light face in both
+ * themes. In the dark theme the Case and Method selectors rendered as white boxes. Declaring the scheme
+ * per theme fixes the popup list and the scrollbars; the explicit tokens fix the closed control, which
+ * some engines still paint light. Gate: `npm run verify:theme` measures text against background on
+ * every select, in both themes. */
+[data-theme='dark'] { color-scheme: dark; }
+[data-theme='light'] { color-scheme: light; }
+select:not(.select) { color: var(--color-fg); background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: 6px; }
+select option { color: var(--color-fg); background: var(--color-surface); }
