@@ -3,7 +3,7 @@
 // Both are the kind of claim that degrades quietly. A joint bound that stops being computed falls
 // back to a looser certified one and every page still renders, with a gap that is right for the
 // wrong reason. A guard that stops flagging leaves the learned rung looking like any other row in a
-// table, and its worst held-out case is 0.344 of the alternative.
+// table, and its worst held-out case is 0.561 of the alternative.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
