@@ -89,7 +89,7 @@ export default function Experiments() {
       id: 'ladder',
       label: es ? 'Escalera de métodos' : 'Method ladder',
       content: (
-        <div className="pf-split">
+        <div className="pf-split pf-split--wide" data-testid="ladder-grid">
           {manifests.map((m) => (
             <div className="pf-panel" key={m.case_id}>
               <h4>{m.case_id}</h4>
