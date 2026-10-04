@@ -44,6 +44,7 @@ The committed PhaseFlow `newman1-published` trace records:
 |---|---:|---|
 | Algorithm 4 upper bound | `24,487,410.43` | PhaseFlow certified resource relaxation |
 | Joint CPIT LP upper bound | `24,486,184.09` | PhaseFlow certified LP relaxation |
+| MineLib CPIT LP upper bound | `24,486,184` | MineLib results page, rounded to the unit, read 2026-10-02 |
 | Integer optimum | `24,176,864.82` | External AMPL/Gurobi log |
 | `sliding-window` schedule | `24,149,869.40` | PhaseFlow feasible CPIT result |
 

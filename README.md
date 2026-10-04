@@ -32,10 +32,14 @@ periods, its own eight percent rate, its own two capacities.
 | best feasible schedule (`sliding-window` for PhaseFlow) | 24,149,869 | 24,176,861 |
 | gap to each problem's LP bound | 1.37% | 1.26% |
 
-The ultimate pit reproduces exactly. The bound ORDERING is the check on the rest: a CPIT LP bound must
-sit BELOW a PCPSP LP bound, because PCPSP is the richer problem, and it does, by 365 units in 24.5
-million. The schedule sits below the 2018 PCPSP feasible result, but the two gap percentages use
-different LP bounds and must not be read as a like-for-like method contest. The PhaseFlow gap closed from 2.49 percent when the sliding
+The ultimate pit reproduces exactly. The bound has a direct check on the same problem:
+[MineLib's results page](https://minelib.org/v1/Results.xhtml) lists a CPIT LP upper bound of
+24,486,184 for `newman1`, and PhaseFlow's 24,486,184.09 reproduces it to the unit. The ORDERING is a
+second check: a CPIT LP bound must sit BELOW a PCPSP LP bound, because PCPSP is the richer problem, and
+it does, by 365 units in 24.5 million. The schedule sits below the 2018 PCPSP feasible result, but the
+two gap percentages use different LP bounds and must not be read as a like-for-like method contest. It
+sits above the best known feasible CPIT value MineLib still lists, 23,483,671 (4.1%), which predates
+both the 2018 results and the external optimum below. The PhaseFlow gap closed from 2.49 percent when the sliding
 time window stopped being a greedy: its `window` argument had changed nothing, so the rung was a
 one-period-at-a-time heuristic carrying a look-ahead method's citation. The 2018 PCPSP numbers are
 from Tables 3 and 4 of [Jelvez, Morales and Nancel-Penard](https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf).

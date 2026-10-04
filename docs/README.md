@@ -54,8 +54,10 @@ percent discount rate, its own two capacities.
 | best feasible schedule (`sliding-window` for PhaseFlow) | 24,149,869 | 24,176,861 |
 | gap to each problem's LP bound | 1.37% | 1.26% |
 
-The bound ordering is the check: the CPIT LP bound must sit below the PCPSP LP bound, because PCPSP is
-the richer problem. The schedule values come from different feasible sets and
+The direct check is on the same problem: [MineLib's results page](https://minelib.org/v1/Results.xhtml)
+lists a CPIT LP upper bound of 24,486,184 for `newman1`, and PhaseFlow reproduces it to the unit
+(24,486,184.09). The bound ordering is a second check: the CPIT LP bound must sit below the PCPSP LP
+bound, because PCPSP is the richer problem. The schedule values come from different feasible sets and
 the two gaps use different LP bounds. The later external CPIT integer reference
 is analysed in [cases/newman1-external-optimum.md](cases/newman1-external-optimum.md).
 
