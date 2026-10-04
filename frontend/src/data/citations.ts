@@ -119,6 +119,12 @@ export const CITATIONS: Citation[] = [
     url: 'https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html',
   },
   {
+    id: 'minelibresults',
+    label: 'MineLib results',
+    citation: 'Espinoza, D., Goycoolea, M., Moreno, E. and Newman, A. MineLib results: ultimate pit value, CPIT LP upper bound and best known feasible CPIT solution per instance. Accessed 2026-10-02.',
+    url: 'https://minelib.org/v1/Results.xhtml',
+  },
+  {
     id: 'rezakhah2020a',
     label: 'Rezakhah et al. 2020',
     citation: 'Rezakhah, M., Moreno, E. and Newman, A. (2020). Practical performance of an open pit mine scheduling model considering blending and stockpiling. Computers and Operations Research 115, 104638.',
