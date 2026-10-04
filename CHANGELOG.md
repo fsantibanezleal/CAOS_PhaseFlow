@@ -3,6 +3,35 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.07.006] - 2026-10-03
+
+### Fixed
+
+- Label a schedule that runs over capacity as infeasible, with its largest overrun, resource and
+  period read from its own record, and never show it with a gap. `min-width` does not re-impose
+  capacity; on `twin-vein` it runs +32.2% over processing in period 1 and its NPV is above the
+  certified bound. The App's method picker, the warning under it, the HUD, the KPIs and the methods
+  table carry the label; the Experiments ladder draws no captured share and prints no gap for a
+  non-comparable row.
+- Draw the Experiments method ladder. Its fixed columns took the whole 290px panel, so every bar
+  track resolved to 0px and runtimes ran into the next panel; panels are wider and the gap line moves
+  under the bar when the chart is narrow. Grid column minimums no longer push panels past a phone's
+  edge.
+- Add MineLib's own CPIT results for Newman1 to the Benchmark: the CPIT LP upper bound, which
+  PhaseFlow reproduces to the unit (24,486,184.09 against 24,486,184), and the best known feasible
+  value. The README and the bound pages state the same check.
+- Native selects follow the theme (the shell declares no `color-scheme`); the Case and Method
+  pickers no longer render as white boxes in the dark theme.
+- The footer shows the display version, `0.07.006`, instead of the npm semver.
+- `docs/architecture/06_learned-lane.md` tables the shipped learned-lane record (median 0.9626,
+  minimum 0.5608) instead of an earlier sweep.
+
+### Added
+
+- Browser gates `verify:theme` (select contrast and colour scheme in both themes) and
+  `verify:infeasible` (the label in EN/ES, the ladder drawn at desktop and phone width, the MineLib
+  row), and frontend tests for the capacity check against the baked artifacts.
+
 ## [0.07.005] - 2026-09-28
 
 ### Fixed

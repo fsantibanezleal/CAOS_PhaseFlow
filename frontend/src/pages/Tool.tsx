@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Maximize2 } from 'lucide-react';
 import { Callout, Cite, Tabs } from '@fasl-work/caos-app-shell';
-import { fmtInt, fmtMoney, fmtTonnes, dec, exp, resourceLabel } from '../lib/artifacts.ts';
+import { fmtInt, fmtMoney, fmtTonnes, dec, exp, overrunText, resourceLabel } from '../lib/artifacts.ts';
+import { largestOverrun } from '../lib/feasibility.ts';
 import type { CaseIndexEntry } from '../lib/contract.types.ts';
 import { stageLabel, useCase } from '../lib/useCase.ts';
 import { ScheduleView3D, type StageMode } from '../viz/ScheduleView3D.tsx';
@@ -72,6 +73,15 @@ export default function Tool() {
   const label = stageLabel(trace, method, st.cursor, st.lang);
   const hasBlocks = Boolean(trace.blocks);
   const lastMining = [...method.periods].reverse().find((r) => r.blocks > 0)?.t ?? 0;
+  // A plan that runs over a capacity has no gap: the bound prices feasible plans only. Read from the
+  // record, so the label follows the data rather than the method's name (see lib/feasibility.ts).
+  const resources = trace.scenario.resources;
+  const overrun = largestOverrun(method.periods);
+  const optionSuffix = (m: typeof method): string => {
+    const over = largestOverrun(m.periods);
+    if (over) return ` (${overrunText(over, resources, true)})`;
+    return m.rung === 'beyond' ? '' : ` (${dec(m.gapPct, 2)}%)`;
+  };
 
   const stage = hasBlocks ? (
     <div className="pf-stagewrap">
@@ -97,7 +107,11 @@ export default function Tool() {
         <div className="pf-hud-grid">
           <div className="pf-hud-row"><span className="pf-hud-val">{fmtMoney(p?.cumNpv ?? 0)}</span><span className="pf-hud-key">{es ? 'NPV acum' : 'cum NPV'}</span></div>
           <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '-' : fmtMoney(method.bound)}</span><span className="pf-hud-key">{es ? 'cota' : 'bound'}</span></div>
-          <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</span><span className="pf-hud-key">{es ? 'brecha' : 'gap'}</span></div>
+          {overrun ? (
+            <div className="pf-hud-row pf-warn" data-testid="hud-infeasible"><span className="pf-hud-val">+{dec(overrun.pct, 1)}%</span><span className="pf-hud-key">{es ? 'sobre capacidad' : 'over capacity'}</span></div>
+          ) : (
+            <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</span><span className="pf-hud-key">{es ? 'brecha' : 'gap'}</span></div>
+          )}
           <div className="pf-hud-row"><span className="pf-hud-val">{p?.components ?? 0}</span><span className="pf-hud-key">{es ? 'fragmentos' : 'components'}</span></div>
         </div>
       </div>
@@ -230,13 +244,16 @@ export default function Tool() {
                 </tr>
               </thead>
               <tbody>
-                {trace.methods.map((m) => (
-                  <tr key={m.method}>
-                    <td>{m.method}</td><td>{m.rung}</td><td>{fmtMoney(m.npv)}</td><td>{m.rung === 'beyond' ? '-' : fmtMoney(m.bound)}</td>
-                    <td>{m.rung === 'beyond' ? '-' : `${dec(m.gapPct, 2)}%`}</td><td>{dec(m.runtimeMs, 0)}</td><td>{m.minedBlocks}</td>
-                    <td style={{ textAlign: 'left' }} className="pf-cap pf-muted"><EngineText text={m.notes} /></td>
-                  </tr>
-                ))}
+                {trace.methods.map((m) => {
+                  const over = largestOverrun(m.periods);
+                  return (
+                    <tr key={m.method} data-infeasible={over ? 'true' : undefined}>
+                      <td>{m.method}</td><td>{m.rung}</td><td>{fmtMoney(m.npv)}</td><td>{m.rung === 'beyond' ? '-' : fmtMoney(m.bound)}</td>
+                      <td className={over ? 'pf-warn' : undefined}>{over ? overrunText(over, resources, true) : m.rung === 'beyond' ? '-' : `${dec(m.gapPct, 2)}%`}</td><td>{dec(m.runtimeMs, 0)}</td><td>{m.minedBlocks}</td>
+                      <td style={{ textAlign: 'left' }} className="pf-cap pf-muted"><EngineText text={m.notes} /></td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -485,10 +502,18 @@ export default function Tool() {
           <select value={st.methodId} onChange={(e) => st.setMethodId(e.target.value)} aria-label={es ? 'Método' : 'Method'}>
             {trace.methods.map((m) => (
               <option key={m.method} value={m.method}>
-                {m.unreliable ? '! ' : ''}{m.method}{m.rung === 'beyond' ? '' : ` (${dec(m.gapPct, 2)}%)`}
+                {m.unreliable ? '! ' : ''}{m.method}{optionSuffix(m)}
               </option>
             ))}
           </select>
+          {overrun && (
+            <p className="pf-cap pf-warn" data-testid="method-infeasible">
+              <strong>{overrunText(overrun, resources)}.</strong>{' '}
+              {es
+                ? 'Este plan no respeta la capacidad, así que no se puede ejecutar tal como se dibuja y su NPV no se compara con la cota certificada.'
+                : 'This plan does not respect capacity, so it cannot be run as drawn and its NPV is not compared with the certified bound.'}
+            </p>
+          )}
           {/* The warning belongs WHERE THE METHOD IS CHOSEN. A worst case written on a methodology
               page is a caveat; the same fact next to the selector is a guard. And where the exact
               plan is in the same bake, the number shown is a MEASUREMENT of this case rather than a
@@ -523,7 +548,11 @@ export default function Tool() {
           )}
           <div className="pf-kpis">
             <div className="pf-kpi"><b>{fmtMoney(method.npv)}</b><span>NPV</span></div>
-            <div className="pf-kpi"><b>{method.rung === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</b><span>{es ? 'brecha' : 'gap'}</span></div>
+            {overrun ? (
+              <div className="pf-kpi pf-warn"><b>+{dec(overrun.pct, 1)}%</b><span>{es ? 'sobre capacidad' : 'over capacity'}</span></div>
+            ) : (
+              <div className="pf-kpi"><b>{method.rung === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</b><span>{es ? 'brecha' : 'gap'}</span></div>
+            )}
             <div className="pf-kpi"><b>{fmtTonnes(p?.minedTonnes ?? 0)}</b><span>{es ? 'período' : 'this period'}</span></div>
             <div className="pf-kpi"><b>{dec((100 * (p?.largestComponentShare ?? 0)), 0)}%</b><span>{es ? 'en el mayor' : 'in largest'}</span></div>
           </div>
