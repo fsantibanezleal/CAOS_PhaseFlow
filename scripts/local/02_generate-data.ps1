@@ -7,10 +7,15 @@
 #   .\scripts\local\02_generate-data.ps1                    # all cases -> build\local
 #   .\scripts\local\02_generate-data.ps1 twin-porphyry-l    # one case  -> build\local
 #   .\scripts\local\02_generate-data.ps1 -Release           # all cases -> data\derived  (a RELEASE bake)
+#
+# The whole set takes hours: the PCPSP LP and the two sliding windows on the 14,400-block twins run for
+# hours each, so the cases are baked side by side, -Jobs at a time (default 4; the 0.08 release ran 8
+# on a 32-core, 48 GB workstation).
 [CmdletBinding()]
 param(
     [string] $Case = 'all',
-    [switch] $Release
+    [switch] $Release,
+    [int] $Jobs = 4
 )
 
 $ErrorActionPreference = 'Stop'
@@ -31,11 +36,15 @@ if ($Release) {
         throw 'a release bake must be the WHOLE case set: a partial tree passes every per-case check there is'
     }
     Write-Output '[02] RELEASE bake -> data\derived (the committed artifacts)'
-    Invoke-Native { & $venv -u data-pipeline/run.py all --learned } 'bake'
+    Invoke-Native { & $venv -u data-pipeline/run.py all --learned --jobs $Jobs } 'bake'
     Invoke-Native { & $venv scripts/check_artifacts.py } 'check_artifacts'
 } else {
     Write-Output '[02] sandbox bake -> build\local (pass -Release to write the committed artifacts)'
-    Invoke-Native { & $venv -u data-pipeline/run.py $Case --learned --output build/local } 'bake'
+    if ($Case -eq 'all') {
+        Invoke-Native { & $venv -u data-pipeline/run.py all --learned --output build/local --jobs $Jobs } 'bake'
+    } else {
+        Invoke-Native { & $venv -u data-pipeline/run.py $Case --learned --output build/local } 'bake'
+    }
 }
 
 Write-Output ''
