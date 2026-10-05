@@ -17,7 +17,7 @@ candidates, or tune anything; it computes one confusion matrix and writes it dow
 out worse than the held-out ones, that is the answer and it goes on the page.
 
 The result is committed as `models/guard-validation.json` and quoted in
-`docs/methods/10_when_the_surrogate_fails.md`.
+`docs/methodologies/08_when-the-surrogate-fails.md`.
 """
 
 from __future__ import annotations

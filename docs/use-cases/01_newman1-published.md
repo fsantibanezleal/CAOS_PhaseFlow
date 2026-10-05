@@ -1,77 +1,86 @@
-# Newman1: LP bound, integer optimum and schedule quality
+# 01 · Newman1, as published (`newman1-published`)
 
-This page separates three different kinds of evidence for the **published six-period
-CPIT scenario**. It is a source record for the [Benchmark page](../../frontend/src/pages/Benchmark.tsx),
-not a claim that PhaseFlow ran an exact integer solver.
+**Family:** `published`. **Role in the argument**, as the case source states it:
 
-## The comparable scenario
+> The trust anchor. A published MineLib instance solved with its own periods, its own discount rate and its own two capacities. The 2018 comparison is a PCPSP result, while an external AMPL notebook reports a separate CPIT integer optimum.
 
-The [AMPL MineLib notebook](https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html)
-parses `newman1.cpit` and `newman1.prec`, reporting 1,060 blocks, 3,922 precedence arcs,
-six periods, two resource constraints and discount rate 0.08. Its CPIT model uses
-binary extraction decisions, one extraction at most per block, period capacities,
-cumulative slope precedence and a discount factor of `(1 + 0.08)^(-t)` for `t = 0..5`.
-These match the declared structure of PhaseFlow's `newman1-published` case.
+## The instance
 
-The 2018 [Jelvez, Morales and Nancel-Penard paper](https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf)
-reports `24,176,861` in **Table 4 for PCPSP/OPBSP**, `1.26%` below its
-`24,486,549` PCPSP LP bound in Table 3. Its Table 1 separately lists a
-`1.26%` CPIT best-known gap without an objective value. PhaseFlow keeps the
-Table 4 result as a dated, explicitly **cross-problem** comparison, not a CPIT
-objective or CPIT gap. The [MineLib results page](https://minelib.org/v1/Results.xhtml)
-still shows the older `23,483,671` and `4.1%` for Newman1 while describing its
-table as current. This source conflict is why every comparison names its source
-and date. PhaseFlow does not silently choose the largest number from those pages.
+- **deposit**: MineLib `newman1`, 1,060 blocks; gold-copper test mine; the smallest MineLib instance; its .cpit and .pcpsp model files are the only ones reachable from a script (AMPL mirror)
+- **published UPIT optimum**: 26,086,899
+- **data**: real; academic download, not redistributed (aggregate results only)
+- **scenario**: 6 periods at a rate of 0.08, first period undiscounted; capacity mining 2,000,000 per period, processing 1,100,000 per period
 
-## The later external exact solve
+## The published scenario, solved as published
 
-The AMPL notebook prints a Gurobi 13.0.0 MIP log with tolerance `1e-9`, an
-integer objective of `24,176,864.82482`, the same MIP best bound, and an
-optimal termination. The difference from the 2018 feasible value is `3.82`
-value units. The notebook's log is an **external** certificate for its model;
-PhaseFlow has not independently reproduced its branch-and-bound tree or
-compared every parsed input coefficient byte for byte. The notebook's
-formulation and reported input dimensions make it a useful independent
-reference, with that limit stated. The external CPIT optimum happens to exceed
-the 2018 PCPSP **feasible** value by `3.82` units; a feasible value is not an
-upper bound, so this ordering is possible.
+The MineLib `newman1.cpit` file declares six periods, an eight percent rate with the first period
+undiscounted, and two capacities per period: 2,000,000 tonnes moved and 1,100,000 tonnes processed. They
+are loose in aggregate and bind in the early periods, where discounting wants everything now. The
+[AMPL MineLib notebook](https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html) parses the same
+files and reports 1,060 blocks, 3,922 precedence arcs, six periods, two resources and rate 0.08, with
+binary extraction, cumulative slope precedence and a discount factor of `(1 + 0.08)^(-t)` for
+`t = 0..5`: the same structure as this case.
 
-## What the gaps measure
+## Three external references, kept apart
 
-The committed PhaseFlow `newman1-published` trace records:
-
-| value | amount | status |
+| reference | value | what it is |
 |---|---:|---|
-| Algorithm 4 upper bound | `24,487,410.43` | PhaseFlow certified resource relaxation |
-| Joint CPIT LP upper bound | `24,486,184.09` | PhaseFlow certified LP relaxation |
-| MineLib CPIT LP upper bound | `24,486,184` | MineLib results page, rounded to the unit, read 2026-10-02 |
-| Integer optimum | `24,176,864.82` | External AMPL/Gurobi log |
-| `sliding-window` schedule | `24,149,869.40` | PhaseFlow feasible CPIT result |
+| MineLib results page, CPIT LP bound | 24,486,184 | a published CPIT LP upper bound, rounded to the unit (read 2026-10-02) |
+| AMPL notebook, Gurobi 13.0.0, MIP gap 1e-9 | 24,176,864.82 | an external CPIT integer optimum with an equal MIP bound |
+| Jelvez, Morales and Nancel-Penard 2018, Table 3 | 24,486,549 | the PCPSP LP upper bound (destinations chosen) |
+| same, Table 4 | 24,176,861 | the best-known PCPSP/OPBSP feasible plan, 1.26 percent below its LP |
 
-![Four value levels for Newman1](../assets/the-two-bounds.svg)
+The MineLib results page still lists an older 23,483,671 (4.1 percent) feasible value while describing its
+table as current; the 2018 paper's Table 1 lists a 1.26 percent CPIT best-known gap without an objective
+value. That source conflict is why every comparison here names its source and date and none silently
+takes the largest number. The external CPIT optimum exceeds the 2018 PCPSP feasible value by 3.82 units;
+a feasible value is a lower bound on its own optimum, not an upper bound, so this does not violate
+problem inclusion. The AMPL log is an external certificate for its model; PhaseFlow has not reproduced its
+branch-and-bound tree or compared every parsed coefficient byte for byte.
 
-In value units, the decomposition is exact at the precision of the sources:
+## What the gap is made of, on the one case where it can be split
+
+![Four value levels for newman1](../assets/the-two-bounds.svg)
+
+In value units, at the precision of the sources (PhaseFlow's Algorithm 4 bound 24,487,410.43, joint LP
+24,486,184.09, sliding-window plan 24,149,869.40):
 
 ```text
-Algorithm 4 bound - PhaseFlow schedule
-  = (Algorithm 4 bound - joint LP bound)          1,226.34
-  + (joint LP bound - external integer optimum) 309,319.27
-  + (external integer optimum - PhaseFlow plan)  26,995.42
+Algorithm 4 bound - PhaseFlow plan
+  = (Algorithm 4 bound - joint LP bound)          1,226.34   bound slack
+  + (joint LP bound - external integer optimum) 309,319.27   integrality
+  + (external integer optimum - PhaseFlow plan)  26,995.42   method loss
 ```
 
-The PhaseFlow schedule is `1.3735%` below its joint LP bound, but only
-`0.1117%` below the external integer optimum. The `1.2632%` LP integrality
-gap makes up most of the LP-referenced gap. Percentages use their own
-denominators, so add **value differences**, not displayed percentages.
-For other cases, no integer optimum was verified in this pass; their LP-to-plan
-distance cannot be partitioned into integrality and feasible-method loss.
+The plan is 1.37 percent below its joint LP bound but only about 0.11 percent below the external integer
+optimum: the 1.26 percent LP integrality gap is most of the LP-referenced gap. Percentages use their own
+denominators; add value differences, not displayed percentages. No other case has a verified integer
+optimum, so no other case's gap can be split this way.
 
-## Reproduce the PhaseFlow side
+## Destinations on newman1
 
-The source artifact is `data/derived/newman1-published/trace.json`, indexed by
-`data/derived/manifests/newman1-published.json`. The latter records the
-engine pins, scenario, method scoreboard and artifact byte count. Run
-`python scripts/check_artifacts.py` and `python scripts/check_readme_numbers.py`
-to check the committed evidence. A new full bake also needs the separately
-downloaded MineLib input under `data/raw/minelib/`; that input is not
-redistributed in this repository.
+The two published LP bounds differ by 365 units in 24.5 million, so the destination freedom can add almost
+nothing here, and the destination rungs show exactly that: the re-cut and the destination search end within
+a few thousand units of the best CPIT plan. Against the 2018 PCPSP result the comparison is like for like
+(both PCPSP plans, both scored against the PCPSP LP), with the caveat that their method and ours differ.
+
+## Lane and licence
+
+Replay: MineLib grants an academic download and not redistribution, so per-block data never enters the
+repository or the browser, and the app shows numbers and charts for this case but no 3D replay.
+
+## Bounds
+
+<!-- generated:case-bounds:newman1-published -->
+<!-- /generated -->
+
+## Every method on this case
+
+The best plan is marked; destination plans are measured against the PCPSP LP, every other plan against the
+CPIT bound the case uses. Coherence is the mean over periods of the connected components and the share of
+the largest one.
+
+<!-- generated:case:newman1-published -->
+<!-- /generated -->
+
+*Tables generated from `data/derived/manifests/newman1-published.json` by `scripts/docs_tables.py`.*

@@ -1,73 +1,91 @@
-# Reading the results
+# 12 · Reading the results
 
-How to read the numbers the ladder produces, and which comparisons are legitimate.
+How to read the numbers the ladder produces, which comparisons are legitimate, and what the controls
+prove and do not prove. Every table on this page is generated from the committed manifests.
 
-## Only compare through the same bound
+## 1. The ladder at a glance
 
-Two CPIT schedules are comparable when they solve the same case and are measured against the same
-certified CPIT bound. The App shows which bound it selected. The destination and operability rows
-retain the case bound in the artifact for schema consistency, but the App does not display a CPIT
-gap for them or place them in the bound chart.
+Each method across the whole case matrix: how many cases it ran on, its gap distribution against the bound
+of its own problem, how often it was the best comparable plan, and its median cost.
 
-## Which comparisons are legitimate
+<!-- generated:ladder -->
+<!-- /generated -->
+
+## 2. Only compare through the same bound of the same problem
 
 | comparison | legitimate | why |
 |---|---|---|
-| classical against sota, same case | yes | same problem, same bound |
-| learned against `toposort-expected`, same case | yes | that is what it approximates |
-| `beyond` against anything, by NPV | **no** | see below |
-| a gap on a `declared` case against a published gap | **no** | different scenario |
-| Newman1 CPIT against the 2018 PCPSP gap | **no** | the published 2018 objective and LP bound are for PCPSP |
-| Newman1 CPIT against the attributed external CPIT integer result | qualified | same named CPIT model, subject to source-model parity |
+| classical against sota against learned, same case | yes | same problem, same bound |
+| `min-width` against the plan it smooths | yes | a feasible CPIT plan under the same capacities; the difference is the cost of operability |
+| `learned-expected-time` against `toposort-expected` | yes | that is the plan it approximates (the ratio is recorded per case) |
+| a destination plan against a CPIT plan, by NPV | as a VALUE of the destination freedom only | different problems; each destination plan is scored against the PCPSP LP |
+| a destination plan's gap against a CPIT plan's gap | **no** | different bounds |
+| a gap on a `declared` case against a published gap | **no** | a scenario declared by this product, not the published one |
+| `newman1` CPIT against the 2018 PCPSP result | only as a cross-problem reference | the 2018 objective and LP bound are for PCPSP |
+| `newman1` CPIT against the external CPIT integer optimum | yes, attributed | same named model; an external solve, not a PhaseFlow certificate |
 
-## Why the `beyond` rungs are not NPV-comparable
+The best plan of a case (`best` in the manifest, the default method in the app) is chosen among the
+classical, sota and learned rungs only, ties broken by name so a bake is reproducible. The beyond rungs
+never compete for it: the destination plans solve another problem and `min-width` is the best plan traded
+for workability.
 
-**`destination-toposort`** solves PCPSP, not CPIT. The destination is a decision rather than an input,
-so the feasible set is richer and the objective is a different function. Its NPV can be higher or lower
-than a CPIT plan's and neither direction means what it looks like. What it is FOR is the effective
-cutoff it produces, which is a number CPIT cannot produce at all.
+## 3. Which part of a gap belongs to whom
 
-**`min-width`** does not re-impose capacity after moving blocks. It is an operability VIEW of a plan,
-and its NPV records the transformed geometry rather than a competing feasible answer. It can even
-exceed the CPIT upper bound because the transformed schedule can breach a period capacity.
+With $V$ a feasible CPIT value, $U_A$ the Algorithm 4 bound, $U_J$ the joint LP and $Z^{*}$ the integer
+optimum, in value units:
 
-Both carry a note saying so, and a test asserts the note exists.
+$$
+U_A-V=\underbrace{(U_A-U_J)}_{\text{bound slack}}+\underbrace{(U_J-Z^{*})}_{\text{integrality}}+\underbrace{(Z^{*}-V)}_{\text{method loss}} .
+$$
 
-## Which gap belongs to whom
+The two recorded bounds measure the first term wherever the joint LP ran. The second is the instance's
+integrality gap, which no method can close; the third is the method's own loss. Neither is known without
+an integer optimum, which exists for one case, `newman1`, through an external exact solve
+([use case 01](../use-cases/01_newman1-published.md)). Percent gaps have different denominators and are not
+added.
 
-Let `V` be a feasible CPIT schedule value, `U_A` the Algorithm 4 bound, `U_J` the joint LP bound,
-and `Z_IP` the unknown integer optimum. In objective-value units, the accounting identity is
+**What a large gap can mean, and how the matrix separates it:**
 
-```
-U_A - V = (U_A - U_J) + (U_J - Z_IP) + (Z_IP - V).
-```
+1. the method is losing: visible when the exact re-solve or the sliding window materially beats the
+   rounding on the same case;
+2. the bound is loose: visible when the joint LP tightens Algorithm 4 ([02](02_the-bound.md), section 6);
+3. the instance is hard: both bounds agree and every method sits far from them.
 
-The two recorded bounds measure the first term when the joint bound tightens Algorithm 4. The
-second term is the LP integrality gap; the third is loss of the feasible method. Neither is known
-without an integer optimum. An [external exact solve for Newman1](../cases/newman1-external-optimum.md)
-reports that optimum, so the terms can be shown for that one case with explicit attribution.
-Percent gaps use their own bound as denominator, so percentages cannot simply be added.
-For other cases, the Analysis tab shows the bounds and their difference without claiming the
-unmeasured two terms are known.
+## 4. The controls, and what they prove
 
-## What a large gap actually tells you
+Three controls run on every case, because a wrong schedule looks exactly like a right one on a chart:
 
-Three different things, and the case matrix is designed to separate them:
+- **duality**: at rate 0 with unlimited capacity CPIT collapses to the ultimate pit, so the relaxation
+  must return the exact pit block for block, with the pit coming from a different code path (a maximum
+  closure); the value error is recorded;
+- **bound**: the certified bound must sit above every plan of its own problem;
+- **order invariance**: at rate 0 with unlimited capacity the value cannot depend on the order, so every
+  TopoSort weighting must return the same number.
 
-1. **The heuristic is losing.** Visible when `cpitD-local-search` materially beats
-   `toposort-expected`: the exact re-solve is finding value the rounding missed.
-2. **The bound is loose.** Visible when BZ tightens Algorithm 4 by a large margin.
-3. **The instance is hard.** Visible when both bounds agree and every method sits far from them, which
-   is the honest case where a better answer needs a better method rather than a better implementation.
+A fourth check stands in front of every artifact: every plan of every method, the beyond ones included,
+is verified for precedence in every period and for every capacity, and its value must stay below the bound
+of the problem it solves; where both relaxations exist the PCPSP LP must sit above the joint CPIT LP.
+Each exists because the corresponding defect once produced a plausible number every other gate accepted
+(23 committed plans across 13 cases once exceeded a period capacity by up to 447 percent with all gates
+green, because the gates read schemas and never `resourceUse` against `resourceLimit`).
 
-## What the controls actually show
+<!-- generated:controls -->
+<!-- /generated -->
 
-`ctrl-degenerate` has one period, zero discount, and unlimited capacity. Its schedules and bound
-agree with the exact ultimate pit: the recorded gap range is zero. That is the collapse control.
+**The controls prove the machinery is consistent; they do not prove any plan is good.**
 
-`ctrl-abundant` relaxes capacity but retains eight periods, positive discount, and slope precedence.
-Its best comparable method is 0.26% below the certified bound, while the classical methods are
-5.57% to 7.02% below. Loose capacity alone does not make their choices of extraction period equal.
-The `destination-toposort` row solves a different problem and is excluded from this comparison.
-These numbers come from the committed `ctrl-abundant` manifest and
-must be checked again after a rebake.
+## 5. The two control cases
+
+`ctrl-degenerate` has one period, zero discount and unlimited capacity: every plan and the bound equal the
+exact ultimate pit, and the recorded gap range is zero. That is the collapse control.
+
+`ctrl-abundant` relaxes capacity but keeps eight periods, positive discount and slope precedence. It is a
+sensitivity diagnostic, not a collapse: discounted timing and precedence still separate the methods, and
+its row in the controls table shows by how much. Loose capacity alone does not make the choice of
+extraction period irrelevant.
+
+## Where it lives
+
+`data-pipeline/pipeline/stages/evaluate.py::run_controls`, `pipeline/core/manifest.py::best_comparable`,
+`data-pipeline/pipeline/pipeline.py::_validate` (the per-plan check at bake time) and
+`scripts/check_artifacts.py` (the same check on the committed artifacts, in CI and before deploy).

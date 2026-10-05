@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 322" role="img" aria-labelledby="t d">
+  <title id="t">TopoSort walk</title>
+  <desc id="d">A row of blocks ordered by weight placed one by one into four period bins whose capacity bars fill up.</desc>
+  <style>
+    :root { --bg:#ffffff; --card:#f6f8fa; --ink:#1f2328; --muted:#59636e; --line:#d0d7de;
+            --a:#0969da; --b:#8250df; --c:#1a7f37; --d:#9a6700; --e:#cf222e;
+            --a2:#ddf4ff; --b2:#fbefff; --c2:#dafbe1; --d2:#fff8c5; --e2:#ffebe9; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1117; --card:#151b23; --ink:#f0f6fc; --muted:#aab4c0; --line:#3d444d;
+              --a:#58a6ff; --b:#bc8cff; --c:#3fb950; --d:#e3b341; --e:#ff7b72;
+              --a2:#0c2d6b; --b2:#3c1e70; --c2:#04260f; --d2:#3b2300; --e2:#490202; }
+    }
+    .bg { fill:var(--bg); }
+    .card { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .t { fill:var(--ink); font:600 15px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .h { fill:var(--ink); font:600 13px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .s { fill:var(--muted); font:12px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .m { fill:var(--ink); font:12px ui-monospace, Consolas, monospace; }
+    .ms { fill:var(--muted); font:11px ui-monospace, Consolas, monospace; }
+    .ln { stroke:var(--line); stroke-width:1.5; fill:none; }
+    .lnd { stroke:var(--muted); stroke-width:1.2; fill:none; stroke-dasharray:4 3; }
+    .ar { stroke:var(--muted); stroke-width:1.6; fill:none; marker-end:url(#ah); }
+    .ara { stroke:var(--a); stroke-width:1.8; fill:none; marker-end:url(#aha); }
+    .fa { fill:var(--a2); stroke:var(--a); stroke-width:1.2; }
+    .fb { fill:var(--b2); stroke:var(--b); stroke-width:1.2; }
+    .fc { fill:var(--c2); stroke:var(--c); stroke-width:1.2; }
+    .fd { fill:var(--d2); stroke:var(--d); stroke-width:1.2; }
+    .fe { fill:var(--e2); stroke:var(--e); stroke-width:1.2; }
+    .fw { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .ka { fill:var(--a); } .kb { fill:var(--b); } .kc { fill:var(--c); } .kd { fill:var(--d); } .ke { fill:var(--e); }
+    .sa { stroke:var(--a); } .sb { stroke:var(--b); } .sc { stroke:var(--c); } .sd { stroke:var(--d); } .se { stroke:var(--e); }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/></marker>
+    <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--a)"/></marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="900" height="322" rx="10"/>
+  <text x="450" y="30" class="t" text-anchor="middle">TopoSort: order by weight, then the earliest feasible period</text>
+  <text x="40" y="56" class="s" text-anchor="start">among the blocks whose predecessors are all placed, take the highest weight: w = p (greedy), cone value (Gershon), -E_b (ExTS)</text>
+  <rect x="40" y="68" width="52" height="34" rx="6" class="fb"/>
+  <text x="66" y="90" class="m" text-anchor="middle">b7</text>
+  <rect x="104" y="68" width="52" height="34" rx="6" class="fa"/>
+  <text x="130" y="90" class="m" text-anchor="middle">b2</text>
+  <rect x="168" y="68" width="52" height="34" rx="6" class="fa"/>
+  <text x="194" y="90" class="m" text-anchor="middle">b9</text>
+  <rect x="232" y="68" width="52" height="34" rx="6" class="fc"/>
+  <text x="258" y="90" class="m" text-anchor="middle">b4</text>
+  <rect x="296" y="68" width="52" height="34" rx="6" class="fa"/>
+  <text x="322" y="90" class="m" text-anchor="middle">b1</text>
+  <rect x="360" y="68" width="52" height="34" rx="6" class="fc"/>
+  <text x="386" y="90" class="m" text-anchor="middle">b6</text>
+  <rect x="424" y="68" width="52" height="34" rx="6" class="fd"/>
+  <text x="450" y="90" class="m" text-anchor="middle">b3</text>
+  <rect x="488" y="68" width="52" height="34" rx="6" class="fd"/>
+  <text x="514" y="90" class="m" text-anchor="middle">b8</text>
+  <rect x="60" y="150" width="180" height="130" rx="8" class="card"/>
+  <text x="150" y="172" class="h" text-anchor="middle">period 1</text>
+  <rect x="80" y="190" width="140" height="14" rx="3" class="fw"/>
+  <rect x="80" y="190" width="133.0" height="14" rx="3" class="fa"/>
+  <text x="80" y="222" class="ms" text-anchor="start">mining capacity used</text>
+  <rect x="80" y="232" width="140" height="14" rx="3" class="fw"/>
+  <rect x="80" y="232" width="137.2" height="14" rx="3" class="fb"/>
+  <text x="80" y="264" class="ms" text-anchor="start">plant capacity used</text>
+  <rect x="265" y="150" width="180" height="130" rx="8" class="card"/>
+  <text x="355" y="172" class="h" text-anchor="middle">period 2</text>
+  <rect x="285" y="190" width="140" height="14" rx="3" class="fw"/>
+  <rect x="285" y="190" width="126.0" height="14" rx="3" class="fa"/>
+  <text x="285" y="222" class="ms" text-anchor="start">mining capacity used</text>
+  <rect x="285" y="232" width="140" height="14" rx="3" class="fw"/>
+  <rect x="285" y="232" width="119.0" height="14" rx="3" class="fb"/>
+  <text x="285" y="264" class="ms" text-anchor="start">plant capacity used</text>
+  <rect x="470" y="150" width="180" height="130" rx="8" class="card"/>
+  <text x="560" y="172" class="h" text-anchor="middle">period 3</text>
+  <rect x="490" y="190" width="140" height="14" rx="3" class="fw"/>
+  <rect x="490" y="190" width="98.0" height="14" rx="3" class="fa"/>
+  <text x="490" y="222" class="ms" text-anchor="start">mining capacity used</text>
+  <rect x="490" y="232" width="140" height="14" rx="3" class="fw"/>
+  <rect x="490" y="232" width="84.0" height="14" rx="3" class="fb"/>
+  <text x="490" y="264" class="ms" text-anchor="start">plant capacity used</text>
+  <rect x="675" y="150" width="180" height="130" rx="8" class="card"/>
+  <text x="765" y="172" class="h" text-anchor="middle">period 4</text>
+  <rect x="695" y="190" width="140" height="14" rx="3" class="fw"/>
+  <rect x="695" y="190" width="42.0" height="14" rx="3" class="fa"/>
+  <text x="695" y="222" class="ms" text-anchor="start">mining capacity used</text>
+  <rect x="695" y="232" width="140" height="14" rx="3" class="fw"/>
+  <rect x="695" y="232" width="28.0" height="14" rx="3" class="fb"/>
+  <text x="695" y="264" class="ms" text-anchor="start">plant capacity used</text>
+  <path d="M66 104 L130 146" class="ar"/>
+  <text x="450" y="306" class="s" text-anchor="middle">each block goes to the earliest period not before its predecessors with room for it: feasible by construction</text>
+
+</svg>
