@@ -114,7 +114,7 @@ def test_above_the_row_budget_the_pcpsp_bound_is_the_lagrangian_dual(monkeypatch
     _, _, rep_lp = solve.run_ladder(inst, learned=None, joint_bound=False)
     monkeypatch.setattr(solve, "PCPSP_LP_MAX_ROWS", 10)
     results, _, rep = solve.run_ladder(inst, learned=None, joint_bound=False)
-    assert rep_lp["pcpsp_lp_method"] == "highs-lp"
+    assert "pcpsp_lp_method" not in rep_lp, "a HiGHS bound keeps the record it had before the dual existed"
     assert rep["pcpsp_lp_method"] == "lagrangian" and "Lagrangian dual" in rep["pcpsp_lp_note"]
     assert rep["pcpsp_lp"] >= rep_lp["pcpsp_lp"] * (1 - 1e-9)
     assert rep["pcpsp_lp"] <= rep_lp["pcpsp_lp"] + 2 * rep["pcpsp_lp_slack"] + 1e-5 * rep_lp["pcpsp_lp"]
@@ -132,6 +132,12 @@ def test_above_the_row_budget_the_pcpsp_bound_is_the_lagrangian_dual(monkeypatch
     bs = man["bound_summary"]
     assert bs["pcpsp_lp_method"] == "lagrangian" and bs["pcpsp_lp_iterations"] > 0
     assert bs["pcpsp_lp_note"] == rep["pcpsp_lp_note"] and bs["pcpsp_lp_slack"] == rep["pcpsp_lp_slack"]
+    man_lp = build_case_manifest(case=_tiny_case(), instance=inst, results=results, artifact_rel="t.json",
+                                 trace_bytes=0, gate={"lane": "exact"}, controls={}, engine_versions={},
+                                 bound_report=rep_lp)
+    assert not any(k in man_lp["bound_summary"] for k in ("pcpsp_lp_method", "pcpsp_lp_iterations",
+                                                          "pcpsp_lp_slack", "pcpsp_lp_note")), \
+        "the manifest of a HiGHS case carries the keys it carried before the dual existed"
 
 
 def test_contract_rejects_a_zero_tonnage_block():

@@ -43,7 +43,8 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
   value to the unit: HiGHS up to 1.1 million rows (measured: 1,082,684 rows in 2.65 hours; 1,435,220
   rows unfinished after six and a half), and above that the LP's Lagrangian dual by maximum closures,
   valid at every iteration and 4.8 parts per million from the LP where both were run. The manifest
-  records which method produced each case's number, and every table that shows it says so.
+  names the dual where it is used (an absent key is the HiGHS LP, so HiGHS cases re-bake byte for byte),
+  and every table that shows the bound says which.
 - `run.py all --jobs N`: a release bake runs cases side by side and writes the index only if all succeed.
 - `scripts/docs_tables.py`: the wiki's measured tables generated from the artifacts, checked in CI.
 

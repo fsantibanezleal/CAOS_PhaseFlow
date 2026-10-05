@@ -456,8 +456,10 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
             bound_report["pcpsp_lp_ms"] = round(1000.0 * pb.seconds, 1)
             bound_report["pcpsp_lp_rows"] = int(pb.n_rows)
             bound_report["pcpsp_lp_status"] = pb.status
-            bound_report["pcpsp_lp_method"] = pb.method
+            # The method is recorded only where it is not the HiGHS LP: an absent key means HiGHS, so a
+            # HiGHS case's record is the one it was before the dual existed and re-bakes byte for byte.
             if pb.method == "lagrangian":
+                bound_report["pcpsp_lp_method"] = pb.method
                 bound_report["pcpsp_lp_iterations"] = int(pb.iterations)
                 bound_report["pcpsp_lp_gap_estimate"] = float(pb.gap_estimate)
                 bound_report["pcpsp_lp_slack"] = float(pb.slack)

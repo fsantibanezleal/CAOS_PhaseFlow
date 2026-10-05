@@ -244,7 +244,7 @@ export interface BoundSummary {
   pcpsp_lp_ms: number | null;
   pcpsp_lp_rows: number | null;
   pcpsp_lp_status: string | null;
-  /** "highs-lp" or "lagrangian"; manifests baked before the key existed carry the HiGHS LP */
+  /** "lagrangian" where the bound is the Lagrangian dual; absent, the bound is the HiGHS LP */
   pcpsp_lp_method?: string | null;
   pcpsp_lp_iterations?: number | null;
   pcpsp_lp_gap_estimate?: number | null;
