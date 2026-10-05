@@ -123,6 +123,16 @@ def test_above_the_row_budget_the_pcpsp_bound_is_the_lagrangian_dual(monkeypatch
         assert name in by
         assert by[name].npv <= rep["pcpsp_lp"] * (1 + 1e-9)
 
+    # the manifest is a whitelist of the bound report, and the reading pages label the bound from it
+    from pipeline.core.manifest import build_case_manifest
+
+    man = build_case_manifest(case=_tiny_case(), instance=inst, results=results, artifact_rel="t.json",
+                              trace_bytes=0, gate={"lane": "exact"}, controls={}, engine_versions={},
+                              bound_report=rep)
+    bs = man["bound_summary"]
+    assert bs["pcpsp_lp_method"] == "lagrangian" and bs["pcpsp_lp_iterations"] > 0
+    assert bs["pcpsp_lp_note"] == rep["pcpsp_lp_note"] and bs["pcpsp_lp_slack"] == rep["pcpsp_lp_slack"]
+
 
 def test_contract_rejects_a_zero_tonnage_block():
     inst = build_instance(_tiny_case())

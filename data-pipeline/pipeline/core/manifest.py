@@ -135,7 +135,9 @@ def build_case_manifest(
             for key in (
                 "algorithm4", "algorithm4_ms", "closure_solves", "joint", "joint_ms", "joint_iterations",
                 "joint_converged", "tightening_pct", "used", "joint_nodes", "joint_edges", "joint_skipped",
-                "joint_note", "pcpsp_lp", "pcpsp_lp_ms", "pcpsp_lp_rows", "pcpsp_lp_status", "skipped_methods",
+                "joint_note", "pcpsp_lp", "pcpsp_lp_ms", "pcpsp_lp_rows", "pcpsp_lp_status", "pcpsp_lp_method",
+                "pcpsp_lp_iterations", "pcpsp_lp_gap_estimate", "pcpsp_lp_slack", "pcpsp_lp_note",
+                "pcpsp_lp_error", "skipped_methods",
             )
         },
         "ensemble_summary": {
