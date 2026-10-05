@@ -38,6 +38,7 @@ jobs:
           python scripts/check_content_standards.py
           python scripts/check_template_residue.py
           python scripts/check_readme_numbers.py
+          python scripts/docs_tables.py --check
       - name: Build the SPA (copy-data.mjs overlays data/derived -> public/)
         run: cd frontend && npm ci && npm run build
       - uses: actions/upload-pages-artifact@v3
