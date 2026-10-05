@@ -13,7 +13,7 @@ import { useShellLang } from '@fasl-work/caos-app-shell';
 import 'uplot/dist/uPlot.min.css';
 import type { TracePeriod } from '../lib/contract.types.ts';
 import { periodCss } from './colormap.ts';
-import { dec } from '../lib/artifacts.ts';
+import { dec, fmtDuration, rungLabel } from '../lib/artifacts.ts';
 
 function cssVar(name: string, fallback: string): string {
   const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -258,10 +258,6 @@ export function MethodBars({
     classical: 'var(--color-fg-subtle)', sota: 'var(--color-accent)',
     learned: '#8957e5', beyond: 'var(--color-warn)',
   };
-  const rungLabel: Record<string, string> = {
-    classical: es ? 'clásico' : 'classical', sota: 'SOTA',
-    learned: es ? 'aprendido' : 'learned', beyond: es ? 'más allá' : 'beyond',
-  };
   const seen: string[] = [];
   rows.forEach((r) => { if (!seen.includes(r.rung)) seen.push(r.rung); });
 
@@ -316,7 +312,7 @@ export function MethodBars({
             <span className="pf-mb-sub">
               {off
                 ? <b className="off">{es ? 'no comparable' : 'not comparable'}</b>
-                : <><b>{dec(r.gapPct, 2)}%</b> {es ? 'brecha' : 'gap'}</>} · {dec(r.runtimeMs, 0)} ms
+                : <><b>{dec(r.gapPct, 2)}%</b> {es ? 'brecha' : 'gap'}</>} · {fmtDuration(r.runtimeMs)}
             </span>
           </div>
         );
@@ -324,7 +320,7 @@ export function MethodBars({
 
       <div className="pf-mb-key">
         {seen.map((g) => (
-          <span key={g}><i style={{ background: rungColor[g] ?? 'var(--color-fg-subtle)' }} />{rungLabel[g] ?? g}</span>
+          <span key={g}><i style={{ background: rungColor[g] ?? 'var(--color-fg-subtle)' }} />{rungLabel(g)}</span>
         ))}
         <span className="pf-mb-keygap"><i />{es ? 'brecha a la cota' : 'gap to the bound'}</span>
       </div>
