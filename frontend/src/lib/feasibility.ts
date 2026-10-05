@@ -1,14 +1,11 @@
 // A schedule is feasible only if every period stays within every capacity, and a gap against the
 // certified bound only means something for a feasible schedule.
 //
-// `min-width` is an operability view that does not re-impose capacity. Its own record runs over a
-// period's limit on 12 of the 13 cases (+154.5% mining on `regime-mining-bound`, +32.2% processing on
-// `twin-vein`), and on `twin-vein` its NPV sits ABOVE the certified bound, a gap of -1.23%. The rung
-// asterisk said "not comparable", but the method ladder still printed that gap and drew the plan at the
-// full bound, and the App showed its NPV with nothing to say it cannot be run. The overrun is read
-// from the record, not from the method's name, so any schedule that
-// breaks capacity is labelled the same way and a feasible `beyond` row (ctrl-degenerate's min-width,
-// every destination-toposort plan) is not.
+// The overrun is read from each schedule's own record, never from the method's name, so any schedule
+// that breaks a capacity is labelled the same way wherever it is shown. The pipeline refuses to bake an
+// infeasible plan and min-width refuses every move that would break a capacity, so a committed record
+// should never overrun; this check is what shows it if one ever does (an earlier min-width that did not
+// re-impose capacity put a plan above its own certified bound, and only this check caught it).
 
 import type { TracePeriod } from './contract.types.ts';
 
