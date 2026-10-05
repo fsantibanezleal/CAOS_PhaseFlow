@@ -244,6 +244,13 @@ export interface BoundSummary {
   pcpsp_lp_ms: number | null;
   pcpsp_lp_rows: number | null;
   pcpsp_lp_status: string | null;
+  /** "highs-lp" or "lagrangian"; manifests baked before the key existed carry the HiGHS LP */
+  pcpsp_lp_method?: string | null;
+  pcpsp_lp_iterations?: number | null;
+  pcpsp_lp_gap_estimate?: number | null;
+  pcpsp_lp_slack?: number | null;
+  pcpsp_lp_note?: string | null;
+  pcpsp_lp_error?: string | null;
   skipped_methods: Record<string, string> | null;
 }
 

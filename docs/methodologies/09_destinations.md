@@ -56,9 +56,12 @@ PCPSP LP equals the CPIT bound (Lane's mine-limited result), on the degenerate c
 
 ![Which ore gets a binding plant, and the chain that schedules the re-cut](../assets/the-recut.svg)
 
-1. **Solve the PCPSP LP** with HiGHS ([02](02_the-bound.md), section 5) and read its solution: each
-   block the LP mines goes to the destination it sends most of the block to,
-   $d^{*}_b=\arg\max_d\sum_t y^{\mathrm{LP}}_{bdt}$; a block the LP leaves unmined keeps every destination.
+1. **Solve the PCPSP LP** ([02](02_the-bound.md), section 5: HiGHS up to 1.1 million rows, its
+   Lagrangian dual by maximum closures above that) and read its solution: each block the LP mines goes
+   to the destination it sends most of the block to, $d^{*}_b=\arg\max_d\sum_t y^{\mathrm{LP}}_{bdt}$; a
+   block the LP leaves unmined keeps every destination. Above the budget the relaxed solution at the
+   best multipliers already mines each block whole and sends it to one destination, the one worth most
+   at the capacity prices, and that destination is $d^{*}_b$.
 2. **Restrict the instance** to those destinations. Its CPIT reduction has values
    $\tilde p_b=p_{b,d^{*}_b}$ and resource coefficients $\tilde a_{rb}=a_{r,b,d^{*}_b}$, so every plan of it
    is a plan of the original PCPSP **with the same value**:
@@ -88,9 +91,10 @@ relaxation of the re-cut instance has no such freedom on the destination side.
 
 ## 4. Measured on every case with destination economics
 
-Each destination plan with its gap to the PCPSP LP, its value against the best CPIT plan of the same case,
-the blocks it sends to each destination and the range of the effective cutoff (the lowest grade actually
-sent to the plant in a period):
+Each destination plan with its gap to the PCPSP bound, its value against the best CPIT plan of the same
+case, the blocks it sends to each destination and the range of the effective cutoff (the lowest grade
+actually sent to the plant in a period). A gap marked "(dual)" is measured against the Lagrangian dual,
+the LP value up to its rounding slack, on a case above the HiGHS row budget:
 
 <!-- generated:destinations -->
 <!-- /generated -->
@@ -143,7 +147,7 @@ is stated.
 
 ## Where it lives
 
-`oreblocks.pcpsp_lp_bound(solution=True)`, `PcpspBound.preferred_destination`,
-`oreblocks.restrict_destinations`, `oreblocks.lift_to_pcpsp`, `oreblocks.exact_destination_local_search`,
+`oreblocks.pcpsp_lp_bound(solution=True)`, `oreblocks.pcpsp_lagrangian_bound`,
+`PcpspBound.preferred_destination`, `oreblocks.restrict_destinations`, `oreblocks.lift_to_pcpsp`, `oreblocks.exact_destination_local_search`,
 `oreblocks.solve_opbsp_exact`, `oreblocks.lane_cutoffs` (engine 0.6.1); the three rungs in
 `data-pipeline/pipeline/stages/solve.py`.

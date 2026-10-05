@@ -15,7 +15,7 @@ python data-pipeline/run.py all --learned --output build/local   # a sandbox tha
 | stage | where | what it does |
 |---|---|---|
 | ingest | `model/instances.py::build_instance` | reads MineLib files or generates a seeded twin, builds values per destination and the scenario's limits, and runs CONTRACT 1 |
-| bound and ladder | `stages/solve.py::run_ladder` | Algorithm 4, the joint LP under its budget, the PCPSP LP; every rung, each scored against the bound of its own problem |
+| bound and ladder | `stages/solve.py::run_ladder` | Algorithm 4, the joint LP under its budget, the PCPSP bound (the HiGHS LP, or its Lagrangian dual above 1.1 million rows); every rung, each scored against the bound of its own problem |
 | learned | `stages/solve.py` with `model/learned.py` | the learned rung from the committed model, measured against the exact ExTS plan of the case |
 | evaluate | `stages/evaluate.py` | the three controls; the ensemble |
 | export | `core/trace.py`, `core/manifest.py`, `core/gate.py` | the trace, the manifest with the measured lane verdict |
@@ -24,7 +24,7 @@ python data-pipeline/run.py all --learned --output build/local   # a sandbox tha
 ## What `run_ladder` guarantees
 
 - **Every CPIT plan of a case is scored against the same CPIT bound** (the joint LP where it ran, otherwise
-  Algorithm 4), and every destination plan against the case's PCPSP LP. A table whose rows quietly use
+  Algorithm 4), and every destination plan against the case's PCPSP bound. A table whose rows quietly use
   different denominators looks exactly like one whose rows do not.
 - **A rung that cannot run says so.** The solver-dependent rungs need `oreblocks[milp]`, the joint bound a
   time-expanded graph inside its budget, the destination rungs source economics, the learned rung a grade

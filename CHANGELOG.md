@@ -39,8 +39,11 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
 - The learned plan in the browser: drawn on the next frame of every control change, replaced by the
   exact plan from a worker, with its measured share shown.
 - A Benchmark panel that re-solves a baked case in the browser and sets every quantity beside the trace.
-- The PCPSP LP bound (HiGHS) on every case with destination economics, reproducing the published
-  `newman1` value to the unit.
+- The PCPSP LP bound on every case with destination economics, reproducing the published `newman1`
+  value to the unit: HiGHS up to 1.1 million rows (measured: 1,082,684 rows in 2.65 hours; 1,435,220
+  rows unfinished after six and a half), and above that the LP's Lagrangian dual by maximum closures,
+  valid at every iteration and 4.8 parts per million from the LP where both were run. The manifest
+  records which method produced each case's number, and every table that shows it says so.
 - `run.py all --jobs N`: a release bake runs cases side by side and writes the index only if all succeed.
 - `scripts/docs_tables.py`: the wiki's measured tables generated from the artifacts, checked in CI.
 
@@ -49,7 +52,7 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
 - The five reading pages rewritten as full-width topics, every number read from the artifacts; the
   footer is one line.
 - The docs wiki rebuilt as the SimLab tree: methodologies, use cases, data contract, architecture,
-  frameworks, guides; fifteen theme-aware diagrams.
+  frameworks, guides; sixteen theme-aware diagrams.
 - `sliding-window` is a `sota` rung; `min-width` is described as the feasible plan it now is.
 
 ### Removed

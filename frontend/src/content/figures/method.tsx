@@ -396,7 +396,7 @@ export function DestinationRecut({ lang }: { lang: Lang }) {
     </g>
   );
   const flow = [
-    ['PCPSP LP', 'HiGHS'],
+    ['PCPSP LP', tr(lang, 'HiGHS or dual', 'HiGHS o dual')],
     [tr(lang, 're-cut', 're-corte'), tr(lang, 'its destinations', 'sus destinos')],
     ['CPIT', tr(lang, 'same values', 'mismos valores')],
     [tr(lang, 'schedule', 'programar'), tr(lang, 'ExTS · window', 'ExTS · ventana')],

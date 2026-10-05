@@ -203,10 +203,26 @@ def k_case_bounds(ms, arg, _here):
     else:
         rows.append(["joint LP (Bienstock-Zuckerberg)", "not computed", "-", b.get("joint_skipped") or "-"])
     if b.get("pcpsp_lp") is not None:
-        rows.append(["PCPSP LP (HiGHS, destinations free)", money(b["pcpsp_lp"]), dur(b.get("pcpsp_lp_ms")),
-                     f"{b.get('pcpsp_lp_rows', 0):,} rows, status {b.get('pcpsp_lp_status')}"])
+        if b.get("pcpsp_lp_method") == "lagrangian":
+            rows.append(["PCPSP LP by its Lagrangian dual (destinations free)", money(b["pcpsp_lp"]),
+                         dur(b.get("pcpsp_lp_ms")),
+                         f"{b.get('pcpsp_lp_rows', 0):,} rows, above the HiGHS budget; "
+                         f"{b.get('pcpsp_lp_iterations')} closure iterations, {b.get('pcpsp_lp_status')}; "
+                         f"rounding slack {money(b.get('pcpsp_lp_slack') or 0.0)}"])
+        else:
+            rows.append(["PCPSP LP (HiGHS, destinations free)", money(b["pcpsp_lp"]), dur(b.get("pcpsp_lp_ms")),
+                         f"{b.get('pcpsp_lp_rows', 0):,} rows, status {b.get('pcpsp_lp_status')}"])
     rows.append(["used for every CPIT gap on this case", used_bound(m), "", ""])
     return table(["bound", "value", "time", "detail"], rows, "lrrl")
+
+
+def _pcpsp_by(b: dict) -> str:
+    """The method behind the PCPSP bound; a manifest baked before the key existed carries the HiGHS LP."""
+    if b.get("pcpsp_lp") is None:
+        return "-"
+    if b.get("pcpsp_lp_method") == "lagrangian":
+        return f"Lagrangian dual ({b.get('pcpsp_lp_iterations')} it.)"
+    return "HiGHS LP"
 
 
 def _slack(alg4: float, joint: float) -> str:
@@ -233,9 +249,9 @@ def k_bounds(ms, _arg, here):
         slack = "-" if j is None else _slack(b["algorithm4"], j)
         rows.append([case_link(m["case_id"], here), money(b["algorithm4"]), dur(b.get("algorithm4_ms")),
                      money(j) if j is not None else _joint_absent(b), dur(b.get("joint_ms")), slack,
-                     money(b.get("pcpsp_lp")), dur(b.get("pcpsp_lp_ms"))])
+                     money(b.get("pcpsp_lp")), _pcpsp_by(b), dur(b.get("pcpsp_lp_ms"))])
     return table(["case", "Algorithm 4", "time", "joint LP (BZ)", "time", "slack of Algorithm 4",
-                  "PCPSP LP", "time"], rows)
+                  "PCPSP LP", "by", "time"], rows, "lrrrrrrlr")
 
 
 def k_controls(ms, _arg, here):
@@ -266,10 +282,11 @@ def k_destinations(ms, _arg, here):
             moved = e.get("moved_vs_fixed")
             cut = ("-" if e.get("cutoff_min") is None
                    else f"{e['cutoff_min']:.4g} to {e['cutoff_max']:.4g}")
-            rows.append([case_link(m["case_id"], here), f"`{x}`", money(r["npv"]), pct(r["gap_pct"]),
+            dual = " (dual)" if m["bound_summary"].get("pcpsp_lp_method") == "lagrangian" else ""
+            rows.append([case_link(m["case_id"], here), f"`{x}`", money(r["npv"]), pct(r["gap_pct"]) + dual,
                          f"{over:+.2f}%", f"{e.get('to_plant', 0):,} / {e.get('to_dump', 0):,}",
                          "-" if moved is None else f"{moved:,}", cut])
-    return table(["case", "method", "NPV", "gap to PCPSP LP", "against best CPIT plan",
+    return table(["case", "method", "NPV", "gap to the PCPSP bound", "against best CPIT plan",
                   "blocks to plant / dump", "blocks changing destination", "effective cutoff range (grade)"],
                  rows, "llrrrrrr")
 

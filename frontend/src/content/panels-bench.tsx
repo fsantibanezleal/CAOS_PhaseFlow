@@ -250,7 +250,7 @@ export function RuntimePanel({ lang }: { lang: Lang }) {
   const cols: Array<{ id: string; label: string; ms: (m: CaseManifest) => number | null | undefined }> = [
     { id: 'alg4', label: es ? 'Algoritmo 4' : 'Algorithm 4', ms: (m) => m.bound_summary?.algorithm4_ms },
     { id: 'bz', label: es ? 'LP conjunta BZ' : 'joint LP BZ', ms: (m) => m.bound_summary?.joint_ms },
-    { id: 'pcpsp', label: 'LP PCPSP', ms: (m) => m.bound_summary?.pcpsp_lp_ms },
+    { id: 'pcpsp', label: es ? 'cota PCPSP' : 'PCPSP bound', ms: (m) => m.bound_summary?.pcpsp_lp_ms },
     ...methods.map((mt) => ({ id: mt, label: mt, ms: (m: CaseManifest) => get(m, mt)?.runtime_ms })),
   ];
   return (

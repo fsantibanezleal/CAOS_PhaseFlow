@@ -26,7 +26,9 @@ limits from the exact search, so bakes reproduce. 0.5.0 replaced a sliding windo
 the name. 0.5.1 corrected Lane's market-limiting cutoff. 0.6.0 fixed four defects measured on this product's
 cases: Gershon's weight counted paths instead of successors, `min-width` broke capacity, the destination
 rung lost to CPIT, and the sliding window refused on twelve of thirteen cases. 0.6.1 added the PCPSP LP's
-solution and the destination restriction that make the re-cut ([methodologies/09](../methodologies/09_destinations.md)).
+solution and the destination restriction that make the re-cut ([methodologies/09](../methodologies/09_destinations.md)),
+and the LP's Lagrangian dual, which bounds PCPSP where HiGHS cannot reach the LP
+([methodologies/02](../methodologies/02_the-bound.md), section 5.2).
 
 **What would make us change it.** Nothing on the horizon: it is ours, so a missing capability is a version
 bump. The risk is the opposite one, product logic leaking into the engine.

@@ -17,6 +17,12 @@ export const CITATIONS: Citation[] = [
     doi: '10.1287/mnsc.22.11.1268',
   },
   {
+    id: 'geoffrion1974',
+    label: 'Geoffrion 1974',
+    citation: 'Geoffrion, A. M. (1974). Lagrangean relaxation for integer programming. In Approaches to Integer Programming, Mathematical Programming Studies, 82-114.',
+    doi: '10.1007/BFb0120690',
+  },
+  {
     id: 'gershon1987',
     label: 'Gershon 1987',
     citation: 'Gershon, M. E. (1987). Heuristic approaches for mine planning and production scheduling. International Journal of Mining and Geological Engineering 5(1), 1-13.',

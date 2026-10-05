@@ -8,7 +8,7 @@ and reports every plan's distance from it. Three bounds are computed, each for a
 | critical multiplier algorithm | CPIT, one resource | parametric maximum closures, no LP solver | always, for one resource per period |
 | Algorithm 4 | CPIT, several resources | the smallest of the single-resource bounds | when one resource determines the LP |
 | joint LP (Bienstock-Zuckerberg) | CPIT, all resources at once | column generation, maximum-closure pricing | it is the LP value |
-| PCPSP LP | PCPSP, destinations chosen | one sparse LP, HiGHS | it is the LP value |
+| PCPSP LP | PCPSP, destinations chosen | one sparse LP by HiGHS; above 1.1 million rows its Lagrangian dual by maximum closures | it is the LP value (the dual: up to the rounding slack) |
 
 ![Where a gap comes from on newman1: bound slack, integrality, method loss](../assets/the-two-bounds.svg)
 
@@ -153,10 +153,56 @@ $$
 
 over **every** block of the instance: the ultimate-pit reduction is proven for CPIT and is not assumed
 for PCPSP. The model has $nT(1+D)$ variables and about $n(T-1)+mT+nT+RT$ rows (19,080 and 35,204 on
-`newman1`; about 1.44 million rows on the largest twins, inside a budget of 1.6 million). On
-`newman1.pcpsp` it gives 24,486,549.02, the published PCPSP LP bound (Jelvez et al. 2018, Table 3) to
-the unit. Its solution is also read: each block's dominant destination is what the destination plans
-are built on ([09](09_destinations.md)).
+`newman1`). On `newman1.pcpsp` it gives 24,486,549.02, the published PCPSP LP bound (Jelvez et al. 2018,
+Table 3) to the unit. Its solution is also read: each block's dominant destination is what the
+destination plans are built on ([09](09_destinations.md)).
+
+### 5.1 The row budget, measured
+
+HiGHS solves the LP directly up to **1.1 million rows**. The budget is a measurement, not a guess: the
+large porphyry twin (10,976 blocks, 1,082,684 rows) solved in 2.65 hours in the release bake; two of
+the three 14,400-block twins (1,435,220 rows) had not finished after six and a half hours with HiGHS's
+default method; and the interior-point method was slower than the simplex where both were run
+(`twin-porphyry-s`: unfinished at 1,700 s, against about 18 minutes for the simplex).
+
+### 5.2 Above the budget: the Lagrangian dual by maximum closures
+
+![The PCPSP bound by its Lagrangian dual: prices, one closure, and the cutting-plane loop](../assets/pcpsp-lagrangian.svg)
+
+Dualise the $RT$ resource rows with multipliers $\mu_{rt}\ge 0$. What is left couples blocks only
+through precedence: each block in each period takes the destination worth most at those prices, and by
+Abel summation the cumulative extraction is a maximum closure on the time-expanded graph of section 4,
+
+$$
+g_{bt}(\mu)=\max_{d}\Bigl(\gamma_t v_{bd}-\sum_{r}\mu_{rt}\,q_{rbd}\Bigr),\qquad
+L(\mu)=\sum_{r,t}\mu_{rt}\,c_{rt}+\max_{x\ \text{closed}}\ \sum_{b,t}\bigl(g_{bt}-g_{b,t+1}\bigr)\,x_{bt},
+$$
+
+with $g_{b,T+1}=0$ and a block whose every destination is forbidden priced out of the closure.
+
+- **Every $\mu\ge 0$ gives a valid bound** (weak duality), and the compiled max-flow rounds the weights
+  up, so a computed $L(\mu)$ can only over-estimate: the bound holds at any iteration, including one
+  stopped early.
+- **The best $\mu$ gives the LP value.** The inner problem is a closure, whose constraint matrix is
+  totally unimodular, so the Lagrangian subproblem has the integrality property and the dual has no gap
+  with the LP (Geoffrion, *Lagrangean relaxation for integer programming*, Mathematical Programming
+  Studies, 82-114, 1974, [doi:10.1007/BFb0120690](https://doi.org/10.1007/BFb0120690)). What is
+  left is the rounding slack, recorded with the bound.
+- **The multipliers** move by a cutting-plane method in the $RT$ prices with a box trust region around
+  the best point: a serious step (the new value beats the best by a tenth of the model's predicted
+  decrease) doubles the box, a null step shrinks it by 0.7. It stops when the model's lower estimate is
+  within $\max(10^{-6}|L|,\,2\,\text{slack})$ of the best value with the box not binding, after 40
+  iterations without a serious step, or at 400 iterations. The status, the iteration count, the
+  master's gap estimate and the slack go into the bound report.
+- **The relaxed solution at the best $\mu$** mines each block whole and sends it to one destination,
+  which is what the re-cut fixes, exactly as the LP's dominant destinations are used below the budget.
+
+Where both run they agree: within $2\times10^{-6}$ of the LP on the engine's test instances, and
+316,476,932 against 316,475,407 on `twin-porphyry-s` (4.8 parts per million), in 166 seconds in a
+standalone run against 17.9 minutes for HiGHS in the release bake. Which method produced a case's number is in its manifest (`pcpsp_lp_method`) and in every
+table that shows it.
+
+### 5.3 Checks
 
 Three checks make it trustworthy, each visible in the tables below: it reproduces the published value
 on `newman1`; where only the fleet binds it equals the CPIT bound (Lane's mine-limited cutoff is
@@ -185,7 +231,7 @@ the only case with an external integer optimum.
 
 ## Where it lives
 
-`oreblocks.cpit_lp_relaxation`, `oreblocks.cpit_bound_two_resources`, `oreblocks.solve_gpcp_lp` and
-`oreblocks.pcpsp_lp_bound` (engine, PyPI); `data-pipeline/pipeline/stages/solve.py::run_ladder` (budgets
-and the bound report); `frontend/src/engine/cpit.ts` (the browser's critical multiplier algorithm, held
+`oreblocks.cpit_lp_relaxation`, `oreblocks.cpit_bound_two_resources`, `oreblocks.solve_gpcp_lp`,
+`oreblocks.pcpsp_lp_bound` and `oreblocks.pcpsp_lagrangian_bound` (engine, PyPI);
+`data-pipeline/pipeline/stages/solve.py::run_ladder` (budgets, `PCPSP_LP_MAX_ROWS`, and the bound report); `frontend/src/engine/cpit.ts` (the browser's critical multiplier algorithm, held
 to the trace by `frontend/test/parity.test.ts`).

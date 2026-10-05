@@ -3,7 +3,7 @@
  * studies and the case manifests and traces. A number on a reading page comes from here, never typed.
  */
 import { useEffect, useState } from 'react';
-import { APP_VERSION, dec, fmtInt, fmtMoney } from '../lib/artifacts.ts';
+import { APP_VERSION, dec, fmtInt, fmtMoney, pcpspBoundMethod } from '../lib/artifacts.ts';
 import type { CaseIndex, CaseManifest, ScoreboardRow } from '../lib/contract.types.ts';
 import type { Lang } from './doc.tsx';
 
@@ -228,7 +228,8 @@ export function MethodCasesPanel({ lang, method, showNotes = false }: { lang: La
   );
 }
 
-/** The bounds of every case: Algorithm 4, the joint bound, which one each gap uses, and the PCPSP LP. */
+/** The bounds of every case: Algorithm 4, the joint bound, which one each gap uses, and the PCPSP bound
+ *  with the method that produced it. */
 export function BoundSummaryPanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
   const data = useManifests();
@@ -236,18 +237,18 @@ export function BoundSummaryPanel({ lang }: { lang: Lang }) {
   return (
     <div className="pfd-scroll">
       <table className="pfd-table">
-        <caption>{es ? 'Las cotas de cada caso, leídas de los manifiestos versionados. La cota usada es la menor certificada.' : 'The bounds of every case, read from the committed manifests. The bound used is the smaller certified one.'}</caption>
+        <caption>{es ? 'Las cotas de cada caso, leídas de los manifiestos versionados. La cota usada es la menor certificada. Sobre 1,1 millones de filas la LP PCPSP queda fuera del alcance de HiGHS, y su cota es el dual lagrangiano por cierres máximos: válido en cada iteración e igual a la LP salvo la holgura del redondeo.' : 'The bounds of every case, read from the committed manifests. The bound used is the smaller certified one. Above 1.1 million rows the PCPSP LP is out of reach for HiGHS, and its bound is the Lagrangian dual by maximum closures: valid at every iteration and equal to the LP up to the rounding slack.'}</caption>
         <thead>
           <tr>
             <th>{es ? 'caso' : 'case'}</th><th className="num">{es ? 'Algoritmo 4' : 'Algorithm 4'}</th><th className="num">{es ? 'conjunta BZ' : 'joint BZ'}</th>
             <th className="num">{es ? 'holgura' : 'slack'}</th><th>{es ? 'usada' : 'used'}</th><th className="num">{es ? 'iter. BZ' : 'BZ iter.'}</th>
-            <th className="num">{es ? 'LP PCPSP' : 'PCPSP LP'}</th><th className="num">{es ? 'tiempo LP PCPSP' : 'PCPSP LP time'}</th>
+            <th className="num">{es ? 'cota PCPSP' : 'PCPSP bound'}</th><th>{es ? 'método PCPSP' : 'PCPSP method'}</th><th className="num">{es ? 'tiempo cota PCPSP' : 'PCPSP bound time'}</th>
           </tr>
         </thead>
         <tbody>
           {data.manifests.map((m) => {
             const b = m.bound_summary;
-            if (!b) return <tr key={m.case_id}><th scope="row">{caseTitle(data.index, m.case_id, lang)}</th><td colSpan={7} className="pfd-muted">{es ? 'sin resumen de cotas en este manifiesto' : 'no bound summary in this manifest'}</td></tr>;
+            if (!b) return <tr key={m.case_id}><th scope="row">{caseTitle(data.index, m.case_id, lang)}</th><td colSpan={8} className="pfd-muted">{es ? 'sin resumen de cotas en este manifiesto' : 'no bound summary in this manifest'}</td></tr>;
             return (
               <tr key={m.case_id}>
                 <th scope="row">{caseTitle(data.index, m.case_id, lang)}</th>
@@ -257,6 +258,7 @@ export function BoundSummaryPanel({ lang }: { lang: Lang }) {
                 <td>{b.used === 'bienstock-zuckerberg' ? 'BZ' : (es ? 'Alg. 4' : 'Alg. 4')}</td>
                 <td className="num">{b.joint_iterations ?? '-'}</td>
                 <td className="num">{b.pcpsp_lp != null ? fmtMoney(b.pcpsp_lp) : '-'}</td>
+                <td>{pcpspBoundMethod(b)}</td>
                 <td className="num">{b.pcpsp_lp_ms != null ? `${dec(b.pcpsp_lp_ms / 1000, 1)} s` : '-'}</td>
               </tr>
             );
