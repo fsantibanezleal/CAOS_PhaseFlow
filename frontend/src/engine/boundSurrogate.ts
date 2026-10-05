@@ -17,6 +17,7 @@
 // multiplication.
 
 import type { ScheduleTrace } from '../lib/contract.types.ts';
+import { mlpForward } from './learned.ts';
 
 export interface Mlp {
   schema: string;
@@ -78,19 +79,10 @@ export function depositFeatures(
   ];
 }
 
-/** Forward pass. Standardise, then tanh through the hidden layers, then a linear head. */
-export function predict(model: Mlp, x: number[]): number {
-  let a = x.map((v, i) => (v - model.mu[i]) / (model.sigma[i] || 1));
-  model.layers.forEach((layer, li) => {
-    const out = new Array<number>(layer.b.length).fill(0);
-    for (let j = 0; j < out.length; j++) {
-      let s = layer.b[j];
-      for (let i = 0; i < a.length; i++) s += a[i] * layer.w[i][j];
-      out[j] = li < model.layers.length - 1 ? Math.tanh(s) : s;
-    }
-    a = out;
-  });
-  return a[0];
+/** Forward pass of the trained model: the shared `mlpForward` (ReLU hidden layers, sigmoid head),
+ * held to the Python outputs by `test/surrogate-parity.test.ts`. */
+export function predict(model: Pick<Mlp, 'mu' | 'sigma' | 'layers'>, x: ArrayLike<number>): number {
+  return mlpForward(model, x);
 }
 
 let cached: Promise<Mlp> | null = null;

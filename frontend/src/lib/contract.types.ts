@@ -199,8 +199,66 @@ export interface CaseManifest {
   flags: { code: string; detail: string }[];
   controls: TraceControls;
   published: TracePublished;
-  scoreboard: { method: string; rung: MethodRung; npv: number; bound: number; gap_pct: number; runtime_ms: number }[];
+  scoreboard: ScoreboardRow[];
   best: { method: string; gap_pct: number } | null;
+  bound_summary?: BoundSummary;
+  ensemble_summary?: EnsembleSummary;
+}
+
+export interface ScoreboardRow {
+  method: string;
+  rung: MethodRung;
+  npv: number;
+  bound: number;
+  gap_pct: number;
+  runtime_ms: number;
+  notes?: string;
+  measured_vs_exact?: number | null;
+  components_mean?: number;
+  largest_share_mean?: number;
+  /** use over limit, per resource then per period */
+  utilization?: (number | null)[][];
+  /** structured facts the method reports (destination and operability rungs) */
+  extra?: Record<string, unknown>;
+}
+
+/** The bound report of one case, compact: which bound each gap uses and what the others were. */
+export interface BoundSummary {
+  algorithm4: number;
+  algorithm4_ms: number;
+  closure_solves: number;
+  joint: number | null;
+  joint_ms: number | null;
+  joint_iterations: number | null;
+  joint_converged: boolean | null;
+  tightening_pct: number | null;
+  used: string;
+  joint_nodes: number | null;
+  joint_edges: number | null;
+  joint_skipped: string | null;
+  joint_note: string | null;
+  pcpsp_lp: number | null;
+  pcpsp_lp_ms: number | null;
+  pcpsp_lp_rows: number | null;
+  pcpsp_lp_status: string | null;
+  skipped_methods: Record<string, string> | null;
+}
+
+/** The uncertainty ensemble of one case, compact. */
+export interface EnsembleSummary {
+  ran: boolean | null;
+  reason: string | null;
+  nRealisations: number | null;
+  sigma: number | null;
+  methods: string[] | null;
+  expected: number[] | null;
+  p10: number[] | null;
+  p90: number[] | null;
+  meanModel: number[] | null;
+  optimism: number[] | null;
+  bestByExpected: string | null;
+  bestByP10: string | null;
+  valueOfReplanningPct: number | null;
 }
 
 export interface CaseIndexEntry {
@@ -210,6 +268,8 @@ export interface CaseIndexEntry {
   default: boolean;
   lane: 'live' | 'replay';
   title: Bilingual;
+  /** what the case is FOR in the argument */
+  role?: Bilingual;
 }
 
 export interface CaseIndex {
