@@ -69,6 +69,15 @@ approximates, on the same instance against the same bound, so the reliability si
 between them: a fact about that case, not a forecast about cases like it. `measuredVsExact` in the
 trace, the percentage next to the method selector, and the flag raised off the measurement.
 
+**A real block model is outside the study, and one case shows what that means.** The splits are all
+twins. On the two real models with a grade field the 0.08 retrain moved in opposite directions: `newman1`
+from 0.953 to 1.001 of the exact ExTS plan, `kd-declared` from 0.856 to 0.413. Measured with both models
+and both capacity inputs, the KD drop is the retrained model's (0.413 with the instance's capacities and
+0.474 with the old fixed input, against 0.867 and 0.856 for the 0.07.006 model), and not the input that
+was constant in training (`tonnage_norm`, whose first-layer weights were never trained: holding it at its
+training value moves KD by 0.01 percent). The measurement flags the KD row, which is what it is for;
+validating on real models is open work (backlog BL-054).
+
 **The rule cannot travel to the live lane.** It is a rule over the archetype LABEL, and a real deposit
 does not arrive with one. In the live lane the exact plan arrives a second or so after the learned one
 and the share is then measured on screen ([07](07_learned.md), section 3); until it arrives, the learned
