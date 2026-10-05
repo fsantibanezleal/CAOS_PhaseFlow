@@ -199,8 +199,9 @@ with $g_{b,T+1}=0$ and a block whose every destination is forbidden priced out o
 
 Where both run they agree: within $2\times10^{-6}$ of the LP on the engine's test instances, and
 316,476,932 against 316,475,407 on `twin-porphyry-s` (4.8 parts per million), in 166 seconds in a
-standalone run against 17.9 minutes for HiGHS in the release bake. Which method produced a case's number is in its manifest (`pcpsp_lp_method`) and in every
-table that shows it.
+standalone run against 17.9 minutes for HiGHS in the release bake. The manifest names the dual where it
+was used (`pcpsp_lp_method`; an absent key is the HiGHS LP, so the record of a HiGHS case is the one it
+had before the dual existed), and every table that shows the bound says which.
 
 ### 5.3 Checks
 

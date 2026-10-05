@@ -217,7 +217,7 @@ def k_case_bounds(ms, arg, _here):
 
 
 def _pcpsp_by(b: dict) -> str:
-    """The method behind the PCPSP bound; a manifest baked before the key existed carries the HiGHS LP."""
+    """The method behind the PCPSP bound; an absent method key is the HiGHS LP."""
     if b.get("pcpsp_lp") is None:
         return "-"
     if b.get("pcpsp_lp_method") == "lagrangian":

@@ -139,7 +139,7 @@ export function boundSlackText(pct: number | null | undefined): string {
 }
 
 /** Which method produced a case's PCPSP bound. Above the HiGHS row budget it is the Lagrangian dual by
- *  maximum closures; a manifest baked before the method key existed carries the HiGHS LP. */
+ *  maximum closures; an absent method key is the HiGHS LP. */
 export function pcpspBoundMethod(b: BoundSummary | null | undefined): string {
   if (!b || b.pcpsp_lp == null) return '-';
   const es = useLangStore.getState().lang === 'es';
