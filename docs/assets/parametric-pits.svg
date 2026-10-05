@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" role="img" aria-labelledby="t d">
+  <title id="t">Parametric pits</title>
+  <desc id="d">Left: nested pits for increasing resource price. Right: resource use as a step function of lambda, the target capacity U between two break points, and the stopping certificate.</desc>
+  <style>
+    :root { --bg:#ffffff; --card:#f6f8fa; --ink:#1f2328; --muted:#59636e; --line:#d0d7de;
+            --a:#0969da; --b:#8250df; --c:#1a7f37; --d:#9a6700; --e:#cf222e;
+            --a2:#ddf4ff; --b2:#fbefff; --c2:#dafbe1; --d2:#fff8c5; --e2:#ffebe9; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1117; --card:#151b23; --ink:#f0f6fc; --muted:#aab4c0; --line:#3d444d;
+              --a:#58a6ff; --b:#bc8cff; --c:#3fb950; --d:#e3b341; --e:#ff7b72;
+              --a2:#0c2d6b; --b2:#3c1e70; --c2:#04260f; --d2:#3b2300; --e2:#490202; }
+    }
+    .bg { fill:var(--bg); }
+    .card { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .t { fill:var(--ink); font:600 15px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .h { fill:var(--ink); font:600 13px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .s { fill:var(--muted); font:12px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .m { fill:var(--ink); font:12px ui-monospace, Consolas, monospace; }
+    .ms { fill:var(--muted); font:11px ui-monospace, Consolas, monospace; }
+    .ln { stroke:var(--line); stroke-width:1.5; fill:none; }
+    .lnd { stroke:var(--muted); stroke-width:1.2; fill:none; stroke-dasharray:4 3; }
+    .ar { stroke:var(--muted); stroke-width:1.6; fill:none; marker-end:url(#ah); }
+    .ara { stroke:var(--a); stroke-width:1.8; fill:none; marker-end:url(#aha); }
+    .fa { fill:var(--a2); stroke:var(--a); stroke-width:1.2; }
+    .fb { fill:var(--b2); stroke:var(--b); stroke-width:1.2; }
+    .fc { fill:var(--c2); stroke:var(--c); stroke-width:1.2; }
+    .fd { fill:var(--d2); stroke:var(--d); stroke-width:1.2; }
+    .fe { fill:var(--e2); stroke:var(--e); stroke-width:1.2; }
+    .fw { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .ka { fill:var(--a); } .kb { fill:var(--b); } .kc { fill:var(--c); } .kd { fill:var(--d); } .ke { fill:var(--e); }
+    .sa { stroke:var(--a); } .sb { stroke:var(--b); } .sc { stroke:var(--c); } .sd { stroke:var(--d); } .se { stroke:var(--e); }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/></marker>
+    <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--a)"/></marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="800" height="340" rx="10"/>
+  <text x="400" y="30" class="t" text-anchor="middle">The critical multiplier algorithm: nested pits and the duality certificate</text>
+  <path d="M40.0 80 L340.0 80 L235.5 270 L144.5 270 Z" class="fw"/>
+  <path d="M80.0 80 L300.0 80 L223.0 220 L157.0 220 Z" class="fa"/>
+  <path d="M120.0 80 L260.0 80 L210.5 170 L169.5 170 Z" class="fb"/>
+  <text x="190" y="300" class="s" text-anchor="middle">UPL(p - lambda a): each pit is a max closure; they nest</text>
+  <text x="190" y="318" class="s" text-anchor="middle">higher price lambda on the resource, smaller pit</text>
+  <path d="M430 280 L760 280" class="ln"/>
+  <path d="M430 280 L430 70" class="ln"/>
+  <text x="760" y="298" class="s" text-anchor="end">lambda</text>
+  <text x="424" y="76" class="s" text-anchor="end">a . x(lambda)</text>
+  <path d="M430 80 L500 80 L500 130 L580 130 L580 185 L670 185 L670 225 L760 225" class="lnd"/>
+  <path d="M430 160 L760 160" class="lnd sa"/>
+  <text x="764" y="164" class="h" text-anchor="start">U</text>
+  <text x="590" y="122" class="ms" text-anchor="start">b_u</text>
+  <text x="590" y="178" class="ms" text-anchor="start">b_l</text>
+  <text x="595" y="64" class="m" text-anchor="middle">x = alpha x_l + (1 - alpha) x_u uses exactly U</text>
+  <text x="595" y="316" class="s" text-anchor="middle">certificate: CP(U) = min over lambda of z(lambda) + lambda U</text>
+
+</svg>

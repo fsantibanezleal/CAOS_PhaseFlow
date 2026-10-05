@@ -1,24 +1,45 @@
-# scripts/, environment + pipeline orchestration (cross-platform)
+# scripts/
 
-Local scripts so **anyone** can configure the env and run the flow. Provide every script in BOTH `*.sh`
-(macOS/Linux/Git-Bash) and `*.ps1` (Windows PowerShell, since Felipe runs PS).
+Everything here runs from the repository root inside the project's own `.venv`; nothing uses a global
+interpreter. Running the product from a fresh clone is [`local/`](local/README.md): numbered scripts in
+`.sh` and `.ps1`, each printing the next command.
 
-## How to populate
+## Run it locally: `local/`
 
-| Script | What it must do |
+| script | what it does |
 |---|---|
-| `setup.sh` / `setup.ps1` | create `.venv`, upgrade pip, install `requirements.txt -r requirements-dev.txt -r requirements-precompute.txt`; print the next commands. GPU/API lanes installed only on demand. |
-| `precompute.sh` / `precompute.ps1` | run the staged pipeline: `python data-pipeline/run.py "$@"` (all cases, or one; `pipeline` after instantiation). |
-| `fetch-data.sh` / `fetch-data.ps1` | (optional) stage raw inputs into `data/raw/` (gitignored). Never commit raw. |
-| `serve-api.sh` / `serve-api.ps1` | (optional, only if `api/` is active) `uvicorn api.main:app --reload`. |
+| `00_install-prereqs` | checks python, node and git against the versions CI pins |
+| `01_init` | one virtualenv, the requirements, `npm ci`, `.env` from `.env.example`, a sandbox bake if `data/derived/` is empty |
+| `02_generate-data` | bakes the artifacts: a sandbox by default, `--release` / `-Release` for the committed set; cases side by side (`PHASEFLOW_BAKE_JOBS` / `-Jobs`) |
+| `03_dev` | overlays `data/derived` into the frontend and starts Vite |
 
-Rules: idempotent; detect `.venv/bin/python` vs `.venv/Scripts/python.exe`; never use global Python/Node.
-Pin nothing here, versions live in `requirements-*.txt`.
+## Guards: run in CI and before deploy (cheap, never train; ADR-0074)
 
-## Guards (run in CI, keep them local-runnable)
-
-| Script | What it enforces |
+| script | what it enforces |
 |---|---|
-| `check_artifacts.py` | Artifact contract 2: every manifest has its artifact and vice versa (no drift). |
-| `check_template_residue.py` | An instantiated product must not ship template residue (the example pipeline, SIR model, `EX0*` cases, placeholder text). No-op in the template itself while the `.template-source` sentinel exists; instantiation deletes the sentinel to arm it. See ADR-0057 / ADR-0061. |
-| `check_content_standards.py` | No em-dash (`U+2014`/`U+2015`) and no pictographic emoji in tracked content. Always on. Use comma/colon/semicolon/period/parentheses/middot instead. See ADR-0067. |
+| `check_artifacts.py` | CONTRACT 2 on the committed evidence: index, manifests and traces agree; byte sizes; lane equals the gate; the engine pin equals the baking version; roles equal the case source; every plan within capacity and under its own bound; a PCPSP LP for every destination plan, never below the joint CPIT LP; no per-block data for a non-redistributable case |
+| `docs_tables.py --check` | every generated table in `docs/` equals what the manifests and model files say |
+| `check_readme_numbers.py` | the README's trust-anchor table equals the `newman1` artifact; no control bytes |
+| `check_content_standards.py` | no em-dash and no pictographic emoji in tracked content (ADR-0067) |
+| `check_template_residue.py` | no archetype template leftovers in the product (ADR-0057, ADR-0061) |
+| `check_ci_budget.py` | trunk-only CI triggers and no training step in any workflow |
+
+## Evidence tools: offline
+
+| script | what it does |
+|---|---|
+| `fetch_minelib.py` | downloads MineLib instances into `$PHASEFLOW_DATA_DIR/minelib` (or the git-ignored `data/raw/minelib`); academic download, never committed |
+| `docs_tables.py` | rewrites the measured tables of `docs/` from the manifests and model files (`--manifests DIR` previews a sandbox bake) |
+| `compare_rebake.py` | compares a candidate bake with the committed evidence and lists every changed number for review |
+
+## The learned lane: offline only
+
+| script | what it does |
+|---|---|
+| `train_learned.py` | trains both models by deposit seed and writes the weights, metrics, failure study and training report (hours) |
+| `rescore_guard.py` | re-scores the guard rules from the committed study, without retraining |
+| `validate_guard.py` | measures the shipped rule on a third disjoint seed set |
+| `export_surrogate_parity.py` | writes the fixture that holds the browser's forward pass and features to the Python models |
+| `reexport_onnx.py` | re-exports and re-verifies the ONNX graphs from the committed weights |
+
+The order after a retrain is in [docs/guides/03](../docs/guides/03_retrain-the-learned-models.md).

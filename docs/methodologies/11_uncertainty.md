@@ -1,85 +1,101 @@
-# Geological uncertainty, framed so the claim is bounded
+# 11 · Geological uncertainty, framed as practice
 
-Kriging is a smoother. It returns a conditional mean, so a schedule optimised on a single interpolated
-block model is optimised for a deposit that does not exist. Meagher, Dimitrakopoulos and Avis
-([doi:10.1134/S1062739114030132](https://doi.org/10.1134/S1062739114030132)) summarise the consequence
-from an open-pit gold example: "the consideration of geological uncertainty predicts a NPV that is 50%
-less than that forecasted via conventional modeling."
+Deterministic CPIT takes one block model as truth, and that model is an estimate: a kriged grade is a
+conditional mean, a smoother, so a schedule optimised on it is optimised for a deposit that does not
+exist. This page says what PhaseFlow does about that, and what it does not claim.
 
-## What this is NOT
+## 1. What this is NOT
 
 It is not a two-stage stochastic integer program. Ramazan and Dimitrakopoulos
-([doi:10.1007/s11081-012-9186-2](https://doi.org/10.1007/s11081-012-9186-2)) do that and report
-"approximately 10% higher NPV than the schedule derived from the traditional approach" on an Australian
-gold mine. That is a different and much larger model, and putting a spread of NPVs on screen and
-calling it stochastic optimisation would be precisely the animating-an-assumption failure this product
-exists to avoid.
+([doi:10.1007/s11081-012-9186-2](https://doi.org/10.1007/s11081-012-9186-2)) solve one over an ensemble
+of simulated orebodies and report "approximately 10% higher NPV than the schedule derived from the
+traditional approach" on one Australian gold mine. That is a different and much larger model, and a
+spread of NPVs on screen called "stochastic optimisation" would be animating an assumption.
 
-Two numbers that are routinely conflated and are kept apart here: the **50 percent** is about a
-FORECAST being wrong; the **10 percent** is about a PLAN being better. They are different claims.
+Two numbers that are routinely conflated are kept apart. A frequently quoted figure, that accounting for
+geological uncertainty predicts an NPV 50 percent below the conventional forecast, is one gold-mine example
+that Meagher, Dimitrakopoulos and Avis ([doi:10.1134/S1062739114030132](https://doi.org/10.1134/S1062739114030132))
+summarise from Dimitrakopoulos, Farrelly and Godoy (2002); the original was not obtained, so it is
+attributed exactly that way. The 50 percent is about a **forecast** being wrong; the 10 percent is about a
+**plan** being better.
 
-## What it is
+## 2. What it is: the practice
 
-What planners actually do, in Blom, Pearce and Cote's words (arXiv:2403.18213):
+Blom, Pearce and Cote ([arXiv:2403.18213](https://arxiv.org/abs/2403.18213)) describe Rio Tinto's
+planners:
 
-> "In practice, mining engineers using this platform solve a stochastic problem by solving many
-> instances of a deterministic one. Across these instances, parameters that capture aspects such as
-> price and grade are varied to reflect the uncertainty present in the original problem. Key strategic
-> decisions are made by analysing the resulting plans across these scenarios."
+> "In practice, mining engineers using this platform solve a stochastic problem by solving many instances
+> of a deterministic one. Across these instances, parameters that capture aspects such as price and grade
+> are varied to reflect the uncertainty present in the original problem. Key strategic decisions are made
+> by analysing the resulting plans across these scenarios."
 
-So: build an ensemble, solve the deterministic problem on each realisation, evaluate EVERY candidate
-plan against EVERY realisation, and report what a single number cannot say.
+So: build an ensemble, evaluate EVERY candidate plan of the ladder against EVERY realisation without
+re-optimising it, and report what a single number cannot say.
 
-## The ensemble has to be built correctly, and two ways are wrong
+![Plans read by their spread: the robust choice is not always the best on average](../assets/ensemble-fan.svg)
 
-**Uncorrelated noise is the wrong model.** Independent per-block error averages out over a pushback, so
-an uncorrelated ensemble makes uncertainty look harmless. Real grade error is correlated over tens of
-metres, which is why whole benches come in rich or poor together. The perturbation here smooths a white
-field with a separable box kernel and applies it multiplicatively in log space, so values keep their
-sign and the ore/waste classification can genuinely flip near the cutoff. A test asserts neighbouring
-blocks move together more than distant ones.
+## 3. The ensemble has to be built correctly, and two ways are wrong
 
-**A biased ensemble corrupts the one number the module exists to report.** Box smoothing does not
-preserve the mean of a finite field, so the multiplier has to be centred before it is scaled. Without
-that, the "is the single-model forecast optimistic" readout measures the bias of the generator. A test
-asserts mean preservation to within 2 percent.
+$$
+v^{(k)}_b=p_b\,\bigl(1+\sigma\,\xi^{(k)}_b\bigr),\qquad \xi^{(k)}\ \text{spatially correlated},\qquad \mathbb E\bigl[v^{(k)}\bigr]=p .
+$$
 
-## What is reported
+- **Uncorrelated noise is the wrong model.** Independent per-block error averages out over a pushback and
+  makes uncertainty look harmless; real grade error is correlated over tens of metres. The perturbation
+  smooths a white field with a separable box kernel and applies it multiplicatively in log space, so
+  values keep their sign and the ore/waste classification can flip near the cutoff. A test asserts that
+  neighbouring blocks move together more than distant ones.
+- **A biased ensemble corrupts the one number it exists to report.** Box smoothing does not preserve the
+  mean of a finite field, so the multiplier is centred before it is scaled; without that the "is the
+  single-model forecast optimistic" readout measures the generator's bias. A test asserts mean
+  preservation within 2 percent.
 
-- the **NPV distribution** of each candidate plan across the ensemble, with P10 and P90.
-- the **robust choice by P10**, which is often not the plan with the best expected value. A plan that is
-  best on average can be third-best when things go badly, and that is the decision a planner actually
-  faces.
-- the **optimism of the single-model forecast**: mean-model value minus expected value across
-  realisations, per plan. Positive means the single-model number flatters.
+Twelve realisations per case (six above 25,000 blocks), $\sigma=0.25$, seeded.
+
+## 4. What is reported
+
+$$
+\text{robust}=\arg\max_{\pi}\ P_{10}\bigl[\mathrm{NPV}(\pi;v^{(k)})\bigr],\qquad
+\text{VoR}=\mathbb E_k\Bigl[\max_{\pi}\mathrm{NPV}(\pi;v^{(k)})\Bigr]-\max_{\pi}\mathbb E_k\bigl[\mathrm{NPV}(\pi;v^{(k)})\bigr].
+$$
+
+- the **NPV distribution** of each plan across the ensemble, with P10 and P90;
+- the **robust choice by P10**, which can differ from the best plan on average;
+- the **optimism of the single-model forecast**: mean-model value minus expected value across realisations;
+  positive means the single-model number flatters;
 - the **value of re-planning** once the realisation is known.
 
-## The naming error, and why it is written down
+That last quantity was first called EVPI. It is not: true EVPI needs the per-realisation OPTIMUM, and the
+per-realisation solve here is a heuristic, so the number is a **lower bound** on EVPI. Computed naively it
+came out negative on `newman1` (-0.148 percent), because a fixed plan can beat a heuristic re-solve on a
+lucky realisation; the re-solve is now the maximum of the heuristic and every candidate already evaluated,
+which makes it a proper, non-negative lower bound, and a test asserts both.
 
-That last quantity was first called EVPI. It is not. True EVPI needs the per-realisation **optimum**,
-and the per-realisation solve available here is a heuristic, so this understates by whatever that
-heuristic loses. It is a **lower bound** on EVPI.
+**The per-realisation solve is deliberately the cheap one** (Gershon weights and a shift search, no bound):
+the ensemble compares NPVs and never reads a bound, and with the bound left on, the first full bake ran for
+four hours and finished one case. The trace carries `resolveMethod` so the number is never read without
+knowing what produced it.
 
-Worse, computed naively it came out **negative** on a real case (-0.148 percent on the published
-`newman1` instance), because a fixed plan can beat a heuristic re-solve on a lucky realisation. A
-negative value of information is a naming error, not a finding. The fix is to take the maximum of the
-re-solve and every candidate already evaluated, which makes the quantity a proper lower bound and
-non-negative, and a test asserts both.
+## 5. Measured on every case, and what the value of re-planning says here
 
-## The per-realisation solve is deliberately the cheap one
+<!-- generated:ensemble -->
+<!-- /generated -->
 
-The re-solve runs with `bound=False` and Gershon's successor-cone weight, so each realisation costs one
-maximum closure and a topological pass instead of a parametric family of closures per resource. The
-ensemble compares NPVs across realisations and never reads a bound, so computing one is a factor of a
-hundred spent on a discarded number. That is not a hypothetical: with the bound left on, the first full
-thirteen-case bake ran for four hours and finished ONE case, stuck in this loop.
+**Read the value-of-re-planning column for what it is.** It is zero on every case. The fixed plans
+include the sliding window, within a few percent of the bound, and the cheap per-realisation re-solve
+never beats it, so the lower bound collapses to its floor. Zero here does NOT mean that knowing the
+realisation is worthless; it means this lower bound is too weak to say anything in this release. A
+re-solve strong enough to matter costs a sliding window per realisation (backlog BL-049), and until then
+the column is shown with this reading attached.
 
-The consequence is stated rather than hidden: a weaker per-realisation solve makes the reported value of
-re-planning a LOOSER lower bound, which is what it already was. The trace carries `resolveMethod` so the
-number is never read without knowing what produced it.
+## 6. The label that stays on it
 
-## The label that stays on it
+The ensemble is **synthetic** geological uncertainty from a seeded generator, not a conditional simulation
+with drillhole data behind it. That sentence travels with the artifact and appears on every surface that
+shows the result.
 
-The ensemble is **synthetic** geological uncertainty from a seeded generator, not a conditional
-simulation with drillhole data behind it. That sentence travels with the artifact and appears on every
-surface that shows the result.
+## Where it lives
+
+`oreblocks.perturb_values`, `oreblocks.evaluate_across` (engine);
+`data-pipeline/pipeline/stages/evaluate.py::run_ensemble` (12 realisations, sigma 0.25, seed 31) and
+`ensemble_summary` in every manifest.

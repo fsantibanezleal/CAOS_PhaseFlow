@@ -48,7 +48,7 @@ An [external AMPL/Gurobi notebook](https://colab.ampl.com/notebooks/minelib-in-a
 later reports an integer optimum of 24,176,864.82 for Newman1 CPIT, with a matching MIP best bound.
 Relative to that external result, PhaseFlow's feasible plan is 0.112% lower. Most of the displayed
 1.37% LP-bound gap is integrality gap rather than a loss of the scheduling method. This external
-certificate was not produced by PhaseFlow; [the source comparison](docs/cases/newman1-external-optimum.md)
+certificate was not produced by PhaseFlow; [the source comparison](docs/use-cases/01_newman1-published.md)
 shows the inputs, calculations and limits.
 
 These four numbers are read out of `data/derived/manifests/newman1-published.json` by

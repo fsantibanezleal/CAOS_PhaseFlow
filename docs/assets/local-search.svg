@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 316" role="img" aria-labelledby="t d">
+  <title id="t">Exact neighbourhood re-solve</title>
+  <desc id="d">A pit section of period digits with a highlighted neighbourhood D, and the three rules of the restricted MILP.</desc>
+  <style>
+    :root { --bg:#ffffff; --card:#f6f8fa; --ink:#1f2328; --muted:#59636e; --line:#d0d7de;
+            --a:#0969da; --b:#8250df; --c:#1a7f37; --d:#9a6700; --e:#cf222e;
+            --a2:#ddf4ff; --b2:#fbefff; --c2:#dafbe1; --d2:#fff8c5; --e2:#ffebe9; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1117; --card:#151b23; --ink:#f0f6fc; --muted:#aab4c0; --line:#3d444d;
+              --a:#58a6ff; --b:#bc8cff; --c:#3fb950; --d:#e3b341; --e:#ff7b72;
+              --a2:#0c2d6b; --b2:#3c1e70; --c2:#04260f; --d2:#3b2300; --e2:#490202; }
+    }
+    .bg { fill:var(--bg); }
+    .card { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .t { fill:var(--ink); font:600 15px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .h { fill:var(--ink); font:600 13px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .s { fill:var(--muted); font:12px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .m { fill:var(--ink); font:12px ui-monospace, Consolas, monospace; }
+    .ms { fill:var(--muted); font:11px ui-monospace, Consolas, monospace; }
+    .ln { stroke:var(--line); stroke-width:1.5; fill:none; }
+    .lnd { stroke:var(--muted); stroke-width:1.2; fill:none; stroke-dasharray:4 3; }
+    .ar { stroke:var(--muted); stroke-width:1.6; fill:none; marker-end:url(#ah); }
+    .ara { stroke:var(--a); stroke-width:1.8; fill:none; marker-end:url(#aha); }
+    .fa { fill:var(--a2); stroke:var(--a); stroke-width:1.2; }
+    .fb { fill:var(--b2); stroke:var(--b); stroke-width:1.2; }
+    .fc { fill:var(--c2); stroke:var(--c); stroke-width:1.2; }
+    .fd { fill:var(--d2); stroke:var(--d); stroke-width:1.2; }
+    .fe { fill:var(--e2); stroke:var(--e); stroke-width:1.2; }
+    .fw { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .ka { fill:var(--a); } .kb { fill:var(--b); } .kc { fill:var(--c); } .kd { fill:var(--d); } .ke { fill:var(--e); }
+    .sa { stroke:var(--a); } .sb { stroke:var(--b); } .sc { stroke:var(--c); } .sd { stroke:var(--d); } .se { stroke:var(--e); }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/></marker>
+    <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--a)"/></marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="800" height="316" rx="10"/>
+  <text x="400" y="30" class="t" text-anchor="middle">C-PIT[D]: re-solve a neighbourhood exactly, the rest fixed</text>
+  <rect x="40" y="60" width="31" height="31" rx="3" class="fw"/>
+  <text x="55.5" y="80" class="m" text-anchor="middle">1</text>
+  <rect x="74" y="60" width="31" height="31" rx="3" class="fw"/>
+  <text x="89.5" y="80" class="m" text-anchor="middle">1</text>
+  <rect x="108" y="60" width="31" height="31" rx="3" class="fw"/>
+  <text x="123.5" y="80" class="m" text-anchor="middle">1</text>
+  <rect x="142" y="60" width="31" height="31" rx="3" class="fw"/>
+  <text x="157.5" y="80" class="m" text-anchor="middle">2</text>
+  <rect x="176" y="60" width="31" height="31" rx="3" class="fw"/>
+  <text x="191.5" y="80" class="m" text-anchor="middle">2</text>
+  <rect x="210" y="60" width="31" height="31" rx="3" class="fw"/>
+  <text x="225.5" y="80" class="m" text-anchor="middle">3</text>
+  <rect x="244" y="60" width="31" height="31" rx="3" class="fw"/>
+  <text x="259.5" y="80" class="m" text-anchor="middle">3</text>
+  <rect x="278" y="60" width="31" height="31" rx="3" class="fw"/>
+  <text x="293.5" y="80" class="m" text-anchor="middle">3</text>
+  <rect x="40" y="94" width="31" height="31" rx="3" class="fw"/>
+  <text x="55.5" y="114" class="m" text-anchor="middle">1</text>
+  <rect x="74" y="94" width="31" height="31" rx="3" class="fw"/>
+  <text x="89.5" y="114" class="m" text-anchor="middle">1</text>
+  <rect x="108" y="94" width="31" height="31" rx="3" class="fw"/>
+  <text x="123.5" y="114" class="m" text-anchor="middle">1</text>
+  <rect x="142" y="94" width="31" height="31" rx="3" class="fd"/>
+  <text x="157.5" y="114" class="m" text-anchor="middle">2</text>
+  <rect x="176" y="94" width="31" height="31" rx="3" class="fd"/>
+  <text x="191.5" y="114" class="m" text-anchor="middle">2</text>
+  <rect x="210" y="94" width="31" height="31" rx="3" class="fw"/>
+  <text x="225.5" y="114" class="m" text-anchor="middle">3</text>
+  <rect x="244" y="94" width="31" height="31" rx="3" class="fw"/>
+  <text x="259.5" y="114" class="m" text-anchor="middle">3</text>
+  <rect x="278" y="94" width="31" height="31" rx="3" class="fw"/>
+  <text x="293.5" y="114" class="m" text-anchor="middle">3</text>
+  <rect x="74" y="128" width="31" height="31" rx="3" class="fw"/>
+  <text x="89.5" y="148" class="m" text-anchor="middle">1</text>
+  <rect x="108" y="128" width="31" height="31" rx="3" class="fw"/>
+  <text x="123.5" y="148" class="m" text-anchor="middle">1</text>
+  <rect x="142" y="128" width="31" height="31" rx="3" class="fd"/>
+  <text x="157.5" y="148" class="m" text-anchor="middle">2</text>
+  <rect x="176" y="128" width="31" height="31" rx="3" class="fd"/>
+  <text x="191.5" y="148" class="m" text-anchor="middle">2</text>
+  <rect x="210" y="128" width="31" height="31" rx="3" class="fd"/>
+  <text x="225.5" y="148" class="m" text-anchor="middle">3</text>
+  <rect x="244" y="128" width="31" height="31" rx="3" class="fw"/>
+  <text x="259.5" y="148" class="m" text-anchor="middle">3</text>
+  <rect x="108" y="162" width="31" height="31" rx="3" class="fw"/>
+  <text x="123.5" y="182" class="m" text-anchor="middle">1</text>
+  <rect x="142" y="162" width="31" height="31" rx="3" class="fd"/>
+  <text x="157.5" y="182" class="m" text-anchor="middle">2</text>
+  <rect x="176" y="162" width="31" height="31" rx="3" class="fd"/>
+  <text x="191.5" y="182" class="m" text-anchor="middle">2</text>
+  <rect x="210" y="162" width="31" height="31" rx="3" class="fw"/>
+  <text x="225.5" y="182" class="m" text-anchor="middle">3</text>
+  <rect x="142" y="196" width="31" height="31" rx="3" class="fw"/>
+  <text x="157.5" y="216" class="m" text-anchor="middle">2</text>
+  <rect x="176" y="196" width="31" height="31" rx="3" class="fw"/>
+  <text x="191.5" y="216" class="m" text-anchor="middle">3</text>
+  <text x="176" y="248" class="s" text-anchor="middle">digits: period of each block; highlighted: the set D</text>
+  <rect x="360" y="60" width="400" height="60" rx="8" class="fw"/>
+  <text x="560.0" y="80.5" class="h" text-anchor="middle">the free blocks of D get period variables</text>
+  <text x="560.0" y="97.5" class="s" text-anchor="middle">up to 180 blocks; three ways to build D</text>
+  <rect x="360" y="136" width="400" height="60" rx="8" class="fw"/>
+  <text x="560.0" y="156.5" class="h" text-anchor="middle">fixed predecessors: floors; fixed successors: ceilings</text>
+  <text x="560.0" y="173.5" class="s" text-anchor="middle">the capacity the fixed blocks use is subtracted</text>
+  <rect x="360" y="212" width="400" height="60" rx="8" class="fc"/>
+  <text x="560.0" y="232.5" class="h" text-anchor="middle">accept only a proven improvement</text>
+  <text x="560.0" y="249.5" class="s" text-anchor="middle">relative MIP gap 1e-4, never a time limit</text>
+  <text x="400" y="300" class="s" text-anchor="middle">the shift search moves one block at a time; this moves a block together with its cone</text>
+
+</svg>

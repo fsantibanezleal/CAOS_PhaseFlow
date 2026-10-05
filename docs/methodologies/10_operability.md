@@ -1,59 +1,80 @@
-# Operability: the number nobody reports
+# 10 · Operability: coherence, minimum width, and what they cost
 
-A block-level schedule is free to pick blocks anywhere in the model, and it does. The authors of the
-algorithm say so themselves, in the Final Remarks of the paper that introduced it
-([doi:10.1287/opre.1120.1050](https://doi.org/10.1287/opre.1120.1050)):
+A block-level schedule is free to pick blocks anywhere, and it does. The authors of the algorithm say so
+in their final remarks ([doi:10.1287/opre.1120.1050](https://doi.org/10.1287/opre.1120.1050)):
 
 > "It is likely that the C-PIT solutions are such that blocks scheduled in a same time period are
-> scattered throughout the mine. This might lead to schedules that require manual intervention by
-> mining engineers to consider additional operational constraints [...] exacerbated by the fact that
-> our minimal planning units are blocks rather than bench-phases."
+> scattered throughout the mine. This might lead to schedules that require manual intervention by mining
+> engineers to consider additional operational constraints [...] exacerbated by the fact that our minimal
+> planning units are blocks rather than bench-phases."
 
-A schedule with a high NPV and forty disconnected fragments per year is not a mine plan. **No NPV chart
-shows the difference**, which is exactly why this is measured rather than hoped for.
+A plan with a high NPV and forty disconnected fragments a year is not a mine plan, and **no NPV chart
+shows the difference**. So coherence is measured on every plan of every case, and the cost of making the
+best plan more workable is reported rather than hidden.
 
-## What is measured, every period, every case
+## 1. What is measured, per period
 
-- **connected components**, 6-neighbour. Two blocks touching only along an edge or a corner are not
-  the same mining front.
-- **the share of the period held by the largest component**. One coherent pushback with a few satellite
-  fragments is operable; five equal blobs are five simultaneous mining fronts.
-- **the narrowest run** of consecutive mined blocks along a bench, a crude proxy for minimum mining
-  width.
+$$
+\kappa_t=\#\,\mathrm{components}_6\bigl(\{b:\tau_b=t\}\bigr),\qquad s_t=\frac{|\text{largest component}|}{|\{b:\tau_b=t\}|},
+$$
+
+- **connected components** of the blocks mined in the period, with six-neighbour connectivity: blocks that
+  touch only along an edge or a corner are not one mining front;
+- **the share held by the largest component**: one coherent pushback with a few satellites is operable,
+  five equal blobs are five simultaneous fronts;
+- **the narrowest run** of consecutive mined blocks along a bench, a crude proxy for minimum mining width.
 
 Bai, Marcotte, Gamache, Gregory and Lapworth
 ([doi:10.17159/2411-9717/2018/v118n5a8](https://doi.org/10.17159/2411-9717/2018/v118n5a8)) give the
-operational reason: conventional methods produce pushbacks with "narrow benches and pit bottom,
-irregular boundaries, and multiple separated components", and manual post-modification "destroys value
-and violates resource constraints". Their width target is about 100 m.
+operational reason: conventional methods produce pushbacks with "narrow benches and pit bottom, irregular
+boundaries, and multiple separated components", and manual post-modification "destroys value and violates
+resource constraints". They target a minimum width of about 100 m.
 
-## `min-width`: absorbing the slivers, and what it costs
+## 2. `min-width`: an adaptive opening that keeps the plan feasible
 
-An adaptive opening. A mined cell whose bench run is narrower than the target is deferred to the period
-its majority 4-neighbours belong to, provided precedence still holds in **both** directions.
+A mined block whose run along its bench is narrower than the target (three blocks) is moved to the period
+that the majority of its four bench neighbours belong to, provided
 
-The report is the point:
+$$
+\mathrm{run}(b)<w,\qquad \text{precedence holds in both directions},\qquad a_{\cdot b}\le\text{room}(\tau_{\text{new}}),
+$$
 
-- how many mined blocks sat in a run narrower than the target, before and after
-- the NPV before and after, and the percentage that operability cost
+up to three passes. It is applied to the BEST comparable plan of the case, because the question is what
+operability costs the plan a reader would pick.
 
-An operable plan is worth **less on paper** than an inoperable one. A product that smooths a schedule
-and shows only the smoothed picture has quietly improved its own appearance; showing the cost is what
-makes it a measurement.
+![One bench before and after: slivers absorbed when capacity allows](../assets/min-width.svg)
 
-**It is a view, not a replacement.** Capacity is not re-imposed after the moves, so the smoothed plan is
-labelled `beyond` and is not NPV-comparable with the scheduling rungs. That is stated on the rung and in
-the app.
+**Precedence cuts both ways.** The first version checked only predecessors; moving a block LATER can be
+overtaken by a successor already scheduled ahead of it, and the smoothed plan mined blocks before the rock
+above them while every value check passed. The test asserts both directions.
 
-## The bug that made it honest
+**Capacity is kept.** Until oreblocks 0.6.0 moves were made with no capacity check, and a twin's smoothed
+plan reported an NPV **above the certified bound** with every control green, because the bound control
+skipped the "beyond" rows. Now a move is made only where every resource of the receiving period has room,
+the input must be feasible, and the report counts the moves the capacity refused. The result is a
+feasible CPIT plan, scored against the CPIT bound like any other, and never the best by construction.
 
-The first version checked only predecessors. Moving a block LATER can be overtaken by a successor
-already scheduled ahead of it, so the smoothed plan mined blocks before the rock above them while every
-value check still passed. Precedence cuts both ways; the test asserts both.
+**Why the count, not the minimum.** The minimum width over a whole period is dominated by a handful of
+isolated blocks that nothing can absorb, so it barely moves; the count of blocks below the target is
+what actually responds. A metric that cannot move is decoration.
 
-## Why the minimum is not the headline
+## 3. Measured on every case
 
-The minimum width across a whole period is dominated by a handful of pathological cells: an isolated
-block whose neighbours are all unmined has nothing to vote for it and no smoothing can absorb it. So
-the reported figure is the **count of blocks below target**, which actually moves, with the minimum
-kept alongside it for reference. A metric that cannot improve is not a metric, it is a decoration.
+<!-- generated:operability -->
+<!-- /generated -->
+
+The NPV cost of the smoothing is small everywhere, and so is its effect on the width count on the
+twins: with capacity kept, most slivers sit in periods that have no room for them. That is the honest
+limit of a post-process, and the reason the coherence metrics are shown for every plan rather than only
+for the smoothed one.
+
+## Limits
+
+- A width in blocks, not metres, and along the two grid axes only.
+- A post-process of one plan, not an operability constraint inside the optimisation (Bai et al. enforce
+  it inside the pushback design).
+
+## Where it lives
+
+`oreblocks.enforce_min_width`, `oreblocks.schedule_coherence` (engine); `frontend/src/engine/coherence.ts`
+(the browser's per-period components, held to the trace).
