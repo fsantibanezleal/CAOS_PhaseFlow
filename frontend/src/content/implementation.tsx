@@ -5,7 +5,7 @@
  */
 import type { TopicGroup } from './doc.tsx';
 import { Archetypes, ClosureNetwork, LaneFidelity, TimeExpanded } from './figures/impl.tsx';
-import { GershonCone, LocalSearch, Operability, ParametricPits, SlidingWindow, SurrogatePath, DestinationChoice, DepositSplit } from './figures/method.tsx';
+import { GershonCone, LocalSearch, Operability, ParametricPits, SlidingWindow, SurrogatePath, DestinationRecut, DepositSplit } from './figures/method.tsx';
 import { BoundSummaryPanel, MethodCasesPanel } from './panels.tsx';
 import { PreviewTimingTable } from './static-tables.tsx';
 
@@ -222,6 +222,10 @@ export const IMPLEMENTATION: TopicGroup[] = [
             en: 'The model has n T (1 + D) variables and about n (T - 1) + m T + n T + R T rows: on newman1, 19,080 variables and 35,204 rows, solved in about two seconds; on the largest twins about 1.44 million rows, inside a budget of 1.6 million. The value is a bound to the solver\'s optimality tolerances and is reported with its status. On newman1 it gives 24,486,549.02, the published PCPSP LP bound to the unit; where the joint CPIT LP exists for the same case, the PCPSP LP must sit above it, and the artifact check fails otherwise.',
             es: 'El modelo tiene n T (1 + D) variables y cerca de n (T - 1) + m T + n T + R T filas: en newman1, 19.080 variables y 35.204 filas, resueltas en cerca de dos segundos; en los gemelos mayores cerca de 1,44 millones de filas, dentro de un presupuesto de 1,6 millones. El valor es una cota a las tolerancias de optimalidad del solver y se reporta con su estado. En newman1 da 24.486.549,02, la cota LP de PCPSP publicada a la unidad; donde existe la LP conjunta de CPIT para el mismo caso, la LP de PCPSP debe quedar sobre ella, y la verificación de artefactos falla en caso contrario.',
           },
+          {
+            en: 'The solution is read as well as the value. From the destination fractions the pipeline takes, for each block the LP mines, the destination it sends most of the block to; a block the LP leaves unmined keeps every destination. Those destinations are what the re-cut fixes. The LP\'s expected extraction times are also returned, and they are not used for ordering: measured on a 1,008-block twin, a walk on them reached 26.41 M where the re-cut scheduled by the sliding window reached 34.31 M, because this relaxation mines deep cones fractionally from the first period.',
+            es: 'Se lee la solución además del valor. De las fracciones de destino el pipeline toma, para cada bloque que la LP extrae, el destino al que envía la mayor parte del bloque; un bloque que la LP deja sin extraer conserva todos sus destinos. Esos destinos son los que fija el re-corte. También se devuelven los tiempos esperados de extracción de la LP, y no se usan para ordenar: medido en un gemelo de 1.008 bloques, un recorrido sobre ellos llegó a 26,41 M donde el re-corte programado con la ventana deslizante llegó a 34,31 M, porque esta relajación extrae conos profundos de manera fraccionaria desde el primer período.',
+          },
         ],
         equations: [
           { tex: String.raw`\sum_{d}y_{bdt}=x_{bt}-x_{b,t-1},\qquad \sum_{b,d}q_{rbd}\,y_{bdt}\le c_{rt},\qquad x_{bt}\le x_{at},\ \ x_{bt}\le x_{b,t+1},\ \ 0\le x,y\le 1`, caption: { en: 'The PCPSP relaxation as assembled: linking, resources, precedence, monotonicity', es: 'La relajación PCPSP tal como se arma: enlace, recursos, precedencia, monotonía' } },
@@ -231,7 +235,7 @@ export const IMPLEMENTATION: TopicGroup[] = [
           { k: { en: 'newman1', es: 'newman1' }, v: { en: '19,080 variables, 35,204 rows, 24,486,549.02', es: '19.080 variables, 35.204 filas, 24.486.549,02' } },
           { k: { en: 'Budget', es: 'Presupuesto' }, v: { en: '1.6 million rows', es: '1,6 millones de filas' } },
         ],
-        figure: { caption: { en: 'Per destination the earliest feasible period, then the best discounted choice.', es: 'Por destino el período factible más temprano, luego la mejor elección descontada.' }, render: (lang) => <DestinationChoice lang={lang} /> },
+        figure: { caption: { en: 'The relaxation\'s destinations fixed, then scheduled as a CPIT.', es: 'Los destinos de la relajación fijados, luego programados como un CPIT.' }, render: (lang) => <DestinationRecut lang={lang} />, wide: true },
         limits: [
           { en: 'A general LP solver bounds the destination problem only at the sizes of this matrix; the column-generation route would be needed for real-size instances.', es: 'Un solver LP general acota el problema con destinos solo a los tamaños de esta matriz; para instancias de tamaño real se necesitaría la vía de generación de columnas.' },
         ],
@@ -353,30 +357,33 @@ export const IMPLEMENTATION: TopicGroup[] = [
         title: { en: 'Destination plans, as computed', es: 'Planes con destino, como se calculan' },
         paragraphs: [
           {
-            en: 'The constructive rung walks the same expected-time order as the CPIT rungs and applies the per-destination earliest rule with the destination resource coefficients. The improving rung lifts the best comparable CPIT plan of the case to a PCPSP plan, verifies it for precedence and every capacity under the destination coefficients, starts from the better of that plan and the constructive one, and runs the destination-aware exact re-solve: up to 160 free blocks, sixteen rounds (ten above 8,000 blocks), seed 11, relative gap 1e-4.',
-            es: 'El peldaño constructivo recorre el mismo orden de tiempo esperado que los peldaños CPIT y aplica la regla del período más temprano por destino con los coeficientes de recurso por destino. El peldaño de mejora eleva el mejor plan CPIT comparable del caso a un plan PCPSP, lo verifica en precedencia y en cada capacidad bajo los coeficientes por destino, parte del mejor entre ese plan y el constructivo, y corre la re-resolución exacta con destinos: hasta 160 bloques libres, dieciséis rondas (diez sobre 8.000 bloques), semilla 11, brecha relativa 1e-4.',
+            en: 'The re-cut is built once per case. The PCPSP instance is restricted to the LP\'s destinations (every other destination of a mined block is marked forbidden), and its CPIT reduction gives values and resource coefficients at those destinations. The ultimate pit of that CPIT is solved again, because dumping a marginal ore block changes its value, and its two single-resource relaxations are computed by the critical multiplier algorithm, as for any CPIT case. ExTS on the tighter relaxation gives destination-toposort; the sliding window with the same window, candidate rule and gap as the CPIT rung gives destination-sliding-window. Each plan is read back as a PCPSP plan at the restricted destinations, verified for precedence and every capacity under the destination coefficients, and valued under the original instance.',
+            es: 'El re-corte se construye una vez por caso. La instancia PCPSP se restringe a los destinos de la LP (todo otro destino de un bloque extraído se marca prohibido), y su reducción CPIT da valores y coeficientes de recurso en esos destinos. El pit final de ese CPIT se resuelve de nuevo, porque botar un bloque de mineral marginal cambia su valor, y sus dos relajaciones de un recurso se calculan con el algoritmo del multiplicador crítico, como en cualquier caso CPIT. ExTS sobre la relajación más ajustada da destination-toposort; la ventana deslizante con la misma ventana, regla de candidatos y brecha que el peldaño CPIT da destination-sliding-window. Cada plan se lee de vuelta como plan PCPSP en los destinos restringidos, se verifica en precedencia y en cada capacidad bajo los coeficientes por destino, y se valora bajo la instancia original.',
           },
           {
-            en: 'Its restricted model carries, per free block, cumulative extraction binaries and binary destination variables linked by an equality, forbidden destinations fixed at zero, the fixed blocks\' destination-specific resource use subtracted, and the same floors and ceilings as the CPIT re-solve. Each accepted plan is re-checked for feasibility before it replaces the incumbent. Both rungs record the effective cutoff per period, the blocks sent to each destination, and, for the improving rung, how many blocks changed destination against the fixed cutoff and what that was worth.',
-            es: 'Su modelo restringido lleva, por bloque libre, binarios de extracción acumulada y variables binarias de destino ligadas por una igualdad, destinos prohibidos fijados en cero, el uso de recursos por destino de los bloques fijos descontado, y los mismos pisos y techos que la re-resolución CPIT. Cada plan aceptado se vuelve a verificar en factibilidad antes de reemplazar al incumbente. Ambos peldaños registran la ley de corte efectiva por período, los bloques enviados a cada destino y, para el peldaño de mejora, cuántos bloques cambiaron de destino respecto del corte fijo y cuánto valió eso.',
+            en: 'The improving rung starts from the best of three plans: the two re-cut plans and the best comparable CPIT plan lifted to PCPSP (every mined block at its a-priori best destination, which is feasible at the same value because that is how the CPIT values were built). It runs the destination-aware exact re-solve: up to 160 free blocks, sixteen rounds (ten above 8,000 blocks), seed 11, relative gap 1e-4, with cumulative extraction binaries and binary destination variables linked by an equality per free block, forbidden destinations at zero, the fixed blocks\' destination-specific resource use subtracted, and the same floors and ceilings as the CPIT re-solve. Every rung records the effective cutoff per period, the blocks sent to each destination, how many blocks changed destination against the fixed cutoff and what the plan is worth over the best CPIT plan.',
+            es: 'El peldaño de mejora parte del mejor de tres planes: los dos planes re-cortados y el mejor plan CPIT comparable elevado a PCPSP (cada bloque extraído en su mejor destino a priori, lo que es factible con el mismo valor porque así se construyeron los valores CPIT). Corre la re-resolución exacta con destinos: hasta 160 bloques libres, dieciséis rondas (diez sobre 8.000 bloques), semilla 11, brecha relativa 1e-4, con binarios de extracción acumulada y variables binarias de destino ligadas por una igualdad por bloque libre, destinos prohibidos en cero, el uso de recursos por destino de los bloques fijos descontado, y los mismos pisos y techos que la re-resolución CPIT. Cada peldaño registra la ley de corte efectiva por período, los bloques enviados a cada destino, cuántos bloques cambiaron de destino respecto del corte fijo y cuánto vale el plan sobre el mejor plan CPIT.',
           },
         ],
         steps: {
-          title: { en: 'The improving destination rung', es: 'El peldaño de mejora con destinos' },
+          title: { en: 'The destination rungs', es: 'Los peldaños con destino' },
           items: [
-            { en: 'Take the best comparable CPIT plan; give every mined block its best destination; check it.', es: 'Tomar el mejor plan CPIT comparable; dar a cada bloque extraído su mejor destino; verificarlo.' },
-            { en: 'Start from the better of that lift and the constructive destination plan.', es: 'Partir del mejor entre esa elevación y el plan constructivo con destinos.' },
-            { en: 'Re-solve neighbourhoods with period and destination free; accept only improvements.', es: 'Re-resolver vecindarios con período y destino libres; aceptar solo mejoras.' },
-            { en: 'Score against the PCPSP LP of the case.', es: 'Juzgar contra la LP PCPSP del caso.' },
+            { en: 'Solve the PCPSP LP; take each mined block\'s dominant destination; restrict the instance to it.', es: 'Resolver la LP PCPSP; tomar el destino dominante de cada bloque extraído; restringir la instancia a él.' },
+            { en: 'Reduce to CPIT; solve its ultimate pit and its two relaxations.', es: 'Reducir a CPIT; resolver su pit final y sus dos relajaciones.' },
+            { en: 'ExTS and the sliding window on that CPIT; read both back as PCPSP plans and check them.', es: 'ExTS y la ventana deslizante sobre ese CPIT; leer ambos de vuelta como planes PCPSP y verificarlos.' },
+            { en: 'Start the exact OPBSP-[D] search from the best of those and the lifted best CPIT plan.', es: 'Iniciar la búsqueda exacta OPBSP-[D] desde el mejor de esos y el mejor plan CPIT elevado.' },
+            { en: 'Score all three against the PCPSP LP of the case.', es: 'Juzgar los tres contra la LP PCPSP del caso.' },
           ],
         },
         equations: [
           { tex: String.raw`\mathrm{NPV}_{\mathrm{PCPSP}}(\text{lift}(\tau))=\mathrm{NPV}_{\mathrm{CPIT}}(\tau)\ \Rightarrow\ \mathrm{NPV}(\text{destination-local-search})\ \ge\ \max_{\text{CPIT rungs}}\mathrm{NPV}`, caption: { en: 'Why the improving rung can never end below the best CPIT plan', es: 'Por qué el peldaño de mejora nunca puede terminar bajo el mejor plan CPIT' } },
+          { tex: String.raw`\mathcal F_{\text{re-cut CPIT}}\subseteq\mathcal F_{\mathrm{PCPSP}},\qquad \mathrm{NPV}_{\mathrm{PCPSP}}(\tau,d^{*})=\mathrm{NPV}_{\text{re-cut}}(\tau)`, caption: { en: 'Every plan of the re-cut is a PCPSP plan with the same value', es: 'Todo plan del re-corte es un plan PCPSP con el mismo valor' } },
         ],
-        figure: { caption: { en: 'The rule each ore block applies in the constructive rung.', es: 'La regla que aplica cada bloque de mineral en el peldaño constructivo.' }, render: (lang) => <DestinationChoice lang={lang} /> },
+        figure: { caption: { en: 'The re-cut and the chain that schedules it.', es: 'El re-corte y la cadena que lo programa.' }, render: (lang) => <DestinationRecut lang={lang} />, wide: true },
         data: (lang) => <MethodCasesPanel lang={lang} method="destination-local-search" showNotes />,
         limits: [
           { en: 'Two destinations; blending rows are read and not enforced.', es: 'Dos destinos; las filas de mezcla se leen y no se imponen.' },
+          { en: 'The re-cut adds a second sliding window per case, the largest single cost of the bake on the big twins.', es: 'El re-corte agrega una segunda ventana deslizante por caso, el mayor costo individual del horneado en los gemelos grandes.' },
         ],
         refs: ['jelvez2018', 'chicoisne2012'],
       },
