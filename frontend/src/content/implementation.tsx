@@ -1,6 +1,6 @@
 /**
  * Implementation: how each method is computed in this product. Steps, constants, numerical choices,
- * approximations and measured cost, method by method. Transcribed from the engine (oreblocks 0.6.0),
+ * approximations and measured cost, method by method. Transcribed from the engine (oreblocks 0.6.1),
  * the pipeline and the browser engine, and from the research dossiers for the published parts.
  */
 import type { TopicGroup } from './doc.tsx';

@@ -180,11 +180,15 @@ def test_artifact_validator_holds_every_rung_to_its_own_bound(tmp_path):
 
 
 def test_bake_writes_a_valid_trace_into_a_sandbox(tmp_path):
-    canonical = ROOT / "data" / "derived" / "twin-porphyry-s" / "trace.json"
+    # The degenerate control bakes every rung, destinations included, in about two minutes. This test
+    # baked `twin-porphyry-s` until 0.08.000, which with the PCPSP LP and two sliding windows is about
+    # two and a half hours; the whole-case bake is exercised by every release bake anyway.
+    case_id = "ctrl-degenerate"
+    canonical = ROOT / "data" / "derived" / case_id / "trace.json"
     canonical_before = canonical.read_bytes()
-    registry.restrict(["twin-porphyry-s"])
+    registry.restrict([case_id])
     try:
-        m = precompute("twin-porphyry-s", output_root=tmp_path)
+        m = precompute(case_id, output_root=tmp_path)
     finally:
         registry.restrict([c.id for c in registry._ALL])  # noqa: SLF001
     trace = json.loads((tmp_path / m["artifact"]["path"]).read_text(encoding="utf-8"))
