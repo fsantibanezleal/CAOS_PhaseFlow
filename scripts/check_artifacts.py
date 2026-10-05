@@ -25,7 +25,7 @@ INDEX_SCHEMA = "phaseflow.index/v1"
 CAPACITY_BOUND_RUNGS = ("classical", "sota", "learned")
 
 #: Rungs that choose destinations. Their yardstick is the PCPSP LP bound, never the CPIT one.
-DESTINATION_METHODS = ("destination-toposort", "destination-local-search")
+DESTINATION_METHODS = ("destination-toposort", "destination-sliding-window", "destination-local-search")
 
 #: The relative overshoot tolerated on a capacity-bound rung. Period rows are rounded floats, so an
 #: exact comparison would fail on representation alone.

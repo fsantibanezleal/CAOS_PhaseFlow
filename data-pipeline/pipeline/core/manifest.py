@@ -20,12 +20,12 @@ INDEX_SCHEMA = "phaseflow.index/v1"
 
 #: The rungs a "best method" may be chosen from.
 #:
-#: `beyond` is EXCLUDED and this is not a nicety. `min-width` does not re-impose capacity, and
-#: `destination-toposort` solves PCPSP, a richer problem over a different objective. Ranking them
-#: alongside the CPIT rungs made an INFEASIBLE plan the headline result on three cases (`min-width`
-#: overshot a period capacity by up to 18.65 percent on `twin-vein` while being reported as the best
-#: gap on it) and, worse, made it the DEFAULT SELECTED METHOD, so the 3D pit opened on a schedule
-#: nobody could run. `run_ensemble` already filtered on exactly this predicate one file away.
+#: `beyond` is EXCLUDED and this is not a nicety. The destination rungs solve PCPSP, a richer problem
+#: over a different objective, and `min-width` is the best plan traded for workability, so it is never
+#: the best by construction. Before oreblocks 0.6.0 `min-width` also broke capacity, and ranking it with
+#: the CPIT rungs made an INFEASIBLE plan the headline result on three cases (it overshot a period
+#: capacity by up to 18.65 percent on `twin-vein` while reported as the best gap on it) and the DEFAULT
+#: SELECTED METHOD, so the 3D pit opened on a schedule nobody could run.
 COMPARABLE_RUNGS = ("classical", "sota", "learned")
 
 
