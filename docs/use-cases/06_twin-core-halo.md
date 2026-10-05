@@ -25,6 +25,7 @@ different, which is the point of solving rather than nesting.
   sees what the core unlocks.
 - **The joint bound does not run.** The time-expanded graph is 144,000 nodes and 1,291,200 edges, above the
   certification budget, so the case keeps Algorithm 4 and its gaps include whatever slack that bound has.
+- **The PCPSP bound is the dual.** On the same size, its PCPSP LP (1,435,220 rows) is above the HiGHS row budget, so the destination plans are measured against the LP's Lagrangian dual by maximum closures on the same graph ([02](../methodologies/02_the-bound.md), section 5.2): the LP value up to the rounding slack the table records.
 
 ## Bounds
 
