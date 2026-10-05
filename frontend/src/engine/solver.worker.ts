@@ -14,7 +14,23 @@ import type { TraceBlocks } from '../lib/contract.types.ts';
 
 export type SolverRequest =
   | { type: 'load'; blocks: TraceBlocks; dims: number[] }
-  | { type: 'solve'; id: number; scenario: LiveScenario };
+  | { type: 'solve'; id: number; scenario: LiveScenario }
+  /** the baked scenario, with its absolute per-period limits, for a browser-against-bake comparison */
+  | { type: 'parity'; id: number; scenario: LiveScenario; limits: number[][] };
+
+/** What the browser engine computes on a baked case, item by item, to set beside the trace. */
+export interface ParityResponse {
+  type: 'parity';
+  id: number;
+  arcs: number;
+  pitValue: number;
+  pitBlocks: number;
+  inPit: Uint8Array;
+  bound: number;
+  boundMs: number;
+  methods: Array<{ method: string; npv: number; ms: number }>;
+  ms: number;
+}
 
 export interface SolverResponse {
   type: 'solved';
@@ -41,6 +57,29 @@ self.onmessage = (ev: MessageEvent<SolverRequest>) => {
   if (msg.type === 'load') {
     model = toLiveModel(msg.blocks, msg.dims);
     dims = [msg.dims[0], msg.dims[1], msg.dims[2]];
+    return;
+  }
+  if (msg.type === 'parity' && model) {
+    const t0 = performance.now();
+    const s = msg.scenario;
+    const prec = buildPrecedence(dims[0], dims[1], dims[2], s.slopeDeg);
+    const upl = solveUltimatePit(model.value, prec.pstart, prec.plist);
+    const inst = buildLiveInstance(model, s, prec, upl.inPit);
+    inst.limit = msg.limits.map((row) => Float64Array.from(row));
+    const out = solveCpit(inst);
+    const res: ParityResponse = {
+      type: 'parity',
+      id: msg.id,
+      arcs: prec.plist.length,
+      pitValue: upl.pitValue,
+      pitBlocks: upl.nInPit,
+      inPit: upl.inPit,
+      bound: out.bound,
+      boundMs: out.boundMs,
+      methods: out.results.map((r) => ({ method: r.method, npv: r.npv, ms: r.runtimeMs })),
+      ms: performance.now() - t0,
+    };
+    (self as unknown as Worker).postMessage(res);
     return;
   }
   if (msg.type !== 'solve' || !model) return;

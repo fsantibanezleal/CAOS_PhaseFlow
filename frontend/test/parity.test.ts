@@ -57,7 +57,7 @@ test('the certified bound matches the offline lane', () => {
 
   const bounds = inst.coef.map((_, r) => cpitLpRelaxation(inst, r).bound);
   const bound = Math.min(...bounds);
-  const baked = t.methods[0].bound;
+  const baked = t.bound?.algorithm4 ?? t.methods[0].bound;  // the browser computes Algorithm 4, not the joint LP
   const rel = Math.abs(bound - baked) / Math.abs(baked);
   assert.ok(rel < 1e-6, `bound relative error ${rel} (live ${bound}, baked ${baked})`);
 });
@@ -198,10 +198,21 @@ test('every schedule is measured against the SAME bound, and the tighter one is 
   }
 });
 
-test('the beyond rungs are labelled, because they are not NPV-comparable', () => {
+test('every beyond rung is explained and measured against the bound of its own problem', () => {
   const t = load(CASE);
+  const cpitBound = t.methods.find((m) => m.rung !== 'beyond')!.bound;
+  const bestCpit = Math.max(...t.methods.filter((m) => m.rung !== 'beyond').map((m) => m.npv));
   for (const m of t.methods.filter((x) => x.rung === 'beyond')) {
     assert.ok(m.notes.length > 20, `${m.method} has no note explaining what it is`);
+    assert.ok(m.npv <= m.bound * (1 + 1e-9), `${m.method} exceeds its own bound`);
+    if (m.method.startsWith('destination-')) {
+      // PCPSP contains CPIT (the fixed cutoff is one feasible destination policy), so its LP is no lower
+      assert.ok(m.bound >= cpitBound * (1 - 1e-9), `${m.method} carries a bound below the CPIT bound`);
+    } else if (m.method === 'min-width') {
+      // a smoothed CPIT plan under the same capacities: the CPIT bound, never above the plan it smooths
+      assert.equal(m.bound, cpitBound);
+      assert.ok(m.npv <= bestCpit + 1e-6, 'min-width came out above every CPIT plan');
+    }
   }
 });
 
