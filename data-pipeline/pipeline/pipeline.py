@@ -108,6 +108,8 @@ def precompute(case_id: str, *, output_root: str | Path | None = None, learned=N
         gate=gate,
         controls=controls,
         engine_versions=_engine_versions(),
+        bound_report=bound_report,
+        ensemble=ensemble,
     )
     write_json(paths.manifests / f"{case.id}.json", manifest)
     _validate(artifact_path, paths.manifests / f"{case.id}.json")
@@ -125,8 +127,13 @@ def _validate(artifact_path: Path, manifest_path: Path) -> None:
     if not trace["methods"]:
         raise AssertionError(f"{artifact_path}: no method produced a result")
     for m in trace["methods"]:
-        if m["rung"] in {"classical", "sota", "learned"} and m["npv"] > m["bound"] * (1 + 1e-9) + 1e-6:
+        # EVERY rung, beyond included: each row carries the bound of the problem it solves.
+        if m["npv"] > m["bound"] * (1 + 1e-9) + 1e-6:
             raise AssertionError(f"{m['method']}: feasible {m['npv']} exceeds bound {m['bound']}")
+        for row in m["periods"]:
+            for use, limit in zip(row["resourceUse"], row["resourceLimit"], strict=False):
+                if limit > 0 and use > limit * (1 + 1e-6):
+                    raise AssertionError(f"{m['method']}: period {row['t']} uses {use} of {limit}")
         if len(m["periods"]) != trace["scenario"]["periods"]:
             raise AssertionError(f"{m['method']}: period rows do not match the declared horizon")
     if trace["instance"]["synthetic"] != (trace["instance"]["source"] == "twin"):
@@ -164,6 +171,7 @@ def run_all(*, output_root: str | Path | None = None, learned=None) -> list[dict
                 "default": c.default,
                 "lane": m["lane"],
                 "title": {"en": c.title_en, "es": c.title_es},
+                "role": {"en": c.role_en, "es": c.role_es},
             }
         )
     write_json(paths.manifests / "index.json", build_index(entries))
