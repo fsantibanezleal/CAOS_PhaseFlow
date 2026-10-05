@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "data-pipeline"))
 
 
-from pipeline.model.learned import LearnedBundle  # noqa: E402
+from pipeline.model.learned import LearnedBundle, json_safe  # noqa: E402
 
 sys.path.insert(0, str(ROOT / "scripts"))
 from train_learned import (  # noqa: E402
@@ -66,6 +66,8 @@ def main() -> int:
     def flagged(archetype: str, rate: float) -> bool:
         """Apply whatever rule shipped. It has been a scenario rule and is now an orebody rule, and
         a validator that hardcodes one of them stops validating the moment the study moves."""
+        if rule == "no rule":
+            return False
         if rule.startswith("archetype =="):
             return archetype == rule.split("==", 1)[1].strip()
         if rule.startswith("archetype in"):
@@ -140,7 +142,7 @@ def main() -> int:
         "rows": rows,
     }
     (MODELS / "guard-validation.json").write_text(
-        json.dumps(out, indent=1), encoding="utf-8", newline="\n"
+        json.dumps(json_safe(out), indent=1, allow_nan=False), encoding="utf-8", newline="\n"
     )
 
     print("\nTHIRD SPLIT, the clean measurement")

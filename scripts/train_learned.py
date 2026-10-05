@@ -46,7 +46,7 @@ from pipeline.model.features import (  # noqa: E402
     deposit_feature_vector,
 )
 from pipeline.model.instances import build_instance  # noqa: E402
-from pipeline.model.learned import export_onnx, train_mlp  # noqa: E402
+from pipeline.model.learned import export_onnx, json_safe, train_mlp  # noqa: E402
 
 MODELS = ROOT / "models"
 
@@ -226,6 +226,11 @@ def score_cases(model, data: dict) -> list[dict]:
 #: alternative and starts presenting it as a warning.
 FAILURE_BELOW = 0.90
 
+#: A guard may flag at most this share of the TRAINING cases. A rule that flags most cases is not a
+#: warning, it is the background: after the two-size sweep the archetype rule grew to all four
+#: archetypes, flagged 432 of 432 held-out cases, and still won on F2 because its recall was 1.0.
+MAX_FLAGGED_SHARE = 0.5
+
 
 def _refutation_text(train_rows: list[dict], holdout_rows: list[dict]) -> str:
     """State what the two splits actually say about the orebody, computed rather than remembered.
@@ -344,6 +349,11 @@ def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> d
             "test": lambda r: r["rate"] >= 0.20 and r["periods"] >= 12,
             "why": "the single most aggressive scenario in the sweep",
         },
+        "none": {
+            "statement": "no rule",
+            "test": lambda r: False,
+            "why": "shipped when no candidate both catches failures and flags at most half the cases",
+        },
     }
 
     def confusion(rows: list[dict], test) -> dict:
@@ -391,10 +401,14 @@ def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> d
         percent while flagging three quarters.
         """
         cm = rules[name]["train"]
+        if cm["flagged"] > MAX_FLAGGED_SHARE * max(1, len(train_rows)):
+            return -1.0
         p_, r_ = cm["precision"] or 0.0, cm["recall"] or 0.0
         return (5 * p_ * r_ / (4 * p_ + r_)) if (p_ + r_) > 0 else 0.0
 
     shipped = max(rules, key=_score)
+    if _score(shipped) <= 0.0:
+        shipped = "none"
 
     return {
         "failure_below": FAILURE_BELOW,
@@ -544,7 +558,7 @@ def main() -> int:
     print(f"  beats greedy on   {100 * m1.metrics['holdout_beats_greedy_rate']:.0f}% of held-out cases")
 
     (MODELS / "learned-failure-modes.json").write_text(
-        json.dumps(study, indent=1), encoding="utf-8", newline="\n"
+        json.dumps(json_safe(study), indent=1, allow_nan=False), encoding="utf-8", newline="\n"
     )
     print("\nWHERE IT FAILS (a plan below "
           f"{100 * FAILURE_BELOW:.0f}% of the exact-ExTS plan)")
@@ -597,7 +611,7 @@ def main() -> int:
     print(f"\nbound surrogate: holdout mean rel err {rel_err.mean():.4f}, p90 {np.quantile(rel_err, 0.9):.4f}")
 
     (MODELS / "training-report.json").write_text(
-        json.dumps({
+        json.dumps(json_safe({
             "expected_time": m1.metrics,
             "expected_time_per_case": ratios,
             "bound": m2.metrics,
@@ -609,7 +623,7 @@ def main() -> int:
                 "multiplier algorithm or from Bienstock-Zuckerberg; these are scored against the exact "
                 "quantity they approximate, on deposits they never saw, split by deposit seed."
             ),
-        }, indent=2) + "\n",
+        }), indent=2, allow_nan=False) + "\n",
         encoding="utf-8", newline="\n",
     )
     print(f"\nwrote {MODELS}")
