@@ -66,7 +66,9 @@ discipline already draws (Chicoisne et al. Figure 1d; Morales et al. pit profile
 **The cutoff grade is an output, and the relaxation chooses it.** When the plant binds, which ore gets
 the plant is the decision. A rule that compares a block's two values sends every marginal ore block to
 the plant and starves the richer ore below; the PCPSP LP prices that opportunity cost (Lane's
-mill-limited cutoff). PhaseFlow fixes each block where the LP sends it (the re-cut), schedules that
+mill-limited cutoff). HiGHS solves that LP up to 1.1 million rows; above that PhaseFlow reaches the same
+value through its Lagrangian dual, one maximum closure per iteration, and says which method produced each
+number. PhaseFlow fixes each block where the LP sends it (the re-cut), schedules that
 instance with ExTS and the sliding window, then searches destinations exactly. On a 320-block twin solved
 exactly, choosing destinations is worth about 59 percent over the fixed cutoff; on `twin-porphyry-s` the
 destination plan is 35 percent above the best fixed-cutoff plan and 1.03 percent from its own bound.
