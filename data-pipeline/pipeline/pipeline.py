@@ -144,25 +144,78 @@ def _validate(artifact_path: Path, manifest_path: Path) -> None:
         )
 
 
-def run_all(*, output_root: str | Path | None = None, learned=None) -> list[dict]:
-    """Bake every case in the registry.
+def _bake_in_parallel(cases, *, output_root, learned: bool, jobs: int) -> list[str]:
+    """One subprocess per case, at most ``jobs`` at a time, the largest instances first.
+
+    A case's bake is single-threaded at heart (closures, HiGHS's simplex, the window MILPs), so a
+    release bake is shortened by running cases side by side, not by threads inside one. Each child is
+    the ordinary single-case bake writing its own trace and manifest; nothing is shared but the output
+    folder. Returns the ids that failed.
+    """
+    import os
+    import subprocess
+    import sys
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    env = dict(os.environ)
+    for var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+        env.setdefault(var, "2")
+    run_py = REPO_ROOT / "data-pipeline" / "run.py"
+
+    def one(case_id: str) -> tuple[str, int, float]:
+        cmd = [sys.executable, "-u", str(run_py), case_id]
+        if learned:
+            cmd.append("--learned")
+        if output_root is not None:
+            cmd += ["--output", str(output_root)]
+        t0 = time.perf_counter()
+        rc = subprocess.run(cmd, cwd=REPO_ROOT, env=env, check=False).returncode
+        return case_id, rc, time.perf_counter() - t0
+
+    def size(c) -> int:
+        d = c.deposit
+        if d.synthetic:
+            nx, ny, nz = d.dims
+            return nx * ny * nz * c.scenario.periods
+        return 15_000 * c.scenario.periods  # the declared MineLib cases are among the heaviest
+
+    failed = []
+    order = sorted(cases, key=size, reverse=True)
+    with ThreadPoolExecutor(max_workers=jobs) as pool:
+        futures = [pool.submit(one, c.id) for c in order]
+        for i, f in enumerate(as_completed(futures), 1):
+            cid, rc, sec = f.result()
+            print(f"[{i}/{len(order)}] {cid}: rc={rc} {sec / 60:.1f} min", flush=True)
+            if rc != 0:
+                failed.append(cid)
+    return failed
+
+
+def run_all(*, output_root: str | Path | None = None, learned=None, jobs: int = 1) -> list[dict]:
+    """Bake every case in the registry, then write the index.
 
     Prints a line PER CASE as it lands, not a summary at the end. A bake that runs for hours with a
     silent stdout is indistinguishable from a bake that is stuck, and one of them cost four hours
-    before anyone could tell which it was.
+    before anyone could tell which it was. With ``jobs > 1`` the cases run as parallel subprocesses
+    and the index is written only if every one of them succeeded, from the manifests they wrote.
     """
-    import time
-
     paths = PipelinePaths.from_output(output_root)
     entries = []
     cases = registry.list_cases()
+    if jobs > 1:
+        failed = _bake_in_parallel(cases, output_root=output_root, learned=learned is not None, jobs=jobs)
+        if failed:
+            raise SystemExit(f"index NOT written: {len(failed)} case(s) failed: {', '.join(failed)}")
     for i, c in enumerate(cases, 1):
-        t0 = time.perf_counter()
-        m = precompute(c.id, output_root=output_root, learned=learned)
-        print(
-            f"[{i}/{len(cases)}] {c.id}: {time.perf_counter() - t0:.1f}s",
-            flush=True,
-        )
+        if jobs > 1:
+            m = json.loads((paths.manifests / f"{c.id}.json").read_text(encoding="utf-8"))
+        else:
+            t0 = time.perf_counter()
+            m = precompute(c.id, output_root=output_root, learned=learned)
+            print(
+                f"[{i}/{len(cases)}] {c.id}: {time.perf_counter() - t0:.1f}s",
+                flush=True,
+            )
         entries.append(
             {
                 "case_id": c.id,
@@ -185,6 +238,8 @@ def main() -> None:
     ap.add_argument("--skip-minelib", action="store_true",
                     help="skip cases that need a MineLib cache that is not present")
     ap.add_argument("--learned", action="store_true", help="include the learned methods (needs models/)")
+    ap.add_argument("--jobs", type=int, default=1,
+                    help="with 'all': bake this many cases at once, as separate processes")
     args = ap.parse_args()
     paths = PipelinePaths.from_output(args.output)
 
@@ -206,7 +261,7 @@ def main() -> None:
                 or (MINELIB_CACHE / c.deposit.minelib_id / f"{c.deposit.minelib_id}.blocks").exists()
             ]
             registry.restrict(([c.id for c in cases]))
-        entries = run_all(output_root=args.output, learned=learned)
+        entries = run_all(output_root=args.output, learned=learned, jobs=max(1, args.jobs))
         print(f"phaseflow {__version__}: baked {len(entries)} cases -> {paths.root}")
         for e in entries:
             print(f"  {e['case_id']:22s} [{e['category']:9s}] lane={e['lane']}")
