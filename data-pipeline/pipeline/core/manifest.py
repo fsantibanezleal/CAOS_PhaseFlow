@@ -21,8 +21,9 @@ INDEX_SCHEMA = "phaseflow.index/v1"
 #: The rungs a "best method" may be chosen from.
 #:
 #: `beyond` is EXCLUDED and this is not a nicety. The destination rungs solve PCPSP, a richer problem
-#: over a different objective, and `min-width` is the best plan traded for workability, so it is never
-#: the best by construction. Before oreblocks 0.6.0 `min-width` also broke capacity, and ranking it with
+#: over a different objective, and `min-width` is the best plan traded for workability. Smoothing almost
+#: always costs value but can gain a little where an absorbed block moves to an earlier period (twin-vein in
+#: 0.08 ends 0.01 percent above the sliding window it smooths), so it is excluded by RULE. Before oreblocks 0.6.0 `min-width` also broke capacity, and ranking it with
 #: the CPIT rungs made an INFEASIBLE plan the headline result on three cases (it overshot a period
 #: capacity by up to 18.65 percent on `twin-vein` while reported as the best gap on it) and the DEFAULT
 #: SELECTED METHOD, so the 3D pit opened on a schedule nobody could run.

@@ -201,7 +201,6 @@ test('every schedule is measured against the SAME bound, and the tighter one is 
 test('every beyond rung is explained and measured against the bound of its own problem', () => {
   const t = load(CASE);
   const cpitBound = t.methods.find((m) => m.rung !== 'beyond')!.bound;
-  const bestCpit = Math.max(...t.methods.filter((m) => m.rung !== 'beyond').map((m) => m.npv));
   for (const m of t.methods.filter((x) => x.rung === 'beyond')) {
     assert.ok(m.notes.length > 20, `${m.method} has no note explaining what it is`);
     assert.ok(m.npv <= m.bound * (1 + 1e-9), `${m.method} exceeds its own bound`);
@@ -209,9 +208,15 @@ test('every beyond rung is explained and measured against the bound of its own p
       // PCPSP contains CPIT (the fixed cutoff is one feasible destination policy), so its LP is no lower
       assert.ok(m.bound >= cpitBound * (1 - 1e-9), `${m.method} carries a bound below the CPIT bound`);
     } else if (m.method === 'min-width') {
-      // a smoothed CPIT plan under the same capacities: the CPIT bound, never above the plan it smooths
+      // a smoothed CPIT plan under the same capacities: the CPIT bound. Its NPV is NOT bounded by the
+      // plan it smooths: absorbing a sliver into an earlier neighbour's period can gain a little
+      // (twin-vein, 0.08: +0.01 percent over the sliding window), so the check is the provenance.
       assert.equal(m.bound, cpitBound);
-      assert.ok(m.npv <= bestCpit + 1e-6, 'min-width came out above every CPIT plan');
+      const base = /^from ([a-z0-9-]+):/.exec(m.notes)?.[1];
+      assert.ok(
+        base !== undefined && t.methods.some((x) => x.method === base && x.rung !== 'beyond'),
+        'min-width does not name the comparable plan it smooths',
+      );
     }
   }
 });
