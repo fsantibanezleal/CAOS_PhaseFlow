@@ -788,5 +788,5 @@
   "monotone_rate_rate": 0.9259259259259259,
   "monotone_note": "more capacity cannot lower an LP bound and a higher discount rate cannot raise it. Measured per held-out deposit by holding everything else and sweeping one feature."
  },
- "onnx_parity_max_abs_err": 1.5475163989142615e-07
+ "onnx_parity_max_abs_err": 3.6593081570446273e-07
 }

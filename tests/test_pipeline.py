@@ -232,3 +232,20 @@ def test_learned_inference_reads_the_capacity_the_case_declares():
     inst = build_instance(case)
     got = capacity_fractions(inst.cpit, inst.upit_in_pit)
     assert got == pytest.approx(case.scenario.capacity_fraction, rel=1e-12)
+
+
+def test_onnx_parity_refuses_a_sample_that_saturates_the_output(tmp_path):
+    """Raw standard-normal features sit far from the means the model standardises around, so every
+    sigmoid saturates and float32 and float64 agree exactly: the check must refuse that sample, and
+    pass on the model's own input distribution with a real, nonzero error."""
+    pytest.importorskip("onnx")
+    pytest.importorskip("onnxruntime")
+    from pipeline.model.learned import Mlp, export_onnx
+
+    model = Mlp.from_json(json.loads((ROOT / "models" / "expected-time.json").read_text(encoding="utf-8")))
+    raw = np.random.default_rng(0).normal(size=(64, model.w[0].shape[0]))
+    with pytest.raises(AssertionError, match="saturated"):
+        export_onnx(model, tmp_path / "raw.onnx", sample=raw)
+    export_onnx(model, tmp_path / "own.onnx")
+    err = json.loads((tmp_path / "own.json").read_text(encoding="utf-8"))["onnx_parity_max_abs_err"]
+    assert 0.0 < err < 1e-5
