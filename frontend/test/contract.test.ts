@@ -132,6 +132,9 @@ test('no field is written into an artifact that the mirror does not declare', ()
   const traceFields = declaredFields('ScheduleTrace');
   const methodFields = declaredFields('TraceMethod');
   const ensembleFields = declaredFields('EnsembleReport');
+  // the bound report too: four PCPSP keys were written into every trace with destination economics
+  // and the mirror declared none of them
+  const boundFields = declaredFields('BoundReport');
 
   const unknown: string[] = [];
   for (const id of caseIds()) {
@@ -142,6 +145,8 @@ test('no field is written into an artifact that the mirror does not declare', ()
     }
     const ens = t.ensemble as Record<string, unknown> | undefined;
     if (ens) for (const k of Object.keys(ens)) if (!ensembleFields.has(k)) unknown.push(`EnsembleReport.${k}`);
+    const bound = t.bound as Record<string, unknown> | undefined;
+    if (bound) for (const k of Object.keys(bound)) if (!boundFields.has(k)) unknown.push(`BoundReport.${k}`);
   }
   assert.deepEqual(
     [...new Set(unknown)].sort(),

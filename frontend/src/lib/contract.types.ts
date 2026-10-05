@@ -111,6 +111,18 @@ export interface BoundReport {
   /** how much tighter the joint bound is, in percent. The part of a gap that belongs to the BOUND. */
   tightening_pct?: number | null;
   used?: 'algorithm4' | 'bienstock-zuckerberg';
+  /** the PCPSP bound for the destination rungs: value, wall time, the LP's rows and the solver status */
+  pcpsp_lp?: number | null;
+  pcpsp_lp_ms?: number;
+  pcpsp_lp_rows?: number;
+  pcpsp_lp_status?: string;
+  /** "lagrangian" where the bound is the Lagrangian dual (absent: the HiGHS LP), with its diagnostics */
+  pcpsp_lp_method?: string;
+  pcpsp_lp_iterations?: number;
+  pcpsp_lp_gap_estimate?: number;
+  pcpsp_lp_slack?: number;
+  pcpsp_lp_note?: string;
+  pcpsp_lp_error?: string;
 }
 
 /** The risk readout: every candidate plan scored on every realisation. */
