@@ -2118,5 +2118,5 @@
   "target_relaxation": "the tightest single-resource relaxation, as the ExTS rung uses",
   "split": "by deposit seed, never by row"
  },
- "onnx_parity_max_abs_err": 0.0
+ "onnx_parity_max_abs_err": 9.635544238606464e-07
 }
