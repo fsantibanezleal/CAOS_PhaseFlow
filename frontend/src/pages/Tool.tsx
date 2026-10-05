@@ -228,11 +228,11 @@ export default function Tool() {
       label: es ? 'Métodos' : 'Methods',
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <MethodBars rows={trace.methods.filter((m) => m.rung !== 'beyond').map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs }))} />
+          <MethodBars rows={trace.methods.filter((m) => !m.method.startsWith('destination-')).map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs }))} />
           <Callout variant="note" title={es ? 'Como leer esto' : 'How to read this'}>
             {es
-              ? 'La pista es la cota certificada CPIT usada para este caso y el relleno es el NPV capturado por cada plan CPIT. Lo rayado muestra la brecha a la misma escala. La cota no es un plan: BZ aproxima el óptimo LP dentro de su tolerancia cuando converge; en otros casos puede usarse la cota más holgada del Algoritmo 4. Los resultados BEYOND aparecen en la tabla porque min-width no vuelve a imponer capacidad y destination-toposort resuelve PCPSP.'
-              : 'The track is the certified CPIT bound for this case; the fill is the NPV captured by each CPIT plan, and hatching shows its gap on the same scale. The bound is not a plan: BZ approximates the LP optimum within tolerance when it converges; otherwise the looser Algorithm 4 bound may be used. BEYOND results are in the table because min-width does not re-impose capacity and destination-toposort solves PCPSP.'}{' '}
+              ? 'La pista es la cota certificada CPIT usada para este caso y el relleno es el NPV capturado por cada plan CPIT. Lo rayado muestra la brecha a la misma escala. La cota no es un plan: BZ aproxima el óptimo LP dentro de su tolerancia cuando converge; en otros casos puede usarse la cota más holgada del Algoritmo 4. min-width es el mejor plan suavizado hacia un ancho operable con las mismas capacidades: un plan CPIT factible, dibujado con su brecha, que por construcción nunca es el mejor. Los planes con destino resuelven PCPSP contra su propia cota y aparecen solo en la tabla.'
+              : 'The track is the certified CPIT bound for this case; the fill is the NPV captured by each CPIT plan, and hatching shows its gap on the same scale. The bound is not a plan: BZ approximates the LP optimum within tolerance when it converges; otherwise the looser Algorithm 4 bound may be used. min-width is the best plan smoothed toward a workable width under the same capacities: a feasible CPIT plan, drawn with its gap, that is never the best by construction. The destination plans solve PCPSP against their own bound and appear in the table only.'}{' '}
             <Cite id="chicoisne2012" /> <Cite id="munoz2017" />
           </Callout>
           <div className="pf-scroll-x">
@@ -300,15 +300,15 @@ export default function Tool() {
                 <p className="pf-cap" key={rung}>
                   <b>{rung}</b>: {rows.length} {es ? 'métodos' : 'methods'}, {es ? 'mejor' : 'best'}{' '}
                   {rung === 'beyond'
-                    ? <span>{es ? 'resultados con objetivos diferentes' : 'results with different objectives'}</span>
+                    ? <span>{es ? 'vistas de operabilidad y de destino' : 'operability and destination views'}</span>
                     : <><code>{best.method}</code> {es ? 'con brecha' : 'at a gap of'} {dec(best.gapPct, 2)}%</>}
                 </p>
               );
             })}
             <p className="pf-cap pf-muted">
               {es
-                ? 'Los peldaños beyond no son comparables con los demás por NPV: destination-toposort resuelve otro problema (PCPSP, con el destino como decisión) y min-width es una vista de operabilidad que no re-impone la capacidad.'
-                : 'The beyond rungs are not NPV-comparable with the rest: destination-toposort solves a different problem (PCPSP, with the destination as a decision) and min-width is an operability view that does not re-impose capacity.'}
+                ? 'Los peldaños beyond no compiten por el mejor plan: los planes con destino resuelven otro problema (PCPSP, con el destino como decisión) y se miden contra la LP PCPSP; min-width cambia valor por un ancho operable con las mismas capacidades, así que su brecha es el costo de ese cambio.'
+                : 'The beyond rungs do not compete for the best plan: the destination plans solve a different problem (PCPSP, with the destination as a decision) and are measured against the PCPSP LP; min-width trades value for a workable width under the same capacities, so its gap is the cost of that trade.'}
             </p>
           </div>
         </div>
@@ -390,8 +390,8 @@ export default function Tool() {
                     ? 'La capacidad holgada no elimina las diferencias de período con descuento positivo. Los métodos clásicos siguen por detrás del mejor plan. ctrl-degenerate, con tasa cero y un período, es el control donde las brechas sí colapsan.'
                     : 'Loose capacity does not erase timing differences with positive discounting. Classical methods still trail the best schedule. The zero-rate, one-period ctrl-degenerate case is the control whose gaps collapse.')
                   : (es
-                    ? 'Solo se incluyen planes CPIT comparables. Los métodos más allá resuelven otro problema o relajan la factibilidad y quedan fuera de este rango.'
-                    : 'Only comparable CPIT plans enter this range. Beyond methods solve another problem or relax feasibility and are excluded.')}
+                    ? 'Solo entran en este rango los planes CPIT que compiten por el mejor. Los planes con destino resuelven otro problema y min-width cambia valor por operabilidad a propósito, así que quedan fuera.'
+                    : 'Only the CPIT plans that compete for the best enter this range. The destination plans solve another problem and min-width trades value for workability on purpose, so both are left out.')}
               </p>
             </div>
 
