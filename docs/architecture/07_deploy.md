@@ -15,7 +15,7 @@ have.
 evidence); the frontend build, the engine and parity tests and the architecture-bounds check; guards against a
 tracked `.env`, a tracked virtual environment, a native or heavy binary, raw data or a leaked machine path;
 template residue; content standards (no em-dash or emoji); the README trust anchor; the docs tables; the CI
-budget (trunk-only triggers, no training). CI does not run pytest (one test bakes a full twin) and never
+budget (trunk-only triggers, no training). CI does not run pytest (it bakes cases and runs MILPs) and never
 trains; those run locally ([guides/05](../guides/05_run-the-checks.md)).
 
 Because CI installs `requirements.txt`, a pin to an engine version not yet on PyPI fails CI; the engine is

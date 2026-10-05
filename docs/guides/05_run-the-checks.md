@@ -20,15 +20,15 @@ The deploy job runs the same gates again before it publishes.
 ## What CI does not run, and you should before a release
 
 ```bash
-python -m pytest -q --basetemp "<the machine's temp folder>/pytest"   # the pipeline tests; one bakes a full twin
+python -m pytest -q --basetemp "<the machine's temp folder>/pytest"   # the pipeline tests; one bakes a whole case
 cd frontend && npm run verify:theme       # browser gates (Playwright): theme, profile size,
 cd frontend && npm run verify:profile     #   grade source, focus capacity, infeasible plans
 ```
 
 Point pytest's `--basetemp` and Playwright's browsers (`PLAYWRIGHT_BROWSERS_PATH`) at the machine's temp
-folder, not the system drive or the repository. The pipeline suite includes a sandbox bake of a 6,912-block
-twin (tens of minutes) that asserts the committed trace is byte-identical afterwards: tests never write
-canonical artifacts.
+folder, not the system drive or the repository. The pipeline suite includes a sandbox bake of a whole
+case (the degenerate control, every rung, about two minutes) that asserts the committed trace is
+byte-identical afterwards: tests never write canonical artifacts.
 
 ## When a check fails
 
