@@ -597,7 +597,11 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
 /* .footer-meta is a wrapping flex row of spans. Two things were spending rows: a 1.5 line-height on
  * seven line-boxes, and `margin-left: auto` on the version chip, which opened a 271px gap and pushed
  * everything after it onto a fresh row. The version keeps its own line here instead of stealing one. */
-.app-shell .site-footer .footer-meta { line-height: 1.42; row-gap: 1px; }
+.app-shell .site-footer .footer-meta { line-height: 1.42; row-gap: 1px; column-gap: 0.55rem; }
+/* One line at desktop widths: the items are already the minimum ADR-0016 asks for (name, line,
+ * version, attribution, provenance, source, licence, disclaimer); a slightly smaller face fits them in
+ * the 1200px band instead of wrapping the last one onto a second row. */
+.app-shell .site-footer .footer-inner { font-size: 0.8rem; }
 .app-shell .site-footer .footer-build { margin-left: 14px !important; }
 
 /* ------------------------------------------------------------------------------------------------
@@ -615,7 +619,10 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
  * a content page that puts its prose inside tabs has no top-level paragraphs at all, so a rule written
  * only for direct children of .page-body matched nothing and the page still measured 119 characters.
  * --------------------------------------------------------------------------------------------- */
-.page-body:not(.pf-layout) {
+/* The five reading pages (.pfd-page) are NOT capped here: they fill the width with prose beside its
+ * figure, symbols and notes, and cap only their running text at a reading measure (content.css).
+ * Capping the page at 1000px put a narrow column in the middle of a wide screen. */
+.page-body:not(.pf-layout):not(.pfd-page) {
   max-width: 1000px;
   margin-inline: auto;
 }
