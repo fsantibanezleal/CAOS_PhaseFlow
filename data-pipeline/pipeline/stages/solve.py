@@ -15,8 +15,10 @@ method                      rung       claim
 ``sliding-window``          sota       Cullenbine et al. 2011: a MILP per window, LP-guided candidates
 ``cpitD-local-search``      sota       the EXACT restricted re-solve of C-PIT[D] neighbourhoods
 ``learned-expected-time``   learned    the ExTS ordering from a surrogate, with no LP solve
-``destination-toposort``    beyond     PCPSP: ExTS order, each block at its best reachable destination
-``destination-local-search`` beyond    PCPSP: the exact OPBSP-[D] re-solve from the best CPIT plan
+``destination-toposort``    beyond     PCPSP: the LP's destinations fixed (the re-cut), then ExTS
+``destination-sliding-window`` beyond  PCPSP: the re-cut scheduled by the sliding window
+``destination-local-search`` beyond    PCPSP: the exact OPBSP-[D] re-solve from the best of those
+                                       and the best CPIT plan, so never below CPIT
 ``min-width``               beyond     operability: slivers absorbed, capacity and precedence kept
 ==========================  =========  ==========================================================
 
@@ -431,9 +433,11 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     # ---- the PCPSP LP bound, for the destination rungs. The CPIT bound is NOT a bound for a plan that
     # chooses destinations: PCPSP is the richer problem and its optimum can sit above the CPIT LP.
     pcpsp_bound = None
+    pb = None
     if instance.pcpsp is not None:
         try:
-            pb = ob.pcpsp_lp_bound(instance.pcpsp, prec, max_rows=PCPSP_LP_MAX_ROWS)
+            # the solution comes back too: its destinations are the cutoff the destination rungs use
+            pb = ob.pcpsp_lp_bound(instance.pcpsp, prec, max_rows=PCPSP_LP_MAX_ROWS, solution=True)
             if pb is None:
                 bound_report["pcpsp_lp_skipped"] = f"PCPSP LP above the {PCPSP_LP_MAX_ROWS:,}-row budget"
             else:
@@ -579,46 +583,90 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
 
     # ---- beyond: let the model CHOOSE the destination, so the cutoff becomes an output
     #
-    # Two rungs. `destination-toposort` is the constructive method on the ExTS order. Before 0.08.000 it
-    # walked GREEDY weights and dumped ore the moment the plant was full, and it ended below the
-    # fixed-destination plan on every case although choosing the destination is the richer problem.
-    # `destination-local-search` starts from the better of that plan and the best CPIT plan read as a
-    # PCPSP plan, so it can never end below CPIT, and improves it with exact OPBSP-[D] re-solves. Both
-    # are scored against the PCPSP LP bound; the CPIT bound does not bound them.
+    # The RE-CUT. The PCPSP relaxation knows the opportunity cost of the plant; a comparison of a block's
+    # two values does not (a marginal ore block's plant value is positive and its dump value negative,
+    # so that comparison always sends it to the plant, and the plant tonnage it takes is gone for the
+    # richer ore below). So each block is fixed where the LP sends it, the resulting CPIT is scheduled
+    # by the CPIT machinery, and every plan of it is a plan of the original PCPSP at the same value.
+    # Three rungs: ExTS on the re-cut, the sliding window on the re-cut, and the exact OPBSP-[D] search
+    # on the original instance (every destination free again) from the best of those and the best CPIT
+    # plan read as a PCPSP plan, so it can never end below CPIT. All three are scored against the PCPSP
+    # LP bound; the CPIT bound does not bound them. Before oreblocks 0.6.1 the constructive rung compared
+    # values alone and returned a negative NPV on the plant-bound twins.
     comparable = [r for r in results if r.rung in ("classical", "sota", "learned")]
     best_cpit = max(comparable, key=lambda r: r.npv) if comparable else None
+    destination_rungs = ("destination-toposort", "destination-sliding-window", "destination-local-search")
     try:
         pcpsp = _as_pcpsp(instance)
-        if pcpsp_bound is None:
+        if pcpsp_bound is None or pb is None:
             raise ValueError("no PCPSP LP bound for this case, so a destination plan would have no yardstick")
+        lifted = None
+        if best_cpit is not None:
+            lifted = ob.lift_to_pcpsp(pcpsp, prec, np.asarray(best_cpit.period_of_block), grade=instance.grade)
+        start_of = None if lifted is None else (best_cpit.method, lifted)
+
         t0 = time.perf_counter()
-        dres = ob.destination_toposort(
-            pcpsp, prec, grade=instance.grade, weight=-tight.expected_times(), allowed=allowed
+        cut = ob.restrict_destinations(pcpsp, pb.preferred_destination())
+        rcpit = cut.to_cpit()
+        rvalues = np.where(np.isfinite(rcpit.value), rcpit.value, 0.0)
+        rallowed = ob.solve_upit(rvalues, prec).in_pit
+        _, rrels = ob.cpit_bound_two_resources(rcpit, prec)
+        rtight = min(rrels, key=lambda r: r.bound)
+        recut_ms = (time.perf_counter() - t0) * 1000.0
+        recut_note = (
+            f"each block fixed at the destination the PCPSP LP sends it to ({int((cut.best_destination()[0] == 1).sum())} "
+            "routed to the plant if mined), then scheduled as a CPIT"
+        )
+
+        t0 = time.perf_counter()
+        rexts = ob.toposort_schedule(rcpit, prec, weight="expected", relaxation=rtight, allowed=rallowed)
+        dres = ob.lift_to_pcpsp(cut, prec, np.asarray(rexts.period_of_block), grade=instance.grade)
+        ms = recut_ms + (time.perf_counter() - t0) * 1000.0
+        results.append(
+            _wrap(instance, "destination-toposort", "beyond", True, _DestShim(dres, cpit.n_periods),
+                  pcpsp_bound, ms, f"ExTS on the re-cut: {recut_note}. " + _destination_note(instance, dres, start_of),
+                  pcpsp=pcpsp, extra=_destination_extra(dres, start_of))
+        )
+        candidates = [("destination-toposort", dres)]
+
+        try:
+            t0 = time.perf_counter()
+            rsw = ob.sliding_window_schedule(
+                rcpit, prec, window=3, fix=1, allowed=rallowed, relaxation=rtight,
+                cand_max=SW_CAND_MAX, cover=SW_COVER, mip_gap=3e-2,
+            )
+            dsw = ob.lift_to_pcpsp(cut, prec, np.asarray(rsw.period_of_block), grade=instance.grade)
+            ms = recut_ms + (time.perf_counter() - t0) * 1000.0
+            results.append(
+                _wrap(instance, "destination-sliding-window", "beyond", True, _DestShim(dsw, cpit.n_periods),
+                      pcpsp_bound, ms,
+                      f"the sliding window on the re-cut: {recut_note}. " + _destination_note(instance, dsw, start_of),
+                      pcpsp=pcpsp, extra=_destination_extra(dsw, start_of))
+            )
+            candidates.append(("destination-sliding-window", dsw))
+        except ValueError as exc:
+            skipped["destination-sliding-window"] = str(exc)[:240]
+
+        if lifted is not None:
+            candidates.append((f"{best_cpit.method} read as a PCPSP plan", lifted))
+        start_name, start = max(candidates, key=lambda c: c[1].npv)
+        t0 = time.perf_counter()
+        rounds = 16 if cpit.n_blocks <= 8_000 else 10
+        dls = ob.exact_destination_local_search(
+            pcpsp, prec, start, d_max=160, rounds=rounds, seed=11, time_limit=None, mip_gap=1e-4,
+            grade=instance.grade,
         )
         ms = (time.perf_counter() - t0) * 1000.0
         results.append(
-            _wrap(instance, "destination-toposort", "beyond", True, _DestShim(dres, cpit.n_periods),
-                  pcpsp_bound, ms, _destination_note(instance, dres, None), pcpsp=pcpsp,
-                  extra=_destination_extra(dres, None))
+            _wrap(instance, "destination-local-search", "beyond", True, _DestShim(dls, cpit.n_periods),
+                  pcpsp_bound, ms,
+                  f"from {start_name} ({start.npv:,.0f}). " + _destination_note(instance, dls, start_of),
+                  pcpsp=pcpsp, extra={**_destination_extra(dls, start_of), "start": start_name})
         )
-        if best_cpit is not None:
-            t0 = time.perf_counter()
-            lifted = ob.lift_to_pcpsp(pcpsp, prec, np.asarray(best_cpit.period_of_block), grade=instance.grade)
-            start = lifted if lifted.npv >= dres.npv else dres
-            rounds = 16 if cpit.n_blocks <= 8_000 else 10
-            dls = ob.exact_destination_local_search(
-                pcpsp, prec, start, d_max=160, rounds=rounds, seed=11, time_limit=None, mip_gap=1e-4,
-                grade=instance.grade,
-            )
-            ms = (time.perf_counter() - t0) * 1000.0
-            results.append(
-                _wrap(instance, "destination-local-search", "beyond", True, _DestShim(dls, cpit.n_periods),
-                      pcpsp_bound, ms, _destination_note(instance, dls, (best_cpit.method, lifted)),
-                      pcpsp=pcpsp, extra=_destination_extra(dls, (best_cpit.method, lifted)))
-            )
     except Exception as exc:  # noqa: BLE001
-        skipped["destination-toposort"] = str(exc)[:240]
-        skipped["destination-local-search"] = str(exc)[:240]
+        for name in destination_rungs:
+            if not any(r.method == name for r in results):
+                skipped[name] = str(exc)[:240]
 
     # ---- beyond: operability, with capacity and precedence kept, applied to the BEST comparable plan,
     # because the question is what operability costs the plan a reader would actually pick

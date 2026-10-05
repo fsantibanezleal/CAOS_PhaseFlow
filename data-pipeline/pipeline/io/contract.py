@@ -67,6 +67,26 @@ def _flag(rep: ContractReport, code: str, detail: str) -> None:
     rep.flagged.append({"code": code, "detail": detail})
 
 
+def _has_cycle(n: int, pstart: np.ndarray, plist: np.ndarray) -> bool:
+    """Kahn's algorithm over the predecessor lists: a cycle is whatever never reaches in-degree zero."""
+    succ_count = np.bincount(plist, minlength=n) if plist.size else np.zeros(n, dtype=np.int64)
+    owner = np.repeat(np.arange(n), np.diff(pstart))
+    order = np.argsort(plist, kind="stable")
+    sstart = np.concatenate([[0], np.cumsum(succ_count)])
+    successors = owner[order]
+    indeg = np.diff(pstart).astype(np.int64)
+    stack = list(np.nonzero(indeg == 0)[0])
+    seen = 0
+    while stack:
+        a = stack.pop()
+        seen += 1
+        for b in successors[sstart[a]:sstart[a + 1]]:
+            indeg[b] -= 1
+            if indeg[b] == 0:
+                stack.append(int(b))
+    return seen < n
+
+
 def validate_instance(
     *,
     values: np.ndarray,
@@ -100,7 +120,7 @@ def validate_instance(
         _reject(rep, "objective-nan", "the objective contains NaN or infinity outside the sentinel")
 
     # arcs must point upward: MineLib levels increase upward and predecessors sit ABOVE
-    if plist.size:
+    if plist.size and plist.min() >= 0 and plist.max() < n:
         owner = np.repeat(np.arange(n), np.diff(pstart))
         rise = level[plist] - level[owner]
         upward = int((rise > 0).sum())
@@ -111,6 +131,14 @@ def validate_instance(
                 f"only {upward} of {rise.shape[0]} arcs point upward; levels must increase upward "
                 "and predecessors must sit above their block",
             )
+        elif upward < rise.shape[0]:
+            # Arcs that strictly rise cannot close a loop, so an all-upward file is acyclic by
+            # construction. Once some arcs are flat or point down that proof is gone, and a cycle
+            # would not fail loudly: the TopoSort walk never releases the blocks on it and the plan
+            # simply leaves them, and everything they cover, unmined.
+            _flag(rep, "prec-not-upward", f"{rise.shape[0] - upward} of {rise.shape[0]} arcs do not point upward")
+            if _has_cycle(n, pstart, plist):
+                _reject(rep, "prec-cycle", "the precedence graph contains a cycle")
 
     if coef.min() < 0:
         _reject(rep, "coef-negative", "a resource coefficient is negative")

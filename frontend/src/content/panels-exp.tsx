@@ -22,7 +22,7 @@ const CATEGORY: Record<string, { en: string; es: string }> = {
 export const LADDER_ORDER = [
   'bench-by-bench', 'nested-shells', 'toposort-greedy', 'toposort-gershon',
   'toposort-expected', 'exts-two-resource', 'shift-local-search', 'sliding-window', 'cpitD-local-search',
-  'learned-expected-time', 'min-width', 'destination-toposort', 'destination-local-search',
+  'learned-expected-time', 'min-width', 'destination-toposort', 'destination-sliding-window', 'destination-local-search',
 ];
 const CLASSICAL = ['bench-by-bench', 'nested-shells', 'toposort-greedy', 'toposort-gershon'];
 const COMPARABLE = new Set(['classical', 'sota', 'learned']);
