@@ -40,6 +40,7 @@ import time
 import numpy as np
 import oreblocks as ob
 
+from ..core.manifest import best_comparable
 from ..io.schema import MethodResult, PeriodRow
 
 #: MEASURED budgets for the Bienstock-Zuckerberg joint bound on the time-expanded graph.
@@ -611,8 +612,9 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     # plan read as a PCPSP plan, so it can never end below CPIT. All three are scored against the PCPSP
     # LP bound; the CPIT bound does not bound them. Before oreblocks 0.6.1 the constructive rung compared
     # values alone and returned a negative NPV on the plant-bound twins.
-    comparable = [r for r in results if r.rung in ("classical", "sota", "learned")]
-    best_cpit = max(comparable, key=lambda r: r.npv) if comparable else None
+    # The manifest's rule, ties broken by name: on the degenerate control nine plans tie, and a plain max
+    # smoothed and lifted `bench-by-bench` while the manifest named `toposort-greedy` the best plan.
+    best_cpit = best_comparable(results)
     destination_rungs = ("destination-toposort", "destination-sliding-window", "destination-local-search")
     try:
         pcpsp = _as_pcpsp(instance)

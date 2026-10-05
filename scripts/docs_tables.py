@@ -65,6 +65,14 @@ def pct(v: float | None, nd: int = 2) -> str:
     return "-" if v is None else f"{v:.{nd}f}%"
 
 
+def signed_pct(v: float | None, nd: int = 2) -> str:
+    """A change with its sign; a value that rounds to zero prints as zero, never as "-0.0000%"."""
+    if v is None:
+        return "-"
+    r = round(v, nd)
+    return f"{0:.{nd}f}%" if r == 0 else f"{r:+.{nd}f}%"
+
+
 def ratio(v: float | None, nd: int = 3) -> str:
     return "-" if v is None else f"{v:.{nd}f}"
 
@@ -302,7 +310,7 @@ def k_operability(ms, _arg, here):
         rows.append([case_link(m["case_id"], here), f"`{e.get('base', '-')}`",
                      f"{e.get('below_before', 0):,} to {e.get('below_after', 0):,}", f"{e.get('moved', 0):,}",
                      f"{e.get('refused_for_capacity', 0):,}",
-                     "-" if e.get("npv_cost_pct") is None else f"{-e['npv_cost_pct']:+.4f}%",
+                     signed_pct(None if e.get("npv_cost_pct") is None else -e["npv_cost_pct"], 4),
                      "-" if base.get("components_mean") is None else f"{base['components_mean']:.1f}",
                      "-" if r.get("components_mean") is None else f"{r['components_mean']:.1f}"])
     return table(["case", "smoothed plan", "blocks below width 3", "moved", "refused by capacity",
