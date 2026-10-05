@@ -82,9 +82,9 @@ SW_CAND_MAX = 6000
 SW_COVER = 1.6
 
 #: The PCPSP LP relaxation is solved by HiGHS over every block of the instance, up to this many rows
-#: (``n (T - 1) + arcs T + n T + R T``). MEASURED: 1.08 million rows (the 10,976-block twin) solve in about
-#: two hours, while two of the three 1.44-million-row twins did not finish in six and a half hours (and
-#: HiGHS's interior-point method was slower than its simplex). Above the budget the bound is the LP's
+#: (``n (T - 1) + arcs T + n T + R T``). MEASURED: 1.08 million rows (the 10,976-block twin) solved in
+#: 2.65 hours in the 0.08.000 bake, while two of the three 1.44-million-row twins did not finish in six
+#: and a half hours (and HiGHS's interior-point method was slower than its simplex). Above the budget the bound is the LP's
 #: Lagrangian dual by maximum closures (``oreblocks.pcpsp_lagrangian_bound``): minutes, valid at every
 #: iteration, and within the rounding slack of the LP once converged.
 PCPSP_LP_MAX_ROWS = 1_100_000

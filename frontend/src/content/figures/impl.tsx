@@ -126,7 +126,7 @@ export function LaneFidelity({ lang }: { lang: Lang }) {
       <Box x={290} y={20} w={260} h={250} title={tr(lang, 'Replayed from the bake', 'Reproducido desde el horneado')} sub={[]} />
       {[
         tr(lang, 'joint Bienstock-Zuckerberg bound', 'cota conjunta Bienstock-Zuckerberg'),
-        tr(lang, 'PCPSP LP (HiGHS)', 'LP PCPSP (HiGHS)'),
+        tr(lang, 'PCPSP LP (HiGHS or dual)', 'LP PCPSP (HiGHS o dual)'),
         tr(lang, 'sliding window, C-PIT[D]', 'ventana deslizante, C-PIT[D]'),
         tr(lang, 'destination methods', 'métodos con destino'),
         tr(lang, 'min-width, ensemble', 'ancho mínimo, ensamble'),

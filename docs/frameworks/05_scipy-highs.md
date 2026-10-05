@@ -13,12 +13,14 @@ is strong enough for every exact sub-problem in the ladder. A commercial solver 
 sliding-window model per window instead of a candidate set, and the exact searches on larger
 neighbourhoods; that is the price of an open stack, and the pages that depend on it say so.
 
-**What would make us change it.** Instances where the PCPSP LP or the window models exceed what HiGHS
-solves in a bake's budget; the answer there is column generation for the PCPSP LP (as BZ does for CPIT)
-rather than a different general solver.
+**What would make us change it.** Instances where the LPs or the window models exceed what HiGHS
+solves in a bake's budget. The PCPSP LP reached that point at 1.4 million rows, and the answer taken was
+not a different general solver but the LP's Lagrangian dual by maximum closures, the dual view of column
+generation, with HiGHS kept for its small master LP ([methodologies/02](../methodologies/02_the-bound.md),
+section 5.2). The window models are the remaining pressure.
 
 | page | content |
 |---|---|
 | [installation](05_scipy-highs/01_installation.md) | the pin and what happens without it |
-| [usage](05_scipy-highs/02_usage.md) | the five places HiGHS solves something, with their settings |
+| [usage](05_scipy-highs/02_usage.md) | the six places HiGHS solves something, with their settings |
 | [applying](05_scipy-highs/03_applying.md) | budgets, gaps and reproducibility on your own instances |

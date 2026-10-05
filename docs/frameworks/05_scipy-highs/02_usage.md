@@ -6,7 +6,8 @@
 | joint bound pricing | maximum closure on the time-expanded graph | `csgraph.maximum_flow` (integer capacities, node weights rounded UP, so the error can only over-estimate) | compiled search; certified after |
 | sliding window | MILP per slide, cumulative binaries | `milp` | relative gap 3 percent, no time limit |
 | C-PIT[D] and OPBSP-[D] | MILP per neighbourhood | `milp` | relative gap 1e-4, no time limit |
-| PCPSP LP | one sparse LP over every block | `linprog(method="highs")`, presolve on | optimal, reported with its status |
+| PCPSP LP, up to 1.1 million rows | one sparse LP over every block | `linprog(method="highs")`, presolve on | optimal, reported with its status |
+| PCPSP Lagrangian dual, above that | master LP over the cuts, inside a box trust region; the inner problem is a maximum closure (compiled max-flow, weights rounded UP) | `linprog(method="highs")` for the master | relative 1e-6, 40 iterations without a serious step, or 400 iterations; the status is recorded |
 
 **No wall-clock limits in the bake.** Every MILP stops on a relative gap, never on time: a time limit makes
 the answer depend on the machine and its load, and a bake whose artifacts are evidence must be reproducible
