@@ -188,7 +188,10 @@ def k_case(ms, arg, _here):
 def k_case_bounds(ms, arg, _here):
     m = by_id(ms)[arg]
     b = m["bound_summary"]
+    i = m["instance"]
     rows = [
+        ["ultimate pit (UPIT, exact, undiscounted)", money(i["upit_value"]), "",
+         f"{i['upit_blocks']:,} of {i['n_blocks']:,} blocks; no time, no capacity"],
         ["Algorithm 4 (min over single-resource LPs)", money(b.get("algorithm4")), dur(b.get("algorithm4_ms")),
          f"{b.get('closure_solves', '-')} maximum closures"],
     ]
@@ -196,7 +199,7 @@ def k_case_bounds(ms, arg, _here):
         rows.append(["joint LP (Bienstock-Zuckerberg)", money(b["joint"]), dur(b.get("joint_ms")),
                      f"{b.get('joint_iterations')} iterations on {b.get('joint_nodes', 0):,} nodes, "
                      f"{b.get('joint_edges', 0):,} edges; slack of Algorithm 4: "
-                     f"{pct(100 * (b['algorithm4'] - b['joint']) / b['algorithm4'], 4)}"])
+                     f"{_slack(b['algorithm4'], b['joint'])}"])
     else:
         rows.append(["joint LP (Bienstock-Zuckerberg)", "not computed", "-", b.get("joint_skipped") or "-"])
     if b.get("pcpsp_lp") is not None:
@@ -206,14 +209,30 @@ def k_case_bounds(ms, arg, _here):
     return table(["bound", "value", "time", "detail"], rows, "lrrl")
 
 
+def _slack(alg4: float, joint: float) -> str:
+    frac = (alg4 - joint) / alg4
+    if frac < 0:
+        return f"none (BZ ended {-frac * 1e6:.2f} ppm above, inside its tolerance)"
+    return pct(100 * frac, 4)
+
+
+def _joint_absent(b: dict) -> str:
+    why = (b.get("joint_skipped") or "").lower()
+    if why.startswith("one resource"):
+        return "one resource: Algorithm 4 is exact"
+    if "budget" in why:
+        return "above budget"
+    return "not computed"
+
+
 def k_bounds(ms, _arg, here):
     rows = []
     for m in ms:
         b = m["bound_summary"]
         j = b.get("joint")
-        slack = "-" if j is None else pct(100 * (b["algorithm4"] - j) / b["algorithm4"], 4)
+        slack = "-" if j is None else _slack(b["algorithm4"], j)
         rows.append([case_link(m["case_id"], here), money(b["algorithm4"]), dur(b.get("algorithm4_ms")),
-                     money(j) if j is not None else "above budget", dur(b.get("joint_ms")), slack,
+                     money(j) if j is not None else _joint_absent(b), dur(b.get("joint_ms")), slack,
                      money(b.get("pcpsp_lp")), dur(b.get("pcpsp_lp_ms"))])
     return table(["case", "Algorithm 4", "time", "joint LP (BZ)", "time", "slack of Algorithm 4",
                   "PCPSP LP", "time"], rows)
@@ -244,11 +263,15 @@ def k_destinations(ms, _arg, here):
                 continue
             e = r.get("extra") or {}
             over = 100 * (r["npv"] - best_cpit) / abs(best_cpit)
+            moved = e.get("moved_vs_fixed")
+            cut = ("-" if e.get("cutoff_min") is None
+                   else f"{e['cutoff_min']:.4g} to {e['cutoff_max']:.4g}")
             rows.append([case_link(m["case_id"], here), f"`{x}`", money(r["npv"]), pct(r["gap_pct"]),
-                         f"{over:+.2f}%", f"{e.get('to_plant', '-'):,} / {e.get('to_dump', '-'):,}",
-                         f"{e.get('cutoff_min', 0):.4g} to {e.get('cutoff_max', 0):.4g}"])
+                         f"{over:+.2f}%", f"{e.get('to_plant', 0):,} / {e.get('to_dump', 0):,}",
+                         "-" if moved is None else f"{moved:,}", cut])
     return table(["case", "method", "NPV", "gap to PCPSP LP", "against best CPIT plan",
-                  "blocks to plant / dump", "effective cutoff range (grade)"], rows, "llrrrrr")
+                  "blocks to plant / dump", "blocks changing destination", "effective cutoff range (grade)"],
+                 rows, "llrrrrrr")
 
 
 def k_operability(ms, _arg, here):
@@ -338,11 +361,55 @@ def k_learned_study(_ms, arg, _here):
     raise SystemExit(f"learned-study: unknown argument {arg!r}")
 
 
+def k_learned_metrics(_ms, _arg, _here):
+    rep = json.loads((MODELS / "training-report.json").read_text(encoding="utf-8"))
+    e, b = rep["expected_time"], rep["bound"]
+    worst = e.get("holdout_worst_case") or "-"
+    parts = worst.split("-")
+    if len(parts) >= 6:
+        worst = f"{parts[1]}, seed {parts[2]}, {parts[3]} periods, rate {parts[4]}, {parts[5]}"
+    by_size = e.get("holdout_npv_vs_exact_exts_median_by_size") or {}
+    rows = [
+        ["expected-time surrogate", "held-out Spearman rank correlation with the true E_b", ratio(e["holdout_spearman"])],
+        ["", "held-out mean absolute error of E_b / (T + 1)", ratio(e["holdout_mae_fraction"])],
+        ["", "held-out plan value / exact ExTS plan: median", ratio(e["holdout_npv_vs_exact_exts_median"])],
+        ["", "same: tenth percentile", ratio(e["holdout_npv_vs_exact_exts_p10"])],
+        ["", "same: minimum", ratio(e["holdout_npv_vs_exact_exts_min"])],
+        ["", "the worst held-out case", worst],
+        ["", "held-out cases where it beats greedy TopoSort", pct(100 * e["holdout_beats_greedy_rate"], 1)],
+    ]
+    for size, med in sorted(by_size.items(), key=lambda kv: int(kv[0])):
+        rows.append(["", f"held-out median at {int(size):,} blocks", ratio(med)])
+    rows += [
+        ["", "training rows / held-out rows (blocks)", f"{e['n_train_rows']:,} / {e['n_holdout_rows']:,}"],
+        ["bound surrogate", "held-out relative error: mean", pct(100 * b["holdout_mean_rel_err"])],
+        ["", "same: 90th percentile", pct(100 * b["holdout_p90_rel_err"])],
+        ["", "same: maximum", pct(100 * b["holdout_max_rel_err"])],
+        ["", "held-out deposits where more capacity never lowers the bound", pct(100 * b["monotone_capacity_rate"], 1)],
+        ["", "held-out deposits where a higher rate never raises the bound", pct(100 * b["monotone_rate_rate"], 1)],
+        ["", "training / held-out instances", f"{b['n_train_rows']:,} / {b['n_holdout_rows']:,}"],
+    ]
+    return table(["model", "measure", "value"], rows, "llr")
+
+
+def k_learned_preview(_ms, _arg, _here):
+    t = json.loads((MODELS / "learned-preview-timing.json").read_text(encoding="utf-8"))
+    rows = []
+    for r in t["rows"]:
+        rows.append([f"`{r['case']}`", f"{r['nBlocks']:,}", f"{r['previewMs']:,} ms", f"{r['exactMs']:,} ms",
+                     f"{r['exactMs'] / max(r['previewMs'], 1):.0f}x", ratio(r["share"]), pct(r["previewGapPct"]),
+                     pct(r["extsGapPct"])])
+    return (table(["case", "blocks", "learned plan", "exact solve", "speed-up", "share of exact ExTS",
+                   "learned gap", "exact ExTS gap"], rows, "lrrrrrrr")
+            + f"\nMeasured {t['measured']} on {t['runtime']}; {t['note']}.\n")
+
+
 KINDS = {
     "cases": k_cases, "ladder": k_ladder, "methods": k_methods, "case": k_case,
     "case-bounds": k_case_bounds, "bounds": k_bounds, "controls": k_controls,
     "destinations": k_destinations, "operability": k_operability, "ensemble": k_ensemble,
     "learned-ladder": k_learned_ladder, "learned-study": k_learned_study,
+    "learned-metrics": k_learned_metrics, "learned-preview": k_learned_preview,
 }
 
 

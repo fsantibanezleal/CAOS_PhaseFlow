@@ -1,8 +1,9 @@
-# Determinism and the trace
+# 02 · Determinism and the trace
 
 **A bake is a pure function of its inputs.** Every random draw goes through
-`core/rng.py :: make_rng(seed)`; nothing uses a global or implicit RNG. Same inputs, byte-identical
-artifact, and the pipeline tests assert it. That is what lets the site treat the committed artifact as
+`core/rng.py :: make_rng(seed)`; nothing uses a global or implicit RNG, and no solver stops on wall-clock
+time (MILPs stop on a relative gap). Same inputs, same scientific outputs; only measured run times and the
+byte counts that carry them change. The full field list is [data-contract/03](../data-contract/03_trace-and-manifest.md). That is what lets the site treat the committed artifact as
 evidence rather than as a cache.
 
 Determinism matters more here than in a product that merely plots. The deposit twins are GENERATED,
@@ -19,8 +20,8 @@ solver's state:
 |---|---|
 | `instance` | dims, block and arc counts, source, the synthetic flag |
 | `scenario` | periods, discount rate, capacities, whether the scenario is declared or published |
-| `methods[]` | per method: rung, NPV, bound, gap, runtime, per-period rows, and the per-block schedule |
-| `bound` | both bounds, which one was used, and the tightening between them |
+| `methods[]` | per method: rung, NPV, the bound of its own problem, gap, runtime, per-period rows, and for synthetic cases the per-block schedule |
+| `bound` | Algorithm 4, the joint LP (or why it was skipped), the PCPSP LP, which CPIT bound was used, and the reason for every rung that did not run |
 | `ensemble` | the uncertainty readout, or the reason it did not run |
 | `learned` | the held-out scores of the learned lane, or absent |
 | `blocks` | x, y, level, grade, tonnage, processTonnage, value and inPit per block. **Only for redistributable instances**; the live solver reads the baked processing coefficient instead of inferring it from net-value sign. |

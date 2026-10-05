@@ -81,7 +81,7 @@ The 2018 [Jelvez et al. paper](https://www.delphoslab.cl/Publicaciones/2018/Jelv
 reports a **PCPSP** bound and feasible result in its Tables 3 and 4; those
 numbers are cross-problem context. An [external AMPL/Gurobi CPIT run](https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html)
 reports an integer optimum for Newman1. It is attributed, not a PhaseFlow
-certificate. See [the source comparison](../cases/newman1-external-optimum.md).
+certificate. See [the source comparison](../use-cases/01_newman1-published.md).
 
 The oracle order is: exact mathematical controls and feasibility; committed
 trace/manifest parity; independent published dimensions and LP values; external

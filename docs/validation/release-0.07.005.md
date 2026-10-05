@@ -9,7 +9,7 @@ metadata-only comparison used for 0.07.004 is not an appropriate acceptance gate
 - The published Newman1 CPIT scenario is compared with CPIT methods and its own
   certified bound. The Jélvez et al. 2018 Table 3/4 values are labelled PCPSP;
   an attributed external CPIT integer result is shown separately. See
-  [the case audit](../cases/newman1-external-optimum.md).
+  [the case audit](../use-cases/01_newman1-published.md).
 - `ctrl-abundant` ranks only capacity-feasible CPIT methods. Its best comparable
   gap is 0.2579644%; the PCPSP destination result does not enter the CPIT
   envelope. `ctrl-degenerate` retains its zero-gap collapse.

@@ -7,7 +7,7 @@
 // brochure with a slider on it. Everything below runs on the block model the trace already carries,
 // so moving the rate re-solves the actual problem rather than fetching a different answer.
 //
-// References, transcribed in `docs/methods/`:
+// References, transcribed in `docs/methodologies/`:
 // - Chicoisne, Espinoza, Goycoolea, Moreno and Rubio, Operations Research 60(3):517-528, 2012,
 //   doi:10.1287/opre.1120.1050. Theorem 3.1 (the critical multiplier algorithm), section 3.2
 //   (the TopoSort heuristic family), equations (3a)-(3f) (the formulation).

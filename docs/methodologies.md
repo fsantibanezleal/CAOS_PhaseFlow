@@ -1,47 +1,65 @@
-# The method ladder
+# Methodologies: the problems, the bounds and the method ladder
 
-Every rung PhaseFlow runs, what it claims, and what it is not allowed to claim. Each has its own deep
-page. The rule that governs all of them: **the bound is never produced by a heuristic**, and every
-schedule is shown with its gap to that bound.
+Every method PhaseFlow runs, what it claims, what it is not allowed to claim, and what it measured on
+every case. The rule that governs all of them: **the bound is never produced by a heuristic**, and every
+plan is shown with its gap to the bound of its own problem.
 
-| # | method | rung | page | claim |
-|---|---|---|---|---|
-| 1 | `bench-by-bench` | classical | [01](01_classical.md) | a schedule, deliberately bad: the floor |
-| 2 | `nested-shells` | classical | [01](01_classical.md) | the industry's four-step chain |
-| 3 | `toposort-greedy` (GrTS) | classical | [01](01_classical.md) | the obvious baseline |
-| 4 | `toposort-gershon` (GeTS) | classical | [01](01_classical.md) | successor-cone weights, Gershon 1987a |
-| 5 | `sliding-window` | classical | [01](01_classical.md) | Cullenbine et al. 2011, the industrial baseline |
-| - | **critical multiplier** | bound | [02](02_the_bound.md) | exact CPIT LP for one resource; a certified relaxation for each resource in Algorithm 4 |
-| - | **Bienstock-Zuckerberg** | bound | [02](02_the_bound.md) | the JOINT bound over all resources |
-| 6 | `toposort-expected` (ExTS) | sota | [03](03_rounding.md) | seeded by the LP expected extraction times |
-| 7 | `exts-two-resource` | sota | [03](03_rounding.md) | Algorithm 4: one relaxation per resource |
-| 8 | `shift-local-search` | sota | [04](04_local_search.md) | pull value forward, push cost back |
-| 9 | `cpitD-local-search` | sota | [04](04_local_search.md) | the EXACT restricted re-solve |
-| 10 | `learned-expected-time` | learned | [05](05_learned.md) | ExTS quality with NO LP solve |
-| 11 | `destination-toposort` | beyond | [06](06_destinations.md) | PCPSP: the cutoff becomes an OUTPUT |
-| 12 | `min-width` | beyond | [07](07_operability.md) | operability, and what it costs |
-| - | ensemble | beyond | [08](08_uncertainty.md) | what geological uncertainty does to a plan |
+![The ladder: bounds, rungs, and which bound scores which plan](assets/the-ladder.svg)
 
-## Two pages that are not about a rung
+## Read in order
 
-- [09, reading the results](09_ladder_results.md): which comparisons are legitimate and which are not.
-- [10, when the surrogate fails](10_when_the_surrogate_fails.md): the learned rung's worst case is
-  0.561, and this is the measured answer to WHEN, including the two conclusions the wider sweep
-  produced and the confounded sweep that produced both of them.
+| # | page | what it settles |
+|---|---|---|
+| 01 | [the formulations](methodologies/01_formulations.md) | UPIT, CPIT, PCPSP and OPBSP stated exactly; inclusion; complexity; what the LP gives |
+| 02 | [the certified bound](methodologies/02_the-bound.md) | the critical multiplier algorithm, Algorithm 4, Bienstock-Zuckerberg, the PCPSP LP; every bound of every case |
+| 03 | [TopoSort](methodologies/03_toposort.md) | the walk, the three weights, Gershon's set sum, Algorithm 4's plan side |
+| 04 | [the classical floor](methodologies/04_classical-floor.md) | bench by bench, nested shells, the gap problem |
+| 05 | [the sliding time window](methodologies/05_sliding-window.md) | a MILP per window, the LP-guided candidate set, the best CPIT rung |
+| 06 | [local search](methodologies/06_local-search.md) | shifts and the exact C-PIT[D] re-solve |
+| 07 | [the learned lane](methodologies/07_learned.md) | the expected-time and bound surrogates, the instant plan in the browser |
+| 08 | [when the surrogate fails](methodologies/08_when-the-surrogate-fails.md) | where, measured on three disjoint seed sets |
+| 09 | [destinations](methodologies/09_destinations.md) | the cutoff as an output; the re-cut on the PCPSP LP |
+| 10 | [operability](methodologies/10_operability.md) | coherence per period, minimum width, its cost |
+| 11 | [geological uncertainty](methodologies/11_uncertainty.md) | the ensemble as practice, and what it does not claim |
+| 12 | [reading the results](methodologies/12_reading-the-results.md) | legitimate comparisons, the gap split, the controls |
+
+## The ladder
+
+| method | rung | page | claim |
+|---|---|---|---|
+| `bench-by-bench` | classical | [04](methodologies/04_classical-floor.md) | a schedule, deliberately naive: the floor |
+| `nested-shells` | classical | [04](methodologies/04_classical-floor.md) | the industrial four-step chain, in its most favourable reading |
+| `toposort-greedy` (GrTS) | classical | [03](methodologies/03_toposort.md) | the obvious baseline |
+| `toposort-gershon` (GeTS) | classical | [03](methodologies/03_toposort.md) | the value of everything a block unlocks (Gershon 1987a) |
+| critical multiplier | bound | [02](methodologies/02_the-bound.md) | the exact CPIT LP for one resource, with no LP solver |
+| Algorithm 4 | bound | [02](methodologies/02_the-bound.md) | the smallest single-resource bound, certified |
+| Bienstock-Zuckerberg | bound | [02](methodologies/02_the-bound.md) | the joint CPIT LP over all resources |
+| PCPSP LP | bound | [02](methodologies/02_the-bound.md) | the yardstick of every destination plan |
+| `toposort-expected` (ExTS) | sota | [03](methodologies/03_toposort.md) | seeded by the LP expected extraction times |
+| `exts-two-resource` | sota | [03](methodologies/03_toposort.md) | Algorithm 4's plan side: one relaxation per resource, best plan |
+| `shift-local-search` | sota | [06](methodologies/06_local-search.md) | pull value forward, push cost back |
+| `sliding-window` | sota | [05](methodologies/05_sliding-window.md) | Cullenbine, Wood and Newman 2011, a MILP per window |
+| `cpitD-local-search` | sota | [06](methodologies/06_local-search.md) | the EXACT restricted re-solve |
+| `learned-expected-time` | learned | [07](methodologies/07_learned.md) | the ExTS order with no LP solve, measured against ExTS on every case |
+| `destination-toposort` | beyond | [09](methodologies/09_destinations.md) | PCPSP: the LP's destinations fixed (the re-cut), then ExTS |
+| `destination-sliding-window` | beyond | [09](methodologies/09_destinations.md) | PCPSP: the re-cut scheduled by the sliding window |
+| `destination-local-search` | beyond | [09](methodologies/09_destinations.md) | PCPSP: OPBSP-[D] from the best of those and the best CPIT plan |
+| `min-width` | beyond | [10](methodologies/10_operability.md) | the best plan made more workable, capacity kept, and what it costs |
+| ensemble | beyond | [11](methodologies/11_uncertainty.md) | every plan across correlated realisations |
 
 ## What "rung" means
 
-- **classical**: what a planner or a textbook would do, including the four-step nested-shells chain
-  that commercial packages implement. Present so the SOTA rungs have something to beat, and because a
-  method comparison with no floor in it is a marketing chart.
-- **sota**: the published state of the art for this problem, implemented rather than cited.
-- **learned**: a model that ACCELERATES something exact, scored against the exact quantity on data it
-  never saw. It never certifies anything.
-- **beyond**: a different problem or a different question. These are **not NPV-comparable** with the
-  rest, and the app says so rather than putting them in the same ranking.
+- **classical**: what a planner or a textbook would do. Present so the state of the art has something to
+  beat; a method comparison with no floor in it is a marketing chart.
+- **sota**: the published state of the art for CPIT, implemented rather than cited.
+- **learned**: a model that ACCELERATES something exact, scored against the exact quantity on data it never
+  saw. It never certifies anything.
+- **beyond**: a different problem (the destination rungs, scored against the PCPSP LP) or a different
+  question about the best plan (operability, uncertainty). Beyond rungs never compete for the best plan
+  of a case.
 
 ## The one rule
 
-Two schedules can only be compared through the same bound. That is why the bound section is separate
-from the method list: it is not a rung, it is the yardstick, and where two bounds exist the tighter one
-is used for every gap on the case and the difference between them is reported.
+Two plans can only be compared through the same bound of the same problem. That is why the bound pages
+are separate from the method list: the bound is not a rung, it is the yardstick, and where two CPIT
+bounds exist the tighter one is used for every CPIT gap on the case and the difference is reported.

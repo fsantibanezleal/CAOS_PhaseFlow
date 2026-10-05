@@ -261,7 +261,7 @@ def main(root: Path = DERIVED) -> int:
                 fail.append(f"{cid}: the 2018 published comparator must identify PCPSP")
             # External AMPL Colaboratory/Gurobi exact CPIT result, with equal MIP
             # best bound and 1e-9 gap tolerance. This is an external oracle, not
-            # a certificate generated here. See docs/cases/newman1-external-optimum.md.
+            # a certificate generated here. See docs/use-cases/01_newman1-published.md.
             exact_external = 24_176_864.82482
             selected = next((row for row in m["scoreboard"] if row["method"] == best["method"]), None)
             if selected and selected["npv"] > exact_external + 0.01:
