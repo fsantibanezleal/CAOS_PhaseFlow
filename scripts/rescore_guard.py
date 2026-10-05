@@ -26,6 +26,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+sys.path.insert(0, str(ROOT / "data-pipeline"))
+from pipeline.model.learned import json_safe  # noqa: E402
 from train_learned import FAILURE_BELOW, characterise_failures  # noqa: E402
 
 MODELS = ROOT / "models"
@@ -39,7 +41,7 @@ def main() -> int:
     print(f"rescoring {len(train_rows)} training and {len(holdout_rows)} held-out cases")
 
     study = characterise_failures(train_rows, holdout_rows)
-    study_path.write_text(json.dumps(study, indent=1), encoding="utf-8", newline="\n")
+    study_path.write_text(json.dumps(json_safe(study), indent=1, allow_nan=False), encoding="utf-8", newline="\n")
 
     shipped = study["rules"][study["shipped_rule"]]
     print(f"\nfailure line: below {100 * FAILURE_BELOW:.0f} percent of the exact plan")
@@ -50,8 +52,9 @@ def main() -> int:
         pr = "-" if c["precision"] is None else f"{c['precision']:.2f}"
         rc = "-" if c["recall"] is None else f"{c['recall']:.2f}"
         print(f"  {name:20s} {rule['statement']}{mark}")
+        wu = c["worst_unflagged"]
         print(f"      held out: flags {c['flagged']:3d}/{study['holdout']['n']}, precision {pr}, "
-              f"recall {rc}, worst UNflagged {c['worst_unflagged']:.4f}")
+              f"recall {rc}, worst UNflagged {'-' if wu is None or wu != wu else f'{wu:.4f}'}")
 
     # the metrics the app reads travel with the model
     for name in ("expected-time.json", "training-report.json"):
@@ -66,7 +69,7 @@ def main() -> int:
         target["failure_rule_worst_unflagged"] = shipped["holdout"]["worst_unflagged"]
         target["failure_rule_flagged_share"] = shipped["holdout"]["flagged"] / study["holdout"]["n"]
         target["refuted"] = study["refuted"]
-        f.write_text(json.dumps(d, indent=1) + "\n", encoding="utf-8", newline="\n")
+        f.write_text(json.dumps(json_safe(d), indent=1, allow_nan=False) + "\n", encoding="utf-8", newline="\n")
         print(f"\nupdated {name}")
 
     return 0

@@ -142,12 +142,14 @@ CASES: list[Case] = [
         role_en=(
             "A narrow high-grade body. The stress test for spatial coherence (the optimiser wants the "
             "vein and the vein is not a workable shape) and for Gershon's weight, which opens the whole "
-            "strike length at once because every block above the vein unlocks it."
+            "strike length at once because every block above the vein unlocks it. With the core-halo it is "
+            "one of the two archetypes on which the learned rung fails most."
         ),
         role_es=(
             "Un cuerpo angosto de alta ley. La prueba de coherencia espacial (el optimizador quiere la "
             "veta y la veta no es una forma operable) y del peso de Gershon, que abre todo el largo del "
-            "rumbo de una vez porque todo bloque sobre la veta la libera."
+            "rumbo de una vez porque todo bloque sobre la veta la libera. Junto con el núcleo-halo es uno "
+            "de los dos arquetipos en que el peldaño aprendido falla más."
         ),
     ),
     Case(
@@ -173,15 +175,15 @@ CASES: list[Case] = [
         ),
         role_en=(
             "Concentric grade. Nested pits look sensible on this deposit and the schedule still does "
-            "something different, which is the point of solving rather than nesting. It is also the "
-            "archetype on which the learned rung is measured to fail most often: a thin rich core "
-            "makes the order of extraction delicate."
+            "something different, which is the point of solving rather than nesting. With the vein it is "
+            "one of the two archetypes on which the learned rung is measured to fail most: a thin rich "
+            "core makes the order of extraction delicate."
         ),
         role_es=(
             "Ley concéntrica. Los pits anidados se ven razonables en este depósito y el plan igual hace "
-            "algo distinto, que es el punto de resolver en vez de anidar. Es además el arquetipo en que "
-            "el peldaño aprendido falla más seguido: un núcleo rico y delgado vuelve delicado el orden "
-            "de extracción."
+            "algo distinto, que es el punto de resolver en vez de anidar. Junto con la veta es uno de los "
+            "dos arquetipos en que el peldaño aprendido falla más: un núcleo rico y delgado vuelve "
+            "delicado el orden de extracción."
         ),
     ),
     # ------------------------------------------------------------------ regimes
