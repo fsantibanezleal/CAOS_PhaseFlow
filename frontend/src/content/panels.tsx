@@ -212,7 +212,7 @@ export function MethodCasesPanel({ lang, method, showNotes = false }: { lang: La
                   <td className="num">{fmtMoney(r.npv)}</td>
                   <td className="num">{fmtMoney(r.bound)}</td>
                   <td className="num">{`${dec(r.gap_pct, 2)}%`}</td>
-                  <td className="num">{r.runtime_ms >= 60_000 ? `${dec(r.runtime_ms / 60_000, 1)} min` : r.runtime_ms >= 1000 ? `${dec(r.runtime_ms / 1000, 1)} s` : `${dec(r.runtime_ms, 0)} ms`}</td>
+                  <td className="num">{fmtDuration(r.runtime_ms)}</td>
                   {showNotes && <td style={{ whiteSpace: 'normal', minWidth: '18rem' }}>{r.notes ?? ''}</td>}
                 </>
               ) : (

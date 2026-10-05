@@ -111,6 +111,16 @@ export function fmtTonnes(v: number): string {
   return `${dec(v, 0)} t`;
 }
 
+/** A rung's name in the app's language; the rung keys themselves are data. */
+export function rungLabel(rung: string): string {
+  const es = useLangStore.getState().lang === 'es';
+  const names: Record<string, string> = {
+    classical: es ? 'clásico' : 'classical', sota: 'SOTA',
+    learned: es ? 'aprendido' : 'learned', beyond: es ? 'más allá' : 'beyond',
+  };
+  return names[rung] ?? rung;
+}
+
 /** A wall time in the unit a reader can hold: ms, s, min, or h above an hour. */
 export function fmtDuration(ms: number | null | undefined): string {
   if (ms == null || !Number.isFinite(ms)) return '-';
