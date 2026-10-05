@@ -280,9 +280,9 @@ export function MethodBars({
 
       {rows.map((r, i) => {
         const off = r.comparable === false;
-        // A row outside the comparison draws no captured share and prints no gap. min-width does not
-        // re-impose capacity, and on twin-vein its NPV is ABOVE the bound: a fill clipped at 100% and a
-        // gap of -1.23% read as the best plan on the case, for a plan that cannot be run.
+        // A row outside the comparison (a plan of another problem, or one whose record breaks a
+        // capacity) draws no captured share and prints no gap: a fill against a bound it does not answer
+        // to reads as a result it is not.
         const captured = off ? 0 : Math.max(0, Math.min(100, 100 - r.gapPct));
         return (
           <div
