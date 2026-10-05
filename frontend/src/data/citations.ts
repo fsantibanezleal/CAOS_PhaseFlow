@@ -1,6 +1,5 @@
-// Every source the app cites, with a real DOI or arXiv id. Nothing here is decorative: each entry is
-// used by an inline <Cite> somewhere, and the research dossiers behind them are persisted in
-// Transcribed from the dated research dossiers, which are kept outside this repo.
+// Every source the app cites, each with a DOI or a stable URL, verified against Crossref, arXiv or the
+// publisher record. Transcribed from the dated research dossiers, which are kept outside this repo.
 
 import type { Citation } from '@fasl-work/caos-app-shell';
 
@@ -8,7 +7,20 @@ export const CITATIONS: Citation[] = [
   {
     id: 'lerchs1965',
     label: 'Lerchs and Grossmann 1965',
-    citation: 'Lerchs, H. and Grossmann, I. F. (1965). Optimum design of open-pit mines. Transactions C.I.M. 58, 47-54.',
+    citation: 'Lerchs, H. and Grossmann, I. F. (1965). Optimum design of open-pit mines. Transactions C.I.M. 58(633), 47-54. Canadian Institute of Mining, Metallurgy and Petroleum record on OneMine.',
+    url: 'https://www.onemine.org/documents/optimum-design-of-open-pit-mines',
+  },
+  {
+    id: 'picard1976',
+    label: 'Picard 1976',
+    citation: 'Picard, J.-C. (1976). Maximal closure of a graph and applications to combinatorial problems. Management Science 22(11), 1268-1272.',
+    doi: '10.1287/mnsc.22.11.1268',
+  },
+  {
+    id: 'gershon1987',
+    label: 'Gershon 1987',
+    citation: 'Gershon, M. E. (1987). Heuristic approaches for mine planning and production scheduling. International Journal of Mining and Geological Engineering 5(1), 1-13.',
+    doi: '10.1007/BF01553529',
   },
   {
     id: 'johnson1968',
@@ -141,6 +153,18 @@ export const CITATIONS: Citation[] = [
     label: 'Blom et al. 2024',
     citation: 'Blom, M., Pearce, A. R. and Cote, P. (2024). Long-term open-pit mine planning with large neighbourhood search. arXiv:2403.18213.',
     url: 'https://arxiv.org/abs/2403.18213',
+  },
+  {
+    id: 'huangfu2018',
+    label: 'Huangfu and Hall 2018',
+    citation: 'Huangfu, Q. and Hall, J. A. J. (2018). Parallelizing the dual revised simplex method. Mathematical Programming Computation 10(1), 119-142. The HiGHS solver.',
+    doi: '10.1007/s12532-017-0130-5',
+  },
+  {
+    id: 'kingma2015',
+    label: 'Kingma and Ba 2015',
+    citation: 'Kingma, D. P. and Ba, J. (2015). Adam: a method for stochastic optimization. International Conference on Learning Representations; arXiv:1412.6980.',
+    url: 'https://arxiv.org/abs/1412.6980',
   },
   {
     id: 'oreblocks',

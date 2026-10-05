@@ -1,82 +1,21 @@
-import { Callout, Cite, Figure, Refs, useShellLang } from '@fasl-work/caos-app-shell';
-import { ThreePressures } from '../viz/Diagrams.tsx';
+import { useShellLang } from '@fasl-work/caos-app-shell';
+import { DocPage, TopicGroups, type Lang } from '../content/doc.tsx';
+import { INTRODUCTION } from '../content/introduction.tsx';
+
+const T = {
+  title: { en: 'Introduction', es: 'Introducción' },
+  lede: {
+    en: 'PhaseFlow schedules an open pit: it decides in which year each block of an ultimate pit is mined, under slope precedence in every period and mining and processing capacity per period, and it judges every schedule by its distance to a certified upper bound. It is a research instrument on published and synthetic instances, not a production planning tool.',
+    es: 'PhaseFlow programa un rajo abierto: decide en qué año se extrae cada bloque de un pit final, bajo precedencia de talud en cada período y capacidad de mina y de planta por período, y juzga cada plan por su distancia a una cota superior certificada. Es un instrumento de investigación sobre instancias publicadas y sintéticas, no una herramienta de planificación de producción.',
+  },
+  sections: { en: 'Introduction sections', es: 'Secciones de la introducción' },
+};
 
 export default function Introduction() {
-  const es = useShellLang() === 'es';
+  const lang = useShellLang() as Lang;
   return (
-    <div className="page-body">
-      <h1>{es ? 'Qué bloques, y CUÁNDO' : 'Which blocks, and WHEN'}</h1>
-
-      <p>
-        {es
-          ? 'El pit final responde una pregunta y solo una: qué conjunto de bloques, extraído bajo restricciones de talud, tiene el mayor valor sin descontar. Es un problema resuelto desde 1965, es polinomial, y se resuelve exactamente por cierre máximo.'
-          : 'The ultimate pit answers one question and only one: which set of blocks, extracted under slope constraints, has the greatest undiscounted value. It has been a solved problem since 1965, it is polynomial, and it is solved exactly by maximum closure.'}{' '}
-        <Cite id="lerchs1965" />
-        {es
-          ? ' No dice nada sobre el tiempo. No sabe que una tonelada este año vale más que una tonelada en diez años, ni que una flota mueve una cantidad finita al año, ni que la planta tiene un límite.'
-          : ' It says nothing about time. It does not know that a tonne this year is worth more than a tonne in ten years, nor that a fleet moves a finite amount per year, nor that the plant has a limit.'}
-      </p>
-
-      <p>
-        {es
-          ? 'PhaseFlow responde la otra pregunta: EN QUE AÑO se extrae cada bloque, sujeto a precedencia de talud en cada período y a capacidad por período, maximizando el valor descontado. Ese es el problema del pit límite restringido, CPIT, y a diferencia del pit final es NP-duro.'
-          : 'PhaseFlow answers the other question: in WHICH YEAR each block is extracted, subject to slope precedence in every period and to per-period capacity, maximising discounted value. That is the constrained pit limit problem, CPIT, and unlike the ultimate pit it is NP-hard.'}{' '}
-        <Cite id="caccetta2003" />
-      </p>
-
-      <Callout variant="note" title={es ? 'Por qué importa el orden' : 'Why the ordering matters'}>
-        {es
-          ? 'El descuento quiere todo ahora. La precedencia dice que primero hay que sacar lo que está encima. La capacidad dice cuánto cabe por año. Un plan es donde esas tres presiones se equilibran, y el equilibrio es distinto para cada tasa, cada flota y cada planta. Por eso el hoyo cambia de forma cuando mueves un control: la geometría es el resultado del cálculo, no una ilustración de él.'
-          : 'Discounting wants everything now. Precedence says the rock on top comes off first. Capacity says how much fits in a year. A schedule is where those three pressures balance, and the balance is different for every rate, every fleet and every plant. That is why the hole changes shape when you move a control: the geometry IS the computed result, not an illustration of it.'}
-      </Callout>
-
-      <ThreePressures />
-
-      <h2>{es ? 'Quién lo usa' : 'Who it is for'}</h2>
-      <p>
-        {es
-          ? 'Planificación estratégica de largo plazo: el paso posterior al límite del pit, donde se decide la secuencia de fases y con ella el perfil de caja del proyecto. En la práctica industrial esto se hace con un encadenamiento de cuatro pasos: pits anidados por factor de ingreso, selección manual de pushbacks, subdivisión en fases de banco y asignación de períodos.'
-          : 'Long-term strategic planning: the step after the pit limit, where the phase sequence is decided and with it the cash profile of the project. In industrial practice this is done as a four-step chain: nested pits by revenue factor, manual pushback selection, subdivision into bench-phases, and period assignment.'}{' '}
-        <Cite id="chicoisne2012" />
-        {es
-          ? ' Solo dos de esos cuatro pasos son algoritmos; la selección de pushbacks la hace una persona, y el cumplimiento de las restricciones también.'
-          : ' Only two of those four steps are algorithms; the pushback selection is done by a person, and so is compliance with the constraints.'}{' '}
-        <Cite id="morales2015" />
-      </p>
-
-      <h2>{es ? 'La honestidad primero' : 'Honesty first'}</h2>
-      <p>
-        {es
-          ? 'Los planes de los casos generales son heurísticos: la app no afirma que alcancen el óptimo entero. Muestra una COTA SUPERIOR CERTIFICADA y la brecha de cada plan factible. Cuando la relajación conjunta converge, la cota aproxima el óptimo LP dentro de su tolerancia; en otros casos se usa una relajación más holgada. La brecha mezcla flojedad de la cota, integralidad y pérdida del método. El caso degenerado sí tiene brecha cero, y Newman1 dispone de una referencia entera externa identificada por separado.'
-          : 'Schedules for the general cases are heuristic: the app does not claim they reach the integer optimum. It shows a CERTIFIED UPPER BOUND and each feasible schedule’s gap. When the joint relaxation converges, the bound approximates the LP optimum within its tolerance; otherwise a looser relaxation is used. The gap combines bound looseness, integrality and method loss. The degenerate control has zero gap, and Newman1 has a separately attributed external integer reference.'}
-      </p>
-
-      <Figure caption={es ? 'La escalera: clásico, SOTA, aprendido, y lo que queda fuera a propósito.' : 'The ladder: classical, SOTA, learned, and what is deliberately left out.'}>
-        <table className="pf-table">
-          <thead>
-            <tr><th>{es ? 'peldaño' : 'rung'}</th><th>{es ? 'método' : 'method'}</th><th>{es ? 'qué reclama' : 'what it claims'}</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>classical</td><td>bench-by-bench</td><td>{es ? 'un plan, y a propósito malo: el piso' : 'a schedule, and deliberately a bad one: the floor'}</td></tr>
-            <tr><td>classical</td><td>nested-shells</td><td>{es ? 'la cadena de cuatro pasos de la industria' : "the industry's four-step chain"}</td></tr>
-            <tr><td>classical</td><td>toposort-greedy / gershon</td><td>{es ? 'las heurísticas publicadas de base' : 'the published baseline heuristics'}</td></tr>
-            <tr><td>sota</td><td>critical multiplier</td><td>{es ? 'una cota certificada, no un plan' : 'a certified bound, not a schedule'}</td></tr>
-            <tr><td>sota</td><td>toposort-expected</td><td>{es ? 'el mejor redondeo publicado, sembrado por el LP' : 'the best published rounding, seeded by the LP'}</td></tr>
-            <tr><td>sota</td><td>exact C-PIT[D] re-solve</td><td>{es ? 'una búsqueda local con subproblema entero exacto' : 'local search with an exact integer subproblem'}</td></tr>
-            <tr><td>{es ? 'fuera' : 'out'}</td><td>{es ? 'acopios, mezcla, estocástico' : 'stockpiles, blending, stochastic'}</td><td>{es ? 'citados, no reclamados' : 'cited, not claimed'}</td></tr>
-          </tbody>
-        </table>
-      </Figure>
-
-      <h2>{es ? 'Alcance honesto' : 'Honest scope'}</h2>
-      <ul>
-        <li>{es ? 'Sin acopios. Un inventario cuya ley recuperada es la mezcla de su contenido vuelve bilineal el modelo; los modelos lineales publicados fijan la ley del acopio como parámetro y la buscan.' : 'No stockpiles. An inventory whose reclaimed grade is the blend of what is inside makes the model bilinear; the published linear models fix the stockpile grade as a parameter and search over it.'} <Cite id="rezakhah2020a" /></li>
-        <li>{es ? 'Sin mezcla ni restricciones generales de lado. El lector de .pcpsp las lee y el solver no las resuelve, y eso se declara.' : 'No blending or other general side constraints. The .pcpsp reader reads them and the solver does not solve them, and that is declared.'}</li>
-        <li>{es ? 'Sin optimización estocástica. Un plan robusto sobre múltiples realizaciones es otro modelo.' : 'No stochastic optimisation. A schedule robust over multiple realisations is a different model.'} <Cite id="ramazan2013" /></li>
-        <li>{es ? 'Sin transporte ni despacho, sin ley de corte como producto, sin pit final como producto: esos son otros miembros de la línea.' : 'No haulage or dispatch, no cutoff grade as a product, no ultimate pit as a product: those are other members of the line.'}</li>
-      </ul>
-
-      <Refs ids={['lerchs1965', 'caccetta2003', 'chicoisne2012', 'morales2015', 'ramazan2013', 'rezakhah2020a', 'newman2010']} label="References" />
-    </div>
+    <DocPage title={T.title[lang]} lede={T.lede[lang]}>
+      <TopicGroups lang={lang} label={T.sections} groups={INTRODUCTION} />
+    </DocPage>
   );
 }
