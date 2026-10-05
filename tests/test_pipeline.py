@@ -155,3 +155,17 @@ def test_the_controls_are_actually_in_the_committed_evidence(case_id):
     assert m["controls"]["boundGeqFeasible"]
     assert m["controls"]["orderInvariant"]
     assert np.isclose(m["controls"]["dualityBoundError"], 0.0, atol=1e-5)
+
+
+def test_learned_inference_reads_the_capacity_the_case_declares():
+    """The model was trained on each scenario's capacity fractions; inference must feed the same numbers.
+
+    Until 0.08.000 the ladder fed a fixed (1.0, 1.0) to every case, so every baked learned plan was scored
+    on inputs outside its training distribution.
+    """
+    from pipeline.model.learned import capacity_fractions
+
+    case = _tiny_case()
+    inst = build_instance(case)
+    got = capacity_fractions(inst.cpit, inst.upit_in_pit)
+    assert got == pytest.approx(case.scenario.capacity_fraction, rel=1e-12)

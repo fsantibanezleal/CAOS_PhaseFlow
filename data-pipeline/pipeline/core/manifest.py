@@ -42,6 +42,11 @@ def best_comparable(results):
         return None
     return max(pool, key=lambda r: (r.npv, r.method))
 
+def _mean(values) -> float:
+    vals = [float(v) for v in values]
+    return sum(vals) / len(vals) if vals else 0.0
+
+
 def build_case_manifest(
     *,
     case: Any,
@@ -52,9 +57,13 @@ def build_case_manifest(
     gate: dict,
     controls: dict,
     engine_versions: dict,
+    bound_report: dict | None = None,
+    ensemble: dict | None = None,
 ) -> dict:
     cpit = instance.cpit
     best = best_comparable(results)
+    br = bound_report or {}
+    en = ensemble or {}
     return {
         "schema": MANIFEST_SCHEMA,
         "case_id": case.id,
@@ -99,9 +108,37 @@ def build_case_manifest(
                 "bound": round(r.bound, 2),
                 "gap_pct": round(r.gap_pct, 4),
                 "runtime_ms": round(r.runtime_ms, 1),
+                # what a reading page needs without loading the trace: the method's own account of
+                # what it did, the learned/exact ratio where it exists, and its spatial coherence
+                "notes": r.notes[:600],
+                "measured_vs_exact": None if r.measured_vs_exact is None else round(r.measured_vs_exact, 6),
+                "components_mean": round(_mean(p.components for p in r.periods if p.blocks > 0), 3),
+                "largest_share_mean": round(_mean(p.largest_component_share for p in r.periods if p.blocks > 0), 4),
+                # use over limit per resource and period: which capacity binds, and when
+                "utilization": [
+                    [round(p.resource_use[k] / p.resource_limit[k], 4) if p.resource_limit[k] > 0 else None
+                     for p in r.periods]
+                    for k in range(len(r.periods[0].resource_use) if r.periods else 0)
+                ],
+                "extra": getattr(r, "extra", {}) or {},
             }
             for r in results
         ],
+        "bound_summary": {
+            key: br.get(key)
+            for key in (
+                "algorithm4", "algorithm4_ms", "closure_solves", "joint", "joint_ms", "joint_iterations",
+                "joint_converged", "tightening_pct", "used", "joint_nodes", "joint_edges", "joint_skipped",
+                "joint_note", "pcpsp_lp", "pcpsp_lp_ms", "pcpsp_lp_rows", "pcpsp_lp_status", "skipped_methods",
+            )
+        },
+        "ensemble_summary": {
+            key: en.get(key)
+            for key in (
+                "ran", "reason", "nRealisations", "sigma", "methods", "expected", "p10", "p90", "meanModel",
+                "optimism", "bestByExpected", "bestByP10", "valueOfReplanningPct",
+            )
+        },
         "best": None if best is None else {"method": best.method, "gap_pct": round(best.gap_pct, 4)},
     }
 

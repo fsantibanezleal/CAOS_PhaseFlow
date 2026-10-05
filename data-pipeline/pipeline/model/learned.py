@@ -41,7 +41,24 @@ import numpy as np
 from ..io.schema import Scenario
 from .features import block_feature_matrix, deposit_feature_vector
 
-__all__ = ["Mlp", "LearnedBundle", "train_mlp", "export_onnx"]
+__all__ = ["Mlp", "LearnedBundle", "capacity_fractions", "train_mlp", "export_onnx"]
+
+
+def capacity_fractions(cpit, in_pit: np.ndarray) -> tuple[float, ...]:
+    """Each resource's mean per-period limit as a fraction of (its ultimate-pit total / periods).
+
+    This is the definition `Scenario.capacity_fraction` is built FROM, read back off the instance, so a
+    published file with absolute limits gets the same feature a synthetic case declares. Until 0.08.000
+    the ladder fed the model a fixed (1.0, 1.0) on every case while training used each scenario's real
+    fractions (0.7 and 0.4, 1.4 and 0.32, ...), so every baked learned plan was scored on inputs the
+    model had never been trained on.
+    """
+    out = []
+    for r in range(cpit.n_resources):
+        total = float(np.asarray(cpit.coef[r], dtype=np.float64)[np.asarray(in_pit, dtype=bool)].sum())
+        per_period = total / max(1, cpit.n_periods)
+        out.append(float(np.mean(cpit.limit[r])) / per_period if per_period > 0 else 0.0)
+    return tuple(out)
 
 
 # ------------------------------------------------------------------------------------------------
@@ -380,7 +397,7 @@ class LearnedBundle:
         sc = Sc(
             periods=cpit.n_periods,
             discount_rate=cpit.discount_rate,
-            capacity_fraction=tuple([1.0] * cpit.n_resources),
+            capacity_fraction=capacity_fractions(cpit, instance.upit_in_pit),
             resource_names=cpit.resource_names,
             period_one_undiscounted=cpit.period_one_undiscounted,
         )
@@ -391,8 +408,10 @@ class LearnedBundle:
         ms = (time.perf_counter() - t0) * 1000.0
         res.method = "learned-expected-time"
         note = (
-            "ExTS quality with NO LP solve: the expected extraction times come from a surrogate "
-            f"(held-out Spearman {self.expected_time.metrics.get('holdout_spearman', float('nan')):.3f})"
+            "the ExTS ordering with no LP solve: the expected extraction times are predicted from block "
+            "and scenario features by a surrogate trained on other deposits "
+            f"(held-out Spearman {self.expected_time.metrics.get('holdout_spearman', float('nan')):.3f}), "
+            "so its plan is only as good as that ordering"
         )
         warning = self.unreliable_here(cpit, getattr(instance, "archetype", None))
         if warning:

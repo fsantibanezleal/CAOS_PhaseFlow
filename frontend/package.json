@@ -1,7 +1,7 @@
 {
   "name": "phaseflow-frontend",
   "private": true,
-  "version": "0.7.6",
+  "version": "0.8.0",
   "type": "module",
   "scripts": {
     "predev": "node copy-data.mjs",
@@ -19,7 +19,7 @@
     "verify:infeasible": "node scripts/verify-infeasible.mjs"
   },
   "dependencies": {
-    "@fasl-work/caos-app-shell": "^0.5.0",
+    "@fasl-work/caos-app-shell": "^0.6.13",
     "katex": "^0.16.11",
     "lucide-react": "^0.469.0",
     "react": "^19.0.0",

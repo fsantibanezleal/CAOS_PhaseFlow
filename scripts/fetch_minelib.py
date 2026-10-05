@@ -4,7 +4,8 @@
 MineLib (Espinoza, Goycoolea, Moreno and Newman, Annals of Operations Research 206(1):93-114, 2013,
 doi:10.1007/s10479-012-1258-3) grants an ACADEMIC DOWNLOAD. It does not grant redistribution, so:
 
-- instances land under ``data/raw/minelib/`` which is git-ignored;
+- instances land under ``$PHASEFLOW_DATA_DIR/minelib/`` (the machine's data folder), or under the
+  git-ignored ``data/raw/minelib/`` of the clone when that variable is not set;
 - only AGGREGATE results for a MineLib case are ever committed, never per-block data;
 - this script downloads, it does not vendor.
 
@@ -20,12 +21,13 @@ is why PhaseFlow declares a scenario for them and says so on screen.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CACHE = ROOT / "data" / "raw" / "minelib"
+CACHE = (Path(os.environ["PHASEFLOW_DATA_DIR"]) if os.environ.get("PHASEFLOW_DATA_DIR") else ROOT / "data" / "raw") / "minelib"
 
 AMPL = "https://raw.githubusercontent.com/ampl/colab.ampl.com/master/authors/eduardosalaz/minelib/data"
 WHATTLE = "https://raw.githubusercontent.com/qarth/whattle/master/test/minelib"
