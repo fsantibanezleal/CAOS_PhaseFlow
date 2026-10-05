@@ -43,6 +43,30 @@ def best_comparable(results):
         return None
     return max(pool, key=lambda r: (r.npv, r.method))
 
+_BOUND_KEYS = (
+    "algorithm4", "algorithm4_ms", "closure_solves", "joint", "joint_ms", "joint_iterations",
+    "joint_converged", "tightening_pct", "used", "joint_nodes", "joint_edges", "joint_skipped",
+    "joint_note", "pcpsp_lp", "pcpsp_lp_ms", "pcpsp_lp_rows", "pcpsp_lp_status",
+)
+_DUAL_KEYS = (
+    "pcpsp_lp_method", "pcpsp_lp_iterations", "pcpsp_lp_gap_estimate", "pcpsp_lp_slack", "pcpsp_lp_note",
+    "pcpsp_lp_error",
+)
+
+
+def _bound_summary(br: dict) -> dict:
+    """The bound report, compact. The dual's keys appear only where the PCPSP bound IS the Lagrangian
+    dual, so the record of a HiGHS case is unchanged by the dual's existence and an absent method key
+    reads as the HiGHS LP."""
+    keys = list(_BOUND_KEYS)
+    if br.get("pcpsp_lp_method") == "lagrangian":
+        keys += _DUAL_KEYS
+    elif "pcpsp_lp_error" in br:
+        keys.append("pcpsp_lp_error")
+    keys.append("skipped_methods")
+    return {key: br.get(key) for key in keys}
+
+
 def _mean(values) -> float:
     vals = [float(v) for v in values]
     return sum(vals) / len(vals) if vals else 0.0
@@ -130,16 +154,7 @@ def build_case_manifest(
             }
             for r in results
         ],
-        "bound_summary": {
-            key: br.get(key)
-            for key in (
-                "algorithm4", "algorithm4_ms", "closure_solves", "joint", "joint_ms", "joint_iterations",
-                "joint_converged", "tightening_pct", "used", "joint_nodes", "joint_edges", "joint_skipped",
-                "joint_note", "pcpsp_lp", "pcpsp_lp_ms", "pcpsp_lp_rows", "pcpsp_lp_status", "pcpsp_lp_method",
-                "pcpsp_lp_iterations", "pcpsp_lp_gap_estimate", "pcpsp_lp_slack", "pcpsp_lp_note",
-                "pcpsp_lp_error", "skipped_methods",
-            )
-        },
+        "bound_summary": _bound_summary(br),
         "ensemble_summary": {
             key: en.get(key)
             for key in (

@@ -13,7 +13,7 @@ Every bake writes, per case, a compact **trace** (`phaseflow.schedule-trace/v1`)
 | `scenario` | `periods`, `discountRate`, `periodOneUndiscounted`, `declared`, `resources[{id, name, limitPerPeriod}]` |
 | `published` | the published reference values for a published case (problem, source, LP bound, best known, gap) |
 | `controls` | duality (set match, bound error), bound, order invariance (error), `allPass`, best and worst comparable gap |
-| `bound` | Algorithm 4 (value, time, closure solves), the joint LP (value, time, iterations, converged, graph size, or the reason it was skipped), the PCPSP bound (value, time, rows of the LP, status, and the method: `highs-lp`, or `lagrangian` with its iterations, gap estimate, rounding slack and a note), the bound used, and `skipped_methods` with a reason per missing rung |
+| `bound` | Algorithm 4 (value, time, closure solves), the joint LP (value, time, iterations, converged, graph size, or the reason it was skipped), the PCPSP bound (value, time, rows of the LP, status, and where the bound is the Lagrangian dual `pcpsp_lp_method: lagrangian` with its iterations, gap estimate, rounding slack and a note; an absent method key is the HiGHS LP), the bound used, and `skipped_methods` with a reason per missing rung |
 | `ensemble` | realisations, sigma, per-method expected, P10, P90, mean-model value, optimism, best by expected and by P10, value of re-planning, `resolveMethod` |
 | `learned` | the learned lane's metadata for the case |
 | `contract` | `accepted`, `flags`, `facts` from CONTRACT 1 |
