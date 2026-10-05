@@ -548,9 +548,9 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     #
     # The scenario rule stays, and it is not redundant: it is what the LIVE lane has, where the whole
     # point of the surrogate is that the exact plan has NOT been solved. Its clean numbers come from a
-    # third seed set that had no part in choosing it (models/guard-validation.json): recall 0.625,
-    # worst unflagged 0.866. The held-out numbers that motivated it said recall 1.00, and that gap is
-    # exactly why the measurement is preferred wherever it exists.
+    # third seed set that had no part in choosing it (models/guard-validation.json), and on that set
+    # it catches about half of the failures. A rule that misses half is a warning, not a verdict,
+    # which is exactly why the measurement is preferred wherever it exists.
     if learned is None and instance.grade_source is None:
         skipped["learned-expected-time"] = "no source grade field for the learned input features"
     if learned is not None:
