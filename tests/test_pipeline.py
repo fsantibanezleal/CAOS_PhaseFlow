@@ -105,6 +105,25 @@ def test_destination_rungs_never_end_below_cpit_and_stay_under_the_pcpsp_lp():
                                                      by["destination-sliding-window"].npv) - 1e-6
 
 
+def test_above_the_row_budget_the_pcpsp_bound_is_the_lagrangian_dual(monkeypatch):
+    """The same case through the Lagrangian path: the method is recorded, the bound sits on the HiGHS
+    LP within its slack, and the destination rungs still run and stay under it."""
+    from pipeline.stages import solve
+
+    inst = build_instance(_tiny_case())
+    _, _, rep_lp = solve.run_ladder(inst, learned=None, joint_bound=False)
+    monkeypatch.setattr(solve, "PCPSP_LP_MAX_ROWS", 10)
+    results, _, rep = solve.run_ladder(inst, learned=None, joint_bound=False)
+    assert rep_lp["pcpsp_lp_method"] == "highs-lp"
+    assert rep["pcpsp_lp_method"] == "lagrangian" and "Lagrangian dual" in rep["pcpsp_lp_note"]
+    assert rep["pcpsp_lp"] >= rep_lp["pcpsp_lp"] * (1 - 1e-9)
+    assert rep["pcpsp_lp"] <= rep_lp["pcpsp_lp"] + 2 * rep["pcpsp_lp_slack"] + 1e-5 * rep_lp["pcpsp_lp"]
+    by = {r.method: r for r in results}
+    for name in ("destination-toposort", "destination-sliding-window", "destination-local-search"):
+        assert name in by
+        assert by[name].npv <= rep["pcpsp_lp"] * (1 + 1e-9)
+
+
 def test_contract_rejects_a_zero_tonnage_block():
     inst = build_instance(_tiny_case())
     coef = inst.cpit.coef.copy()

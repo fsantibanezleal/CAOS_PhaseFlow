@@ -81,9 +81,13 @@ BZ_TIME_BUDGET_S = 240.0
 SW_CAND_MAX = 6000
 SW_COVER = 1.6
 
-#: The PCPSP LP relaxation is solved by HiGHS over every block of the instance. The row count is
-#: ``n (T - 1) + arcs T + n T + R T``; the largest twin here is about 1.44 million rows.
-PCPSP_LP_MAX_ROWS = 1_600_000
+#: The PCPSP LP relaxation is solved by HiGHS over every block of the instance, up to this many rows
+#: (``n (T - 1) + arcs T + n T + R T``). MEASURED: 1.08 million rows (the 10,976-block twin) solve in about
+#: two hours, while two of the three 1.44-million-row twins did not finish in six and a half hours (and
+#: HiGHS's interior-point method was slower than its simplex). Above the budget the bound is the LP's
+#: Lagrangian dual by maximum closures (``oreblocks.pcpsp_lagrangian_bound``): minutes, valid at every
+#: iteration, and within the rounding slack of the LP once converged.
+PCPSP_LP_MAX_ROWS = 1_100_000
 
 
 class _DestShim:
@@ -436,17 +440,29 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     pb = None
     if instance.pcpsp is not None:
         try:
-            # the solution comes back too: its destinations are the cutoff the destination rungs use
+            # The LP directly (HiGHS) where it fits the measured budget, its Lagrangian dual by closures
+            # above it. Either way the solution comes back too: its destinations are the cutoff the
+            # destination rungs fix.
             pb = ob.pcpsp_lp_bound(instance.pcpsp, prec, max_rows=PCPSP_LP_MAX_ROWS, solution=True)
             if pb is None:
-                bound_report["pcpsp_lp_skipped"] = f"PCPSP LP above the {PCPSP_LP_MAX_ROWS:,}-row budget"
-            else:
-                bound_report["pcpsp_lp"] = float(pb.bound) if pb.status == "optimal" else None
-                bound_report["pcpsp_lp_ms"] = round(1000.0 * pb.seconds, 1)
-                bound_report["pcpsp_lp_rows"] = int(pb.n_rows)
-                bound_report["pcpsp_lp_status"] = pb.status
-                if pb.status == "optimal":
-                    pcpsp_bound = float(pb.bound)
+                pb = ob.pcpsp_lagrangian_bound(instance.pcpsp, prec)
+                bound_report["pcpsp_lp_note"] = (
+                    f"the LP is above the {PCPSP_LP_MAX_ROWS:,}-row budget for HiGHS, so the bound is its "
+                    f"Lagrangian dual by maximum closures ({pb.iterations} iterations, {pb.status}); it is "
+                    f"valid at any iteration and exceeds the LP by at most the rounding slack ({pb.slack:,.0f})"
+                )
+            ok = bool(np.isfinite(pb.bound)) and (pb.method == "lagrangian" or pb.status == "optimal")
+            bound_report["pcpsp_lp"] = float(pb.bound) if ok else None
+            bound_report["pcpsp_lp_ms"] = round(1000.0 * pb.seconds, 1)
+            bound_report["pcpsp_lp_rows"] = int(pb.n_rows)
+            bound_report["pcpsp_lp_status"] = pb.status
+            bound_report["pcpsp_lp_method"] = pb.method
+            if pb.method == "lagrangian":
+                bound_report["pcpsp_lp_iterations"] = int(pb.iterations)
+                bound_report["pcpsp_lp_gap_estimate"] = float(pb.gap_estimate)
+                bound_report["pcpsp_lp_slack"] = float(pb.slack)
+            if ok:
+                pcpsp_bound = float(pb.bound)
         except Exception as exc:  # noqa: BLE001 - a missing bound is recorded, never invented
             bound_report["pcpsp_lp_error"] = str(exc)[:200]
 
