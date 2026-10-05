@@ -29,6 +29,12 @@ const COMPARABLE = new Set(['classical', 'sota', 'learned']);
 
 const get = (m: CaseManifest, method: string): ScoreboardRow | undefined => m.scoreboard.find((r) => r.method === method);
 const pctTxt = (v: number | null | undefined, d = 2) => (v == null || !Number.isFinite(v) ? '-' : `${dec(v, d)}%`);
+/** A change with its sign; a value that rounds to zero prints as zero, never as "-0.000%". */
+const signedPctTxt = (v: number | null | undefined, d = 2) => {
+  if (v == null || !Number.isFinite(v)) return '-';
+  const r = Number(v.toFixed(d));
+  return r === 0 ? `${dec(0, d)}%` : `${r > 0 ? '+' : ''}${dec(r, d)}%`;
+};
 const nontrivial = (m: CaseManifest) => m.scenario.periods > 1 && m.scenario.discount_rate > 0;
 
 /** The thirteen cases: what each is for, its size and its scenario. */
@@ -368,7 +374,7 @@ export function OperabilityPanel({ lang }: { lang: Lang }) {
                 <td className="num">{best?.largest_share_mean != null ? pctTxt(100 * best.largest_share_mean, 0) : '-'}</td>
                 <td className="num">{x.below_before ?? '-'}</td><td className="num">{x.below_after ?? '-'}</td>
                 <td className="num">{x.moved != null ? `${x.moved}, ${x.refused_for_capacity ?? 0}` : '-'}</td>
-                <td className="num">{x.npv_cost_pct != null ? `${-x.npv_cost_pct >= 0 ? '+' : ''}${pctTxt(-x.npv_cost_pct, 3)}` : '-'}</td>
+                <td className="num">{x.npv_cost_pct != null ? signedPctTxt(-x.npv_cost_pct, 3) : '-'}</td>
               </tr>
             );
           })}
