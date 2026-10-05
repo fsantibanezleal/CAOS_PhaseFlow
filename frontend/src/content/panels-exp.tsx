@@ -283,35 +283,52 @@ export function DepositPanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** Beyond CPIT: what choosing destinations is worth, case by case. */
+/** Beyond CPIT: what choosing destinations is worth, case by case, against the best CPIT plan and the PCPSP LP. */
 export function DestinationPanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
   const data = useManifests();
   if (!data || data === 'error') return <Pending lang={lang} state={data as null | 'error'} />;
   const rows = data.manifests.filter((m) => get(m, 'destination-local-search'));
-  if (!rows.length) return <p className="pfd-muted">{es ? 'Los manifiestos versionados aún no traen el peldaño con destinos.' : 'The committed manifests do not carry the destination rung yet.'}</p>;
+  if (!rows.length) return <p className="pfd-muted">{es ? 'Los manifiestos versionados aún no traen los peldaños con destinos.' : 'The committed manifests do not carry the destination rungs yet.'}</p>;
+  const cell = (m: CaseManifest, method: string) => {
+    const r = get(m, method);
+    return r ? <td className="num">{fmtMoney(r.npv)}<br /><span className="pfd-muted">{pctTxt(r.gap_pct)}</span></td> : <td className="num">-</td>;
+  };
   return (
     <div className="pfd-scroll">
       <table className="pfd-table">
-        <caption>{es ? 'El plan con destinos parte del mejor plan CPIT leído como PCPSP; lo que gana es el valor de elegir destinos.' : 'The destination plan starts from the best CPIT plan read as PCPSP; what it gains is the value of choosing destinations.'}</caption>
+        <caption>{es
+          ? 'Cada plan con destinos con su brecha a la LP de PCPSP debajo; la ganancia es la del mejor plan con destinos sobre el mejor plan CPIT del mismo caso.'
+          : 'Each destination plan with its gap to the PCPSP LP below it; the gain is the best destination plan over the best CPIT plan of the same case.'}</caption>
         <thead>
           <tr>
-            <th>{es ? 'caso' : 'case'}</th><th className="num">{es ? 'LP PCPSP' : 'PCPSP LP'}</th><th className="num">{es ? 'plan con destinos' : 'destination plan'}</th>
-            <th className="num">{es ? 'brecha PCPSP' : 'PCPSP gap'}</th><th className="num">{es ? 'ganancia sobre CPIT' : 'gain over CPIT'}</th>
-            <th className="num">{es ? 'bloques que cambian destino' : 'blocks changing destination'}</th><th className="num">{es ? 'ley de corte efectiva' : 'effective cutoff'}</th>
+            <th>{es ? 'caso' : 'case'}</th>
+            <th className="num">{es ? 'mejor plan CPIT' : 'best CPIT plan'}</th>
+            <th className="num">{es ? 'ExTS, re-corte' : 'ExTS, re-cut'}</th>
+            <th className="num">{es ? 'ventana, re-corte' : 'window, re-cut'}</th>
+            <th className="num">OPBSP-[D]</th>
+            <th className="num">{es ? 'LP PCPSP' : 'PCPSP LP'}</th>
+            <th className="num">{es ? 'ganancia sobre CPIT' : 'gain over CPIT'}</th>
+            <th className="num">{es ? 'bloques que cambian destino' : 'blocks changing destination'}</th>
+            <th className="num">{es ? 'ley de corte efectiva' : 'effective cutoff'}</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((m) => {
-            const r = get(m, 'destination-local-search')!;
-            const x = (r.extra ?? {}) as Record<string, number | null>;
+            const best = m.best ? get(m, m.best.method) : undefined;
+            const dls = get(m, 'destination-local-search')!;
+            const x = (dls.extra ?? {}) as Record<string, number | null>;
+            const gain = best && best.npv !== 0 ? (100 * (dls.npv - best.npv)) / Math.abs(best.npv) : null;
             return (
               <tr key={m.case_id}>
                 <th scope="row">{caseTitle(data.index, m.case_id, lang)}</th>
-                <td className="num">{fmtMoney(r.bound)}</td><td className="num">{fmtMoney(r.npv)}</td>
-                <td className="num">{pctTxt(r.gap_pct)}</td>
-                <td className="num">{x.gain_vs_cpit != null ? fmtMoney(x.gain_vs_cpit) : '-'}</td>
-                <td className="num">{x.moved_vs_fixed ?? '-'}</td>
+                <td className="num">{best ? fmtMoney(best.npv) : '-'}<br /><span className="pfd-muted">{best ? best.method : ''}</span></td>
+                {cell(m, 'destination-toposort')}
+                {cell(m, 'destination-sliding-window')}
+                {cell(m, 'destination-local-search')}
+                <td className="num">{fmtMoney(dls.bound)}</td>
+                <td className="num">{gain == null ? '-' : `${gain >= 0 ? '+' : ''}${dec(gain, 2)}%`}</td>
+                <td className="num">{x.moved_vs_fixed != null ? fmtInt(x.moved_vs_fixed, lang) : '-'}</td>
                 <td className="num">{x.cutoff_min != null && x.cutoff_max != null ? `${dec(x.cutoff_min, 4)} - ${dec(x.cutoff_max, 4)}` : '-'}</td>
               </tr>
             );

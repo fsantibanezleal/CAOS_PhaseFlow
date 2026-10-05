@@ -5,7 +5,7 @@
  * cannot establish.
  */
 import type { TopicGroup } from './doc.tsx';
-import { Algorithm4, BzLoop, DestinationChoice, ProblemInclusion, TopoSortWalk } from './figures/method.tsx';
+import { Algorithm4, BzLoop, DestinationRecut, ProblemInclusion, TopoSortWalk } from './figures/method.tsx';
 import { ClosureNetwork, LaneFidelity } from './figures/impl.tsx';
 import { BoundSummaryPanel } from './panels.tsx';
 import {
@@ -79,7 +79,7 @@ export const BENCHMARK: TopicGroup[] = [
           },
         ],
         data: (lang) => <NewmanPcpspPanel lang={lang} />,
-        figure: { caption: { en: 'The comparison the destination search makes for each block.', es: 'La comparación que hace la búsqueda de destinos para cada bloque.' }, render: (lang) => <DestinationChoice lang={lang} /> },
+        figure: { caption: { en: 'The re-cut on the PCPSP relaxation and the chain that schedules it.', es: 'El re-corte sobre la relajación PCPSP y la cadena que lo programa.' }, render: (lang) => <DestinationRecut lang={lang} />, wide: true },
         equations: [
           { tex: String.raw`Z^{\text{LP}}_{\text{CPIT}}\le Z^{\text{LP}}_{\text{PCPSP}},\qquad Z^{\text{IP}}_{\text{CPIT}}\le Z^{\text{IP}}_{\text{PCPSP}}`, caption: { en: 'Problem inclusion: more decisions can only raise both values', es: 'Inclusión de problemas: más decisiones solo pueden subir ambos valores' } },
         ],
