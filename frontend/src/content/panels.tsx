@@ -3,7 +3,7 @@
  * studies and the case manifests and traces. A number on a reading page comes from here, never typed.
  */
 import { useEffect, useState } from 'react';
-import { APP_VERSION, dec, fmtInt, fmtMoney, pcpspBoundMethod } from '../lib/artifacts.ts';
+import { APP_VERSION, boundSlackText, dec, fmtDuration, fmtInt, fmtMoney, jointAbsentText, pcpspBoundMethod } from '../lib/artifacts.ts';
 import type { CaseIndex, CaseManifest, ScoreboardRow } from '../lib/contract.types.ts';
 import type { Lang } from './doc.tsx';
 
@@ -253,13 +253,13 @@ export function BoundSummaryPanel({ lang }: { lang: Lang }) {
               <tr key={m.case_id}>
                 <th scope="row">{caseTitle(data.index, m.case_id, lang)}</th>
                 <td className="num">{fmtMoney(b.algorithm4)}</td>
-                <td className="num">{b.joint != null ? fmtMoney(b.joint) : <span className="pfd-muted">{b.joint_skipped ? (es ? 'sobre presupuesto' : 'over budget') : '-'}</span>}</td>
-                <td className="num">{b.tightening_pct != null ? `${dec(b.tightening_pct, 3)}%` : '-'}</td>
+                <td className="num">{b.joint != null ? fmtMoney(b.joint) : <span className="pfd-muted">{b.joint_skipped ? jointAbsentText(b) : '-'}</span>}</td>
+                <td className="num">{boundSlackText(b.tightening_pct)}</td>
                 <td>{b.used === 'bienstock-zuckerberg' ? 'BZ' : (es ? 'Alg. 4' : 'Alg. 4')}</td>
                 <td className="num">{b.joint_iterations ?? '-'}</td>
                 <td className="num">{b.pcpsp_lp != null ? fmtMoney(b.pcpsp_lp) : '-'}</td>
                 <td>{pcpspBoundMethod(b)}</td>
-                <td className="num">{b.pcpsp_lp_ms != null ? `${dec(b.pcpsp_lp_ms / 1000, 1)} s` : '-'}</td>
+                <td className="num">{fmtDuration(b.pcpsp_lp_ms)}</td>
               </tr>
             );
           })}
