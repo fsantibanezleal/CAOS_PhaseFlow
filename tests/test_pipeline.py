@@ -50,6 +50,61 @@ def test_contract_rejects_downward_precedence():
     assert any(r["code"] == "prec-direction" for r in rep.rejected)
 
 
+def _with_arcs(inst, extra: dict[int, list[int]]):
+    """The instance's predecessor lists with extra predecessors appended to some blocks."""
+    pstart, plist = inst.precedence.pstart, inst.precedence.plist
+    lists = [list(plist[pstart[b]:pstart[b + 1]]) + extra.get(b, []) for b in range(pstart.shape[0] - 1)]
+    new_start = np.concatenate([[0], np.cumsum([len(x) for x in lists])]).astype(pstart.dtype)
+    return new_start, np.array([a for x in lists for a in x], dtype=plist.dtype)
+
+
+def _same_level_pair(inst):
+    lv = inst.level
+    a = int(np.nonzero(lv == lv.max())[0][0])
+    b = int(np.nonzero(lv == lv.max())[0][1])
+    return a, b
+
+
+def test_contract_rejects_a_cycle_hidden_among_flat_arcs():
+    """Arcs that strictly rise cannot close a loop; two flat arcs can, and the share check alone
+    (99 percent upward) lets them through. A cycle would leave its blocks silently unmined."""
+    inst = build_instance(_tiny_case())
+    a, b = _same_level_pair(inst)
+    pstart, plist = _with_arcs(inst, {a: [b], b: [a]})
+    rep = validate_instance(values=inst.cpit.value, pstart=pstart, plist=plist, level=inst.level,
+                            coef=inst.cpit.coef, limit=inst.cpit.limit, discount_rate=0.1)
+    assert not rep.ok
+    assert any(r["code"] == "prec-cycle" for r in rep.rejected)
+
+
+def test_contract_flags_flat_arcs_that_close_no_cycle():
+    inst = build_instance(_tiny_case())
+    a, b = _same_level_pair(inst)
+    pstart, plist = _with_arcs(inst, {a: [b]})
+    rep = validate_instance(values=inst.cpit.value, pstart=pstart, plist=plist, level=inst.level,
+                            coef=inst.cpit.coef, limit=inst.cpit.limit, discount_rate=0.1)
+    assert rep.ok
+    assert any(f["code"] == "prec-not-upward" for f in rep.flagged)
+
+
+def test_destination_rungs_never_end_below_cpit_and_stay_under_the_pcpsp_lp():
+    """The re-cut rungs are PCPSP plans: under the PCPSP LP, and the local search, which starts from
+    the best of them and the best CPIT plan, never below that CPIT plan."""
+    from pipeline.stages.solve import run_ladder
+
+    inst = build_instance(_tiny_case())
+    results, _, rep = run_ladder(inst, learned=None, joint_bound=False)
+    by = {r.method: r for r in results}
+    for name in ("destination-toposort", "destination-sliding-window", "destination-local-search"):
+        assert name in by, f"{name} did not run: {rep['skipped_methods'].get(name)}"
+        assert by[name].npv <= rep["pcpsp_lp"] * (1 + 1e-7)
+        assert by[name].bound == pytest.approx(rep["pcpsp_lp"])
+    best_cpit = max(r.npv for r in results if r.rung in ("classical", "sota", "learned"))
+    assert by["destination-local-search"].npv >= best_cpit - 1e-6 * abs(best_cpit)
+    assert by["destination-local-search"].npv >= max(by["destination-toposort"].npv,
+                                                     by["destination-sliding-window"].npv) - 1e-6
+
+
 def test_contract_rejects_a_zero_tonnage_block():
     inst = build_instance(_tiny_case())
     coef = inst.cpit.coef.copy()
@@ -97,21 +152,30 @@ def test_destination_periods_use_chosen_destination_values_and_resources():
     assert sum(row.ore_tonnes for row in rows) < sum(row.mined_tonnes for row in rows)
 
 
-def test_artifact_validator_applies_cpit_bound_only_to_comparable_rows(tmp_path):
+def test_artifact_validator_holds_every_rung_to_its_own_bound(tmp_path):
     trace_path = tmp_path / "trace.json"
     manifest_path = tmp_path / "manifest.json"
+    period = {"t": 1, "resourceUse": [5.0], "resourceLimit": [6.0]}
     trace = {
         "schema": "phaseflow.schedule-trace/v1", "caseId": "tiny",
         "scenario": {"periods": 1}, "instance": {"synthetic": True, "source": "twin"},
         "methods": [{"method": "min-width", "rung": "beyond", "npv": 11,
-                     "bound": 10, "periods": [{}]}],
+                     "bound": 10, "periods": [period]}],
     }
-    trace_path.write_text(json.dumps(trace), encoding="utf-8")
     manifest_path.write_text(json.dumps({"case_id": "tiny"}), encoding="utf-8")
-    _validate(trace_path, manifest_path)
-    trace["methods"][0]["rung"] = "sota"
+    # min-width keeps the capacities, so the CPIT bound applies to it like any other plan
     trace_path.write_text(json.dumps(trace), encoding="utf-8")
     with pytest.raises(AssertionError, match="exceeds bound"):
+        _validate(trace_path, manifest_path)
+    # a destination plan carries the PCPSP LP, the bound of the problem it solves
+    trace["methods"] = [{"method": "destination-local-search", "rung": "beyond", "npv": 11,
+                         "bound": 12, "periods": [period]}]
+    trace_path.write_text(json.dumps(trace), encoding="utf-8")
+    _validate(trace_path, manifest_path)
+    # and a plan that breaks a capacity is rejected whatever its rung
+    trace["methods"][0]["periods"] = [{"t": 1, "resourceUse": [7.0], "resourceLimit": [6.0]}]
+    trace_path.write_text(json.dumps(trace), encoding="utf-8")
+    with pytest.raises(AssertionError, match="uses 7.0 of 6.0"):
         _validate(trace_path, manifest_path)
 
 
@@ -128,8 +192,7 @@ def test_bake_writes_a_valid_trace_into_a_sandbox(tmp_path):
     assert trace["controls"]["allPass"]
     assert len(trace["methods"]) >= 6
     for meth in trace["methods"]:
-        if meth["rung"] in {"classical", "sota", "learned"}:
-            assert meth["npv"] <= meth["bound"] * (1 + 1e-9)
+        assert meth["npv"] <= meth["bound"] * (1 + 1e-9)
         assert len(meth["periods"]) == trace["scenario"]["periods"]
     # The committed trace must be BYTE-IDENTICAL after a sandbox bake. The previous form of this
     # assertion compared the file's mtime against 1e18 seconds since the epoch, roughly the year
