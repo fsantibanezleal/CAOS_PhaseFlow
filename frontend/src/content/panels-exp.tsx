@@ -4,7 +4,7 @@
  * sentence cannot outlive the evidence it summarises.
  */
 import { useState } from 'react';
-import { dec, fmtInt, fmtMoney } from '../lib/artifacts.ts';
+import { dec, fmtInt, fmtMoney, pcpspBoundMethod } from '../lib/artifacts.ts';
 import type { CaseManifest, ScoreboardRow } from '../lib/contract.types.ts';
 import { MethodBars } from '../viz/Charts.tsx';
 import { periodCss } from '../viz/colormap.ts';
@@ -283,7 +283,7 @@ export function DepositPanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** Beyond CPIT: what choosing destinations is worth, case by case, against the best CPIT plan and the PCPSP LP. */
+/** Beyond CPIT: what choosing destinations is worth, case by case, against the best CPIT plan and the PCPSP bound. */
 export function DestinationPanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
   const data = useManifests();
@@ -298,8 +298,8 @@ export function DestinationPanel({ lang }: { lang: Lang }) {
     <div className="pfd-scroll">
       <table className="pfd-table">
         <caption>{es
-          ? 'Cada plan con destinos con su brecha a la LP de PCPSP debajo; la ganancia es la del mejor plan con destinos sobre el mejor plan CPIT del mismo caso.'
-          : 'Each destination plan with its gap to the PCPSP LP below it; the gain is the best destination plan over the best CPIT plan of the same case.'}</caption>
+          ? 'Cada plan con destinos con su brecha a la cota PCPSP debajo; la ganancia es la del mejor plan con destinos sobre el mejor plan CPIT del mismo caso. La cota es la LP resuelta por HiGHS o, sobre su presupuesto de filas, el dual lagrangiano, igual a la LP salvo la holgura del redondeo.'
+          : 'Each destination plan with its gap to the PCPSP bound below it; the gain is the best destination plan over the best CPIT plan of the same case. The bound is the LP solved by HiGHS or, above its row budget, the Lagrangian dual, equal to the LP up to the rounding slack.'}</caption>
         <thead>
           <tr>
             <th>{es ? 'caso' : 'case'}</th>
@@ -307,7 +307,7 @@ export function DestinationPanel({ lang }: { lang: Lang }) {
             <th className="num">{es ? 'ExTS, re-corte' : 'ExTS, re-cut'}</th>
             <th className="num">{es ? 'ventana, re-corte' : 'window, re-cut'}</th>
             <th className="num">OPBSP-[D]</th>
-            <th className="num">{es ? 'LP PCPSP' : 'PCPSP LP'}</th>
+            <th className="num">{es ? 'cota PCPSP' : 'PCPSP bound'}</th>
             <th className="num">{es ? 'ganancia sobre CPIT' : 'gain over CPIT'}</th>
             <th className="num">{es ? 'bloques que cambian destino' : 'blocks changing destination'}</th>
             <th className="num">{es ? 'ley de corte efectiva' : 'effective cutoff'}</th>
@@ -326,7 +326,7 @@ export function DestinationPanel({ lang }: { lang: Lang }) {
                 {cell(m, 'destination-toposort')}
                 {cell(m, 'destination-sliding-window')}
                 {cell(m, 'destination-local-search')}
-                <td className="num">{fmtMoney(dls.bound)}</td>
+                <td className="num">{fmtMoney(dls.bound)}<br /><span className="pfd-muted">{pcpspBoundMethod(m.bound_summary)}</span></td>
                 <td className="num">{gain == null ? '-' : `${gain >= 0 ? '+' : ''}${dec(gain, 2)}%`}</td>
                 <td className="num">{x.moved_vs_fixed != null ? fmtInt(x.moved_vs_fixed, lang) : '-'}</td>
                 <td className="num">{x.cutoff_min != null && x.cutoff_max != null ? `${dec(x.cutoff_min, 4)} - ${dec(x.cutoff_max, 4)}` : '-'}</td>

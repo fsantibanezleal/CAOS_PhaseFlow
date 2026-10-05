@@ -2,7 +2,7 @@
 // GitHub Pages CDN happily serves a stale JSON next to a fresh bundle and the result is an app that
 // shows last release's numbers with this release's labels.
 
-import type { CaseIndex, CaseManifest, ScheduleTrace } from './contract.types.ts';
+import type { BoundSummary, CaseIndex, CaseManifest, ScheduleTrace } from './contract.types.ts';
 import type { CapacityOverrun } from './feasibility.ts';
 import { INDEX_SCHEMA, MANIFEST_SCHEMA, TRACE_SCHEMA } from './contract.types.ts';
 import { useLangStore } from '@fasl-work/caos-app-shell';
@@ -109,4 +109,16 @@ export function fmtTonnes(v: number): string {
   if (a >= 1e6) return `${dec(v / 1e6, 2)} Mt`;
   if (a >= 1e3) return `${dec(v / 1e3, 1)} kt`;
   return `${dec(v, 0)} t`;
+}
+
+/** Which method produced a case's PCPSP bound. Above the HiGHS row budget it is the Lagrangian dual by
+ *  maximum closures; a manifest baked before the method key existed carries the HiGHS LP. */
+export function pcpspBoundMethod(b: BoundSummary | null | undefined): string {
+  if (!b || b.pcpsp_lp == null) return '-';
+  const es = useLangStore.getState().lang === 'es';
+  if (b.pcpsp_lp_method === 'lagrangian') {
+    const it = b.pcpsp_lp_iterations ? ` (${b.pcpsp_lp_iterations} iter.)` : '';
+    return es ? `dual lagrangiano${it}` : `Lagrangian dual${it}`;
+  }
+  return es ? 'LP con HiGHS' : 'LP by HiGHS';
 }

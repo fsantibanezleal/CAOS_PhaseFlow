@@ -27,7 +27,10 @@ pit = ob.solve_upit(cpit.value, prec)                 # exact ultimate pit (maxi
 alg4, relaxations = ob.cpit_bound_two_resources(cpit, prec)   # critical multiplier per resource, min
 tight = min(relaxations, key=lambda r: r.bound)               # its expected times seed ExTS
 bz = ob.solve_gpcp_lp(...)                                    # joint LP on the time-expanded graph, under a budget
-pb = ob.pcpsp_lp_bound(pcpsp, prec, max_rows=1_600_000, solution=True)   # PCPSP LP (HiGHS) and its solution
+pb = ob.pcpsp_lp_bound(pcpsp, prec, max_rows=1_100_000, solution=True)   # PCPSP LP (HiGHS) and its solution
+if pb is None:                                                            # above the measured row budget
+    pb = ob.pcpsp_lagrangian_bound(pcpsp, prec)                           # its Lagrangian dual by closures
+# pb.method is "highs-lp" or "lagrangian"; the dual also carries iterations, gap_estimate and slack
 ```
 
 ## The ladder
