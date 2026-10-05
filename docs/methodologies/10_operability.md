@@ -52,7 +52,10 @@ above them while every value check passed. The test asserts both directions.
 plan reported an NPV **above the certified bound** with every control green, because the bound control
 skipped the "beyond" rows. Now a move is made only where every resource of the receiving period has room,
 the input must be feasible, and the report counts the moves the capacity refused. The result is a
-feasible CPIT plan, scored against the CPIT bound like any other, and never the best by construction.
+feasible CPIT plan, scored against the CPIT bound like any other. It is excluded from the best plan by
+rule, not by construction: smoothing almost always costs value, but absorbing a block into a neighbour's
+EARLIER period can gain a little, and on `twin-vein` the smoothed plan ends 0.01 percent above the sliding
+window it smooths. The tables report the change with its sign.
 
 **Why the count, not the minimum.** The minimum width over a whole period is dominated by a handful of
 isolated blocks that nothing can absorb, so it barely moves; the count of blocks below the target is

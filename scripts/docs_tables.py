@@ -301,11 +301,12 @@ def k_operability(ms, _arg, here):
         base = rows_of(m).get(e.get("base", ""), {})
         rows.append([case_link(m["case_id"], here), f"`{e.get('base', '-')}`",
                      f"{e.get('below_before', 0):,} to {e.get('below_after', 0):,}", f"{e.get('moved', 0):,}",
-                     f"{e.get('refused_for_capacity', 0):,}", pct(e.get("npv_cost_pct"), 4),
+                     f"{e.get('refused_for_capacity', 0):,}",
+                     "-" if e.get("npv_cost_pct") is None else f"{-e['npv_cost_pct']:+.4f}%",
                      "-" if base.get("components_mean") is None else f"{base['components_mean']:.1f}",
                      "-" if r.get("components_mean") is None else f"{r['components_mean']:.1f}"])
     return table(["case", "smoothed plan", "blocks below width 3", "moved", "refused by capacity",
-                  "NPV cost", "components before", "after"], rows, "llrrrrrr")
+                  "NPV change", "components before", "after"], rows, "llrrrrrr")
 
 
 def k_ensemble(ms, _arg, here):

@@ -16,7 +16,7 @@ of its own problem, how often it was the best comparable plan, and its median co
 | comparison | legitimate | why |
 |---|---|---|
 | classical against sota against learned, same case | yes | same problem, same bound |
-| `min-width` against the plan it smooths | yes | a feasible CPIT plan under the same capacities; the difference is the cost of operability |
+| `min-width` against the plan it smooths | yes | a feasible CPIT plan under the same capacities; the difference is what operability changes in NPV, almost always a cost (a 0.01 percent gain on `twin-vein`) |
 | `learned-expected-time` against `toposort-expected` | yes | that is the plan it approximates (the ratio is recorded per case) |
 | a destination plan against a CPIT plan, by NPV | as a VALUE of the destination freedom only | different problems; each destination plan is scored against the PCPSP LP |
 | a destination plan's gap against a CPIT plan's gap | **no** | different bounds |

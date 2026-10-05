@@ -16,7 +16,10 @@ A vein (30 x 30 x 16 = 14,400 blocks, seed 11), ten periods at ten percent, mini
 stress test for two things:
 
 - **Spatial coherence.** The optimiser wants the vein and the vein is not a workable shape; the components
-  per period and the min-width rung show what that costs ([10](../methodologies/10_operability.md)).
+  per period and the min-width rung show it ([10](../methodologies/10_operability.md)). Here the smoothing
+  removes only 15 of 1,479 narrow blocks, because the capacity refuses 175 of its moves, and it ends 0.01
+  percent ABOVE the sliding-window plan it smooths: an absorbed block that moves to an earlier period can
+  pay.
 - **Gershon's blind spot.** Every block above the vein has the vein in its successor set, so the Gershon
   order opens the whole strike length at once and pays for its waste early; on this archetype it loses to
   greedy ([03](../methodologies/03_toposort.md)).

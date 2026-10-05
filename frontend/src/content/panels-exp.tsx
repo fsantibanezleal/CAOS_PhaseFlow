@@ -339,7 +339,7 @@ export function DestinationPanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** Operability: coherence of the best plan, and what the min-width smoothing costs. */
+/** Operability: coherence of the best plan, and what the min-width smoothing changes in NPV. */
 export function OperabilityPanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
   const data = useManifests();
@@ -348,12 +348,12 @@ export function OperabilityPanel({ lang }: { lang: Lang }) {
   return (
     <div className="pfd-scroll">
       <table className="pfd-table">
-        <caption>{es ? 'Coherencia del mejor plan y del plan suavizado (ancho objetivo 3 bloques), y el costo en VAN; ambos planes son factibles.' : 'Coherence of the best plan and of the smoothed plan (target width 3 blocks), and the cost in NPV; both plans are feasible.'}</caption>
+        <caption>{es ? 'Coherencia del mejor plan y del plan suavizado (ancho objetivo 3 bloques), y el cambio de VAN: casi siempre un costo, y una pequeña ganancia donde un bloque absorbido pasa a un período anterior. Ambos planes son factibles.' : 'Coherence of the best plan and of the smoothed plan (target width 3 blocks), and the change in NPV: almost always a cost, and a small gain where an absorbed block moves to an earlier period. Both plans are feasible.'}</caption>
         <thead>
           <tr>
             <th>{es ? 'caso' : 'case'}</th><th className="num">{es ? 'componentes, mejor' : 'components, best'}</th><th className="num">{es ? 'fracción mayor' : 'largest share'}</th>
             <th className="num">{es ? 'bloques angostos antes' : 'narrow blocks before'}</th><th className="num">{es ? 'después' : 'after'}</th>
-            <th className="num">{es ? 'movidos, rechazados' : 'moved, refused'}</th><th className="num">{es ? 'costo VAN' : 'NPV cost'}</th>
+            <th className="num">{es ? 'movidos, rechazados' : 'moved, refused'}</th><th className="num">{es ? 'cambio de VAN' : 'NPV change'}</th>
           </tr>
         </thead>
         <tbody>
@@ -368,7 +368,7 @@ export function OperabilityPanel({ lang }: { lang: Lang }) {
                 <td className="num">{best?.largest_share_mean != null ? pctTxt(100 * best.largest_share_mean, 0) : '-'}</td>
                 <td className="num">{x.below_before ?? '-'}</td><td className="num">{x.below_after ?? '-'}</td>
                 <td className="num">{x.moved != null ? `${x.moved}, ${x.refused_for_capacity ?? 0}` : '-'}</td>
-                <td className="num">{x.npv_cost_pct != null ? pctTxt(x.npv_cost_pct, 3) : '-'}</td>
+                <td className="num">{x.npv_cost_pct != null ? `${-x.npv_cost_pct >= 0 ? '+' : ''}${pctTxt(-x.npv_cost_pct, 3)}` : '-'}</td>
               </tr>
             );
           })}
