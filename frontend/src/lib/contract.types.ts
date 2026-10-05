@@ -188,7 +188,10 @@ export interface CaseManifest {
   real_or_synthetic: 'real' | 'synthetic';
   default: boolean;
   engine: Record<string, string>;
-  scenario: { periods: number; discount_rate: number; period_one_undiscounted: boolean; n_resources: number; declared: boolean };
+  scenario: {
+    periods: number; discount_rate: number; period_one_undiscounted: boolean; n_resources: number; declared: boolean;
+    capacity_fraction?: number[]; limit_per_period?: number[]; resource_names?: string[];
+  };
   instance: { n_blocks: number; n_precedence_arcs: number; upit_value: number; upit_blocks: number };
   artifact: { path: string; format: string; trace_schema: string; bytes: number };
   lane: 'live' | 'replay';

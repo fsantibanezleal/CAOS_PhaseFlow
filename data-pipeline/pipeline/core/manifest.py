@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from .. import __version__
+from ..model.learned import capacity_fractions
 from .trace import TRACE_SCHEMA
 
 MANIFEST_SCHEMA = "phaseflow.manifest/v1"
@@ -82,6 +83,11 @@ def build_case_manifest(
             "period_one_undiscounted": cpit.period_one_undiscounted,
             "n_resources": cpit.n_resources,
             "declared": not bool(case.published),
+            # per-period limit over (pit resource total / periods), read off the instance so a
+            # published file with absolute limits is described on the same scale as a twin
+            "capacity_fraction": [round(f, 4) for f in capacity_fractions(cpit, instance.upit_in_pit)],
+            "limit_per_period": [round(float(v), 2) for v in cpit.limit[:, 0]],
+            "resource_names": list(cpit.resource_names or ()),
         },
         "instance": {
             "n_blocks": instance.n_blocks,
