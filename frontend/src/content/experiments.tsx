@@ -5,7 +5,7 @@
  */
 import type { TopicGroup } from './doc.tsx';
 import { MetricsFigure, QuestionsMap } from './figures/exp.tsx';
-import { DepositSplit, EnsembleFan, Operability, TopoSortWalk, SlidingWindow, DestinationChoice } from './figures/method.tsx';
+import { DepositSplit, EnsembleFan, Operability, TopoSortWalk, SlidingWindow, DestinationRecut } from './figures/method.tsx';
 import { Archetypes } from './figures/impl.tsx';
 import { LearnedStudyPanel } from './panels.tsx';
 import {
@@ -254,15 +254,15 @@ export const EXPERIMENTS: TopicGroup[] = [
         title: { en: 'Q7: what choosing destinations is worth', es: 'P7: cuánto vale elegir destinos' },
         paragraphs: [
           {
-            en: 'The destination plan starts from the best CPIT plan of the case and can only improve on it. Its gain over that plan has two sources, because each exact neighbourhood re-solve frees both the destinations and the periods of its blocks: choosing a destination other than the fixed cutoff, and re-timing blocks the CPIT search left where they were. The count of blocks whose destination differs from the fixed cutoff separates the two: where it is zero, the whole gain is re-timing, and the destination freedom was worth nothing on that case.',
-            es: 'El plan con destinos parte del mejor plan CPIT del caso y solo puede mejorarlo. Su ganancia sobre ese plan tiene dos fuentes, porque cada re-resolución exacta de vecindario libera a la vez los destinos y los períodos de sus bloques: elegir un destino distinto del corte fijo, y re-programar bloques que la búsqueda CPIT dejó donde estaban. El conteo de bloques cuyo destino difiere del corte fijo separa ambas: donde es cero, toda la ganancia es re-programación, y la libertad de destino no valió nada en ese caso.',
+            en: 'Each case with destination economics runs the three destination rungs: ExTS and the sliding window on the re-cut (the LP\'s destinations fixed), and the exact OPBSP-[D] search from the best of those and the best CPIT plan. The question is what choosing destinations is worth, so the table sets each plan beside the best CPIT plan of the same case and beside the PCPSP LP, which bounds them all. Lane\'s theory says where to expect value: where the plant binds, the cutoff should rise and the freedom should be worth a great deal; where only the fleet binds, it should be worth nothing; on newman1, whose two published LP bounds differ by 365 units, it should be worth almost nothing.',
+            es: 'Cada caso con economía de destinos corre los tres peldaños con destino: ExTS y la ventana deslizante sobre el re-corte (los destinos de la LP fijados), y la búsqueda exacta OPBSP-[D] desde el mejor de esos y el mejor plan CPIT. La pregunta es cuánto vale elegir destinos, de modo que la tabla pone cada plan junto al mejor plan CPIT del mismo caso y junto a la LP de PCPSP, que los acota a todos. La teoría de Lane dice dónde esperar valor: donde la planta limita, la ley de corte debería subir y la libertad debería valer mucho; donde solo limita la flota, no debería valer nada; en newman1, cuyas dos cotas LP publicadas difieren en 365 unidades, debería valer casi nada.',
           },
           {
-            en: 'The table also gives the plan\'s gap to the PCPSP LP bound and the range of the effective cutoff across periods: the lowest grade the plan sends to the plant in each period. A period that sends nothing to the plant has no effective cutoff and is left out of the range.',
-            es: 'La tabla también da la brecha del plan a la cota LP de PCPSP y el rango de la ley de corte efectiva entre períodos: la menor ley que el plan envía a la planta en cada período. Un período que no envía nada a la planta no tiene ley de corte efectiva y queda fuera del rango.',
+            en: 'Two further columns say how the value was obtained. The count of blocks whose destination differs from the fixed cutoff shows whether the destination freedom was used at all; where it is zero, any gain over CPIT is re-timing by the exact search, not a destination decision. The range of the effective cutoff across periods (the lowest grade the plan sends to the plant in each period) is the cutoff as a result; a period that sends nothing to the plant has no effective cutoff and is left out of the range.',
+            es: 'Dos columnas más dicen cómo se obtuvo el valor. El conteo de bloques cuyo destino difiere del corte fijo muestra si la libertad de destino se usó; donde es cero, cualquier ganancia sobre CPIT es re-programación de la búsqueda exacta, no una decisión de destino. El rango de la ley de corte efectiva entre períodos (la menor ley que el plan envía a planta en cada período) es la ley de corte como resultado; un período que no envía nada a planta no tiene ley de corte efectiva y queda fuera del rango.',
           },
         ],
-        figure: { caption: { en: 'The comparison behind every destination change.', es: 'La comparación detrás de cada cambio de destino.' }, render: (lang) => <DestinationChoice lang={lang} /> },
+        figure: { caption: { en: 'Which ore gets a binding plant, and the chain that schedules the re-cut.', es: 'Qué mineral recibe una planta que limita, y la cadena que programa el re-corte.' }, render: (lang) => <DestinationRecut lang={lang} />, wide: true },
         data: (lang) => <DestinationPanel lang={lang} />,
         refs: ['jelvez2018'],
       },

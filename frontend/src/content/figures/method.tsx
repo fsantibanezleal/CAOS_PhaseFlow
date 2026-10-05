@@ -374,28 +374,53 @@ export function DepositSplit({ lang }: { lang: Lang }) {
 }
 
 /** Destinations: per destination the earliest period that fits, then the best discounted choice. */
-export function DestinationChoice({ lang }: { lang: Lang }) {
-  const vb = '0 0 560 290';
-  const label = tr(lang, 'Wait for the plant, or dump now', 'Esperar la planta, o botar ahora');
-  return (
-    <Svg vb={vb} label={label}>
-      <line x1={40} y1={210} x2={520} y2={210} className="dg-axis" />
-      {[0, 1, 2, 3].map((t) => (
-        <g key={t}>
-          <rect x={60 + t * 115} y={70} width={95} height={60} rx={6} className="dg-box" style={t === 0 ? { fill: 'color-mix(in oklab, var(--color-bad) 14%, transparent)' } : undefined} />
-          <text x={107 + t * 115} y={96} textAnchor="middle" className="pfd-dg-small">{tr(lang, `plant, period ${t + 1}`, `planta, período ${t + 1}`)}</text>
-          <text x={107 + t * 115} y={114} textAnchor="middle" className="pfd-dg-mono">{t === 0 ? tr(lang, 'full', 'llena') : tr(lang, 'room', 'espacio')}</text>
-          <rect x={60 + t * 115} y={146} width={95} height={44} rx={6} className="dg-box" />
-          <text x={107 + t * 115} y={172} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'dump', 'botadero')}</text>
-          <text x={107 + t * 115} y={226} textAnchor="middle" className="dg-tick">{t + 1}</text>
+/** The re-cut: which ore gets a binding plant, under a fixed cutoff and under the LP's destinations. */
+export function DestinationRecut({ lang }: { lang: Lang }) {
+  const vb = '0 0 560 340';
+  const label = tr(lang, 'The re-cut on the PCPSP relaxation', 'El re-corte sobre la relajación PCPSP');
+  const mk = arrowId(vb, label);
+  const s = 34;
+  const section = (ox: number, marginal: string, rich: string) => (
+    <g>
+      {[0, 1, 2].flatMap((r) => [0, 1, 2, 3, 4].map((c) => (
+        <rect key={`${ox}-${r}-${c}`} x={ox + c * s} y={70 + r * s} width={s - 3} height={s - 3} rx={3}
+              className={r === 0 ? undefined : r === 1 ? 'dg-fill-warn' : 'dg-fill-accent'}
+              style={r === 0 ? { fill: 'var(--color-surface-2)' } : undefined} />
+      )))}
+      {[0, 1, 2, 3, 4].map((c) => (
+        <g key={`${ox}-l-${c}`}>
+          <text x={ox + c * s + (s - 3) / 2} y={70 + s + 20} textAnchor="middle" className="pfd-dg-mono">{marginal}</text>
+          <text x={ox + c * s + (s - 3) / 2} y={70 + 2 * s + 20} textAnchor="middle" className="pfd-dg-mono">{rich}</text>
         </g>
       ))}
-      <text x={280} y={36} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'an ore block whose cover is mined in period 1', 'un bloque de mineral cuya cobertura se extrae en el período 1')}</text>
-      <text x={280} y={54} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'compare d_2 p_plant against d_1 p_dump and take the larger', 'comparar d_2 p_planta contra d_1 p_botadero y tomar el mayor')}</text>
-      <circle cx={222} cy={100} r={9} className="dg-node" style={{ stroke: 'var(--color-good)' }} />
-      <circle cx={107} cy={168} r={9} className="dg-node" style={{ stroke: 'var(--color-fg-faint)', strokeDasharray: '3 2' }} />
-      <text x={280} y={252} textAnchor="middle" className="dg-note">{tr(lang, 'the cutoff that comes out is the lowest grade actually sent to the plant in each period', 'la ley de corte resultante es la menor ley enviada a planta en cada período')}</text>
-      <text x={280} y={270} textAnchor="middle" className="dg-note">{tr(lang, 'taking the first period where any destination fits would dump the ore', 'tomar el primer período donde cabe cualquier destino botaría el mineral')}</text>
+    </g>
+  );
+  const flow = [
+    ['PCPSP LP', 'HiGHS'],
+    [tr(lang, 're-cut', 're-corte'), tr(lang, 'its destinations', 'sus destinos')],
+    ['CPIT', tr(lang, 'same values', 'mismos valores')],
+    [tr(lang, 'schedule', 'programar'), tr(lang, 'ExTS · window', 'ExTS · ventana')],
+    [tr(lang, 'search', 'búsqueda'), 'OPBSP-[D]'],
+  ];
+  return (
+    <Svg vb={vb} label={label}>
+      <text x={280} y={24} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'which ore gets the plant when the plant binds', 'qué mineral recibe la planta cuando la planta limita')}</text>
+      <text x={125} y={56} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'fixed cutoff (CPIT)', 'corte fijo (CPIT)')}</text>
+      <text x={435} y={56} textAnchor="middle" className="pfd-dg-small">{tr(lang, 're-cut on the relaxation', 're-corte sobre la relajación')}</text>
+      {section(42, 'P', '3')}
+      {section(352, 'D', '1')}
+      <text x={125} y={192} textAnchor="middle" className="dg-note">{tr(lang, 'marginal ore takes plant tonnage;', 'el mineral marginal toma tonelaje de planta;')}</text>
+      <text x={125} y={207} textAnchor="middle" className="dg-note">{tr(lang, 'the rich ore below waits (period 3)', 'el mineral rico de abajo espera (período 3)')}</text>
+      <text x={435} y={192} textAnchor="middle" className="dg-note">{tr(lang, 'the LP dumps the marginal ore;', 'la LP bota el mineral marginal;')}</text>
+      <text x={435} y={207} textAnchor="middle" className="dg-note">{tr(lang, 'the plant goes to the rich ore now', 'la planta va al mineral rico ahora')}</text>
+      <text x={280} y={232} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'rows: waste, marginal ore, rich ore; P plant, D dump, digits the period the rich ore is processed', 'filas: estéril, mineral marginal, mineral rico; P planta, D botadero, dígitos el período en que se procesa el mineral rico')}</text>
+      {flow.map(([t, sub], i) => (
+        <g key={t}>
+          <Box x={14 + i * 108} y={250} w={96} h={44} title={t} sub={[sub]} accent={i === 1} />
+          {i < flow.length - 1 && <Arrow x1={110 + i * 108} y1={272} x2={122 + i * 108} y2={272} markerId={mk} />}
+        </g>
+      ))}
+      <text x={280} y={318} textAnchor="middle" className="dg-note">{tr(lang, 'every plan of the re-cut CPIT is a PCPSP plan at the same value; the search frees every destination again', 'todo plan del CPIT re-cortado es un plan PCPSP del mismo valor; la búsqueda libera de nuevo todo destino')}</text>
     </Svg>
   );
 }
