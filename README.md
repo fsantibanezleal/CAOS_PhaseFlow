@@ -39,10 +39,9 @@ second check: a CPIT LP bound must sit BELOW a PCPSP LP bound, because PCPSP is 
 it does, by 365 units in 24.5 million. The schedule sits below the 2018 PCPSP feasible result, but the
 two gap percentages use different LP bounds and must not be read as a like-for-like method contest. It
 sits above the best known feasible CPIT value MineLib still lists, 23,483,671 (4.1%), which predates
-both the 2018 results and the external optimum below. The PhaseFlow gap closed from 2.49 percent when the sliding
-time window stopped being a greedy: its `window` argument had changed nothing, so the rung was a
-one-period-at-a-time heuristic carrying a look-ahead method's citation. The 2018 PCPSP numbers are
-from Tables 3 and 4 of [Jelvez, Morales and Nancel-Penard](https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf).
+both the 2018 results and the external optimum below. The best plan is the sliding time window
+(Cullenbine, Wood and Newman), solved as a MILP per window on an LP-guided candidate set. The 2018 PCPSP
+numbers are from Tables 3 and 4 of [Jelvez, Morales and Nancel-Penard](https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf).
 
 An [external AMPL/Gurobi notebook](https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html)
 later reports an integer optimum of 24,176,864.82 for Newman1 CPIT, with a matching MIP best bound.
@@ -64,9 +63,27 @@ standing block adjacent to an already-mined one takes the period of the neighbou
 pit wall is then 100 percent period-coloured at every frame including the last, and it is what the
 discipline already draws (Chicoisne et al. Figure 1d; Morales et al. pit profiles).
 
+**The cutoff grade is an output, and the relaxation chooses it.** When the plant binds, which ore gets
+the plant is the decision. A rule that compares a block's two values sends every marginal ore block to
+the plant and starves the richer ore below; the PCPSP LP prices that opportunity cost (Lane's
+mill-limited cutoff). PhaseFlow fixes each block where the LP sends it (the re-cut), schedules that
+instance with ExTS and the sliding window, then searches destinations exactly. On a 320-block twin solved
+exactly, choosing destinations is worth about 59 percent over the fixed cutoff; on `twin-porphyry-s` the
+destination plan is 35 percent above the best fixed-cutoff plan and 1.03 percent from its own bound.
+
+**The learned plan is instant, and scored as it lands.** In the browser, every control change draws a
+learned plan on the next frame (a small MLP predicts the LP expected times, no LP solve); the exact
+bound and plans follow from a worker within a few seconds, replace it, and the share of the exact plan
+it reached is shown. Where the surrogate fails is measured on three disjoint seed sets and stated.
+
 **Spatial coherence is measured, not assumed.** The algorithm's own authors warn that block-level
 schedules scatter across the mine. PhaseFlow reports connected components per period, the share in
 the largest, and the narrowest mined run, next to the NPV that would otherwise flatter it.
+
+**Everything is documented where it is measured.** The [docs wiki](docs/README.md) has a page per method
+(theory, equations, references, and its results on every case), a page per case, the data contract, the
+architecture, the frameworks and the guides; its measured tables are generated from the committed
+artifacts and checked in CI.
 
 ## Run it
 
@@ -86,9 +103,10 @@ options and the release gates: [`scripts/local/README.md`](scripts/local/README.
 ```
 
 The MineLib instances are an academic download and are never redistributed:
-`python scripts/fetch_minelib.py --all` puts them in a git-ignored folder. `02_generate-data` bakes
-into `build/local` unless you pass `--release`, so it cannot overwrite the committed evidence by
-accident. `npm test` runs the engine, parity, contract and design-token gates.
+`python scripts/fetch_minelib.py --all` puts them in the machine's data folder (`PHASEFLOW_DATA_DIR`) or
+a git-ignored one. `02_generate-data` bakes into `build/local` unless you pass `--release`, so it cannot
+overwrite the committed evidence by accident; the whole set takes hours and runs cases side by side
+(`PHASEFLOW_BAKE_JOBS`). `npm test` runs the engine, parity, contract and design-token gates.
 
 ## Shape
 
@@ -96,7 +114,9 @@ accident. `npm test` runs the engine, parity, contract and design-token gates.
 |---|---|
 | `data-pipeline/` | repo-local tooling, invoked by path. **Not a package.** |
 | `data/derived/` | the committed evidence: one trace and one manifest per case |
-| `frontend/src/engine/` | the TypeScript live lane: max-flow, the critical multiplier bound, TopoSort |
+| `frontend/src/engine/` | the TypeScript live lane: max-flow, the critical multiplier bound, TopoSort, the learned forward pass, the worker |
+| `frontend/src/content/` | the five reading pages: topics, data panels read from the artifacts, figures |
+| `models/` | the learned models, their metrics and the failure study, committed |
 | `frontend/src/viz/` | the stage, the profile and plan views, the charts |
 | `docs/` | the wiki |
 | `app/` | dormant; PhaseFlow needs no backend |
