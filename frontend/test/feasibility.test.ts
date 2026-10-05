@@ -1,7 +1,6 @@
 // The infeasibility label is computed from each schedule's own per-period record. These assertions pin
-// it to the baked artifacts: every rung that is ranked against the certified bound must be within
-// capacity, the operability view that does not re-impose capacity must be caught where it overruns, and
-// the twin-vein plan whose NPV is above the bound must be one of the plans the label catches.
+// it to the baked artifacts, where every rung must be within capacity, and to a synthetic record, where
+// it must catch the overrun with its resource and period.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -36,16 +35,31 @@ test('a plan above the certified bound is always caught as infeasible', () => {
   }
 });
 
-test('the twin-vein min-width overrun is the one the record holds', () => {
-  const t = traces().find((x) => x.caseId === 'twin-vein');
-  assert.ok(t);
-  const m = t.methods.find((x) => x.method === 'min-width');
-  assert.ok(m);
-  const o = largestOverrun(m.periods);
+test('every rung, the beyond ones included, is within capacity on every case', () => {
+  // Until 0.08.000 min-width did not re-impose capacity and its twin-vein record ran +32.2 percent over
+  // processing in period 1; since oreblocks 0.6.0 every rung keeps capacity, and a label firing on the
+  // committed artifacts would now be the defect.
+  for (const t of traces()) {
+    for (const m of t.methods) {
+      assert.equal(largestOverrun(m.periods), null, `${t.caseId}/${m.method} overruns capacity`);
+    }
+  }
+});
+
+test('the label catches an overrun on a synthetic record, with its resource and period', () => {
+  // the committed artifacts no longer hold an overrun, so the label is held to one built here
+  const periods = [
+    { t: 1, resourceUse: [80, 40], resourceLimit: [100, 50] },
+    { t: 2, resourceUse: [100, 66.11], resourceLimit: [100, 50] },
+    { t: 3, resourceUse: [104, 20], resourceLimit: [100, 50] },
+  ];
+  const o = largestOverrun(periods);
   assert.ok(o);
-  assert.equal(t.scenario.resources[o.resource].name, 'processing');
-  assert.equal(o.period, 1);
-  assert.ok(Math.abs(o.pct - 32.2233) < 1e-3, `overrun ${o.pct}`);
+  assert.equal(o.resource, 1);
+  assert.equal(o.period, 2);
+  assert.ok(Math.abs(o.pct - 32.22) < 1e-9, `overrun ${o.pct}`);
+  assert.equal(largestOverrun([{ t: 1, resourceUse: [100 * (1 + 1e-9)], resourceLimit: [100] }]), null,
+    'float accumulation inside the tolerance is not an overrun');
 });
 
 test('a feasible beyond plan is not labelled infeasible', () => {
