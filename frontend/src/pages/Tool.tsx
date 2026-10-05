@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Maximize2 } from 'lucide-react';
 import { Callout, Cite, Tabs } from '@fasl-work/caos-app-shell';
-import { fmtInt, fmtMoney, fmtTonnes, dec, exp, overrunText, resourceLabel } from '../lib/artifacts.ts';
+import { fmtDuration, fmtInt, fmtMoney, fmtTonnes, dec, exp, overrunText, resourceLabel, rungLabel } from '../lib/artifacts.ts';
 import { largestOverrun } from '../lib/feasibility.ts';
 import type { CaseIndexEntry } from '../lib/contract.types.ts';
 import { stageLabel, useCase } from '../lib/useCase.ts';
@@ -240,7 +240,7 @@ export default function Tool() {
               <thead>
                 <tr>
                   <th>{es ? 'método' : 'method'}</th><th>{es ? 'peldaño' : 'rung'}</th><th>NPV</th><th>{es ? 'cota' : 'bound'}</th>
-                  <th>{es ? 'brecha' : 'gap'}</th><th>ms</th><th>{es ? 'bloques' : 'blocks'}</th><th>{es ? 'notas' : 'notes'}</th>
+                  <th>{es ? 'brecha' : 'gap'}</th><th>{es ? 'tiempo' : 'time'}</th><th>{es ? 'bloques' : 'blocks'}</th><th>{es ? 'notas' : 'notes'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -248,8 +248,8 @@ export default function Tool() {
                   const over = largestOverrun(m.periods);
                   return (
                     <tr key={m.method} data-infeasible={over ? 'true' : undefined}>
-                      <td>{m.method}</td><td>{m.rung}</td><td>{fmtMoney(m.npv)}</td><td>{m.rung === 'beyond' ? '-' : fmtMoney(m.bound)}</td>
-                      <td className={over ? 'pf-warn' : undefined}>{over ? overrunText(over, resources, true) : m.rung === 'beyond' ? '-' : `${dec(m.gapPct, 2)}%`}</td><td>{dec(m.runtimeMs, 0)}</td><td>{m.minedBlocks}</td>
+                      <td>{m.method}</td><td>{rungLabel(m.rung)}</td><td>{fmtMoney(m.npv)}</td><td>{m.rung === 'beyond' ? '-' : fmtMoney(m.bound)}</td>
+                      <td className={over ? 'pf-warn' : undefined}>{over ? overrunText(over, resources, true) : m.rung === 'beyond' ? '-' : `${dec(m.gapPct, 2)}%`}</td><td>{fmtDuration(m.runtimeMs)}</td><td>{m.minedBlocks}</td>
                       <td style={{ textAlign: 'left' }} className="pf-cap pf-muted"><EngineText text={m.notes} /></td>
                     </tr>
                   );
