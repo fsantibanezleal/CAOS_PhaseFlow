@@ -19,6 +19,9 @@ other twins), and the learned rung's easiest archetype in the failure study
 ([08](../methodologies/08_when-the-surrogate-fails.md)) is not layered but porphyry: compare its measured
 share in the table with the other twins.
 
+At this size two bounds change. The time-expanded graph (144,000 nodes, 1,291,200 edges) is above the joint
+bound's certification budget, so the CPIT gaps are measured against Algorithm 4; and its PCPSP LP (1,435,220 rows) is above the HiGHS row budget, so the destination plans are measured against the LP's Lagrangian dual by maximum closures on the same graph ([02](../methodologies/02_the-bound.md), section 5.2): the LP value up to the rounding slack the table records.
+
 ## Bounds
 
 <!-- generated:case-bounds:twin-layered -->

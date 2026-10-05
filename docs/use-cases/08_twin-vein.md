@@ -25,6 +25,9 @@ It is also one of the two archetypes where the learned rung fails most often. Be
 case's smoothed plan reported an NPV above the certified bound, because `min-width` broke capacity; that is
 the defect that put a capacity check on every rung.
 
+At this size two bounds change. The time-expanded graph (144,000 nodes, 1,291,200 edges) is above the joint
+bound's certification budget, so the CPIT gaps are measured against Algorithm 4; and its PCPSP LP (1,435,220 rows) is above the HiGHS row budget, so the destination plans are measured against the LP's Lagrangian dual by maximum closures on the same graph ([02](../methodologies/02_the-bound.md), section 5.2): the LP value up to the rounding slack the table records.
+
 ## Bounds
 
 <!-- generated:case-bounds:twin-vein -->
