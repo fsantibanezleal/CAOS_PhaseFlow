@@ -5,7 +5,7 @@
  * attributed constants, each with its source and the date it was read.
  */
 import { useEffect, useRef, useState } from 'react';
-import { dec, fmtInt, fmtMoney, loadTrace } from '../lib/artifacts.ts';
+import { boundSlackText, dec, fmtDuration, fmtInt, fmtMoney, loadTrace } from '../lib/artifacts.ts';
 import type { CaseManifest, ScheduleTrace, ScoreboardRow } from '../lib/contract.types.ts';
 import type { ParityResponse } from '../engine/solver.worker.ts';
 import { GapLadderFigure } from './figures/gap.tsx';
@@ -151,7 +151,7 @@ export function NewmanPcpspPanel({ lang }: { lang: Lang }) {
             <tr><th scope="row">{es ? 'LP PCPSP menos LP CPIT (debe ser no negativa)' : 'PCPSP LP minus CPIT LP (must be non-negative)'}</th><td className="num">{lp != null && cpitBound != null ? signed(lp - cpitBound) : '-'}</td><td className="num">{signed(JELVEZ_NEWMAN1_PCPSP.lpBound - MINELIB_NEWMAN1_CPIT.lpBound)}</td><td className="num">-</td></tr>
             <tr><th scope="row">{es ? 'bloques con destino distinto del corte fijo' : 'blocks with a destination other than the fixed cutoff'}</th><td className="num">{x.moved_vs_fixed ?? '-'}</td><td className="num">-</td><td className="num">-</td></tr>
             <tr><th scope="row">{es ? 'plan inicial de la búsqueda' : 'start of the search'}</th><td className="num">{(x.start_method as string) ?? '-'}</td><td className="num">-</td><td className="num">-</td></tr>
-            <tr><th scope="row">{es ? 'tiempo de la LP PCPSP' : 'PCPSP LP time'}</th><td className="num">{m.bound_summary?.pcpsp_lp_ms != null ? `${dec(m.bound_summary.pcpsp_lp_ms / 1000, 1)} s` : '-'}</td><td className="num">-</td><td className="num">-</td></tr>
+            <tr><th scope="row">{es ? 'tiempo de la LP PCPSP' : 'PCPSP LP time'}</th><td className="num">{fmtDuration(m.bound_summary?.pcpsp_lp_ms)}</td><td className="num">-</td><td className="num">-</td></tr>
           </tbody>
         </table>
       </div>
@@ -228,7 +228,7 @@ export function BestPerCasePanel({ lang }: { lang: Lang }) {
                 <td className="num">{best ? fmtMoney(best.bound) : '-'}</td>
                 <td>{b ? (b.used === 'bienstock-zuckerberg' ? (es ? 'LP conjunta (BZ)' : 'joint LP (BZ)') : (es ? 'Algoritmo 4' : 'Algorithm 4')) : '-'}</td>
                 <td className="num">{pctTxt(best?.gap_pct, 3)}</td>
-                <td className="num">{b?.tightening_pct != null ? pctTxt(b.tightening_pct, 3) : (b?.joint_skipped ? (es ? 'conjunta no corrió' : 'joint not run') : '-')}</td>
+                <td className="num">{b?.tightening_pct != null ? boundSlackText(b.tightening_pct) : (b?.joint_skipped ? (es ? 'conjunta no corrió' : 'joint not run') : '-')}</td>
                 <td>{m.controls.allPass ? (es ? 'pasan' : 'pass') : <b style={{ color: 'var(--color-bad)' }}>{es ? 'fallan' : 'fail'}</b>}</td>
               </tr>
             );
@@ -239,7 +239,7 @@ export function BestPerCasePanel({ lang }: { lang: Lang }) {
   );
 }
 
-const timeTxt = (ms: number | null | undefined) => (ms == null || !Number.isFinite(ms) ? '-' : ms >= 60_000 ? `${dec(ms / 60_000, 1)} min` : ms >= 1000 ? `${dec(ms / 1000, 1)} s` : `${dec(ms, 0)} ms`);
+const timeTxt = fmtDuration;
 
 /** The wall time of every bound and method on every case, as the bake measured it. */
 export function RuntimePanel({ lang }: { lang: Lang }) {
