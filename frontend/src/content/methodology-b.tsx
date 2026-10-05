@@ -158,6 +158,10 @@ export const SCHEDULES: TopicGroup = {
           es: 'El modelo restringido lleva las restricciones reales de todo el plan. La capacidad que usan los bloques fijos se descuenta de cada período; un predecesor fijo impone un piso a cuándo puede extraerse un bloque libre, y un sucesor fijo impone un techo. Equivocar cualquiera de las dos direcciones produce un plan que extrae un bloque antes de la roca sobre él y que igual pasa un control de valor. Toda re-resolución aceptada es una mejora demostrada del problema restringido, de modo que el objetivo es otra vez monótono. Los autores midieron su heurística en 0,937 a 0,986 de la cota antes de la búsqueda local y 0,955 a 0,997 después de una hora de ella.',
         },
         {
+          en: 'Both searches start from the same rounding, ExTS on the Algorithm 4 relaxations, and the exact one from the shift plan, so the ladder shows what each neighbourhood adds to that plan. Neither starts from the sliding window\'s plan: where the window leads, by several points on most cases, that distance is the look-ahead a neighbourhood of 180 blocks does not have. The operability rung smooths whichever comparable plan is best, which on most cases is the window\'s.',
+          es: 'Las dos búsquedas parten del mismo redondeo, ExTS sobre las relajaciones del Algoritmo 4, y la exacta desde el plan de desplazamiento, de modo que la escalera muestra lo que cada vecindario agrega a ese plan. Ninguna parte del plan de la ventana deslizante: donde la ventana lidera, por varios puntos en la mayoría de los casos, esa distancia es la anticipación que un vecindario de 180 bloques no tiene. El peldaño de operabilidad suaviza el plan comparable que sea mejor, que en la mayoría de los casos es el de la ventana.',
+        },
+        {
           en: 'Each re-solve stops on a relative MIP gap and never on a wall-clock limit. A time limit makes the answer depend on the machine and its load, and a bake whose artifacts are evidence must be reproducible from its inputs and seed; a relative gap is a property of the problem and stops in the same place everywhere.',
           es: 'Cada re-resolución se detiene en una brecha MIP relativa y nunca en un límite de reloj. Un límite de tiempo hace que la respuesta dependa de la máquina y de su carga, y un horneado cuyos artefactos son evidencia debe ser reproducible desde sus entradas y su semilla; una brecha relativa es una propiedad del problema y se detiene en el mismo lugar en todas partes.',
         },
@@ -174,6 +178,7 @@ export const SCHEDULES: TopicGroup = {
       ],
       limits: [
         { en: 'A local optimum of a neighbourhood, not of the problem.', es: 'Un óptimo local de un vecindario, no del problema.' },
+        { en: 'The exact search is not seeded from the sliding window\'s plan; what it would add there is not measured in this release.', es: 'La búsqueda exacta no se siembra desde el plan de la ventana deslizante; lo que agregaría ahí no está medido en esta versión.' },
         { en: 'The published runs used CPLEX for an hour on neighbourhoods of up to 3,250 blocks; here the neighbourhoods are smaller and the rounds few.', es: 'Las corridas publicadas usaron CPLEX una hora sobre vecindarios de hasta 3.250 bloques; aquí los vecindarios son menores y las rondas pocas.' },
       ],
       refs: ['chicoisne2012', 'lamghari2012', 'huangfu2018'],
