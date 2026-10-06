@@ -72,6 +72,13 @@ repository or the browser, and the app shows numbers and charts for this case bu
 ## Bounds
 
 <!-- generated:case-bounds:newman1-published -->
+| bound | value | time | detail |
+| --- | ---: | ---: | --- |
+| ultimate pit (UPIT, exact, undiscounted) | 26,086,899 |  | 1,059 of 1,060 blocks; no time, no capacity |
+| Algorithm 4 (min over single-resource LPs) | 24,487,410 | 2.1 s | 79 maximum closures |
+| joint LP (Bienstock-Zuckerberg) | 24,486,184 | 2.7 s | 9 iterations on 6,360 nodes, 28,832 edges; slack of Algorithm 4: 0.0050% |
+| PCPSP LP (HiGHS, destinations free) | 24,486,549 | 3.2 s | 35,204 rows, status optimal |
+| used for every CPIT gap on this case | joint LP |  |  |
 <!-- /generated -->
 
 ## Every method on this case
@@ -81,6 +88,22 @@ CPIT bound the case uses. Coherence is the mean over periods of the connected co
 the largest one.
 
 <!-- generated:case:newman1-published -->
+| method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
+| --- | --- | ---: | --- | ---: | ---: | --- |
+| `bench-by-bench` | classical | 22,915,557 | joint LP | 6.41% | 13 ms | 6.0 / 92% |
+| `nested-shells` | classical | 23,839,631 | joint LP | 2.64% | 11 ms | 4.8 / 93% |
+| `toposort-greedy` | classical | 23,552,842 | joint LP | 3.81% | 13 ms | 6.8 / 88% |
+| `toposort-gershon` | classical | 23,474,084 | joint LP | 4.13% | 25 ms | 12.2 / 75% |
+| `toposort-expected` | sota | 23,864,349 | joint LP | 2.54% | 2.2 s | 10.0 / 84% |
+| `exts-two-resource` | sota | 23,864,349 | joint LP | 2.54% | 2.2 s | 10.0 / 84% |
+| `shift-local-search` | sota | 23,873,589 | joint LP | 2.50% | 11 ms | 9.8 / 83% |
+| `sliding-window` **(best)** | sota | 24,149,869 | joint LP | 1.37% | 15.8 s | 11.7 / 89% |
+| `cpitD-local-search` | sota | 23,875,538 | joint LP | 2.49% | 1.2 s | 9.2 / 83% |
+| `learned-expected-time` | learned | 23,894,774 | joint LP | 2.42% | 23 ms | 8.7 / 91% |
+| `destination-toposort` | beyond | 23,864,349 | PCPSP LP | 2.54% | 2.6 s | 10.0 / 84% |
+| `destination-sliding-window` | beyond | 24,149,869 | PCPSP LP | 1.38% | 19.3 s | 11.7 / 89% |
+| `destination-local-search` | beyond | 24,151,564 | PCPSP LP | 1.37% | 2.6 s | 11.0 / 89% |
+| `min-width` | beyond | 24,052,701 | joint LP | 1.77% | 71 ms | 7.3 / 90% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/newman1-published.json` by `scripts/docs_tables.py`.*

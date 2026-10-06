@@ -216,6 +216,21 @@ Every bound of every case, with its time. The slack of Algorithm 4 is the part o
 belongs to the bound; where the joint LP is above the budget the case keeps Algorithm 4.
 
 <!-- generated:bounds -->
+| case | Algorithm 4 | time | joint LP (BZ) | time | slack of Algorithm 4 | PCPSP LP | by | time |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: |
+| [`newman1-published`](../use-cases/01_newman1-published.md) | 24,487,410 | 2.1 s | 24,486,184 | 2.7 s | 0.0050% | 24,486,549 | HiGHS LP | 3.2 s |
+| [`zuck-small-declared`](../use-cases/02_zuck-small-declared.md) | 719,234,226 | 10.3 min | 719,234,226 | 2.0 min | 0.0000% | - | - | - |
+| [`kd-declared`](../use-cases/03_kd-declared.md) | 254,345,711 | 20.4 min | above budget | - | - | - | - | - |
+| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | 234,230,542 | 25.5 s | 234,230,542 | 7.7 s | 0.0000% | 316,475,407 | HiGHS LP | 17.9 min |
+| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | 326,536,185 | 73.6 s | 326,536,185 | 33.0 s | 0.0000% | 442,009,363 | HiGHS LP | 2.65 h |
+| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | 97,374,026 | 65.0 s | above budget | - | - | 131,860,392 | Lagrangian dual (74 it.) | 40.9 s |
+| [`twin-layered`](../use-cases/07_twin-layered.md) | 1,111,128,369 | 106.5 s | above budget | - | - | 1,365,530,202 | Lagrangian dual (109 it.) | 68.8 s |
+| [`twin-vein`](../use-cases/08_twin-vein.md) | 285,385,074 | 112.2 s | above budget | - | - | 370,316,501 | Lagrangian dual (337 it.) | 15.2 min |
+| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | 184,634,637 | 37.6 s | 184,634,637 | 13.6 s | 0.0000% | 256,466,648 | HiGHS LP | 19.7 min |
+| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | 129,686,447 | 34.7 s | 129,686,447 | 19.3 s | 0.0000% | 207,638,997 | HiGHS LP | 27.4 min |
+| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | 187,991,036 | 52.4 s | 187,991,077 | 22.7 s | none (BZ ended 0.22 ppm above, inside its tolerance) | 187,991,036 | HiGHS LP | 95.7 min |
+| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | 428,750,527 | 19.3 s | 428,750,584 | 11.5 s | none (BZ ended 0.13 ppm above, inside its tolerance) | 438,824,759 | HiGHS LP | 99.9 s |
+| [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | 473,615,066 | 98 ms | one resource: Algorithm 4 is exact | - | - | 473,615,066 | HiGHS LP | 236 ms |
 <!-- /generated -->
 
 ## 7. The gap

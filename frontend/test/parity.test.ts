@@ -177,10 +177,11 @@ test('the ladder spans its rungs and none is empty by accident', () => {
   assert.ok(t.methods.length >= 10, `only ${t.methods.length} methods ran`);
 });
 
-test('every schedule is measured against the SAME bound, and the tighter one is used', () => {
+test('every CPIT schedule is measured against the SAME bound, and the tighter one is used', () => {
   const t = load(CASE);
-  const bounds = new Set(t.methods.map((m) => Math.round(m.bound)));
-  assert.equal(bounds.size, 1, 'methods are being compared against different bounds');
+  // the destination plans solve PCPSP and carry its bound; the next test holds them to it
+  const bounds = new Set(t.methods.filter((m) => !m.method.startsWith('destination-')).map((m) => Math.round(m.bound)));
+  assert.equal(bounds.size, 1, 'CPIT plans are being compared against different bounds');
   const b = t.bound;
   // `bound` is optional in the mirror because an artifact baked before it existed is a valid older
   // artifact. On a case in THIS bake it is always present, and saying so here is the assertion.

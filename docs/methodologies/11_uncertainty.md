@@ -79,6 +79,21 @@ knowing what produced it.
 ## 5. Measured on every case, and what the value of re-planning says here
 
 <!-- generated:ensemble -->
+| case | realisations | best by expected NPV | best by P10 | optimism of the single model (best plan) | value of re-planning | note |
+| --- | ---: | --- | --- | ---: | ---: | --- |
+| [`newman1-published`](../use-cases/01_newman1-published.md) | 12 | `sliding-window` | `sliding-window` | 403,617 | 0.000% |  |
+| [`zuck-small-declared`](../use-cases/02_zuck-small-declared.md) | 12 | `sliding-window` | `sliding-window` | -1,901,885 | 0.000% |  |
+| [`kd-declared`](../use-cases/03_kd-declared.md) | 12 | `sliding-window` | `sliding-window` | -1,269,675 | 0.000% |  |
+| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | 12 | `sliding-window` | `sliding-window` | 1,478,996 | 0.000% |  |
+| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | 12 | `sliding-window` | `sliding-window` | -1,873,864 | 0.000% |  |
+| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | 12 | `sliding-window` | `sliding-window` | -817,432 | 0.000% |  |
+| [`twin-layered`](../use-cases/07_twin-layered.md) | 12 | `cpitD-local-search` | `cpitD-local-search` | 1,245,862 | 0.000% |  |
+| [`twin-vein`](../use-cases/08_twin-vein.md) | 12 | `sliding-window` | `sliding-window` | -2,666,150 | 0.000% |  |
+| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | 12 | `sliding-window` | `sliding-window` | 1,271,549 | 0.000% |  |
+| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | 12 | `sliding-window` | `sliding-window` | 932,178 | 0.000% |  |
+| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | 12 | `sliding-window` | `sliding-window` | 909,358 | 0.000% |  |
+| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | 12 | `cpitD-local-search` | `cpitD-local-search` | 551,122 | 0.000% |  |
+| [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | not run | - | - | - | - | a single-period scenario has no schedule to stress |
 <!-- /generated -->
 
 **Read the value-of-re-planning column for what it is.** It is zero on every case. The fixed plans
