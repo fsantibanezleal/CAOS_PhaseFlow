@@ -23,19 +23,27 @@ sandbox and assert the committed files are byte-identical afterwards.
 
 ## What it costs, and how to run it
 
-The whole set takes hours. Per case, on one core of a workstation (the 0.08 release):
+The whole set takes the better part of a day. Per case, two BLAS threads each, cases side by side (the
+0.08 release; every number per case is in `docs/validation/release-0.08.000.md`):
 
 | step | where it bites |
 |---|---|
-| the PCPSP LP (HiGHS) | minutes on the 6,912-block twins, about two hours on the largest |
-| the sliding window, twice (CPIT and the re-cut) | half an hour to two hours each on the twins |
-| the critical multiplier bound | about ten minutes on `zuck-small-declared` |
+| the PCPSP bound | HiGHS: 2 to 160 minutes up to 1.1 million rows (159 on `twin-porphyry-l`); above that its Lagrangian dual, about 15 minutes on a 14,400-block twin |
+| the CPIT sliding window | 7 minutes to 3 hours on the twins, 132 minutes on `zuck-small-declared`, 632 minutes on `kd-declared` |
+| the re-cut sliding window | 9 minutes to a little over 2 hours on the twins |
+| the critical multiplier bound | 10 minutes on `zuck-small-declared`, 20 on `kd-declared` |
 | everything else | seconds to minutes |
+
+Most window MILPs close at the root node in seconds to minutes. A few do not: their LP solution is far from
+integral and the first feasible solution is poor, and one such window can run for hours (KD's last full
+window; the fifth window of `twin-layered`, a 172 percent gap at the root). The bake keeps a relative gap
+and no time limit, because a time limit would make the plan depend on the machine, so a release bake is
+long and this table says so.
 
 So the cases run side by side: `--jobs N` bakes N cases at once as separate processes, the largest first,
 and writes the index only if every case succeeded. Each process sets two BLAS threads unless told
-otherwise. Mind the memory: the PCPSP LP of a 14,400-block twin holds about 1.4 million rows, and eight at
-once used most of 48 GB. The bake prints a line per case as each lands, so a slow bake and a stuck one are
+otherwise. Mind the memory: the HiGHS LP of the 10,976-block twin holds about 1.1 million rows, and eight
+cases at once used most of 48 GB. The bake prints a line per case as each lands, so a slow bake and a stuck one are
 distinguishable; to see where a case is, `py-spy dump --pid <pid>` (that is how a four-hour runaway was
 once diagnosed as the ensemble computing a bound per realisation and never reading it).
 
