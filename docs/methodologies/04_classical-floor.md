@@ -83,6 +83,22 @@ on a Brazilian iron ore project was found only in secondary summaries and is **n
 ## 4. Measured on every case
 
 <!-- generated:methods:bench-by-bench,nested-shells -->
+| case | bound | `bench-by-bench` | `nested-shells` | best plan of the case |
+| --- | --- | ---: | ---: | --- |
+| [`newman1-published`](../use-cases/01_newman1-published.md) | joint LP | 6.41% | 2.64% | `sliding-window` 1.37% |
+| [`zuck-small-declared`](../use-cases/02_zuck-small-declared.md) | joint LP | 51.78% | 31.12% | `sliding-window` 2.81% |
+| [`kd-declared`](../use-cases/03_kd-declared.md) | Algorithm 4 | 36.60% | 36.12% | `sliding-window` 6.23% |
+| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | joint LP | 54.09% | 44.15% | `sliding-window` 1.34% |
+| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | joint LP | 60.05% | 45.29% | `sliding-window` 1.57% |
+| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | Algorithm 4 | 103.85% | 67.05% | `sliding-window` 3.18% |
+| [`twin-layered`](../use-cases/07_twin-layered.md) | Algorithm 4 | 19.02% | 18.43% | `cpitD-local-search` 3.55% |
+| [`twin-vein`](../use-cases/08_twin-vein.md) | Algorithm 4 | 39.47% | 42.13% | `sliding-window` 0.17% |
+| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | joint LP | 61.18% | 52.30% | `sliding-window` 2.35% |
+| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | joint LP | 78.84% | 71.15% | `sliding-window` 3.57% |
+| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | Algorithm 4 | 75.38% | 54.95% | `sliding-window` 2.87% |
+| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | Algorithm 4 | 7.02% | 5.57% | `cpitD-local-search` 0.26% |
+| [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | Algorithm 4 | 0.00% | 0.00% | `toposort-greedy` 0.00% |
+| **median** |  | **51.78%** | **42.13%** |  |
 <!-- /generated -->
 
 ## Where it lives

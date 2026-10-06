@@ -24,9 +24,21 @@ story told after the fact.
 Failures per archetype and per size, on both splits, with the held-out distribution of the share:
 
 <!-- generated:learned-study:archetype -->
+| archetype | training cases below 0.90 | held-out cases below 0.90 | held-out median | held-out P10 | held-out minimum |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| core_halo | 129 / 216 | 65 / 108 | 0.881 | 0.790 | 0.702 |
+| layered | 40 / 216 | 24 / 108 | 0.942 | 0.885 | 0.870 |
+| porphyry | 15 / 216 | 4 / 108 | 0.970 | 0.923 | 0.891 |
+| vein | 126 / 216 | 77 / 108 | 0.878 | 0.783 | 0.732 |
+| **all** | **310 / 864** | **170 / 432** |  |  |  |
 <!-- /generated -->
 
 <!-- generated:learned-study:size -->
+| size | training cases below 0.90 | held-out cases below 0.90 | held-out median | held-out P10 | held-out minimum |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1,008 blocks | 134 / 432 | 73 / 216 | 0.945 | 0.795 | 0.709 |
+| 6,912 blocks | 176 / 432 | 97 / 216 | 0.913 | 0.836 | 0.702 |
+| **all** | **310 / 864** | **170 / 432** |  |  |  |
 <!-- /generated -->
 
 The failures concentrate on the shapes where the ORDER of extraction is delicate: a thin rich core inside
@@ -37,11 +49,29 @@ orebody rather than of a sample.
 ## 3. The rules, measured on deposits none of them had seen
 
 <!-- generated:learned-study:rules -->
+| rule (read off the training deposits) | held-out cases flagged | precision | recall | worst unflagged share |
+| --- | ---: | ---: | ---: | ---: |
+| `archetype in ['core_halo', 'layered', 'porphyry', 'vein'], discount rate >= 0.05, horizon >= 6` | 432 / 432 | 0.39 | 1.00 | - |
+| `discount rate >= 0.15` | 192 / 432 | 0.41 | 0.46 | 0.732 |
+| `archetype in ['core_halo', 'layered', 'porphyry', 'vein']` | 432 / 432 | 0.39 | 1.00 | - |
+| `archetype == core_halo` **(shipped)** | 108 / 432 | 0.60 | 0.38 | 0.732 |
+| `discount rate >= 0.20 and horizon >= 12` | 0 / 432 | - | 0.00 | 0.702 |
+| `no rule` | 0 / 432 | - | 0.00 | 0.702 |
 <!-- /generated -->
 
 ## 4. And on the third split, which had no part in choosing the rule
 
 <!-- generated:learned-study:guard -->
+|  | held out (chose the rule) | third split (clean) |
+| --- | ---: | ---: |
+| cases | 432 | 432 |
+| failures (below 0.90) | 170 | 142 |
+| flagged by the rule | 108 | 108 |
+| precision | 0.602 | 0.620 |
+| recall | 0.382 | 0.472 |
+| worst unflagged share | 0.732 | 0.773 |
+| median share | - | 0.933 |
+| P10 share | - | 0.826 |
 <!-- /generated -->
 
 Read the recall row before anything else. The shipped rule catches **fewer than half** of the failures

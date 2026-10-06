@@ -59,6 +59,24 @@ greedy occasionally produces a near-zero NPV on a held-out deposit: a ratio whos
 approach zero is not a summary statistic.
 
 <!-- generated:learned-metrics -->
+| model | measure | value |
+| --- | --- | ---: |
+| expected-time surrogate | held-out Spearman rank correlation with the true E_b | 0.807 |
+|  | held-out mean absolute error of E_b / (T + 1) | 0.046 |
+|  | held-out plan value / exact ExTS plan: median | 0.926 |
+|  | same: tenth percentile | 0.817 |
+|  | same: minimum | 0.702 |
+|  | the worst held-out case | core_halo, seed 223, 10 periods, rate 0.2, 24x24x12 |
+|  | held-out cases where it beats greedy TopoSort | 94.4% |
+|  | held-out median at 1,008 blocks | 0.945 |
+|  | held-out median at 6,912 blocks | 0.913 |
+|  | training rows / held-out rows (blocks) | 3,421,440 / 1,710,720 |
+| bound surrogate | held-out relative error: mean | 2.31% |
+|  | same: 90th percentile | 5.48% |
+|  | same: maximum | 13.64% |
+|  | held-out deposits where more capacity never lowers the bound | 96.3% |
+|  | held-out deposits where a higher rate never raises the bound | 92.6% |
+|  | training / held-out instances | 864 / 432 |
 <!-- /generated -->
 
 ## 2. The bound surrogate and the sensitivity surface
@@ -106,6 +124,19 @@ drew -1.64 to 1.69 where the model gives 0.23 to 0.89. The shared forward and th
 are what prevent that now.
 
 <!-- generated:learned-preview -->
+| case | blocks | learned plan | exact solve | speed-up | share of exact ExTS | learned gap | exact ExTS gap |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| `ctrl-abundant` | 6,912 | 66 ms | 920 ms | 14x | 0.993 | 1.07% | 0.33% |
+| `regime-high-discount` | 6,912 | 39 ms | 1,302 ms | 33x | 0.978 | 10.75% | 8.73% |
+| `regime-mill-bound` | 6,912 | 48 ms | 1,252 ms | 26x | 1.026 | 12.70% | 14.94% |
+| `regime-mining-bound` | 6,912 | 57 ms | 2,050 ms | 36x | 0.896 | 17.14% | 7.53% |
+| `twin-core-halo` | 14,400 | 149 ms | 3,776 ms | 25x | 0.808 | 27.47% | 10.29% |
+| `twin-layered` | 14,400 | 111 ms | 3,562 ms | 32x | 0.871 | 15.97% | 3.55% |
+| `twin-porphyry-l` | 10,976 | 108 ms | 3,657 ms | 34x | 0.959 | 11.12% | 7.31% |
+| `twin-porphyry-s` | 6,912 | 57 ms | 1,694 ms | 30x | 0.967 | 7.80% | 4.62% |
+| `twin-vein` | 14,400 | 149 ms | 3,038 ms | 20x | 0.830 | 18.27% | 1.54% |
+
+Measured 2026-10-05 on node v24.14.1, the browser engine's TypeScript, single thread; each committed twin at its own baked setting; exact = bound per resource, three TopoSorts and a shift search.
 <!-- /generated -->
 
 ## 4. In the offline ladder
@@ -115,6 +146,21 @@ baked case also contains the exact plan it approximates, the measured ratio to i
 (`measuredVsExact` in the trace) and the flag is raised off the measurement, not off a forecast.
 
 <!-- generated:learned-ladder -->
+| case | learned plan gap | exact ExTS gap | learned / exact ExTS | note |
+| --- | ---: | ---: | ---: | --- |
+| [`newman1-published`](../use-cases/01_newman1-published.md) | 2.42% | 2.54% | 1.001 |  |
+| [`zuck-small-declared`](../use-cases/02_zuck-small-declared.md) | not run | - | - | no source grade field for the learned input features |
+| [`kd-declared`](../use-cases/03_kd-declared.md) | 65.68% | 16.89% | 0.413 |  |
+| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | 7.91% | 4.62% | 0.965 |  |
+| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | 11.11% | 7.31% | 0.959 |  |
+| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | 27.55% | 10.29% | 0.808 |  |
+| [`twin-layered`](../use-cases/07_twin-layered.md) | 16.00% | 3.55% | 0.871 |  |
+| [`twin-vein`](../use-cases/08_twin-vein.md) | 18.26% | 1.54% | 0.830 |  |
+| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | 10.77% | 8.73% | 0.978 |  |
+| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | 12.76% | 14.94% | 1.026 |  |
+| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | 17.16% | 7.53% | 0.896 |  |
+| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | 1.07% | 0.33% | 0.993 |  |
+| [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | 0.00% | 0.00% | 1.000 |  |
 <!-- /generated -->
 
 ## 5. ONNX: exported and verified, not used by the browser
