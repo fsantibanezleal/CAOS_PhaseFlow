@@ -33,6 +33,28 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
   checked with Kahn's algorithm otherwise.
 - Every rung, the beyond ones included, is checked for precedence, capacity and its own bound at bake
   time and in `check_artifacts.py`.
+- **The default case could open on a blank 3D pit**: the build loses its WebGL context once after the
+  first frame under headless Chromium, and the on-demand stage never redrew after the restore. It now
+  redraws on the restore event, and `npm run verify:stage` reads the canvas pixels.
+- **"min-width is never the best by construction" was false**: smoothing moves blocks under capacity and
+  never checks NPV, and on `twin-vein` the smoothed plan ends 0.01 percent above the window plan it
+  smooths. It is excluded from the best plan by rule; tables show the NPV change with its sign.
+- **One best-plan rule**: min-width and the destination search started from a plain maximum while the
+  manifest broke ties by name, so on the degenerate control they smoothed a different plan from the one
+  named best.
+- Bound tables printed "-0.000%" slack and "over budget" for a one-resource case; long wall times were
+  printed in milliseconds (the window's 9,351,446 ms ran off the method bars); Spanish tables showed raw
+  rung keys. The contract mirror now declares the bound report's PCPSP keys, and the drift test covers it.
+- Two browser gates (`verify:focus`, `verify:infeasible`) and a unit test had broken on this release's
+  own changes; they follow the new HUD and the feasible min-width, and take `PHASEFLOW_BASE`.
+
+### Recorded, not fixed
+
+- **The retrained learned lane fails on the real `kd-declared` block model**: 41 percent of the exact
+  ExTS plan, against 86 percent for the 0.07.006 model, while the same retrain lifted every twin and
+  `newman1`. Measured with both models and both capacity inputs; the row is flagged (backlog BL-054).
+- **The value of re-planning is zero on every case**: the per-realisation re-solve never beats the fixed
+  best plan (backlog BL-049).
 
 ### Added
 
