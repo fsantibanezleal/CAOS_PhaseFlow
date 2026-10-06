@@ -23,14 +23,14 @@ sandbox and assert the committed files are byte-identical afterwards.
 
 ## What it costs, and how to run it
 
-The whole set takes the better part of a day. Per case, two BLAS threads each, cases side by side (the
+The whole set takes about a day; the longest case of the 0.08 release took 22.4 hours. Per case, two BLAS threads each, cases side by side (the
 0.08 release; every number per case is in `docs/validation/release-0.08.000.md`):
 
 | step | where it bites |
 |---|---|
 | the PCPSP bound | HiGHS: 2 to 160 minutes up to 1.1 million rows (159 on `twin-porphyry-l`); above that its Lagrangian dual, about 15 minutes on a 14,400-block twin |
-| the CPIT sliding window | 7 minutes to 3 hours on the twins, 132 minutes on `zuck-small-declared`, 632 minutes on `kd-declared` |
-| the re-cut sliding window | 9 minutes to a little over 2 hours on the twins |
+| the CPIT sliding window | 7 minutes to 13.4 hours on the twins (802 minutes on `twin-layered`), 132 minutes on `zuck-small-declared`, 632 on `kd-declared` |
+| the re-cut sliding window | 9 minutes to 9 hours on the twins (538 minutes on `twin-layered`, 378 on `twin-core-halo`) |
 | the critical multiplier bound | 10 minutes on `zuck-small-declared`, 20 on `kd-declared` |
 | everything else | seconds to minutes |
 

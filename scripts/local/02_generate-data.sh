@@ -3,8 +3,8 @@
 #
 # SANDBOX BY DEFAULT. Writing into data/derived/ overwrites the committed evidence the site ships, so
 # it takes an explicit --release. Pass a case id to bake one; omit it for all thirteen. The whole set
-# takes the better part of a day: the sliding windows run for hours on the largest cases (632 minutes on
-# kd-declared in the 0.08 release) and the HiGHS PCPSP LP up to 159 minutes, so the cases are baked side
+# takes about a day: the sliding windows run for hours on the largest cases (802 minutes for one window
+# stage on twin-layered in the 0.08 release) and the HiGHS PCPSP LP up to 159 minutes, so the cases are baked side
 # by side, PHASEFLOW_BAKE_JOBS at a time (default 4; the 0.08 release ran 8 on a 32-core, 48 GB
 # workstation). It prints a line per case as each lands; docs/guides/01 has the measured table.
 #
