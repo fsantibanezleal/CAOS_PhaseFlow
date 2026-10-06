@@ -34,10 +34,11 @@ python data-pipeline/run.py all --learned --output build/local   # a sandbox tha
 
 ## Cost, measured
 
-Hours for the whole set, not minutes. The expensive steps per case are the PCPSP LP (up to about two hours on
-the 14,400-block twins), the two sliding windows (the CPIT one and the re-cut one, half an hour to two hours
-each on the twins), and the critical multiplier bound on the real instances (about ten minutes on
-`zuck-small-declared`). So `--jobs N` runs cases as separate processes, the largest first, and writes the
+The better part of a day for the whole set. The expensive steps per case are the two sliding windows (the
+CPIT one and the re-cut one: minutes to a few hours on the twins, 632 minutes for the CPIT window on
+`kd-declared`, because a few window MILPs do not close at the root), the PCPSP bound (HiGHS up to 159
+minutes; the Lagrangian dual about 15 minutes on a 14,400-block twin), and the critical multiplier bound on
+the real instances (10 to 20 minutes). The measured table is in [guides/01](../guides/01_bake-the-artifacts.md). So `--jobs N` runs cases as separate processes, the largest first, and writes the
 index only when all of them succeeded.
 
 Two lessons kept in place: every case prints a line as it lands (a silent bake and a stuck bake look
