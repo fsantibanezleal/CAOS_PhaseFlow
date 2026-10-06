@@ -8,9 +8,10 @@
 #   .\scripts\local\02_generate-data.ps1 twin-porphyry-l    # one case  -> build\local
 #   .\scripts\local\02_generate-data.ps1 -Release           # all cases -> data\derived  (a RELEASE bake)
 #
-# The whole set takes hours: the PCPSP LP and the two sliding windows on the 14,400-block twins run for
-# hours each, so the cases are baked side by side, -Jobs at a time (default 4; the 0.08 release ran 8
-# on a 32-core, 48 GB workstation).
+# The whole set takes the better part of a day: the sliding windows run for hours on the largest cases
+# (632 minutes on kd-declared in the 0.08 release) and the HiGHS PCPSP LP up to 159 minutes, so the cases
+# are baked side by side, -Jobs at a time (default 4; the 0.08 release ran 8 on a 32-core, 48 GB
+# workstation). docs/guides/01 has the measured table.
 [CmdletBinding()]
 param(
     [string] $Case = 'all',
