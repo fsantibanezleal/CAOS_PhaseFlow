@@ -88,6 +88,22 @@ The gap of each TopoSort weighting against the bound the case uses (the joint LP
 otherwise Algorithm 4), beside the best plan of the case.
 
 <!-- generated:methods:toposort-greedy,toposort-gershon,toposort-expected,exts-two-resource -->
+| case | bound | `toposort-greedy` | `toposort-gershon` | `toposort-expected` | `exts-two-resource` | best plan of the case |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| [`newman1-published`](../use-cases/01_newman1-published.md) | joint LP | 3.81% | 4.13% | 2.54% | 2.54% | `sliding-window` 1.37% |
+| [`zuck-small-declared`](../use-cases/02_zuck-small-declared.md) | joint LP | 46.28% | 32.71% | 21.35% | 21.23% | `sliding-window` 2.81% |
+| [`kd-declared`](../use-cases/03_kd-declared.md) | Algorithm 4 | 31.92% | 51.70% | 16.89% | 16.89% | `sliding-window` 6.23% |
+| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | joint LP | 49.79% | 20.06% | 4.62% | 4.62% | `sliding-window` 1.34% |
+| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | joint LP | 48.32% | 24.05% | 7.31% | 4.16% | `sliding-window` 1.57% |
+| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | Algorithm 4 | 80.00% | 25.10% | 10.29% | 10.29% | `sliding-window` 3.18% |
+| [`twin-layered`](../use-cases/07_twin-layered.md) | Algorithm 4 | 17.01% | 19.36% | 3.55% | 3.55% | `cpitD-local-search` 3.55% |
+| [`twin-vein`](../use-cases/08_twin-vein.md) | Algorithm 4 | 36.55% | 92.14% | 1.54% | 1.54% | `sliding-window` 0.17% |
+| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | joint LP | 56.29% | 23.20% | 8.73% | 8.73% | `sliding-window` 2.35% |
+| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | joint LP | 71.02% | 29.65% | 14.94% | 14.94% | `sliding-window` 3.57% |
+| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | Algorithm 4 | 56.97% | 27.71% | 7.53% | 7.48% | `sliding-window` 2.87% |
+| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | Algorithm 4 | 6.36% | 2.14% | 0.33% | 0.33% | `cpitD-local-search` 0.26% |
+| [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | Algorithm 4 | 0.00% | 0.00% | 0.00% | not run | `toposort-greedy` 0.00% |
+| **median** |  | **46.28%** | **24.05%** | **7.31%** | **6.05%** |  |
 <!-- /generated -->
 
 ## Where it lives

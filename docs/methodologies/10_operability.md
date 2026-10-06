@@ -64,6 +64,21 @@ what actually responds. A metric that cannot move is decoration.
 ## 3. Measured on every case
 
 <!-- generated:operability -->
+| case | smoothed plan | blocks below width 3 | moved | refused by capacity | NPV change | components before | after |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| [`newman1-published`](../use-cases/01_newman1-published.md) | `sliding-window` | 421 to 386 | 46 | 24 | -0.4024% | 11.7 | 7.3 |
+| [`zuck-small-declared`](../use-cases/02_zuck-small-declared.md) | `sliding-window` | 2,270 to 1,768 | 618 | 232 | -0.3981% | 58.9 | 29.2 |
+| [`kd-declared`](../use-cases/03_kd-declared.md) | `sliding-window` | 1,982 to 1,734 | 317 | 907 | -0.1792% | 40.4 | 26.6 |
+| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | `sliding-window` | 1,379 to 1,371 | 19 | 112 | -0.0070% | 16.5 | 15.9 |
+| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | `sliding-window` | 2,639 to 2,629 | 61 | 113 | -0.0094% | 16.8 | 15.7 |
+| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | `sliding-window` | 2,768 to 2,768 | 16 | 116 | -0.0025% | 14.3 | 14.1 |
+| [`twin-layered`](../use-cases/07_twin-layered.md) | `cpitD-local-search` | 1,170 to 1,170 | 0 | 76 | 0.0000% | 3.2 | 3.2 |
+| [`twin-vein`](../use-cases/08_twin-vein.md) | `sliding-window` | 1,479 to 1,464 | 20 | 175 | +0.0101% | 4.9 | 4.6 |
+| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | `sliding-window` | 1,558 to 1,554 | 17 | 81 | -0.0055% | 15.9 | 14.5 |
+| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | `sliding-window` | 1,156 to 1,148 | 18 | 164 | -0.0082% | 11.7 | 11.2 |
+| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | `sliding-window` | 1,589 to 1,589 | 0 | 71 | 0.0000% | 15.8 | 15.8 |
+| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | `cpitD-local-search` | 931 to 915 | 25 | 48 | -0.0031% | 1.4 | 1.4 |
+| [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | `toposort-greedy` | 9 to 9 | 0 | 0 | 0.0000% | 1.0 | 1.0 |
 <!-- /generated -->
 
 The NPV cost of the smoothing is small everywhere, and so is its effect on the width count on the

@@ -9,6 +9,22 @@ Each method across the whole case matrix: how many cases it ran on, its gap dist
 of its own problem, how often it was the best comparable plan, and its median cost.
 
 <!-- generated:ladder -->
+| method | rung | measured against | cases run | median gap | best gap | worst gap | best plan on | median time |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| `bench-by-bench` | classical | CPIT bound | 13 / 13 | 51.78% | 0.00% | 103.85% | 0 | 163 ms |
+| `nested-shells` | classical | CPIT bound | 13 / 13 | 42.13% | 0.00% | 71.15% | 0 | 159 ms |
+| `toposort-greedy` | classical | CPIT bound | 13 / 13 | 46.28% | 0.00% | 80.00% | 1 | 158 ms |
+| `toposort-gershon` | classical | CPIT bound | 13 / 13 | 24.05% | 0.00% | 92.14% | 0 | 545 ms |
+| `toposort-expected` | sota | CPIT bound | 13 / 13 | 7.31% | 0.00% | 21.35% | 0 | 52.6 s |
+| `exts-two-resource` | sota | CPIT bound | 12 / 13 | 6.05% | 0.33% | 21.23% | 0 | 59.1 s |
+| `shift-local-search` | sota | CPIT bound | 13 / 13 | 4.26% | 0.00% | 17.28% | 0 | 104 ms |
+| `sliding-window` | sota | CPIT bound | 13 / 13 | 2.35% | 0.00% | 6.38% | 10 | 32.6 min |
+| `cpitD-local-search` | sota | CPIT bound | 13 / 13 | 4.22% | 0.00% | 16.91% | 2 | 1.0 s |
+| `learned-expected-time` | learned | CPIT bound | 12 / 13 | 11.93% | 0.00% | 65.68% | 0 | 293 ms |
+| `destination-toposort` | beyond | PCPSP LP | 11 / 13 | 9.89% | 0.00% | 18.99% | n/a | 47.5 s |
+| `destination-sliding-window` | beyond | PCPSP LP | 11 / 13 | 1.58% | 0.00% | 19.29% | n/a | 38.7 min |
+| `destination-local-search` | beyond | PCPSP LP | 11 / 13 | 1.42% | 0.00% | 18.95% | n/a | 2.6 s |
+| `min-width` | beyond | CPIT bound | 13 / 13 | 2.36% | 0.00% | 6.39% | 0 | 245 ms |
 <!-- /generated -->
 
 ## 2. Only compare through the same bound of the same problem
@@ -70,6 +86,21 @@ Each exists because the corresponding defect once produced a plausible number ev
 green, because the gates read schemas and never `resourceUse` against `resourceLimit`).
 
 <!-- generated:controls -->
+| case | duality (pit set) | duality error | bound >= plans | order invariance | order error | best comparable gap | worst comparable gap |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| [`newman1-published`](../use-cases/01_newman1-published.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.37% | 6.41% |
+| [`zuck-small-declared`](../use-cases/02_zuck-small-declared.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 2.82% | 51.78% |
+| [`kd-declared`](../use-cases/03_kd-declared.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 6.23% | 65.68% |
+| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.34% | 54.09% |
+| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.57% | 60.05% |
+| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 3.18% | 103.85% |
+| [`twin-layered`](../use-cases/07_twin-layered.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 3.55% | 19.36% |
+| [`twin-vein`](../use-cases/08_twin-vein.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 0.17% | 92.14% |
+| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 2.35% | 61.18% |
+| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 3.57% | 78.84% |
+| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 2.87% | 75.38% |
+| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 0.26% | 7.02% |
+| [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 0.00% | 0.00% |
 <!-- /generated -->
 
 **The controls prove the machinery is consistent; they do not prove any plan is good.**
