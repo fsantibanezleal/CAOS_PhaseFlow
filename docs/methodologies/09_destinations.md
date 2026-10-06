@@ -94,7 +94,10 @@ relaxation of the re-cut instance has no such freedom on the destination side.
 Each destination plan with its gap to the PCPSP bound, its value against the best CPIT plan of the same
 case, the blocks it sends to each destination and the range of the effective cutoff (the lowest grade
 actually sent to the plant in a period). A gap marked "(dual)" is measured against the Lagrangian dual,
-the LP value up to its rounding slack, on a case above the HiGHS row budget:
+the LP value up to its rounding slack, on a case above the HiGHS row budget. Those three 14,400-block twins
+sit 7.8 to 18.9 percent under their bounds where every other case sits within 2.8 percent; with the bound
+converged, that distance is the relaxation's integrality gap plus what the re-cut misses, which only an
+integer solve could separate:
 
 <!-- generated:destinations -->
 | case | method | NPV | gap to the PCPSP bound | against best CPIT plan | blocks to plant / dump | blocks changing destination | effective cutoff range (grade) |

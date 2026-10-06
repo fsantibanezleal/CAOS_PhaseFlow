@@ -64,8 +64,13 @@ on a later slide.
    like a schedule). It ran on one case of thirteen; its `relaxation` argument was accepted and never
    read.
 3. **LP-guided and sized by the window** (0.6.0). The candidate rule above. It runs on every case and is
-   where the look-ahead pays: on `twin-porphyry-s` it moved the best gap from 4.22 to 1.34 percent, on
-   `zuck-small-declared` from 16.91 to 2.81.
+   the best plan on ten of the twelve non-trivial ones; where it pays, it pays a lot: on
+   `twin-porphyry-s` it moved the best gap from 4.22 to 1.34 percent, on `zuck-small-declared` from 16.91
+   to 2.81, on `kd-declared` from 15.02 to 6.23. It is not uniformly better. On `twin-layered` it ends at
+   6.38 percent where plain ExTS reaches 3.55. The window accepts a 3 percent gap in every MILP and
+   values the tail optimistically, so nothing guarantees it improves on the rounding it competes with;
+   on a deposit where ExTS is already within 3.55 percent, it does not. On
+   `ctrl-abundant`, where capacity barely binds, the exact neighbourhood search edges it out.
 
 An earlier bug in the window's bookkeeping is also worth recording: it re-planned blocks that had
 already consumed capacity in an earlier window, double-booked the fleet, and collapsed the objective to
@@ -79,7 +84,7 @@ frozen prefix is a decision; everything after it must be released before the nex
 | window | 3 periods, 1 fixed per slide, plus one tail slot |
 | solver | HiGHS MILP, relative gap 3 percent, no wall-clock limit (a time limit would make the bake depend on the machine) |
 | candidates | LP-ordered closed prefix, 1.6 window capacities, at most 6,000 blocks |
-| cost | from seconds on `newman1` to about two hours on the largest twins, on one core |
+| cost | from seconds on `newman1` to 13.4 hours on `twin-layered` and 10.5 on `kd-declared`: most window MILPs close at the root, a few run for hours ([guides/01](../guides/01_bake-the-artifacts.md)) |
 
 The same window, candidate rule and gap schedule the **re-cut** destination instance
 (`destination-sliding-window`, see [09](09_destinations.md)).

@@ -31,6 +31,12 @@ the defect that put a capacity check on every rung.
 At this size two bounds change. The time-expanded graph (144,000 nodes, 1,291,200 edges) is above the joint
 bound's certification budget, so the CPIT gaps are measured against Algorithm 4; and its PCPSP LP (1,435,220 rows) is above the HiGHS row budget, so the destination plans are measured against the LP's Lagrangian dual by maximum closures on the same graph ([02](../methodologies/02_the-bound.md), section 5.2): the LP value up to the rounding slack the table records.
 
+The destination plans gain 5.3 percent over the best CPIT plan and sit 18.95 percent under that bound, the
+widest distance of the release. The three 14,400-block twins sit 7.8 to 18.9 percent under their dual
+bounds while every case the LP solves by HiGHS sits within 2.8 percent. The bound is converged (337
+iterations, a slack of 0.03 percent), so the distance is the relaxation's integrality gap on this body plus
+what the re-cut misses; only an integer solve could split the two, and none fits at 14,400 blocks.
+
 ## Bounds
 
 <!-- generated:case-bounds:twin-vein -->

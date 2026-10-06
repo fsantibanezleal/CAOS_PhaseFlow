@@ -22,6 +22,17 @@ share in the table with the other twins.
 At this size two bounds change. The time-expanded graph (144,000 nodes, 1,291,200 edges) is above the joint
 bound's certification budget, so the CPIT gaps are measured against Algorithm 4; and its PCPSP LP (1,435,220 rows) is above the HiGHS row budget, so the destination plans are measured against the LP's Lagrangian dual by maximum closures on the same graph ([02](../methodologies/02_the-bound.md), section 5.2): the LP value up to the rounding slack the table records.
 
+What the bake measured here:
+
+- **The sliding window loses on this deposit.** It ends at 6.38 percent where ExTS and both local searches
+  reach 3.55, and it cost 802 minutes, most of it in a few windows whose first feasible solution was far
+  from the LP (the fifth: a 172 percent gap at the root). The best plan is the exact neighbourhood search.
+- **Destinations are worth 15.6 percent** over the best CPIT plan, and the destination plans sit 9.24
+  percent under the dual bound; the re-cut window took another 538 minutes. The whole case took 22.4
+  hours, the longest of the release.
+- **Gershon's weight loses narrowly to greedy** (19.36 against 17.01 percent), and the learned rung reaches
+  0.871 of the exact ExTS plan, below the 0.90 line, so it is flagged.
+
 ## Bounds
 
 <!-- generated:case-bounds:twin-layered -->
