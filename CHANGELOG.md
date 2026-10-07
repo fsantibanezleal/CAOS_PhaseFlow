@@ -3,6 +3,85 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.08.000] - 2026-10-05
+
+An adversarial review of the implementation, the models, the data and the results, and the fixes it
+forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
+`docs/validation/release-0.08.000.md`.
+
+### Fixed
+
+- **The destination rungs did not use the destination decision.** They compared a block's two values,
+  so every marginal ore block took plant tonnage the richer ore below needed; on the plant-bound twins
+  they ended 27 to 39 percent below the PCPSP LP and on a small twin solved exactly the constructive one
+  returned a negative NPV where choosing destinations is worth about 59 percent. They are now the
+  re-cut: each block fixed where the PCPSP LP sends it, scheduled by ExTS (`destination-toposort`) and by
+  the sliding window (new `destination-sliding-window`), then searched exactly with every destination
+  free (`destination-local-search`, never below the best CPIT plan).
+- **Gershon's weight counted precedence paths, not successors** (engine and browser), **`min-width`
+  broke capacity** and once reported an NPV above a certified bound, **the sliding window refused on
+  twelve of thirteen cases**, and **the old destination rung lost to CPIT** (oreblocks 0.6.0).
+- **The learned rung was fed capacity fractions of (1.0, 1.0) at inference** while trained on real ones;
+  they are read off the instance. The model is retrained on two grid sizes against the tightest
+  relaxation's expected times, and its guard is capped at flagging half the cases (a rule over every
+  archetype had flagged all of them and won on recall).
+- **The browser's bound surrogate ran tanh layers and a linear head** against a model trained with ReLU
+  and a sigmoid; one shared forward pass is now held to a Python-written fixture.
+- **The ONNX parity check compared saturated outputs** and recorded an error of exactly 0.0; it samples
+  the model's own input range and refuses a saturated sample.
+- **CONTRACT 1 promised a cycle check it did not run**; acyclicity is proven when every arc rises and
+  checked with Kahn's algorithm otherwise.
+- Every rung, the beyond ones included, is checked for precedence, capacity and its own bound at bake
+  time and in `check_artifacts.py`.
+- **The default case could open on a blank 3D pit**: the build loses its WebGL context once after the
+  first frame under headless Chromium, and the on-demand stage never redrew after the restore. It now
+  redraws on the restore event, and `npm run verify:stage` reads the canvas pixels.
+- **"min-width is never the best by construction" was false**: smoothing moves blocks under capacity and
+  never checks NPV, and on `twin-vein` the smoothed plan ends 0.01 percent above the window plan it
+  smooths. It is excluded from the best plan by rule; tables show the NPV change with its sign.
+- **One best-plan rule**: min-width and the destination search started from a plain maximum while the
+  manifest broke ties by name, so on the degenerate control they smoothed a different plan from the one
+  named best.
+- Bound tables printed "-0.000%" slack and "over budget" for a one-resource case; long wall times were
+  printed in milliseconds (the window's 9,351,446 ms ran off the method bars); Spanish tables showed raw
+  rung keys. The contract mirror now declares the bound report's PCPSP keys, and the drift test covers it.
+- Two browser gates (`verify:focus`, `verify:infeasible`) and a unit test had broken on this release's
+  own changes; they follow the new HUD and the feasible min-width, and take `PHASEFLOW_BASE`.
+
+### Recorded, not fixed
+
+- **The retrained learned lane fails on the real `kd-declared` block model**: 41 percent of the exact
+  ExTS plan, against 86 percent for the 0.07.006 model, while the same retrain lifted every twin and
+  `newman1`. Measured with both models and both capacity inputs; the row is flagged (backlog BL-054).
+- **The value of re-planning is zero on every case**: the per-realisation re-solve never beats the fixed
+  best plan (backlog BL-049).
+
+### Added
+
+- The learned plan in the browser: drawn on the next frame of every control change, replaced by the
+  exact plan from a worker, with its measured share shown.
+- A Benchmark panel that re-solves a baked case in the browser and sets every quantity beside the trace.
+- The PCPSP LP bound on every case with destination economics, reproducing the published `newman1`
+  value to the unit: HiGHS up to 1.1 million rows (measured: 1,082,684 rows in 2.65 hours; 1,435,220
+  rows unfinished after six and a half), and above that the LP's Lagrangian dual by maximum closures,
+  valid at every iteration and 4.8 parts per million from the LP where both were run. The manifest
+  names the dual where it is used (an absent key is the HiGHS LP, so HiGHS cases re-bake byte for byte),
+  and every table that shows the bound says which.
+- `run.py all --jobs N`: a release bake runs cases side by side and writes the index only if all succeed.
+- `scripts/docs_tables.py`: the wiki's measured tables generated from the artifacts, checked in CI.
+
+### Changed
+
+- The five reading pages rewritten as full-width topics, every number read from the artifacts; the
+  footer is one line.
+- The docs wiki rebuilt as the SimLab tree: methodologies, use cases, data contract, architecture,
+  frameworks, guides; sixteen theme-aware diagrams.
+- `sliding-window` is a `sota` rung; `min-width` is described as the feasible plan it now is.
+
+### Removed
+
+- Template residue: four superseded wrapper scripts, `requirements-gpu.txt`.
+
 ## [0.07.006] - 2026-10-03
 
 ### Fixed

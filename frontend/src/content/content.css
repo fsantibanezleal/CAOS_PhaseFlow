@@ -1,0 +1,96 @@
+/*
+ * The five reading pages: the shell's wide page body, a row of groups, a vertical rail of topics per
+ * group, and each topic filled across the width (prose beside its figure, symbols and notes) rather
+ * than one narrow column. Long text keeps a reading measure. Colours are shell tokens; figures use the
+ * shell's dg-* diagram classes, so everything follows light and dark.
+ */
+
+/* The shell is locked to the viewport on every route (phaseflow.css, UI floor rule 1) and a reading
+ * page scrolls inside `main`, so these pages need no document-scroll override. */
+
+.pfd-page { min-width: 0; }
+.pfd-head { margin: 0 0 1.1rem; max-width: 1180px; }
+.pfd-head h1 { margin: 0 0 0.45rem; font-size: clamp(1.5rem, 2.3vw, 2.05rem); letter-spacing: -0.01em; }
+.pfd-lede { margin: 0; color: var(--color-fg-subtle); line-height: 1.6; font-size: 1.03rem; max-width: 110ch; }
+
+.pfd-topic { min-width: 0; }
+.pfd-topic h2 { margin-top: 0; }
+.pfd-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.4rem; align-items: start; }
+.pfd-body.with-side,
+.pfd-body:has(.pfd-side > *) { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+.pfd-text { min-width: 0; }
+.pfd-text p { max-width: 82ch; line-height: 1.68; }
+.pfd-text .katex-display { overflow-x: auto; overflow-y: hidden; }
+.pfd-side { min-width: 0; display: grid; gap: 1rem; align-content: start; }
+.pfd-side:empty { display: none; }
+.pfd-figure .figure { margin: 0; }
+.pfd-figure.wide { margin: 0.2rem auto 1.2rem; max-width: 1040px; }
+.pfd-figure.wide .fig-svg { max-width: 100%; }
+.pfd-side .fig-svg { max-width: 100%; }
+@media (max-width: 1060px) {
+  .pfd-body.with-side,
+  .pfd-body:has(.pfd-side > *) { grid-template-columns: minmax(0, 1fr); }
+}
+
+.pfd-equations { margin-top: 0.4rem; }
+
+.pfd-facts { border: 1px solid var(--color-border); border-left: 3px solid var(--color-accent); border-radius: 8px; padding: 0.7rem 0.9rem; background: var(--color-surface); }
+.pfd-facts dl { margin: 0; display: grid; gap: 0.45rem; }
+.pfd-fact { display: grid; grid-template-columns: minmax(7.5rem, 34%) minmax(0, 1fr); gap: 0.8rem; font-size: 0.87rem; line-height: 1.45; }
+.pfd-fact dt { margin: 0; color: var(--color-fg-subtle); font-weight: 600; }
+.pfd-fact dd { margin: 0; color: var(--color-fg); }
+
+.pfd-symbols { border: 1px solid var(--color-border); border-radius: 8px; padding: 0.7rem 0.9rem; background: var(--color-surface); }
+.pfd-symbols-title,
+.pfd-steps-title { font-size: 0.78rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-fg-subtle); margin-bottom: 0.4rem; }
+.pfd-symbols dl { margin: 0; display: grid; gap: 0.32rem; }
+.pfd-symbol { display: grid; grid-template-columns: minmax(3.2rem, max-content) minmax(0, 1fr); gap: 0.7rem; align-items: baseline; font-size: 0.88rem; }
+.pfd-symbol dt { margin: 0; }
+.pfd-symbol dd { margin: 0; color: var(--color-fg-subtle); line-height: 1.45; }
+
+.pfd-steps { margin: 0.9rem 0; padding: 0.7rem 0.9rem 0.5rem; border-left: 3px solid var(--color-accent); background: var(--color-surface-2); border-radius: 0 8px 8px 0; max-width: 82ch; }
+.pfd-steps ol { margin: 0; padding-left: 1.25rem; }
+.pfd-steps li { margin: 0.3rem 0; line-height: 1.55; }
+
+.pfd-data { margin: 1.2rem 0 0.4rem; min-width: 0; }
+.pfd-scroll { overflow-x: auto; min-width: 0; }
+.pfd-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin: 0.8rem 0; font-variant-numeric: tabular-nums; }
+.pfd-table th, .pfd-table td { padding: 6px 10px; border-bottom: 1px solid var(--color-border); text-align: left; vertical-align: top; }
+.pfd-table thead th { color: var(--color-fg-subtle); font-weight: 600; white-space: nowrap; }
+.pfd-table tbody th { font-weight: 600; }
+.pfd-table td.num, .pfd-table th.num { text-align: right; white-space: nowrap; }
+.pfd-table tr.pfd-best > * { background: var(--color-accent-soft); }
+.pfd-table tr.pfd-sep > * { border-top: 2px solid var(--color-fg-faint); }
+.pfd-table caption { caption-side: bottom; text-align: left; padding-top: 0.5rem; font-size: 0.8rem; color: var(--color-fg-faint); font-style: italic; }
+.pfd-muted { color: var(--color-fg-faint); }
+.pfd-claim { margin: 0.6rem 0; padding: 0.55rem 0.8rem; border: 1px dashed var(--color-border); border-radius: 8px; color: var(--color-fg-subtle); font-size: 0.9rem; max-width: 110ch; }
+.pfd-claim b { color: var(--color-fg); }
+
+/* artifact-bound panels: a control row, a chart, the reading at the cursor */
+.pfd-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.6rem; min-width: 0; }
+.pfd-controls { display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; align-items: center; font-size: 0.86rem; color: var(--color-fg-subtle); }
+.pfd-controls select { font: inherit; color: var(--color-fg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 4px 8px; max-width: 100%; }
+.pfd-reading { margin: 0; min-height: 1.4em; font-size: 0.84rem; color: var(--color-fg-subtle); font-variant-numeric: tabular-nums; }
+.pfd-chart { min-width: 0; }
+.pfd-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; min-width: 0; }
+@media (max-width: 1000px) { .pfd-two { grid-template-columns: minmax(0, 1fr); } }
+
+/* a small inline badge for a rung or a lane */
+.pfd-rung { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 0.74rem; border: 1px solid var(--color-border); color: var(--color-fg-subtle); white-space: nowrap; }
+.pfd-rung.sota { border-color: var(--color-accent); color: var(--color-accent); }
+.pfd-rung.learned { border-color: var(--color-magenta); color: var(--color-magenta); }
+.pfd-rung.beyond { border-style: dashed; }
+
+/* figure helpers that the shared dg-* set does not carry */
+.pfd-dg-band { stroke: var(--color-border); stroke-width: 1; }
+.pfd-dg-strike { stroke: var(--color-bad); stroke-width: 2.2; }
+.pfd-dg-bad { fill: var(--color-bad); font: 600 11px var(--font-sans); }
+.pfd-dg-good { fill: var(--color-good); font: 600 11px var(--font-sans); }
+.pfd-dg-text { fill: var(--color-fg); font: 12px var(--font-sans); }
+.pfd-dg-small { fill: var(--color-fg-subtle); font: 10.5px var(--font-sans); }
+.pfd-dg-mono { fill: var(--color-fg-subtle); font: 10.5px var(--font-mono); }
+.pfd-dg-title { fill: var(--color-fg); font: 650 12.5px var(--font-sans); }
+
+@media (max-width: 860px) {
+  .pfd-table { display: block; max-width: 100%; overflow-x: auto; }
+}

@@ -111,6 +111,18 @@ export interface BoundReport {
   /** how much tighter the joint bound is, in percent. The part of a gap that belongs to the BOUND. */
   tightening_pct?: number | null;
   used?: 'algorithm4' | 'bienstock-zuckerberg';
+  /** the PCPSP bound for the destination rungs: value, wall time, the LP's rows and the solver status */
+  pcpsp_lp?: number | null;
+  pcpsp_lp_ms?: number;
+  pcpsp_lp_rows?: number;
+  pcpsp_lp_status?: string;
+  /** "lagrangian" where the bound is the Lagrangian dual (absent: the HiGHS LP), with its diagnostics */
+  pcpsp_lp_method?: string;
+  pcpsp_lp_iterations?: number;
+  pcpsp_lp_gap_estimate?: number;
+  pcpsp_lp_slack?: number;
+  pcpsp_lp_note?: string;
+  pcpsp_lp_error?: string;
 }
 
 /** The risk readout: every candidate plan scored on every realisation. */
@@ -188,7 +200,10 @@ export interface CaseManifest {
   real_or_synthetic: 'real' | 'synthetic';
   default: boolean;
   engine: Record<string, string>;
-  scenario: { periods: number; discount_rate: number; period_one_undiscounted: boolean; n_resources: number; declared: boolean };
+  scenario: {
+    periods: number; discount_rate: number; period_one_undiscounted: boolean; n_resources: number; declared: boolean;
+    capacity_fraction?: number[]; limit_per_period?: number[]; resource_names?: string[];
+  };
   instance: { n_blocks: number; n_precedence_arcs: number; upit_value: number; upit_blocks: number };
   artifact: { path: string; format: string; trace_schema: string; bytes: number };
   lane: 'live' | 'replay';
@@ -199,8 +214,73 @@ export interface CaseManifest {
   flags: { code: string; detail: string }[];
   controls: TraceControls;
   published: TracePublished;
-  scoreboard: { method: string; rung: MethodRung; npv: number; bound: number; gap_pct: number; runtime_ms: number }[];
+  scoreboard: ScoreboardRow[];
   best: { method: string; gap_pct: number } | null;
+  bound_summary?: BoundSummary;
+  ensemble_summary?: EnsembleSummary;
+}
+
+export interface ScoreboardRow {
+  method: string;
+  rung: MethodRung;
+  npv: number;
+  bound: number;
+  gap_pct: number;
+  runtime_ms: number;
+  notes?: string;
+  measured_vs_exact?: number | null;
+  components_mean?: number;
+  largest_share_mean?: number;
+  /** use over limit, per resource then per period */
+  utilization?: (number | null)[][];
+  /** structured facts the method reports (destination and operability rungs) */
+  extra?: Record<string, unknown>;
+}
+
+/** The bound report of one case, compact: which bound each gap uses and what the others were. */
+export interface BoundSummary {
+  algorithm4: number;
+  algorithm4_ms: number;
+  closure_solves: number;
+  joint: number | null;
+  joint_ms: number | null;
+  joint_iterations: number | null;
+  joint_converged: boolean | null;
+  tightening_pct: number | null;
+  used: string;
+  joint_nodes: number | null;
+  joint_edges: number | null;
+  joint_skipped: string | null;
+  joint_note: string | null;
+  pcpsp_lp: number | null;
+  pcpsp_lp_ms: number | null;
+  pcpsp_lp_rows: number | null;
+  pcpsp_lp_status: string | null;
+  /** "lagrangian" where the bound is the Lagrangian dual; absent, the bound is the HiGHS LP */
+  pcpsp_lp_method?: string | null;
+  pcpsp_lp_iterations?: number | null;
+  pcpsp_lp_gap_estimate?: number | null;
+  pcpsp_lp_slack?: number | null;
+  pcpsp_lp_note?: string | null;
+  pcpsp_lp_error?: string | null;
+  skipped_methods: Record<string, string> | null;
+}
+
+/** The uncertainty ensemble of one case, compact. */
+export interface EnsembleSummary {
+  ran: boolean | null;
+  reason: string | null;
+  nRealisations: number | null;
+  sigma: number | null;
+  methods: string[] | null;
+  expected: number[] | null;
+  p10: number[] | null;
+  p90: number[] | null;
+  meanModel: number[] | null;
+  optimism: number[] | null;
+  bestByExpected: string | null;
+  bestByP10: string | null;
+  valueOfReplanningPct: number | null;
 }
 
 export interface CaseIndexEntry {
@@ -210,6 +290,8 @@ export interface CaseIndexEntry {
   default: boolean;
   lane: 'live' | 'replay';
   title: Bilingual;
+  /** what the case is FOR in the argument */
+  role?: Bilingual;
 }
 
 export interface CaseIndex {
