@@ -314,7 +314,14 @@ def export_onnx(model: Mlp, path: str | Path, *, sample: np.ndarray | None = Non
         scale = np.where(model.sigma > 1e-8, model.sigma, 1.0)
         sample = model.mu + scale * np.random.default_rng(0).normal(size=(256, d))
     expected = model.forward(sample.astype(np.float64))
-    live = float(np.mean((expected > 1e-4) & (expected < 1 - 1e-4)))
+    # liveness PER MEMBER: an ensemble's mean of members saturated at 0 and at 1 sits mid-range, and
+    # a float32 disagreement inside a saturated member would then pass unseen
+    live = 1.0
+    for w, b in model._weight_sets():
+        single = Mlp(w=w, b=b, feature_names=model.feature_names, target=model.target,
+                     mu=model.mu, sigma=model.sigma)
+        out = single.forward(sample.astype(np.float64))
+        live = min(live, float(np.mean((out > 1e-4) & (out < 1 - 1e-4))))
     if live < 0.5:
         raise AssertionError(
             f"only {100 * live:.0f} percent of the parity sample reaches the unsaturated range of the "

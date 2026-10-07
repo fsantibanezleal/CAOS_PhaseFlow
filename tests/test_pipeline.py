@@ -274,15 +274,18 @@ def test_learned_inference_reads_the_capacity_the_case_declares():
 
 
 def test_onnx_parity_refuses_a_sample_that_saturates_the_output(tmp_path):
-    """Raw standard-normal features sit far from the means the model standardises around, so every
-    sigmoid saturates and float32 and float64 agree exactly: the check must refuse that sample, and
-    pass on the model's own input distribution with a real, nonzero error."""
+    """A sample far outside the means the model standardises around saturates every sigmoid, so the
+    float32 graph and the float64 model agree exactly: the check must refuse that sample, and pass on
+    the model's own input distribution with a real, nonzero error. (Raw standard-normal features used
+    to be enough to saturate the 0.08 model; the 0.09 weights are milder, so the sample is built to
+    saturate any model: a thousand standard deviations from the training means.)"""
     pytest.importorskip("onnx")
     pytest.importorskip("onnxruntime")
     from pipeline.model.learned import Mlp, export_onnx
 
     model = Mlp.from_json(json.loads((ROOT / "models" / "expected-time.json").read_text(encoding="utf-8")))
-    raw = np.random.default_rng(0).normal(size=(64, model.w[0].shape[0]))
+    scale = np.where(model.sigma > 1e-8, model.sigma, 1.0)
+    raw = model.mu + 1e3 * scale * np.sign(np.random.default_rng(0).normal(size=(64, model.w[0].shape[0])))
     with pytest.raises(AssertionError, match="saturated"):
         export_onnx(model, tmp_path / "raw.onnx", sample=raw)
     export_onnx(model, tmp_path / "own.onnx")
