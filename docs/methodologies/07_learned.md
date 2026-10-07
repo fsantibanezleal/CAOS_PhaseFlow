@@ -86,15 +86,15 @@ approach zero is not a summary statistic.
 <!-- generated:learned-metrics -->
 | model | measure | value |
 | --- | --- | ---: |
-| expected-time surrogate | held-out Spearman rank correlation with the true E_b | 0.807 |
-|  | held-out mean absolute error of E_b / (T + 1) | 0.046 |
-|  | held-out plan value / exact ExTS plan: median | 0.926 |
-|  | same: tenth percentile | 0.817 |
-|  | same: minimum | 0.702 |
-|  | the worst held-out case | core_halo, seed 223, 10 periods, rate 0.2, 24x24x12 |
-|  | held-out cases where it beats greedy TopoSort | 94.4% |
-|  | held-out median at 1,008 blocks | 0.945 |
-|  | held-out median at 6,912 blocks | 0.913 |
+| expected-time surrogate | held-out Spearman rank correlation with the true E_b | 0.814 |
+|  | held-out mean absolute error of E_b / (T + 1) | 0.045 |
+|  | held-out plan value / exact ExTS plan: median | 0.941 |
+|  | same: tenth percentile | 0.836 |
+|  | same: minimum | 0.710 |
+|  | the worst held-out case | vein, seed 211, 10 periods, rate 0.1, 12x12x7 |
+|  | held-out cases where it beats greedy TopoSort | 92.1% |
+|  | held-out median at 1,008 blocks | 0.939 |
+|  | held-out median at 6,912 blocks | 0.941 |
 |  | training rows / held-out rows (blocks) | 3,421,440 / 1,710,720 |
 | bound surrogate | held-out relative error: mean | 2.31% |
 |  | same: 90th percentile | 5.48% |
