@@ -1,4 +1,4 @@
-# The live-vs-replay gate
+# 03 · The live-vs-replay gate
 
 `data-pipeline/pipeline/core/gate.py :: classify_lane()`. It decides, by MEASUREMENT and never by
 judgement, whether a case can be re-solved in the browser or must be replayed from the committed

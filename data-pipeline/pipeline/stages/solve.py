@@ -8,15 +8,18 @@ method                      rung       claim
 ``bench-by-bench``          classical  a schedule, and a deliberately bad one: the floor
 ``nested-shells``           classical  the industry's four-step chain, sequenced by shell order
 ``toposort-greedy``         classical  GrTS, the obvious baseline
-``toposort-gershon``        classical  GeTS, Gershon 1987a successor-cone weights
-``sliding-window``          classical  Cullenbine et al. 2011, the INDUSTRIAL baseline
+``toposort-gershon``        classical  GeTS, Gershon 1987a: the value of the whole successor cone
 ``toposort-expected``       sota       ExTS, seeded by the LP expected extraction times
 ``exts-two-resource``       sota       Algorithm 4: one relaxation per resource, best feasible
 ``shift-local-search``      sota       pull value forward, push cost back
-``cpitD-local-search``      sota       the EXACT restricted re-solve; the best plan here
-``learned-expected-time``   learned    ExTS quality with NO LP solve at all
-``destination-toposort``    beyond     PCPSP: the cutoff grade becomes an OUTPUT
-``min-width``               beyond     operability view; capacity is not re-imposed
+``sliding-window``          sota       Cullenbine et al. 2011: a MILP per window, LP-guided candidates
+``cpitD-local-search``      sota       the EXACT restricted re-solve of C-PIT[D] neighbourhoods
+``learned-expected-time``   learned    the ExTS ordering from a surrogate, with no LP solve
+``destination-toposort``    beyond     PCPSP: the LP's destinations fixed (the re-cut), then ExTS
+``destination-sliding-window`` beyond  PCPSP: the re-cut scheduled by the sliding window
+``destination-local-search`` beyond    PCPSP: the exact OPBSP-[D] re-solve from the best of those
+                                       and the best CPIT plan, so never below CPIT
+``min-width``               beyond     operability: slivers absorbed, capacity and precedence kept
 ==========================  =========  ==========================================================
 
 The BOUND is separate from all of them and is never produced by a heuristic. Two are computed: the
@@ -37,6 +40,7 @@ import time
 import numpy as np
 import oreblocks as ob
 
+from ..core.manifest import best_comparable
 from ..io.schema import MethodResult, PeriodRow
 
 #: MEASURED budgets for the Bienstock-Zuckerberg joint bound on the time-expanded graph.
@@ -68,12 +72,23 @@ BZ_TIME_BUDGET_S = 240.0
 #: How large a candidate set the sliding window may build per slide.
 #:
 #: The rung is a MILP per slide since `oreblocks` 0.5.0, because the version before it was a greedy
-#: wearing Cullenbine, Wood and Newman's name: `window` of 1, 2, 3, 5, 8 and T gave bit-identical
-#: schedules. The sub-problem is `cand_max x (window + 1)` binaries, so this is the cost dial. 1500
-#: keeps a 1008-block case near a minute. The larger twins need thousands of candidates to fill a
-#: period's capacity, the engine REFUSES rather than returning a starved schedule, and the reason is
-#: recorded on the case instead of a row quietly disappearing.
-SW_CAND_MAX = 1500
+#: wearing Cullenbine, Wood and Newman's name. Until `oreblocks` 0.6.0 the candidate set had to cover
+#: the window AND the whole remaining horizon, so every twin asked for thousands of blocks above a cap
+#: of 1500 and the rung refused on twelve cases of thirteen. The set is now the LP's own prefix sized
+#: by the window: 1.6 window capacities, which on the 6,912-block porphyry twin is about 2,200 blocks
+#: and 17 minutes on one core (1.34 percent below the bound, against 4.22 for the exact C-PIT[D]
+#: search). The cap is set above what the largest case here asks for (about 4,800 blocks on
+#: `zuck-small-declared`), so it only refuses on an instance this matrix does not contain.
+SW_CAND_MAX = 6000
+SW_COVER = 1.6
+
+#: The PCPSP LP relaxation is solved by HiGHS over every block of the instance, up to this many rows
+#: (``n (T - 1) + arcs T + n T + R T``). MEASURED: 1.08 million rows (the 10,976-block twin) solved in
+#: 2.65 hours in the 0.08.000 bake, while two of the three 1.44-million-row twins did not finish in six
+#: and a half hours (and HiGHS's interior-point method was slower than its simplex). Above the budget the bound is the LP's
+#: Lagrangian dual by maximum closures (``oreblocks.pcpsp_lagrangian_bound``): minutes, valid at every
+#: iteration, and within the rounding slack of the LP once converged.
+PCPSP_LP_MAX_ROWS = 1_100_000
 
 
 class _DestShim:
@@ -173,12 +188,46 @@ def _period_rows(instance, cpit, period_of_block: np.ndarray, *, pcpsp=None,
 LEARNED_FAILURE_BELOW = 0.90
 
 
+def _assert_feasible(instance, name: str, res, pcpsp) -> None:
+    """Precedence and every capacity, checked on the plan itself before it can enter an artifact.
+
+    A rung that cannot pass this is a defect, whatever its rung label says it is for.
+    """
+    prec = instance.precedence
+    period = np.asarray(res.period_of_block, dtype=np.int64)
+    mined = np.nonzero(period >= 0)[0]
+    owner = np.repeat(np.arange(period.shape[0]), np.diff(prec.pstart))
+    pred = np.asarray(prec.plist, dtype=np.int64)
+    sel = period[owner] >= 0
+    bad = sel & ((period[pred] < 0) | (period[pred] > period[owner]))
+    if bad.any():
+        k = int(np.nonzero(bad)[0][0])
+        raise AssertionError(f"{name}: block {owner[k]} is mined before its predecessor {pred[k]}")
+    if pcpsp is not None:
+        dest = np.asarray(res.destination_of_block, dtype=np.int64)
+        use = np.zeros((pcpsp.n_resources, pcpsp.n_periods))
+        for b in mined:
+            use[:, period[b]] += pcpsp.coef[:, b, dest[b]]
+        limit = np.asarray(pcpsp.limit, dtype=np.float64)
+    else:
+        cpit = instance.cpit
+        coef = np.asarray(cpit.coef, dtype=np.float64).reshape(cpit.n_resources, -1)
+        use = np.zeros((cpit.n_resources, cpit.n_periods))
+        for r in range(cpit.n_resources):
+            np.add.at(use[r], period[mined], coef[r, mined])
+        limit = np.asarray(cpit.limit, dtype=np.float64)
+    if (use > limit * (1 + 1e-9) + 1e-6).any():
+        r, t = np.argwhere(use > limit * (1 + 1e-9) + 1e-6)[0]
+        raise AssertionError(f"{name}: resource {r} in period {t + 1} uses {use[r, t]:.2f} of {limit[r, t]:.2f}")
+
+
 def _wrap(
     instance, name: str, rung: str, heuristic: bool, res, bound: float, ms: float, notes="",
     *, unreliable: bool = False, measured_vs_exact: float | None = None,
-    flagged_by_rule: bool = False, pcpsp=None,
+    flagged_by_rule: bool = False, pcpsp=None, extra: dict | None = None,
 ) -> MethodResult:
     cpit = instance.cpit
+    _assert_feasible(instance, name, res, pcpsp)
     gap = 100.0 * (bound - res.npv) / bound if bound > 0 else float("nan")
     return MethodResult(
         method=name,
@@ -198,6 +247,7 @@ def _wrap(
         unreliable=unreliable,
         measured_vs_exact=measured_vs_exact,
         flagged_by_rule=flagged_by_rule,
+        extra=dict(extra or {}),
     )
 
 
@@ -233,6 +283,51 @@ def _shell_weights(instance) -> np.ndarray:
     for k, pit in enumerate(reversed(pits)):  # k = 0 is the innermost (smallest revenue factor)
         shell = np.where(pit & (shell > k), float(k), shell)
     return -shell  # inner shells (small k) get the highest weight
+
+
+def _destination_extra(dres, lifted_from) -> dict:
+    """The destination decision in numbers, for the reading pages."""
+    finite = dres.effective_cutoff[np.isfinite(dres.effective_cutoff)]
+    out = {
+        "to_plant": int((dres.destination_of_block == 1).sum()),
+        "to_dump": int((dres.destination_of_block == 0).sum()),
+        "cutoff_min": None if not finite.size else float(finite.min()),
+        "cutoff_max": None if not finite.size else float(finite.max()),
+        "cutoff_by_period": [None if not np.isfinite(c) else float(c) for c in dres.effective_cutoff],
+    }
+    if lifted_from is not None:
+        method, lifted = lifted_from
+        mined = (dres.period_of_block >= 0) & (lifted.period_of_block >= 0)
+        out.update({
+            "start_method": method,
+            "start_npv": float(lifted.npv),
+            "moved_vs_fixed": int((mined & (dres.destination_of_block != lifted.destination_of_block)).sum()),
+            "gain_vs_cpit": float(dres.npv - lifted.npv),
+        })
+    return out
+
+
+def _destination_note(instance, dres, lifted_from) -> str:
+    """What a destination plan did with the destination decision, in numbers."""
+    finite = dres.effective_cutoff[np.isfinite(dres.effective_cutoff)]
+    cut = (
+        f"effective cutoff {finite.min():.4f} to {finite.max():.4f} across periods"
+        if finite.size
+        else "no period sent material to the plant"
+    )
+    to_plant = int((dres.destination_of_block == 1).sum())
+    to_dump = int((dres.destination_of_block == 0).sum())
+    note = f"PCPSP from {instance.destination_source}: {to_plant} blocks to the plant, {to_dump} to the dump, {cut}"
+    if lifted_from is not None:
+        method, lifted = lifted_from
+        mined = (dres.period_of_block >= 0) & (lifted.period_of_block >= 0)
+        moved = int((mined & (dres.destination_of_block != lifted.destination_of_block)).sum())
+        gain = dres.npv - lifted.npv
+        note += (
+            f". Started from {method} read as a PCPSP plan ({lifted.npv:,.0f}); {dres.notes}; "
+            f"{moved} blocks changed destination against the fixed cutoff, worth {gain:,.0f}"
+        )
+    return note + ". Scored against the PCPSP LP bound, not the CPIT one"
 
 
 def run_ladder(instance, learned=None, *, joint_bound: bool = True):
@@ -340,6 +435,40 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
             "critical multiplier algorithm, which solves the LP relaxation exactly"
         )
 
+    # ---- the PCPSP LP bound, for the destination rungs. The CPIT bound is NOT a bound for a plan that
+    # chooses destinations: PCPSP is the richer problem and its optimum can sit above the CPIT LP.
+    pcpsp_bound = None
+    pb = None
+    if instance.pcpsp is not None:
+        try:
+            # The LP directly (HiGHS) where it fits the measured budget, its Lagrangian dual by closures
+            # above it. Either way the solution comes back too: its destinations are the cutoff the
+            # destination rungs fix.
+            pb = ob.pcpsp_lp_bound(instance.pcpsp, prec, max_rows=PCPSP_LP_MAX_ROWS, solution=True)
+            if pb is None:
+                pb = ob.pcpsp_lagrangian_bound(instance.pcpsp, prec)
+                bound_report["pcpsp_lp_note"] = (
+                    f"the LP is above the {PCPSP_LP_MAX_ROWS:,}-row budget for HiGHS, so the bound is its "
+                    f"Lagrangian dual by maximum closures ({pb.iterations} iterations, {pb.status}); it is "
+                    f"valid at any iteration and exceeds the LP by at most the rounding slack ({pb.slack:,.0f})"
+                )
+            ok = bool(np.isfinite(pb.bound)) and (pb.method == "lagrangian" or pb.status == "optimal")
+            bound_report["pcpsp_lp"] = float(pb.bound) if ok else None
+            bound_report["pcpsp_lp_ms"] = round(1000.0 * pb.seconds, 1)
+            bound_report["pcpsp_lp_rows"] = int(pb.n_rows)
+            bound_report["pcpsp_lp_status"] = pb.status
+            # The method is recorded only where it is not the HiGHS LP: an absent key means HiGHS, so a
+            # HiGHS case's record is the one it was before the dual existed and re-bakes byte for byte.
+            if pb.method == "lagrangian":
+                bound_report["pcpsp_lp_method"] = pb.method
+                bound_report["pcpsp_lp_iterations"] = int(pb.iterations)
+                bound_report["pcpsp_lp_gap_estimate"] = float(pb.gap_estimate)
+                bound_report["pcpsp_lp_slack"] = float(pb.slack)
+            if ok:
+                pcpsp_bound = float(pb.bound)
+        except Exception as exc:  # noqa: BLE001 - a missing bound is recorded, never invented
+            bound_report["pcpsp_lp_error"] = str(exc)[:200]
+
     # ---- classical
     for name, weights, note in (
         ("bench-by-bench", _bench_weights(instance), "top bench out completely before the next"),
@@ -395,10 +524,10 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
         t0 = time.perf_counter()
         sw = ob.sliding_window_schedule(
             cpit, prec, window=3, fix=1, allowed=allowed, relaxation=tight,
-            cand_max=SW_CAND_MAX, mip_gap=3e-2,
+            cand_max=SW_CAND_MAX, cover=SW_COVER, mip_gap=3e-2,
         )
         results.append(
-            _wrap(instance, "sliding-window", "classical", True, sw, bound,
+            _wrap(instance, "sliding-window", "sota", True, sw, bound,
                   (time.perf_counter() - t0) * 1000.0, sw.notes)
         )
     except ValueError as exc:
@@ -442,9 +571,9 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     #
     # The scenario rule stays, and it is not redundant: it is what the LIVE lane has, where the whole
     # point of the surrogate is that the exact plan has NOT been solved. Its clean numbers come from a
-    # third seed set that had no part in choosing it (models/guard-validation.json): recall 0.625,
-    # worst unflagged 0.866. The held-out numbers that motivated it said recall 1.00, and that gap is
-    # exactly why the measurement is preferred wherever it exists.
+    # third seed set that had no part in choosing it (models/guard-validation.json), and on that set
+    # it catches about half of the failures. A rule that misses half is a warning, not a verdict,
+    # which is exactly why the measurement is preferred wherever it exists.
     if learned is None and instance.grade_source is None:
         skipped["learned-expected-time"] = "no source grade field for the learned input features"
     if learned is not None:
@@ -472,45 +601,121 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
             )
 
     # ---- beyond: let the model CHOOSE the destination, so the cutoff becomes an output
+    #
+    # The RE-CUT. The PCPSP relaxation knows the opportunity cost of the plant; a comparison of a block's
+    # two values does not (a marginal ore block's plant value is positive and its dump value negative,
+    # so that comparison always sends it to the plant, and the plant tonnage it takes is gone for the
+    # richer ore below). So each block is fixed where the LP sends it, the resulting CPIT is scheduled
+    # by the CPIT machinery, and every plan of it is a plan of the original PCPSP at the same value.
+    # Three rungs: ExTS on the re-cut, the sliding window on the re-cut, and the exact OPBSP-[D] search
+    # on the original instance (every destination free again) from the best of those and the best CPIT
+    # plan read as a PCPSP plan, so it can never end below CPIT. All three are scored against the PCPSP
+    # LP bound; the CPIT bound does not bound them. Before oreblocks 0.6.1 the constructive rung compared
+    # values alone and returned a negative NPV on the plant-bound twins.
+    # The manifest's rule, ties broken by name: on the degenerate control nine plans tie, and a plain max
+    # smoothed and lifted `bench-by-bench` while the manifest named `toposort-greedy` the best plan.
+    best_cpit = best_comparable(results)
+    destination_rungs = ("destination-toposort", "destination-sliding-window", "destination-local-search")
     try:
-        t0 = time.perf_counter()
         pcpsp = _as_pcpsp(instance)
-        dres = ob.destination_toposort(pcpsp, prec, grade=instance.grade)
-        ms = (time.perf_counter() - t0) * 1000.0
-        shim = _DestShim(dres, cpit.n_periods)
-        finite = dres.effective_cutoff[np.isfinite(dres.effective_cutoff)]
-        cut = (
-            f"effective cutoff {finite.min():.4f} to {finite.max():.4f} across periods"
-            if finite.size
-            else "no period sent material to the plant"
+        if pcpsp_bound is None or pb is None:
+            raise ValueError("no PCPSP LP bound for this case, so a destination plan would have no yardstick")
+        lifted = None
+        if best_cpit is not None:
+            lifted = ob.lift_to_pcpsp(pcpsp, prec, np.asarray(best_cpit.period_of_block), grade=instance.grade)
+        start_of = None if lifted is None else (best_cpit.method, lifted)
+
+        t0 = time.perf_counter()
+        cut = ob.restrict_destinations(pcpsp, pb.preferred_destination())
+        rcpit = cut.to_cpit()
+        rvalues = np.where(np.isfinite(rcpit.value), rcpit.value, 0.0)
+        rallowed = ob.solve_upit(rvalues, prec).in_pit
+        _, rrels = ob.cpit_bound_two_resources(rcpit, prec)
+        rtight = min(rrels, key=lambda r: r.bound)
+        recut_ms = (time.perf_counter() - t0) * 1000.0
+        recut_note = (
+            f"each block fixed at the destination the PCPSP LP sends it to ({int((cut.best_destination()[0] == 1).sum())} "
+            "routed to the plant if mined), then scheduled as a CPIT"
         )
-        to_plant = int((dres.destination_of_block == 1).sum())
-        to_dump = int((dres.destination_of_block == 0).sum())
+
+        t0 = time.perf_counter()
+        rexts = ob.toposort_schedule(rcpit, prec, weight="expected", relaxation=rtight, allowed=rallowed)
+        dres = ob.lift_to_pcpsp(cut, prec, np.asarray(rexts.period_of_block), grade=instance.grade)
+        ms = recut_ms + (time.perf_counter() - t0) * 1000.0
         results.append(
-            _wrap(instance, "destination-toposort", "beyond", True, shim, bound, ms,
-                  f"PCPSP from {instance.destination_source}: {to_plant} blocks to the plant, "
-                  f"{to_dump} to the dump, and the cutoff is an "
-                  f"OUTPUT rather than an input ({cut}). The NPV is not comparable to the CPIT rungs: "
-                  "it is a different objective over a richer feasible set.", pcpsp=pcpsp)
+            _wrap(instance, "destination-toposort", "beyond", True, _DestShim(dres, cpit.n_periods),
+                  pcpsp_bound, ms, f"ExTS on the re-cut: {recut_note}. " + _destination_note(instance, dres, start_of),
+                  pcpsp=pcpsp, extra=_destination_extra(dres, start_of))
+        )
+        candidates = [("destination-toposort", dres)]
+
+        try:
+            t0 = time.perf_counter()
+            rsw = ob.sliding_window_schedule(
+                rcpit, prec, window=3, fix=1, allowed=rallowed, relaxation=rtight,
+                cand_max=SW_CAND_MAX, cover=SW_COVER, mip_gap=3e-2,
+            )
+            dsw = ob.lift_to_pcpsp(cut, prec, np.asarray(rsw.period_of_block), grade=instance.grade)
+            ms = recut_ms + (time.perf_counter() - t0) * 1000.0
+            results.append(
+                _wrap(instance, "destination-sliding-window", "beyond", True, _DestShim(dsw, cpit.n_periods),
+                      pcpsp_bound, ms,
+                      f"the sliding window on the re-cut: {recut_note}. " + _destination_note(instance, dsw, start_of),
+                      pcpsp=pcpsp, extra=_destination_extra(dsw, start_of))
+            )
+            candidates.append(("destination-sliding-window", dsw))
+        except ValueError as exc:
+            skipped["destination-sliding-window"] = str(exc)[:240]
+
+        if lifted is not None:
+            candidates.append((f"{best_cpit.method} read as a PCPSP plan", lifted))
+        start_name, start = max(candidates, key=lambda c: c[1].npv)
+        t0 = time.perf_counter()
+        rounds = 16 if cpit.n_blocks <= 8_000 else 10
+        dls = ob.exact_destination_local_search(
+            pcpsp, prec, start, d_max=160, rounds=rounds, seed=11, time_limit=None, mip_gap=1e-4,
+            grade=instance.grade,
+        )
+        ms = (time.perf_counter() - t0) * 1000.0
+        results.append(
+            _wrap(instance, "destination-local-search", "beyond", True, _DestShim(dls, cpit.n_periods),
+                  pcpsp_bound, ms,
+                  f"from {start_name} ({start.npv:,.0f}). " + _destination_note(instance, dls, start_of),
+                  pcpsp=pcpsp, extra={**_destination_extra(dls, start_of), "start": start_name})
         )
     except Exception as exc:  # noqa: BLE001
-        skipped["destination-toposort"] = str(exc)
+        for name in destination_rungs:
+            if not any(r.method == name for r in results):
+                skipped[name] = str(exc)[:240]
 
-    # ---- beyond: operability view, with capacity not re-imposed
+    # ---- beyond: operability, with capacity and precedence kept, applied to the BEST comparable plan,
+    # because the question is what operability costs the plan a reader would actually pick
     try:
         mw_t0 = time.perf_counter()
+        base = best_plan
+        if best_cpit is not None:
+            base = ob.ScheduleResult(
+                method=best_cpit.method,
+                period_of_block=np.asarray(best_cpit.period_of_block, dtype=np.int64),
+                npv=float(best_cpit.npv),
+            )
         smoothed, rep = ob.enforce_min_width(
-            cpit, best_plan, instance.x, instance.y, instance.level, prec, target_width=3
+            cpit, base, instance.x, instance.y, instance.level, prec, target_width=3
         )
         mw_ms = (time.perf_counter() - mw_t0) * 1000.0
         results.append(
             _wrap(instance, "min-width", "beyond", True, smoothed, bound, mw_ms,
-                  f"{rep.below_target_before} to {rep.below_target_after} narrow blocks "
-                  f"({rep.below_target_reduction_pct:.0f}% fewer) at {rep.npv_cost_pct:.2f}% of NPV; "
-                  "operability view, capacity not re-imposed")
+                  f"from {base.method}: {rep.below_target_before} to {rep.below_target_after} blocks in a "
+                  f"run narrower than 3 ({rep.below_target_reduction_pct:.0f}% fewer), {rep.moved_blocks} moved, "
+                  f"{rep.blocked_by_capacity} refused for capacity, at {rep.npv_cost_pct:.2f}% of NPV; "
+                  "capacity and precedence kept, so the plan is feasible",
+                  extra={"base": base.method, "below_before": rep.below_target_before,
+                         "below_after": rep.below_target_after, "moved": rep.moved_blocks,
+                         "refused_for_capacity": rep.blocked_by_capacity, "target_width": rep.target_width,
+                         "npv_cost_pct": round(rep.npv_cost_pct, 6)})
         )
-    except Exception:  # noqa: BLE001, S110 - smoothing is a view, never a blocker
-        pass
+    except Exception as exc:  # noqa: BLE001 - recorded, never silent
+        skipped["min-width"] = str(exc)[:240]
 
     bound_report["skipped_methods"] = skipped
     return results, relaxations, bound_report

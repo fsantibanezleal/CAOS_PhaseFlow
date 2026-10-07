@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 404" role="img" aria-labelledby="t d">
+  <title id="t">The re-cut</title>
+  <desc id="d">Two block sections: under a fixed cutoff marginal ore takes the plant and rich ore waits; under the re-cut the LP dumps marginal ore and processes rich ore first. Below, the chain PCPSP LP, re-cut, CPIT, schedule, search.</desc>
+  <style>
+    :root { --bg:#ffffff; --card:#f6f8fa; --ink:#1f2328; --muted:#59636e; --line:#d0d7de;
+            --a:#0969da; --b:#8250df; --c:#1a7f37; --d:#9a6700; --e:#cf222e;
+            --a2:#ddf4ff; --b2:#fbefff; --c2:#dafbe1; --d2:#fff8c5; --e2:#ffebe9; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1117; --card:#151b23; --ink:#f0f6fc; --muted:#aab4c0; --line:#3d444d;
+              --a:#58a6ff; --b:#bc8cff; --c:#3fb950; --d:#e3b341; --e:#ff7b72;
+              --a2:#0c2d6b; --b2:#3c1e70; --c2:#04260f; --d2:#3b2300; --e2:#490202; }
+    }
+    .bg { fill:var(--bg); }
+    .card { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .t { fill:var(--ink); font:600 15px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .h { fill:var(--ink); font:600 13px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .s { fill:var(--muted); font:12px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .m { fill:var(--ink); font:12px ui-monospace, Consolas, monospace; }
+    .ms { fill:var(--muted); font:11px ui-monospace, Consolas, monospace; }
+    .ln { stroke:var(--line); stroke-width:1.5; fill:none; }
+    .lnd { stroke:var(--muted); stroke-width:1.2; fill:none; stroke-dasharray:4 3; }
+    .ar { stroke:var(--muted); stroke-width:1.6; fill:none; marker-end:url(#ah); }
+    .ara { stroke:var(--a); stroke-width:1.8; fill:none; marker-end:url(#aha); }
+    .fa { fill:var(--a2); stroke:var(--a); stroke-width:1.2; }
+    .fb { fill:var(--b2); stroke:var(--b); stroke-width:1.2; }
+    .fc { fill:var(--c2); stroke:var(--c); stroke-width:1.2; }
+    .fd { fill:var(--d2); stroke:var(--d); stroke-width:1.2; }
+    .fe { fill:var(--e2); stroke:var(--e); stroke-width:1.2; }
+    .fw { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .ka { fill:var(--a); } .kb { fill:var(--b); } .kc { fill:var(--c); } .kd { fill:var(--d); } .ke { fill:var(--e); }
+    .sa { stroke:var(--a); } .sb { stroke:var(--b); } .sc { stroke:var(--c); } .sd { stroke:var(--d); } .se { stroke:var(--e); }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/></marker>
+    <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--a)"/></marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="900" height="404" rx="10"/>
+  <text x="450" y="30" class="t" text-anchor="middle">The re-cut: which ore gets the plant when the plant binds</text>
+  <text x="195" y="60" class="h" text-anchor="middle">fixed cutoff (CPIT)</text>
+  <rect x="60" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="105" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="150" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="195" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="240" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="285" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="60" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="81" y="146" class="m" text-anchor="middle">P</text>
+  <rect x="105" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="126" y="146" class="m" text-anchor="middle">P</text>
+  <rect x="150" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="171" y="146" class="m" text-anchor="middle">P</text>
+  <rect x="195" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="216" y="146" class="m" text-anchor="middle">P</text>
+  <rect x="240" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="261" y="146" class="m" text-anchor="middle">P</text>
+  <rect x="285" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="306" y="146" class="m" text-anchor="middle">P</text>
+  <rect x="60" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="81" y="191" class="m" text-anchor="middle">3</text>
+  <rect x="105" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="126" y="191" class="m" text-anchor="middle">3</text>
+  <rect x="150" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="171" y="191" class="m" text-anchor="middle">3</text>
+  <rect x="195" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="216" y="191" class="m" text-anchor="middle">3</text>
+  <rect x="240" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="261" y="191" class="m" text-anchor="middle">3</text>
+  <rect x="285" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="306" y="191" class="m" text-anchor="middle">3</text>
+  <text x="195" y="230" class="s" text-anchor="middle">marginal ore takes plant tonnage;</text>
+  <text x="195" y="246" class="s" text-anchor="middle">the rich ore below waits (period 3)</text>
+  <text x="705" y="60" class="h" text-anchor="middle">re-cut on the PCPSP LP</text>
+  <rect x="570" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="615" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="660" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="705" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="750" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="795" y="75" width="42" height="42" rx="4" class="fw"/>
+  <rect x="570" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="591" y="146" class="m" text-anchor="middle">D</text>
+  <rect x="615" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="636" y="146" class="m" text-anchor="middle">D</text>
+  <rect x="660" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="681" y="146" class="m" text-anchor="middle">D</text>
+  <rect x="705" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="726" y="146" class="m" text-anchor="middle">D</text>
+  <rect x="750" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="771" y="146" class="m" text-anchor="middle">D</text>
+  <rect x="795" y="120" width="42" height="42" rx="4" class="fd"/>
+  <text x="816" y="146" class="m" text-anchor="middle">D</text>
+  <rect x="570" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="591" y="191" class="m" text-anchor="middle">1</text>
+  <rect x="615" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="636" y="191" class="m" text-anchor="middle">1</text>
+  <rect x="660" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="681" y="191" class="m" text-anchor="middle">1</text>
+  <rect x="705" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="726" y="191" class="m" text-anchor="middle">1</text>
+  <rect x="750" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="771" y="191" class="m" text-anchor="middle">1</text>
+  <rect x="795" y="165" width="42" height="42" rx="4" class="fa"/>
+  <text x="816" y="191" class="m" text-anchor="middle">1</text>
+  <text x="705" y="230" class="s" text-anchor="middle">the LP dumps the marginal ore;</text>
+  <text x="705" y="246" class="s" text-anchor="middle">the plant goes to the rich ore now</text>
+  <text x="450" y="272" class="ms" text-anchor="middle">rows: waste, marginal ore, rich ore; P plant, D dump, digits the period the rich ore is processed</text>
+  <rect x="30" y="296" width="152" height="58" rx="8" class="fw"/>
+  <text x="106.0" y="315.5" class="h" text-anchor="middle">PCPSP LP</text>
+  <text x="106.0" y="332.5" class="s" text-anchor="middle">HiGHS, its solution</text>
+  <path d="M184 325 L200 325" class="ar"/>
+  <rect x="202" y="296" width="152" height="58" rx="8" class="fb"/>
+  <text x="278.0" y="315.5" class="h" text-anchor="middle">re-cut</text>
+  <text x="278.0" y="332.5" class="s" text-anchor="middle">fix its destinations</text>
+  <path d="M356 325 L372 325" class="ar"/>
+  <rect x="374" y="296" width="152" height="58" rx="8" class="fw"/>
+  <text x="450.0" y="315.5" class="h" text-anchor="middle">CPIT</text>
+  <text x="450.0" y="332.5" class="s" text-anchor="middle">same values</text>
+  <path d="M528 325 L544 325" class="ar"/>
+  <rect x="546" y="296" width="152" height="58" rx="8" class="fw"/>
+  <text x="622.0" y="315.5" class="h" text-anchor="middle">schedule</text>
+  <text x="622.0" y="332.5" class="s" text-anchor="middle">ExTS, sliding window</text>
+  <path d="M700 325 L716 325" class="ar"/>
+  <rect x="718" y="296" width="152" height="58" rx="8" class="fw"/>
+  <text x="794.0" y="315.5" class="h" text-anchor="middle">search</text>
+  <text x="794.0" y="332.5" class="s" text-anchor="middle">OPBSP-[D], all free</text>
+  <text x="450" y="384" class="s" text-anchor="middle">every plan of the re-cut CPIT is a PCPSP plan at the same value; the search can never end below the best CPIT plan</text>
+
+</svg>

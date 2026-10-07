@@ -122,3 +122,6 @@ class MethodResult:
     #: whether the SCENARIO rule would have flagged this case. Kept beside the measurement because the
     #: two disagreeing is the interesting case, and it is what the live lane has to rely on.
     flagged_by_rule: bool = False
+    #: structured facts a method reports about what it did (blocks moved, value gained, cutoffs), so a
+    #: reading page reads numbers instead of parsing the notes
+    extra: dict = field(default_factory=dict)

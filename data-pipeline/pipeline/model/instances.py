@@ -12,6 +12,7 @@ ever committed for a MineLib case.
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -22,7 +23,11 @@ from ..io.contract import ContractReport, validate_instance
 from ..io.schema import Case, DepositSpec, Scenario
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-MINELIB_CACHE = REPO_ROOT / "data" / "raw" / "minelib"
+#: Where the MineLib download lives. Downloaded data belongs in the machine's data folder, not in a
+#: clone, so ``PHASEFLOW_DATA_DIR`` names that folder; without it the git-ignored ``data/raw`` of the
+#: clone is used, which keeps a fresh clone runnable with no configuration.
+DATA_DIR = Path(os.environ["PHASEFLOW_DATA_DIR"]) if os.environ.get("PHASEFLOW_DATA_DIR") else REPO_ROOT / "data" / "raw"
+MINELIB_CACHE = DATA_DIR / "minelib"
 
 
 @dataclass

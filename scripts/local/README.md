@@ -22,7 +22,7 @@ prerequisite is missing. Every script ships as a matched pair, `.ps1` and `.sh`.
 |---|---|---|
 | `00_install-prereqs` | Checks the versions CI pins. Does not touch a working machine. | PowerShell: `-Install` installs the missing ones through winget. On Linux and macOS it only reports; installing is yours. |
 | `01_init` | One virtualenv, the offline and dev requirements, `npm ci`, `.env` from `.env.example`, and a sandbox bake if `data/derived/` is empty. Idempotent. | `PYTHON=/path/to/python` to pick an interpreter |
-| `02_generate-data` | Bakes the artifacts. **Sandbox by default** (`build/local`). | `<case-id>` for one case; `-Release` / `--release` to write the committed `data/derived/` |
+| `02_generate-data` | Bakes the artifacts. **Sandbox by default** (`build/local`). The whole set takes about a day (docs/guides/01 has the measured table), so cases run side by side. | `<case-id>` for one case; `-Release` / `--release` to write the committed `data/derived/`; `-Jobs N` / `PHASEFLOW_BAKE_JOBS=N` cases at once (default 4) |
 | `03_dev` | Overlays `data/derived` into the frontend and starts Vite. | - |
 
 There is no `04`: PhaseFlow has no backend. The `app/` folder is the archetype's dormant API lane and

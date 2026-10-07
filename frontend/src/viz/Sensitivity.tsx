@@ -4,7 +4,7 @@
 // Why it can exist at all: the exact bound is a parametric family of maximum closures, a few hundred
 // per point, which is fine once and impossible across a grid. The bound surrogate predicts it from
 // eleven deposit statistics plus the scenario, so the plane is one forward pass per cell. Its
-// held-out error is 1.40 percent mean and 3.99 percent at the ninetieth percentile, which is why the
+// held-out error travels with the model file and is printed under the plane, which is why the
 // certified anchor is not decoration: it is the only direct solve on the plane.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -163,10 +163,12 @@ export function SensitivitySurface({
   // 1.40 percent mean error: the training sweep ran rate and capacity together, so it had learned one
   // as a proxy for the other. The training script measures both directions now and the numbers travel
   // with the model, so this panel can refuse rather than draw something confidently wrong.
+  const metrics = (model as unknown as { metrics?: Record<string, number> } | null)?.metrics;
   const monotone = model
-    ? Number((model as unknown as { metrics?: Record<string, number> }).metrics?.monotone_capacity_rate ?? 1) >= 0.9 &&
-      Number((model as unknown as { metrics?: Record<string, number> }).metrics?.monotone_rate_rate ?? 1) >= 0.9
+    ? Number(metrics?.monotone_capacity_rate ?? 1) >= 0.9 && Number(metrics?.monotone_rate_rate ?? 1) >= 0.9
     : true;
+  const meanErr = metrics?.holdout_mean_rel_err;
+  const p90Err = metrics?.holdout_p90_rel_err;
   if (model && !monotone) {
     return (
       <Callout variant="honest" title={es ? 'La superficie no se dibuja' : 'The surface is not drawn'}>
@@ -223,8 +225,8 @@ export function SensitivitySurface({
       </p>
       <p className="pf-cap pf-muted">
         {es
-          ? 'PREDICHA, no certificada. Una cota de relajación requiere numerosos cierres máximos por punto; el sustituto permite dibujar la grilla. Su error medio en el conjunto retenido fue 1,40 por ciento y el percentil noventa 3,99. El recuadro marca este caso, donde se calculó una cota certificada; puede ser más holgada que el óptimo LP conjunto.'
-          : 'PREDICTED, not certified. A relaxation bound requires many maximum-closure solves per point; the surrogate makes the grid affordable. Its held-out mean error was 1.40 percent and its ninetieth percentile 3.99 percent. The box marks this case, where a certified bound was computed; that bound can be looser than the joint LP optimum.'}
+          ? `PREDICHA, no certificada. Una cota de relajación requiere numerosos cierres máximos por punto; el sustituto permite dibujar la grilla. Su error medio en depósitos retenidos es ${meanErr != null ? dec(100 * meanErr, 2) : '-'} por ciento y el percentil noventa ${p90Err != null ? dec(100 * p90Err, 2) : '-'}. El recuadro marca este caso, donde se calculó una cota certificada; puede ser más holgada que el óptimo LP conjunto.`
+          : `PREDICTED, not certified. A relaxation bound requires many maximum-closure solves per point; the surrogate makes the grid affordable. Its mean error on held-out deposits is ${meanErr != null ? dec(100 * meanErr, 2) : '-'} percent and its ninetieth percentile ${p90Err != null ? dec(100 * p90Err, 2) : '-'} percent. The box marks this case, where a certified bound was computed; that bound can be looser than the joint LP optimum.`}
       </p>
       <p className="pf-cap pf-muted">
         {es

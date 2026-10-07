@@ -1,44 +1,36 @@
-# Deploy
+# 07 · Deploy
 
-**GitHub Pages, static** (ADR-0055). `.github/workflows/deploy-pages.yml` builds the SPA, overlays
-`data/derived` with `copy-data.mjs`, and publishes `frontend/dist`. Nothing runs at request time.
+**GitHub Pages, static** (ADR-0055). `.github/workflows/deploy-pages.yml` installs the pinned requirements,
+runs the gates (artifacts, content standards, template residue, README numbers, docs tables), builds the SPA
+(`copy-data.mjs` overlays `data/derived` into `public/`), and publishes `frontend/dist`. Nothing runs at
+request time. Live at **https://phaseflow.fasl-work.com**, HTTPS enforced; the custom-domain steps and their
+gotchas are recorded in the management repository's deployment notes.
 
-Live at **https://phaseflow.fasl-work.com**, HTTPS enforced. The custom domain and the two-step
-go-live are recorded in `deployments/phaseflow.md` in the management repo, including the gotcha that a
-`CNAME` file does NOT set the domain on an Actions deploy: it takes `gh api PUT .../pages -f cname=...`
-and then a redeploy.
+The VPS path in `deploy/` is **dormant**: it activates only with an `app/` backend, which PhaseFlow does not
+have.
 
-The VPS path in `deploy/` is **dormant**. It activates only if `app/` does, which needs an ADR-0002
-trigger PhaseFlow does not have.
+## What CI enforces on every push to the trunk (cheap checks only, ADR-0074)
 
-## What CI enforces on every push
+`ci.yml`: install the pinned requirements; `ruff`; `check_artifacts.py` (CONTRACT 2 on the committed
+evidence); the frontend build, the engine and parity tests and the architecture-bounds check; guards against a
+tracked `.env`, a tracked virtual environment, a native or heavy binary, raw data or a leaked machine path;
+template residue; content standards (no em-dash or emoji); the README trust anchor; the docs tables; the CI
+budget (trunk-only triggers, no training). CI does not run pytest (it bakes cases and runs MILPs) and never
+trains; those run locally ([guides/05](../guides/05_run-the-checks.md)).
 
-`ci.yml`: ruff, pytest, a bake smoke, `check_artifacts.py` for CONTRACT 2, the frontend build, and the
-frontend gates (the live-vs-offline parity, the ladder claims, the design tokens), plus guards that fail on a
-tracked `.env`, a tracked venv, a native or heavy binary, raw data, or a leaked machine path.
+Because CI installs `requirements.txt`, a pin to an engine version not yet on PyPI fails CI; the engine is
+released first, then the product.
 
-`npm test` uses Node's DEFAULT test discovery rather than a list of files. The list named four files
-and only two existed: Node silently skipped the missing ones on Windows and hard-failed on the Linux
-runner, so the local run was green for the wrong reason and CI was the first thing to say so. A
-discovery rule cannot name a file that is not there, and it picks up a new test without anyone
-remembering to add it.
+`npm test` uses Node's default test discovery rather than a list of files: a list once named four files of
+which two existed, Node skipped the missing ones on Windows and failed on Linux, and the local run was green
+for the wrong reason.
 
-## What CI cannot enforce, and what covers it
+## What CI cannot see, and what covers it
 
-CI cannot see the page. Several defects have shipped through a green CI and a green HTTP check: two
-copies of `react-router` so every shell hook threw, a pit rendered upside down, every block rendered
-black, and a route that unmounted the whole app on click. The browser gate is what catches that class.
-It lives in the management repo (`tools/visual-verify/_pf-gate.mjs`) because it is the same discipline
-for every product on this line, and it drives the pointer, samples the canvas, and asserts what the
-stage actually DREW:
-
-- the six routes fit the viewport, or scroll inside a container of their own
-- the stage draws, at a measured size, and WAITS for the renderer to report a frame rather than
-  sleeping a fixed time
-- what it draws carries period colour, measured as saturation, because a distinct-colour count once
-  passed 98 on an all-black pit
-- nothing sits on the border of the canvas: a pit clipped by its own frame reads as a wall
-- the App route gives the instrument at least half the viewport, the focus route at least 80 percent
-- the focus route opens by CLICKING, its controls re-solve, and it comes back
-- no console errors, with the SPA-fallback 404 filtered, because a gate that disagrees with a working
-  app gets ignored
+CI cannot see the page. Defects have shipped through a green CI and a green HTTP check: two copies of
+`react-router` so every shell hook threw, a pit rendered upside down, every block rendered black, a route
+that unmounted the app on click. The browser gates catch that class (`frontend/scripts/verify-*.mjs` in this
+repository, and the shared gate in the management repository): the routes fit the viewport or scroll inside
+their own container; the stage draws at a measured size and waits for a reported frame; what it draws
+carries period colour, measured as saturation; nothing sits on the border of the canvas; the focus view opens
+by clicking, re-solves, and comes back; no console errors.

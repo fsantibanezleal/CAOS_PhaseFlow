@@ -41,7 +41,38 @@ import numpy as np
 from ..io.schema import Scenario
 from .features import block_feature_matrix, deposit_feature_vector
 
-__all__ = ["Mlp", "LearnedBundle", "train_mlp", "export_onnx"]
+__all__ = ["Mlp", "LearnedBundle", "capacity_fractions", "json_safe", "train_mlp", "export_onnx"]
+
+
+def json_safe(obj):
+    """NaN and infinities as null, recursively. A browser's JSON.parse rejects NaN, and one NaN in a
+    model file is enough to make every page that reads the model fail to load it."""
+    if isinstance(obj, float):
+        return obj if np.isfinite(obj) else None
+    if isinstance(obj, (np.floating,)):
+        return float(obj) if np.isfinite(obj) else None
+    if isinstance(obj, dict):
+        return {k: json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [json_safe(v) for v in obj]
+    return obj
+
+
+def capacity_fractions(cpit, in_pit: np.ndarray) -> tuple[float, ...]:
+    """Each resource's mean per-period limit as a fraction of (its ultimate-pit total / periods).
+
+    This is the definition `Scenario.capacity_fraction` is built FROM, read back off the instance, so a
+    published file with absolute limits gets the same feature a synthetic case declares. Until 0.08.000
+    the ladder fed the model a fixed (1.0, 1.0) on every case while training used each scenario's real
+    fractions (0.7 and 0.4, 1.4 and 0.32, ...), so every baked learned plan was scored on inputs the
+    model had never been trained on.
+    """
+    out = []
+    for r in range(cpit.n_resources):
+        total = float(np.asarray(cpit.coef[r], dtype=np.float64)[np.asarray(in_pit, dtype=bool)].sum())
+        per_period = total / max(1, cpit.n_periods)
+        out.append(float(np.mean(cpit.limit[r])) / per_period if per_period > 0 else 0.0)
+    return tuple(out)
 
 
 # ------------------------------------------------------------------------------------------------
@@ -77,7 +108,7 @@ class Mlp:
             "layers": [
                 {"w": w.tolist(), "b": b.tolist()} for w, b in zip(self.w, self.b, strict=True)
             ],
-            "metrics": self.metrics,
+            "metrics": json_safe(self.metrics),
         }
 
     @classmethod
@@ -171,10 +202,16 @@ def train_mlp(
 def export_onnx(model: Mlp, path: str | Path, *, sample: np.ndarray | None = None) -> Path:
     """Write a real ONNX graph and PROVE it matches the trained model.
 
-    Standardisation is folded into the graph as a Sub and a Div, so the browser feeds raw features and
-    cannot get the normalisation wrong. The export is executed with onnxruntime on a sample batch and
-    compared against :meth:`Mlp.forward`; a mismatch above 1e-6 raises rather than shipping an artifact
-    that is not the model that was trained.
+    Standardisation is folded into the graph as a Sub and a Div, so an ONNX consumer feeds raw
+    features and cannot get the normalisation wrong. (The browser does not use the ONNX graph: it runs
+    the same function from the JSON weights, held to the trained model by a parity fixture.) The
+    export is executed with onnxruntime on a sample batch and compared against :meth:`Mlp.forward`; a
+    mismatch above 1e-5 raises rather than shipping an artifact that is not the model that was trained.
+
+    The default sample is drawn from the model's OWN input distribution (``mu + sigma * N(0, 1)``). It
+    used to be raw ``N(0, 1)``, which for features standardised around means in the thousands
+    saturated every sigmoid output, so the float32 graph and the float64 model agreed exactly and the
+    check proved nothing; a sample whose outputs are almost all saturated now raises.
     """
     import onnx
     from onnx import TensorProto, helper, numpy_helper
@@ -217,8 +254,15 @@ def export_onnx(model: Mlp, path: str | Path, *, sample: np.ndarray | None = Non
     onnx.save(onnx_model, str(p))
 
     if sample is None:
-        sample = np.random.default_rng(0).normal(size=(64, d))
+        scale = np.where(model.sigma > 1e-8, model.sigma, 1.0)
+        sample = model.mu + scale * np.random.default_rng(0).normal(size=(256, d))
     expected = model.forward(sample.astype(np.float64))
+    live = float(np.mean((expected > 1e-4) & (expected < 1 - 1e-4)))
+    if live < 0.5:
+        raise AssertionError(
+            f"only {100 * live:.0f} percent of the parity sample reaches the unsaturated range of the "
+            "output; a parity check on saturated outputs proves nothing"
+        )
     try:
         import onnxruntime as ort
 
@@ -236,7 +280,7 @@ def export_onnx(model: Mlp, path: str | Path, *, sample: np.ndarray | None = Non
         err = None
 
     p.with_suffix(".json").write_text(
-        json.dumps({**model.to_json(), "onnx_parity_max_abs_err": err}, indent=1) + "\n",
+        json.dumps(json_safe({**model.to_json(), "onnx_parity_max_abs_err": err}), indent=1, allow_nan=False) + "\n",
         encoding="utf-8",
         newline="\n",
     )
@@ -357,10 +401,17 @@ class LearnedBundle:
         below = m.get("failure_below", 0.90)
         recall = m.get("failure_rule_recall")
         worst = m.get("holdout_npv_vs_exact_exts_min")
+        # the share of held-out cases of this archetype below the line, read from the committed study
+        share = None
+        study = (self.root / "learned-failure-modes.json") if self.root else None
+        if study is not None and study.exists():
+            arch = json.loads(study.read_text(encoding="utf-8")).get("holdout", {}).get("by_archetype", {}).get(want)
+            if arch and arch.get("n"):
+                share = arch["failures"] / arch["n"]
         parts = [
             f"this deposit is a {want}, the shape where this surrogate is MEASURED to lose: "
-            f"{100 * float(below):.0f} percent of the exact plan is the line, and two thirds of "
-            f"held-out {want} cases fall below it"
+            f"{100 * float(below):.0f} percent of the exact plan is the line"
+            + (f", and {100 * share:.0f} percent of held-out {want} cases fall below it" if share is not None else "")
         ]
         if recall is not None:
             parts.append(f"the flag catches {100 * float(recall):.0f}% of the failures")
@@ -380,7 +431,7 @@ class LearnedBundle:
         sc = Sc(
             periods=cpit.n_periods,
             discount_rate=cpit.discount_rate,
-            capacity_fraction=tuple([1.0] * cpit.n_resources),
+            capacity_fraction=capacity_fractions(cpit, instance.upit_in_pit),
             resource_names=cpit.resource_names,
             period_one_undiscounted=cpit.period_one_undiscounted,
         )
@@ -391,8 +442,10 @@ class LearnedBundle:
         ms = (time.perf_counter() - t0) * 1000.0
         res.method = "learned-expected-time"
         note = (
-            "ExTS quality with NO LP solve: the expected extraction times come from a surrogate "
-            f"(held-out Spearman {self.expected_time.metrics.get('holdout_spearman', float('nan')):.3f})"
+            "the ExTS ordering with no LP solve: the expected extraction times are predicted from block "
+            "and scenario features by a surrogate trained on other deposits "
+            f"(held-out Spearman {self.expected_time.metrics.get('holdout_spearman', float('nan')):.3f}), "
+            "so its plan is only as good as that ordering"
         )
         warning = self.unreliable_here(cpit, getattr(instance, "archetype", None))
         if warning:

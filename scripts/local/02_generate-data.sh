@@ -2,8 +2,11 @@
 # 02 - bake the artifacts.
 #
 # SANDBOX BY DEFAULT. Writing into data/derived/ overwrites the committed evidence the site ships, so
-# it takes an explicit --release. Pass a case id to bake one; omit it for all thirteen (about ninety
-# minutes, and it prints a line per case as each lands).
+# it takes an explicit --release. Pass a case id to bake one; omit it for all thirteen. The whole set
+# takes about a day: the sliding windows run for hours on the largest cases (802 minutes for one window
+# stage on twin-layered in the 0.08 release) and the HiGHS PCPSP LP up to 159 minutes, so the cases are baked side
+# by side, PHASEFLOW_BAKE_JOBS at a time (default 4; the 0.08 release ran 8 on a 32-core, 48 GB
+# workstation). It prints a line per case as each lands; docs/guides/01 has the measured table.
 #
 #   ./scripts/local/02_generate-data.sh                     # all cases -> build/local
 #   ./scripts/local/02_generate-data.sh twin-porphyry-l     # one case  -> build/local
@@ -26,11 +29,15 @@ if [ "$RELEASE" -eq 1 ]; then
     exit 1
   fi
   echo "[02] RELEASE bake -> data/derived (the committed artifacts)"
-  "$VENV" -u data-pipeline/run.py all --learned
+  "$VENV" -u data-pipeline/run.py all --learned --jobs "${PHASEFLOW_BAKE_JOBS:-4}"
   "$VENV" scripts/check_artifacts.py
 else
   echo "[02] sandbox bake -> build/local (pass --release to write the committed artifacts)"
-  "$VENV" -u data-pipeline/run.py "$CASE" --learned --output build/local
+  if [ "$CASE" = "all" ]; then
+    "$VENV" -u data-pipeline/run.py all --learned --output build/local --jobs "${PHASEFLOW_BAKE_JOBS:-4}"
+  else
+    "$VENV" -u data-pipeline/run.py "$CASE" --learned --output build/local
+  fi
 fi
 
 echo
