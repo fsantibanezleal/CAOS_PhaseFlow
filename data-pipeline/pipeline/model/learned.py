@@ -80,7 +80,16 @@ def capacity_fractions(cpit, in_pit: np.ndarray) -> tuple[float, ...]:
 # ------------------------------------------------------------------------------------------------
 @dataclass
 class Mlp:
-    """A 2-hidden-layer perceptron with ReLU and a sigmoid head, weights as plain arrays."""
+    """A 2-hidden-layer perceptron with ReLU and a sigmoid head, weights as plain arrays.
+
+    Optionally an ENSEMBLE: ``members`` holds further weight sets trained on the same rows with other
+    seeds and the same standardisation, and :meth:`forward` averages the sigmoid outputs. The
+    expected-time model ships as five members since 0.09.000, because on a real deposit a single
+    training run is a lottery: five seeds of the same model on the same data reached 0.717 to 0.879 of
+    the exact ExTS plan on `kd-declared` while agreeing within 0.013 on held-out twins, and the 0.08
+    model's 0.413 was one draw from that spread. Their average reached 0.886 and was as good as the best
+    single seed on the twins.
+    """
 
     w: list[np.ndarray]
     b: list[np.ndarray]
@@ -90,13 +99,22 @@ class Mlp:
     mu: np.ndarray = field(default_factory=lambda: np.zeros(0))
     sigma: np.ndarray = field(default_factory=lambda: np.ones(0))
     metrics: dict = field(default_factory=dict)
+    #: further members, each ``(w, b)``; empty for a single model
+    members: list[tuple[list[np.ndarray], list[np.ndarray]]] = field(default_factory=list)
+
+    def _weight_sets(self) -> list[tuple[list[np.ndarray], list[np.ndarray]]]:
+        return [(self.w, self.b), *self.members]
 
     def forward(self, x: np.ndarray) -> np.ndarray:
-        h = (x - self.mu) / np.where(self.sigma > 1e-8, self.sigma, 1.0)
-        for k in range(len(self.w) - 1):
-            h = np.maximum(0.0, h @ self.w[k] + self.b[k])
-        z = h @ self.w[-1] + self.b[-1]
-        return 1.0 / (1.0 + np.exp(-z))
+        h0 = (x - self.mu) / np.where(self.sigma > 1e-8, self.sigma, 1.0)
+        outs = []
+        for w, b in self._weight_sets():
+            h = h0
+            for k in range(len(w) - 1):
+                h = np.maximum(0.0, h @ w[k] + b[k])
+            z = h @ w[-1] + b[-1]
+            outs.append(1.0 / (1.0 + np.exp(-z)))
+        return np.mean(outs, axis=0)
 
     def to_json(self) -> dict:
         return {
@@ -108,6 +126,10 @@ class Mlp:
             "layers": [
                 {"w": w.tolist(), "b": b.tolist()} for w, b in zip(self.w, self.b, strict=True)
             ],
+            **({"members": [
+                {"layers": [{"w": w.tolist(), "b": b.tolist()} for w, b in zip(mw, mb, strict=True)]}
+                for mw, mb in self.members
+            ]} if self.members else {}),
             "metrics": json_safe(self.metrics),
         }
 
@@ -121,6 +143,11 @@ class Mlp:
             mu=np.array(d["mu"], dtype=np.float64),
             sigma=np.array(d["sigma"], dtype=np.float64),
             metrics=d.get("metrics", {}),
+            members=[
+                ([np.array(layer["w"], dtype=np.float64) for layer in m["layers"]],
+                 [np.array(layer["b"], dtype=np.float64) for layer in m["layers"]])
+                for m in d.get("members", [])
+            ],
         )
 
 
@@ -146,6 +173,14 @@ def train_mlp(
     n, d = x.shape
     mu = x.mean(axis=0)
     sigma = x.std(axis=0)
+    constant = [name for name, s in zip(feature_names, sigma, strict=True) if s <= 1e-8]
+    if constant:
+        # An input that never varies in training gets no gradient on its first-layer weights: they
+        # keep their random initial values and act on every deployment row where the input DOES vary.
+        # `tonnage_norm` did exactly that on real deposits until 0.09.000. Refuse, never ship it.
+        raise ValueError(
+            f"inputs constant in the training data, their weights would never be trained: {constant}"
+        )
     xs = (x - mu) / np.where(sigma > 1e-8, sigma, 1.0)
 
     dims = [d, *hidden, 1]
@@ -196,6 +231,20 @@ def train_mlp(
     return Mlp(w=w, b=b, feature_names=feature_names, target=target, mu=mu, sigma=sigma)
 
 
+def train_ensemble(x: np.ndarray, y: np.ndarray, *, seeds: tuple[int, ...], **kw) -> Mlp:
+    """``train_mlp`` once per seed on the same rows, combined into one averaged model.
+
+    The members share the standardisation (it is a property of the rows, not of the seed), so the
+    ensemble is one ``mu``/``sigma`` and several weight sets; ``Mlp.forward`` averages them.
+    """
+    first, *rest = (train_mlp(x, y, seed=s, **kw) for s in seeds)
+    for m in rest:
+        if not (np.array_equal(m.mu, first.mu) and np.array_equal(m.sigma, first.sigma)):
+            raise AssertionError("ensemble members disagree on the standardisation")
+        first.members.append((m.w, m.b))
+    return first
+
+
 # ------------------------------------------------------------------------------------------------
 # ONNX export, verified against the numpy forward pass before it is written
 # ------------------------------------------------------------------------------------------------
@@ -230,14 +279,22 @@ def export_onnx(model: Mlp, path: str | Path, *, sample: np.ndarray | None = Non
         helper.make_node("Sub", ["x", "mu"], ["c"]),
         helper.make_node("Div", ["c", "sigma"], ["h0"]),
     ]
-    for k in range(len(model.w)):
-        inits.append(numpy_helper.from_array(model.w[k].astype(np.float32), f"W{k}"))
-        inits.append(numpy_helper.from_array(model.b[k].astype(np.float32), f"B{k}"))
-        nodes.append(helper.make_node("MatMul", [f"h{k}", f"W{k}"], [f"m{k}"]))
-        nodes.append(helper.make_node("Add", [f"m{k}", f"B{k}"], [f"a{k}"]))
-        if k < len(model.w) - 1:
-            nodes.append(helper.make_node("Relu", [f"a{k}"], [f"h{k + 1}"]))
-    nodes.append(helper.make_node("Sigmoid", [f"a{len(model.w) - 1}"], ["y"]))
+    heads = []
+    for e, (w, b) in enumerate(model._weight_sets()):
+        prev = "h0"
+        for k in range(len(w)):
+            inits.append(numpy_helper.from_array(w[k].astype(np.float32), f"W{e}_{k}"))
+            inits.append(numpy_helper.from_array(b[k].astype(np.float32), f"B{e}_{k}"))
+            nodes.append(helper.make_node("MatMul", [prev, f"W{e}_{k}"], [f"m{e}_{k}"]))
+            nodes.append(helper.make_node("Add", [f"m{e}_{k}", f"B{e}_{k}"], [f"a{e}_{k}"]))
+            if k < len(w) - 1:
+                nodes.append(helper.make_node("Relu", [f"a{e}_{k}"], [f"h{e}_{k + 1}"]))
+                prev = f"h{e}_{k + 1}"
+        nodes.append(helper.make_node("Sigmoid", [f"a{e}_{len(w) - 1}"], [f"y{e}"]))
+        heads.append(f"y{e}")
+    # one member is the plain model; several are averaged, exactly as Mlp.forward does
+    nodes.append(helper.make_node("Mean", heads, ["y"]) if len(heads) > 1
+                 else helper.make_node("Identity", heads, ["y"]))
 
     graph = helper.make_graph(
         nodes,
@@ -302,12 +359,24 @@ class LearnedBundle:
 
     @classmethod
     def load(cls, models_dir: str | Path) -> LearnedBundle:
+        from .features import BLOCK_FEATURES, DEPOSIT_FEATURES
+
         d = Path(models_dir)
-        return cls(
+        bundle = cls(
             expected_time=Mlp.from_json(json.loads((d / "expected-time.json").read_text(encoding="utf-8"))),
             bound=Mlp.from_json(json.loads((d / "bound.json").read_text(encoding="utf-8"))),
             root=d,
         )
+        # A model trained on a different feature list would still run if the counts happened to match,
+        # on columns that mean something else. Names, in order, or nothing.
+        for label, model, names in (("expected-time", bundle.expected_time, BLOCK_FEATURES),
+                                    ("bound", bundle.bound, DEPOSIT_FEATURES)):
+            if tuple(model.feature_names) != tuple(names):
+                raise ValueError(
+                    f"models/{label}.json was trained on {list(model.feature_names)}, the pipeline builds "
+                    f"{list(names)}; retrain (scripts/train_learned.py) rather than feed it other columns"
+                )
+        return bundle
 
     def predict_expected_times(self, instance, scenario: Scenario) -> np.ndarray:
         """Predicted ``E_b`` per block, with NO LP solve."""
