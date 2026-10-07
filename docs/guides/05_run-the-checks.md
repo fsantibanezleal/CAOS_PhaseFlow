@@ -22,8 +22,13 @@ The deploy job runs the same gates again before it publishes.
 ```bash
 python -m pytest -q --basetemp "<the machine's temp folder>/pytest"   # the pipeline tests; one bakes a whole case
 cd frontend && npm run verify:theme       # browser gates (Playwright): theme, profile size,
-cd frontend && npm run verify:profile     #   grade source, focus capacity, infeasible plans
+cd frontend && npm run verify:profile     #   grade source, focus capacity, infeasible plans,
+cd frontend && npm run verify:stage       #   and the 3D pit's pixels after the page settles
 ```
+
+`verify:stage` reads the canvas rather than the stage's "drawn" flag: in 0.08 headless Chromium dropped
+the WebGL context once after the first frame and the on-demand stage stayed blank with the flag set. Set
+`PHASEFLOW_BASE` to run any browser gate against a built (`vite preview`) or deployed site.
 
 Point pytest's `--basetemp` and Playwright's browsers (`PLAYWRIGHT_BROWSERS_PATH`) at the machine's temp
 folder, not the system drive or the repository. The pipeline suite includes a sandbox bake of a whole
