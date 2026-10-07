@@ -17,7 +17,7 @@ candidates, or tune anything; it computes one confusion matrix and writes it dow
 out worse than the held-out ones, that is the answer and it goes on the page.
 
 The result is committed as `models/guard-validation.json` and quoted in
-`docs/methods/10_when_the_surrogate_fails.md`.
+`docs/methodologies/08_when-the-surrogate-fails.md`.
 """
 
 from __future__ import annotations
@@ -32,13 +32,19 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "data-pipeline"))
 
-import oreblocks as ob  # noqa: E402
 
-from pipeline.model.features import block_feature_matrix  # noqa: E402
-from pipeline.model.learned import LearnedBundle  # noqa: E402
+from pipeline.model.learned import LearnedBundle, json_safe  # noqa: E402
 
 sys.path.insert(0, str(ROOT / "scripts"))
-from train_learned import ARCHETYPES, HOLDOUT_SEEDS, SCENARIOS, TRAIN_SEEDS, _case  # noqa: E402
+from train_learned import (  # noqa: E402
+    ARCHETYPES,
+    HOLDOUT_SEEDS,
+    SCENARIOS,
+    SIZES,
+    TRAIN_SEEDS,
+    collect,
+    score_cases,
+)
 
 MODELS = ROOT / "models"
 
@@ -60,6 +66,8 @@ def main() -> int:
     def flagged(archetype: str, rate: float) -> bool:
         """Apply whatever rule shipped. It has been a scenario rule and is now an orebody rule, and
         a validator that hardcodes one of them stops validating the moment the study moves."""
+        if rule == "no rule":
+            return False
         if rule.startswith("archetype =="):
             return archetype == rule.split("==", 1)[1].strip()
         if rule.startswith("archetype in"):
@@ -69,53 +77,28 @@ def main() -> int:
         raise ValueError(f"the validator does not know how to apply {rule!r}")
     print(f"held out: precision {metrics.get('failure_rule_precision')}, "
           f"recall {metrics.get('failure_rule_recall')}")
+    n_cases = len(VALIDATION_SEEDS) * len(ARCHETYPES) * len(SCENARIOS) * len(SIZES)
     print(f"\nvalidating on {len(VALIDATION_SEEDS)} fresh seeds x {len(ARCHETYPES)} archetypes "
-          f"x {len(SCENARIOS)} scenarios = {len(VALIDATION_SEEDS) * len(ARCHETYPES) * len(SCENARIOS)} cases")
+          f"x {len(SCENARIOS)} scenarios x {len(SIZES)} sizes = {n_cases} cases")
 
-    from pipeline.model.instances import build_instance
-
-    rows = []
     t0 = time.time()
-    for seed in VALIDATION_SEEDS:
-        for arch in ARCHETYPES:
-            for sc in SCENARIOS:
-                case = _case(seed, arch, sc)
-                inst = build_instance(case)
-                rel = ob.cpit_lp_relaxation(inst.cpit, inst.precedence)
-
-                x = block_feature_matrix(
-                    values=inst.cpit.value, tonnage=inst.tonnage, grade=inst.grade,
-                    level=inst.level, x=inst.x, y=inst.y, in_pit=inst.upit_in_pit,
-                    prec=inst.precedence, scenario=case.scenario, dims=inst.dims,
-                )
-                e_hat = bundle.expected_time.forward(x.astype(np.float64)).reshape(-1) * (
-                    case.scenario.periods + 1
-                )
-                s_hat = ob.toposort_schedule(
-                    inst.cpit, inst.precedence, weight=-e_hat, allowed=inst.upit_in_pit
-                )
-                s_true = ob.toposort_schedule(
-                    inst.cpit, inst.precedence, weight="expected", relaxation=rel,
-                    allowed=inst.upit_in_pit,
-                )
-                periods, rate, caps = sc
-                ratio = float(s_hat.npv / max(1e-9, s_true.npv))
-                rows.append({
-                    "case": case.id,
-                    "seed": seed,
-                    "archetype": arch,
-                    "periods": periods,
-                    "rate": rate,
-                    "vs_true": ratio,
-                    "failed": bool(ratio < failure_below),
-                    "flagged": flagged(arch, rate),
-                })
-                mark = "FAIL" if ratio < failure_below else "    "
-                flag = "flagged" if flagged(arch, rate) else "       "
-                print(f"  {mark} {flag} {arch:10s} seed {seed:4d} T={periods:2d} r={rate:.2f} "
-                      f"-> {ratio:.4f}", flush=True)
-
-    print(f"\ncollected in {time.time() - t0:.0f}s")
+    data = collect(VALIDATION_SEEDS)
+    scored = score_cases(bundle.expected_time, data)
+    rows = []
+    for r in scored:
+        ratio = r["vs_true"]
+        rows.append({
+            "case": r["case"],
+            "seed": r["seed"],
+            "archetype": r["archetype"],
+            "n_blocks": r["n_blocks"],
+            "periods": r["periods"],
+            "rate": r["rate"],
+            "vs_true": ratio,
+            "failed": bool(ratio < failure_below),
+            "flagged": flagged(r["archetype"], r["rate"]),
+        })
+    print(f"\ncollected and scored in {time.time() - t0:.0f}s")
 
     tp = sum(1 for r in rows if r["flagged"] and r["failed"])
     fp = sum(1 for r in rows if r["flagged"] and not r["failed"])
@@ -146,6 +129,10 @@ def main() -> int:
         "worst_unflagged": float(min(unflagged)) if unflagged else None,
         "worst_overall": float(min(r["vs_true"] for r in rows)),
         "median": float(np.median([r["vs_true"] for r in rows])),
+        "median_by_size": {
+            str(n): float(np.median([r["vs_true"] for r in rows if r["n_blocks"] == n]))
+            for n in sorted({r["n_blocks"] for r in rows})
+        },
         "p10": float(np.quantile([r["vs_true"] for r in rows], 0.10)),
         "holdout_for_comparison": {
             "precision": metrics.get("failure_rule_precision"),
@@ -155,7 +142,7 @@ def main() -> int:
         "rows": rows,
     }
     (MODELS / "guard-validation.json").write_text(
-        json.dumps(out, indent=1), encoding="utf-8", newline="\n"
+        json.dumps(json_safe(out), indent=1, allow_nan=False), encoding="utf-8", newline="\n"
     )
 
     print("\nTHIRD SPLIT, the clean measurement")

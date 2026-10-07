@@ -2,7 +2,7 @@
 // lane. Each answers a question the method table cannot.
 
 import { Cite } from '@fasl-work/caos-app-shell';
-import { fmtInt, fmtMoney, dec } from '../lib/artifacts.ts';
+import { fmtDuration, fmtInt, fmtMoney, dec } from '../lib/artifacts.ts';
 import type { BoundReport, EnsembleReport, LearnedReport, TraceMethod } from '../lib/contract.types.ts';
 import { EngineText } from '../lib/EngineText.tsx';
 
@@ -276,9 +276,9 @@ export function LearnedPanel({ learned, methods, es }: { learned: LearnedReport;
       </div>
       {learnedRow && exactRow && (
         <p className="pf-cap">
-          {es ? 'En este caso' : 'On this case'}: {learnedRow.method} {fmtMoney(learnedRow.npv)} ({dec(learnedRow.runtimeMs, 0)} ms,{' '}
+          {es ? 'En este caso' : 'On this case'}: {learnedRow.method} {fmtMoney(learnedRow.npv)} ({fmtDuration(learnedRow.runtimeMs)},{' '}
           {es ? 'sin ninguna resolución LP' : 'with no LP solve at all'}) {es ? 'contra' : 'against'} {exactRow.method}{' '}
-          {fmtMoney(exactRow.npv)} ({dec(exactRow.runtimeMs, 0)} ms).{' '}
+          {fmtMoney(exactRow.npv)} ({fmtDuration(exactRow.runtimeMs)}).{' '}
           <b>{dec(((100 * learnedRow.npv) / exactRow.npv), 1)}%</b> {es ? 'del NPV por' : 'of the NPV for'}{' '}
           <b>{dec(((100 * learnedRow.runtimeMs) / Math.max(1, exactRow.runtimeMs)), 0)}%</b> {es ? 'del tiempo' : 'of the time'}.
         </p>

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 330" role="img" aria-labelledby="t d">
+  <title id="t">Ensemble spread</title>
+  <desc id="d">Three plans shown as P10 to P90 bars with means across realisations; the robust choice by P10 differs from the best mean.</desc>
+  <style>
+    :root { --bg:#ffffff; --card:#f6f8fa; --ink:#1f2328; --muted:#59636e; --line:#d0d7de;
+            --a:#0969da; --b:#8250df; --c:#1a7f37; --d:#9a6700; --e:#cf222e;
+            --a2:#ddf4ff; --b2:#fbefff; --c2:#dafbe1; --d2:#fff8c5; --e2:#ffebe9; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1117; --card:#151b23; --ink:#f0f6fc; --muted:#aab4c0; --line:#3d444d;
+              --a:#58a6ff; --b:#bc8cff; --c:#3fb950; --d:#e3b341; --e:#ff7b72;
+              --a2:#0c2d6b; --b2:#3c1e70; --c2:#04260f; --d2:#3b2300; --e2:#490202; }
+    }
+    .bg { fill:var(--bg); }
+    .card { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .t { fill:var(--ink); font:600 15px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .h { fill:var(--ink); font:600 13px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .s { fill:var(--muted); font:12px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .m { fill:var(--ink); font:12px ui-monospace, Consolas, monospace; }
+    .ms { fill:var(--muted); font:11px ui-monospace, Consolas, monospace; }
+    .ln { stroke:var(--line); stroke-width:1.5; fill:none; }
+    .lnd { stroke:var(--muted); stroke-width:1.2; fill:none; stroke-dasharray:4 3; }
+    .ar { stroke:var(--muted); stroke-width:1.6; fill:none; marker-end:url(#ah); }
+    .ara { stroke:var(--a); stroke-width:1.8; fill:none; marker-end:url(#aha); }
+    .fa { fill:var(--a2); stroke:var(--a); stroke-width:1.2; }
+    .fb { fill:var(--b2); stroke:var(--b); stroke-width:1.2; }
+    .fc { fill:var(--c2); stroke:var(--c); stroke-width:1.2; }
+    .fd { fill:var(--d2); stroke:var(--d); stroke-width:1.2; }
+    .fe { fill:var(--e2); stroke:var(--e); stroke-width:1.2; }
+    .fw { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .ka { fill:var(--a); } .kb { fill:var(--b); } .kc { fill:var(--c); } .kd { fill:var(--d); } .ke { fill:var(--e); }
+    .sa { stroke:var(--a); } .sb { stroke:var(--b); } .sc { stroke:var(--c); } .sd { stroke:var(--d); } .se { stroke:var(--e); }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/></marker>
+    <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--a)"/></marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="800" height="330" rx="10"/>
+  <text x="400" y="30" class="t" text-anchor="middle">Plans across correlated realisations: read the spread, not one number</text>
+  <path d="M90 250 L710 250" class="ln"/>
+  <path d="M90 250 L90 60" class="ln"/>
+  <text x="82" y="70" class="s" text-anchor="end">NPV</text>
+  <rect x="140" y="70" width="60" height="60" rx="4" class="fa"/>
+  <path d="M140 100 L200 100" class="ln"/>
+  <text x="170" y="268" class="h" text-anchor="middle">plan A</text>
+  <text x="206" y="134" class="ms" text-anchor="start">P10</text>
+  <text x="206" y="74" class="ms" text-anchor="start">P90</text>
+  <rect x="330" y="80" width="60" height="65" rx="4" class="fb"/>
+  <path d="M330 110 L390 110" class="ln"/>
+  <text x="360" y="268" class="h" text-anchor="middle">plan B</text>
+  <text x="396" y="149" class="ms" text-anchor="start">P10</text>
+  <text x="396" y="84" class="ms" text-anchor="start">P90</text>
+  <rect x="520" y="90" width="60" height="32" rx="4" class="fc"/>
+  <path d="M520 104 L580 104" class="ln"/>
+  <text x="550" y="268" class="h" text-anchor="middle">plan C</text>
+  <text x="586" y="126" class="ms" text-anchor="start">P10</text>
+  <text x="586" y="94" class="ms" text-anchor="start">P90</text>
+  <text x="400" y="296" class="s" text-anchor="middle">the robust choice is the best P10 (plan C here), which is not always the best on average (plan A)</text>
+  <text x="400" y="314" class="s" text-anchor="middle">synthetic, spatially correlated, mean-preserving perturbations; plans evaluated, not re-optimised</text>
+
+</svg>

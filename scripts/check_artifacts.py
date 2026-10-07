@@ -19,10 +19,13 @@ TRACE_SCHEMA = "phaseflow.schedule-trace/v1"
 MANIFEST_SCHEMA = "phaseflow.manifest/v1"
 INDEX_SCHEMA = "phaseflow.index/v1"
 
-#: Rungs that solve the scenario's CPIT capacities. `destination-toposort` is
-#: checked separately against its own PCPSP destination-specific use and limits.
-#: `min-width` is an operability view and does not re-impose capacity.
+#: Rungs ranked against each other on the CPIT bound. Every rung, these and the `beyond` ones, must be
+#: capacity-feasible and below its OWN bound: until 0.08.000 `min-width` was exempt from both, and a
+#: twin's smoothed plan reported an NPV above a certified upper bound with every gate green.
 CAPACITY_BOUND_RUNGS = ("classical", "sota", "learned")
+
+#: Rungs that choose destinations. Their yardstick is the PCPSP LP bound, never the CPIT one.
+DESTINATION_METHODS = ("destination-toposort", "destination-sliding-window", "destination-local-search")
 
 #: The relative overshoot tolerated on a capacity-bound rung. Period rows are rounded floats, so an
 #: exact comparison would fail on representation alone.
@@ -48,20 +51,11 @@ def _capacity_check(cid: str, trace: dict, meth: dict) -> list[str]:
             over = (u - limit) / limit
             if over > worst:
                 worst, worst_where = over, f"period {row['t']}, resource {r}"
-    # destination-toposort solves PCPSP, but its *own* destination-specific
-    # resource accounting must still satisfy PCPSP capacities. The min-width
-    # operability view alone deliberately does not re-impose capacity.
-    if meth["rung"] in CAPACITY_BOUND_RUNGS or meth["method"] == "destination-toposort":
-        if worst > CAPACITY_TOL:
-            out.append(
-                f"{cid}/{meth['method']}: INFEASIBLE, {100 * worst:.2f} percent over capacity at "
-                f"{worst_where}. Its {meth['rung']} model is solved under that capacity"
-            )
-    elif worst > CAPACITY_TOL:
-        # not a failure: a measured fact about a rung that says it does not re-impose capacity
-        print(
-            f"note: {cid}/{meth['method']} ({meth['rung']}) runs {100 * worst:.2f} percent over "
-            f"capacity at {worst_where}, as its notes declare"
+    # Every rung. A destination rung's rows carry its own PCPSP use and limits.
+    if worst > CAPACITY_TOL:
+        out.append(
+            f"{cid}/{meth['method']}: INFEASIBLE, {100 * worst:.2f} percent over capacity at "
+            f"{worst_where}. Every rung is solved under that capacity"
         )
     return out
 
@@ -193,7 +187,7 @@ def main(root: Path = DERIVED) -> int:
         if t["instance"].get("gradeSource") is None:
             if any(row["rung"] == "learned" for row in t["methods"]):
                 fail.append(f"{cid}: learned method used an absent source grade field")
-            if any(row["method"] == "destination-toposort" for row in t["methods"]):
+            if any(row["method"] in DESTINATION_METHODS for row in t["methods"]):
                 fail.append(f"{cid}: destination cutoff used an absent source grade field")
         bound_report = t["bound"]
         bound_options = {"algorithm4": bound_report["algorithm4"]}
@@ -209,11 +203,19 @@ def main(root: Path = DERIVED) -> int:
             selected_bound = bound_options[used]
             if selected_bound > min(bound_options.values()) * (1 + 1e-6):
                 fail.append(f"{cid}: selected bound is looser than an available certified bound")
+        pcpsp_lp = bound_report.get("pcpsp_lp")
+        if pcpsp_lp is not None and used == "bienstock-zuckerberg" and pcpsp_lp < selected_bound * (1 - 1e-6):
+            fail.append(f"{cid}: PCPSP LP bound {pcpsp_lp:.2f} is below the joint CPIT LP {selected_bound:.2f}; "
+                        "the richer problem cannot have the smaller relaxation")
         for meth in t["methods"]:
-            if meth["rung"] in CAPACITY_BOUND_RUNGS and meth["npv"] > meth["bound"] * (1 + 1e-9) + 1e-6:
-                fail.append(f"{cid}/{meth['method']}: feasible objective exceeds the certified bound")
-            if abs(meth["bound"] - selected_bound) > 1e-6 * max(1.0, abs(selected_bound)):
-                fail.append(f"{cid}/{meth['method']}: method bound differs from selected case bound")
+            own = pcpsp_lp if meth["method"] in DESTINATION_METHODS else selected_bound
+            if own is None:
+                fail.append(f"{cid}/{meth['method']}: destination plan shipped without a PCPSP LP bound")
+                continue
+            if meth["npv"] > meth["bound"] * (1 + 1e-9) + 1e-6:
+                fail.append(f"{cid}/{meth['method']}: feasible objective exceeds its bound")
+            if abs(meth["bound"] - own) > 1e-6 * max(1.0, abs(own)):
+                fail.append(f"{cid}/{meth['method']}: method bound differs from the bound of its problem")
             if len(meth["periods"]) != t["scenario"]["periods"]:
                 fail.append(f"{cid}/{meth['method']}: period rows do not match the horizon")
             cash_total = sum(row["discCashFlow"] for row in meth["periods"])
@@ -259,7 +261,7 @@ def main(root: Path = DERIVED) -> int:
                 fail.append(f"{cid}: the 2018 published comparator must identify PCPSP")
             # External AMPL Colaboratory/Gurobi exact CPIT result, with equal MIP
             # best bound and 1e-9 gap tolerance. This is an external oracle, not
-            # a certificate generated here. See docs/cases/newman1-external-optimum.md.
+            # a certificate generated here. See docs/use-cases/01_newman1-published.md.
             exact_external = 24_176_864.82482
             selected = next((row for row in m["scoreboard"] if row["method"] == best["method"]), None)
             if selected and selected["npv"] > exact_external + 0.01:

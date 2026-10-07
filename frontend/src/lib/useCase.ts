@@ -65,9 +65,9 @@ export function useCase(initialCaseId?: string): CaseState {
         if (!live) return;
         setManifest(m);
         setTrace(t);
-        // The default selection may only be a COMPARABLE rung. `min-width` does not re-impose capacity
-    // and `destination-toposort` solves a different problem, and ranking them here opened the 3D pit
-    // on a plan that overshot a period capacity by 18.65 percent on three cases.
+        // The default selection is the best plan among the rungs that compete for it. `min-width`
+    // trades value for workability on purpose and the destination rungs solve a different problem,
+    // so neither may be the plan the 3D pit opens on.
     const comparable = t.methods.filter((m) => m.rung !== 'beyond');
     const best = (comparable.length ? comparable : t.methods).reduce((a, b) =>
       a.npv > b.npv || (a.npv === b.npv && a.method >= b.method) ? a : b,

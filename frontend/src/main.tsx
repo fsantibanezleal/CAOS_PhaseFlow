@@ -5,6 +5,7 @@ import { CalendarClock } from 'lucide-react';
 import { AppShell, applyTheme, CitationsProvider, readTheme, useShellLang, type ShellConfig } from '@fasl-work/caos-app-shell';
 import '@fasl-work/caos-app-shell/styles.css';
 import './phaseflow.css';
+import './content/content.css';
 import { CITATIONS } from './data/citations.ts';
 import { architecture } from './architecture.ts';
 import { APP_VERSION } from './lib/artifacts.ts';
@@ -32,27 +33,17 @@ const config: ShellConfig = {
   version: APP_VERSION,
   architecture,
   footer: {
-    // ADR-0016 wants ONE LINE of provenance and ONE LINE of disclaimer. What used to be here was an
-    // 86-word paragraph plus a 60-word paragraph, which rendered as a 263px wall of text. Capping the
-    // height only hid it. The long-form version of all of this lives on Implementation and Benchmark
-    // and in the architecture modal, where there is room to read it.
+    // One short line: what the numbers run on and the one limit a reader needs. The long form (bounds,
+    // licences, scope) lives on the content pages and in the architecture modal.
+    attribution: { en: 'Developed by Felipe Santibáñez-Leal', es: 'Desarrollado por Felipe Santibáñez-Leal' },
+    license: { en: 'MIT', es: 'MIT' },
     provenance: {
-      en:
-        'Engine: oreblocks (PyPI, MIT). Certified CPIT bound: critical multiplier and, where ' +
-        'available, joint BZ relaxation (Chicoisne et al. 2012). Real lane: MineLib ' +
-        '(doi:10.1007/s10479-012-1258-3), not redistributed.',
-      es:
-        'Motor: oreblocks (PyPI, MIT). Cota CPIT certificada: multiplicador crítico y, cuando ' +
-        'está disponible, relajación conjunta BZ (Chicoisne et al. 2012). Carril real: ' +
-        'MineLib (doi:10.1007/s10479-012-1258-3), no redistribuido.',
+      en: 'Engine: oreblocks (MIT); MineLib not redistributed',
+      es: 'Motor: oreblocks (MIT); MineLib no redistribuido',
     },
     disclaimer: {
-      en:
-        'General-case schedules are heuristic, shown with gaps to a certified bound. No stockpiles, no ' +
-        'blending, no stochastic optimisation. Not for production mine planning.',
-      es:
-        'Los planes de casos generales son heurísticos, con brechas frente a una cota certificada. Sin acopios, sin ' +
-        'mezcla, sin optimización estocástica. No apto para planificación minera de producción.',
+      en: 'Not for mine planning',
+      es: 'No apto para planificación minera',
     },
   },
 };

@@ -72,5 +72,7 @@ jobs:
           echo "all tracked .sh files are mode 100755"
       - name: The README's trust anchor matches the artifact (and carries no control bytes)
         run: python scripts/check_readme_numbers.py
+      - name: Every measured table in docs/ matches the committed artifacts
+        run: python scripts/docs_tables.py --check
       - name: CI budget, trunk-only triggers, no training (ADR-0074)
         run: python scripts/check_ci_budget.py
