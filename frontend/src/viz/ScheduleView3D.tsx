@@ -221,6 +221,13 @@ export function ScheduleView3D({
     controls.addEventListener('change', () => kick(1200));
     const onVis = () => { if (document.hidden && raf) { cancelAnimationFrame(raf); raf = 0; } };
     document.addEventListener('visibilitychange', onVis);
+    // A browser may drop the GPU context at any time (driver reset, memory pressure, sleep) and hand
+    // it back. three.js rebuilds its GL state on the restore event, but this stage renders on demand,
+    // so nothing redraws: the pit stayed blank after a restore that headless Chromium performs on
+    // every first load of the 0.08 build, with every gate green because a frame HAD been drawn.
+    // three's own listener runs first (it was added when the renderer was created).
+    const onRestored = () => { renderer.render(scene, camera); markDrawn(); kick(300); };
+    renderer.domElement.addEventListener('webglcontextrestored', onRestored);
 
     const onResize = () => {
       const w2 = el.clientWidth || W;
@@ -251,6 +258,7 @@ export function ScheduleView3D({
       dispose: () => {
         ro.disconnect();
         document.removeEventListener('visibilitychange', onVis);
+        renderer.domElement.removeEventListener('webglcontextrestored', onRestored);
         el.removeEventListener('wheel', onWheel, true);
         if (raf) cancelAnimationFrame(raf);
         controls.dispose();

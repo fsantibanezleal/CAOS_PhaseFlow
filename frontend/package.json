@@ -16,7 +16,8 @@
     "verify:grade": "node scripts/verify-grade-source.mjs",
     "verify:focus": "node scripts/verify-focus-capacity.mjs",
     "verify:theme": "node scripts/verify-theme.mjs",
-    "verify:infeasible": "node scripts/verify-infeasible.mjs"
+    "verify:infeasible": "node scripts/verify-infeasible.mjs",
+    "verify:stage": "node scripts/verify-stage.mjs"
   },
   "dependencies": {
     "@fasl-work/caos-app-shell": "^0.6.13",
