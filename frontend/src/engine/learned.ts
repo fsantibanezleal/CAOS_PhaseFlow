@@ -2,7 +2,7 @@
 //
 // The exact live solve spends nearly all of its time in the certified bound (the critical multiplier
 // algorithm, tens of maximum closures): measured 0.9 to 3.6 s per change on the committed twins.
-// The surrogate predicts each block's LP expected extraction time from twelve block and scenario
+// The surrogate predicts each block's LP expected extraction time from eleven block and scenario
 // features, so the same TopoSort walk runs with no LP at all. The plan is a preview, and it is scored
 // against the exact one as soon as the exact one arrives; it never stands in for the bound.
 //
@@ -14,24 +14,39 @@
 import type { CpitInstance, Precedence, ScheduleResult } from './cpit.ts';
 import { toposortSchedule } from './cpit.ts';
 
+type Layers = { w: number[][]; b: number[] }[];
+
 export interface MlpModel {
   features: string[];
   mu: number[];
   sigma: number[];
-  layers: { w: number[][]; b: number[] }[];
+  layers: Layers;
+  /** further ensemble members (same standardisation, other seeds); the output is their mean */
+  members?: { layers: Layers }[];
   metrics?: Record<string, unknown>;
 }
 
-/** Forward pass: standardise, ReLU through the hidden layers, sigmoid head. */
-export function mlpForward(model: Pick<MlpModel, 'mu' | 'sigma' | 'layers'>, x: ArrayLike<number>): number {
-  let a = Array.from(x, (v, i) => (v - model.mu[i]) / (model.sigma[i] > 1e-8 ? model.sigma[i] : 1));
-  for (let li = 0; li < model.layers.length; li++) {
-    const layer = model.layers[li];
+/**
+ * Forward pass: standardise, ReLU through the hidden layers, sigmoid head, averaged over the ensemble
+ * members when there are any (`Mlp.forward` in the pipeline, term for term).
+ */
+export function mlpForward(model: Pick<MlpModel, 'mu' | 'sigma' | 'layers' | 'members'>, x: ArrayLike<number>): number {
+  const z = Array.from(x, (v, i) => (v - model.mu[i]) / (model.sigma[i] > 1e-8 ? model.sigma[i] : 1));
+  const sets: Layers[] = [model.layers, ...(model.members ?? []).map((m) => m.layers)];
+  let sum = 0;
+  for (const layers of sets) sum += memberForward(layers, z);
+  return sum / sets.length;
+}
+
+function memberForward(layers: Layers, z: number[]): number {
+  let a = z;
+  for (let li = 0; li < layers.length; li++) {
+    const layer = layers[li];
     const out = new Array<number>(layer.b.length);
     for (let j = 0; j < out.length; j++) {
       let s = layer.b[j];
       for (let i = 0; i < a.length; i++) s += a[i] * layer.w[i][j];
-      out[j] = li < model.layers.length - 1 ? Math.max(0, s) : 1 / (1 + Math.exp(-s));
+      out[j] = li < layers.length - 1 ? Math.max(0, s) : 1 / (1 + Math.exp(-s));
     }
     a = out;
   }
@@ -94,19 +109,22 @@ function coneStats(prec: Precedence, values: ArrayLike<number>, n: number): { si
   return { size, val };
 }
 
-/** The twelve block features, in the pipeline's order, rounded to float32 as the pipeline does. */
+/**
+ * The eleven block features, in the pipeline's order, rounded to float32 as the pipeline does. There is
+ * no tonnage feature: every training twin has uniform tonnage, so its weights were never trained and
+ * acted as noise on real deposits (features.py says how that was measured).
+ */
 export function blockFeatures(
   blocks: BlockArrays, dims: readonly number[], prec: Precedence, scenario: FeatureScenario,
 ): Float64Array[] {
   const n = blocks.value.length;
   const [nx, ny, nz] = dims;
-  let vmax = 0, tmax = 0, gmax = 0;
+  let vmax = 0, gmax = 0;
   for (let b = 0; b < n; b++) {
     vmax = Math.max(vmax, Math.abs(blocks.value[b]));
-    tmax = Math.max(tmax, blocks.tonnage[b]);
     gmax = Math.max(gmax, blocks.grade[b]);
   }
-  const vscale = Math.max(1, vmax), tscale = Math.max(1, tmax), gscale = Math.max(1e-9, gmax);
+  const vscale = Math.max(1, vmax), gscale = Math.max(1e-9, gmax);
   const { size, val } = coneStats(prec, blocks.value, n);
   let smax = 0;
   for (let b = 0; b < n; b++) smax = Math.max(smax, size[b]);
@@ -120,7 +138,6 @@ export function blockFeatures(
     const radial = Math.sqrt(rx * rx + ry * ry);
     rows[b] = Float64Array.from([
       f(blocks.value[b] / vscale),
-      f(blocks.tonnage[b] / tscale),
       f(1 - blocks.level[b] / Math.max(1, nz - 1)),
       f(size[b] / sdiv),
       f(val[b] / vscale / sdiv),

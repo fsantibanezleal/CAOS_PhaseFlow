@@ -33,9 +33,17 @@ import oreblocks as ob
 from ..io.schema import Scenario
 
 #: Names in order. The TypeScript live lane reads this exact order from the manifest.
+#:
+#: There is no tonnage feature, and there was one until 0.09.000. Every training twin has the same
+#: tonnage in every block, so ``tonnage_norm`` was 1.0 on every training row: after centring its input
+#: was zero, its 48 first-layer weights never received a gradient, and they kept their random initial
+#: values (norm 2.84 against a He-initialisation expectation of 2.83). On a real deposit, whose block
+#: tonnage varies, that untrained channel fed noise into every hidden unit, and the learned plan on
+#: `kd-declared` fell from 0.856 to 0.413 of the exact ExTS plan. A model cannot learn the effect of an
+#: input its training data never varies, so the input is gone; ``train_mlp`` now refuses any constant
+#: input rather than shipping weights nobody trained.
 BLOCK_FEATURES: tuple[str, ...] = (
     "value_norm",
-    "tonnage_norm",
     "depth_frac",
     "cone_size_norm",
     "cone_value_norm",
@@ -104,7 +112,6 @@ def block_feature_matrix(
     n = values.shape[0]
     nx, ny, nz = dims
     vscale = max(1.0, float(np.abs(values).max()))
-    tscale = max(1.0, float(tonnage.max()))
     gscale = max(1e-9, float(grade.max()))
     cone_size, cone_value = _cone_stats(prec, values)
 
@@ -114,17 +121,16 @@ def block_feature_matrix(
     caps = list(scenario.capacity_fraction) + [0.0]
     f = np.zeros((n, len(BLOCK_FEATURES)), dtype=np.float32)
     f[:, 0] = values / vscale
-    f[:, 1] = tonnage / tscale
-    f[:, 2] = 1.0 - (level / max(1, nz - 1))  # 0 at the surface, 1 at the deepest bench
-    f[:, 3] = cone_size / max(1.0, cone_size.max())
-    f[:, 4] = cone_value / vscale / max(1.0, cone_size.max())
-    f[:, 5] = grade / gscale
-    f[:, 6] = np.clip(radial, 0.0, 2.0) / 2.0
-    f[:, 7] = in_pit.astype(np.float32)
-    f[:, 8] = scenario.discount_rate
-    f[:, 9] = min(3.0, caps[0]) / 3.0
-    f[:, 10] = min(3.0, caps[1]) / 3.0
-    f[:, 11] = scenario.periods / 20.0
+    f[:, 1] = 1.0 - (level / max(1, nz - 1))  # 0 at the surface, 1 at the deepest bench
+    f[:, 2] = cone_size / max(1.0, cone_size.max())
+    f[:, 3] = cone_value / vscale / max(1.0, cone_size.max())
+    f[:, 4] = grade / gscale
+    f[:, 5] = np.clip(radial, 0.0, 2.0) / 2.0
+    f[:, 6] = in_pit.astype(np.float32)
+    f[:, 7] = scenario.discount_rate
+    f[:, 8] = min(3.0, caps[0]) / 3.0
+    f[:, 9] = min(3.0, caps[1]) / 3.0
+    f[:, 10] = scenario.periods / 20.0
     return f
 
 

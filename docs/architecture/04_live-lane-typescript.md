@@ -12,7 +12,7 @@ first closure, and the numerics would run in an interpreter inside WebAssembly.
 | `maxflow.ts` | Dinic on typed arrays, with `maxClosureWithin` for the parametric family |
 | `instance.ts` | `buildPrecedence`, mirroring `oreblocks.build_precedence` term for term, flat index included |
 | `cpit.ts` | `ParametricPits`, `cpitLpRelaxation` (the critical multiplier algorithm), the greedy, Gershon (cone sets as bitsets) and ExTS walks, the shift search, `solveCpit` |
-| `learned.ts` | the twelve block features and the expected-time forward pass (ReLU, sigmoid head) |
+| `learned.ts` | the eleven block features and the expected-time forward pass (ReLU, sigmoid head, the mean of five members) |
 | `boundSurrogate.ts` | the bound surrogate's forward pass for the sensitivity surface |
 | `coherence.ts` | `voidBoundaryPeriods` (what the 3D stage colours) and per-period components |
 | `solver.worker.ts` | the exact solve off the main thread: bounds per resource, three TopoSorts, the shift search; and a `parity` message that re-solves a baked case at its absolute limits for the Benchmark page |
