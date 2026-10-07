@@ -25,8 +25,10 @@ the script rather than in a comment.
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import numpy as np
@@ -44,7 +46,7 @@ from pipeline.model.features import (  # noqa: E402
     deposit_feature_vector,
 )
 from pipeline.model.instances import build_instance  # noqa: E402
-from pipeline.model.learned import export_onnx, train_mlp  # noqa: E402
+from pipeline.model.learned import export_onnx, json_safe, train_mlp  # noqa: E402
 
 MODELS = ROOT / "models"
 
@@ -77,14 +79,25 @@ SCENARIOS = [
 ]
 
 
-def _case(seed: int, archetype: str, sc: tuple) -> Case:
+#: Grid sizes in the sweep. The first model was trained and held out on 12 x 12 x 7 twins only (1,008
+#: blocks) while the product's own cases are 6,912 to 14,400 blocks: on those, its plans reached 0.63
+#: to 0.92 of the exact ExTS plan against a held-out median of 0.96, a size shift nothing measured.
+#: Every (seed, archetype, scenario) is now solved at both sizes, and the failure study reports by size.
+SIZES = [(12, 12, 7), (24, 24, 12)]
+
+#: Worker processes for collection and scoring. Each job builds one instance and runs the critical
+#: multiplier bound on it, so the jobs are independent and the sweep is embarrassingly parallel.
+WORKERS = max(1, min(20, (os.cpu_count() or 4) - 10))
+
+
+def _case(seed: int, archetype: str, sc: tuple, dims: tuple[int, int, int] = (12, 12, 7)) -> Case:
     periods, rate, caps = sc
     return Case(
-        id=f"train-{archetype}-{seed}-{periods}-{rate}",
+        id=f"train-{archetype}-{seed}-{periods}-{rate}-{dims[0]}x{dims[1]}x{dims[2]}",
         category="deposit",
         title_en="",
         title_es="",
-        deposit=DepositSpec(kind="twin", archetype=archetype, dims=(12, 12, 7), seed=seed),
+        deposit=DepositSpec(kind="twin", archetype=archetype, dims=dims, seed=seed),
         scenario=Scenario(
             periods=periods,
             discount_rate=rate,
@@ -94,94 +107,116 @@ def _case(seed: int, archetype: str, sc: tuple) -> Case:
     )
 
 
-def collect(seeds: list[int]) -> dict:
-    """Solve every (deposit, scenario) pair exactly and record features and targets."""
-    xb, yb, xd, yd, meta = [], [], [], [], []
-    for seed in seeds:
-        for arch in ARCHETYPES:
-            for sc in SCENARIOS:
-                case = _case(seed, arch, sc)
-                inst = build_instance(case)
-                rel = ob.cpit_lp_relaxation(inst.cpit, inst.precedence)
-                e_true = rel.expected_times()
-                bound, _ = ob.cpit_bound_two_resources(inst.cpit, inst.precedence)
+def _collect_one(job: tuple) -> dict:
+    """One (seed, archetype, scenario, size): features, targets and the exact references.
 
-                xb.append(
-                    block_feature_matrix(
-                        values=inst.cpit.value,
-                        tonnage=inst.tonnage,
-                        grade=inst.grade,
-                        level=inst.level,
-                        x=inst.x,
-                        y=inst.y,
-                        in_pit=inst.upit_in_pit,
-                        prec=inst.precedence,
-                        scenario=case.scenario,
-                        dims=inst.dims,
-                    )
-                )
-                yb.append(e_true / (case.scenario.periods + 1))
-                xd.append(
-                    deposit_feature_vector(
-                        values=inst.cpit.value,
-                        tonnage=inst.tonnage,
-                        grade=inst.grade,
-                        in_pit=inst.upit_in_pit,
-                        upit_value=inst.upit_value,
-                        scenario=case.scenario,
-                    )
-                )
-                yd.append(bound / max(1.0, inst.upit_value))
-                meta.append({"seed": seed, "archetype": arch, "scenario": sc,
-                             "instance": inst, "case": case, "e_true": e_true, "bound": bound,
-                             "relaxation": rel})
-                print(f"  {arch:10s} seed {seed:4d} T={sc[0]:2d} r={sc[1]:.2f} -> bound {bound:,.0f}", flush=True)
+    The target is the expected extraction time of the TIGHTEST single-resource relaxation, which is
+    the relaxation the product's ExTS rung schedules from; the first model learned the times of the
+    mining relaxation alone, so its reference plan was not the plan it was later compared with.
+    """
+    seed, arch, sc, dims = job
+    case = _case(seed, arch, sc, dims)
+    inst = build_instance(case)
+    bound, rels = ob.cpit_bound_two_resources(inst.cpit, inst.precedence)
+    rel = min(rels, key=lambda r: r.bound)
+    e_true = rel.expected_times()
+    xb = block_feature_matrix(
+        values=inst.cpit.value, tonnage=inst.tonnage, grade=inst.grade, level=inst.level,
+        x=inst.x, y=inst.y, in_pit=inst.upit_in_pit, prec=inst.precedence,
+        scenario=case.scenario, dims=inst.dims,
+    )
+    xd = deposit_feature_vector(
+        values=inst.cpit.value, tonnage=inst.tonnage, grade=inst.grade, in_pit=inst.upit_in_pit,
+        upit_value=inst.upit_value, scenario=case.scenario,
+    )
+    s_true = ob.toposort_schedule(inst.cpit, inst.precedence, weight="expected", relaxation=rel,
+                                  allowed=inst.upit_in_pit)
+    s_greedy = ob.toposort_schedule(inst.cpit, inst.precedence, weight="greedy", allowed=inst.upit_in_pit)
     return {
-        "xb": np.concatenate(xb).astype(np.float64),
-        "yb": np.concatenate(yb).astype(np.float64),
-        "xd": np.stack(xd).astype(np.float64),
-        "yd": np.array(yd, dtype=np.float64),
-        "meta": meta,
+        "xb": xb.astype(np.float32),
+        "yb": (e_true / (case.scenario.periods + 1)).astype(np.float64),
+        "xd": xd.astype(np.float64),
+        "yd": float(bound / max(1.0, inst.upit_value)),
+        "meta": {"seed": seed, "archetype": arch, "scenario": sc, "dims": dims,
+                 "n_blocks": int(inst.n_blocks), "case": case.id, "bound": float(bound),
+                 "exact_exts_npv": float(s_true.npv), "greedy_npv": float(s_greedy.npv)},
     }
+
+
+def _jobs(seeds: list[int]) -> list[tuple]:
+    return [(seed, arch, sc, dims) for seed in seeds for arch in ARCHETYPES for sc in SCENARIOS for dims in SIZES]
+
+
+def collect(seeds: list[int]) -> dict:
+    """Solve every (deposit, scenario, size) exactly, in parallel, and record features and targets."""
+    jobs = _jobs(seeds)
+    out: list[dict | None] = [None] * len(jobs)
+    with ProcessPoolExecutor(max_workers=WORKERS) as pool:
+        futures = {pool.submit(_collect_one, job): i for i, job in enumerate(jobs)}
+        for done, fut in enumerate(as_completed(futures), 1):
+            i = futures[fut]
+            out[i] = fut.result()
+            m = out[i]["meta"]
+            print(f"  [{done}/{len(jobs)}] {m['archetype']:10s} seed {m['seed']:4d} {m['n_blocks']:5d} blocks "
+                  f"T={m['scenario'][0]:2d} r={m['scenario'][1]:.2f} -> bound {m['bound']:,.0f}", flush=True)
+    res = [r for r in out if r is not None]
+    return {
+        "xb": np.concatenate([r["xb"] for r in res]).astype(np.float64),
+        "yb": np.concatenate([r["yb"] for r in res]).astype(np.float64),
+        "xd": np.stack([r["xd"] for r in res]).astype(np.float64),
+        "yd": np.array([r["yd"] for r in res], dtype=np.float64),
+        "meta": [r["meta"] for r in res],
+    }
+
+
+def _score_one(args: tuple) -> float:
+    """The learned plan's NPV on one case: rebuild the instance, predict, walk the same TopoSort."""
+    meta, model_json = args
+    from pipeline.model.learned import Mlp
+
+    model = Mlp.from_json(model_json)
+    case = _case(meta["seed"], meta["archetype"], meta["scenario"], meta["dims"])
+    inst = build_instance(case)
+    x = block_feature_matrix(
+        values=inst.cpit.value, tonnage=inst.tonnage, grade=inst.grade, level=inst.level,
+        x=inst.x, y=inst.y, in_pit=inst.upit_in_pit, prec=inst.precedence,
+        scenario=case.scenario, dims=inst.dims,
+    )
+    e_hat = model.forward(x.astype(np.float64)).reshape(-1) * (case.scenario.periods + 1)
+    s_hat = ob.toposort_schedule(inst.cpit, inst.precedence, weight=-e_hat, allowed=inst.upit_in_pit)
+    return float(s_hat.npv)
 
 
 def score_cases(model, data: dict) -> list[dict]:
     """Per CASE: what the surrogate's schedule is worth against the schedule the true times give.
 
     Recorded with the covariates a caller knows BEFORE solving anything, because a worst case is only
-    a footnote until you can say when it happens. The archetype, the horizon, the discount rate and
-    the capacity fractions are all inputs; if the failures concentrate in a corner of that space then
-    the corner is the characterisation, and the app can carry a warning instead of a caveat.
+    a footnote until you can say when it happens: the archetype, the size, the horizon, the discount
+    rate and the capacity fractions are all inputs, and if the failures concentrate in a corner of that
+    space then the corner is the characterisation.
     """
+    model_json = model.to_json()
+    with ProcessPoolExecutor(max_workers=WORKERS) as pool:
+        learned = list(pool.map(_score_one, [(m, model_json) for m in data["meta"]], chunksize=2))
     rows = []
-    for m in data["meta"]:
-        inst, case = m["instance"], m["case"]
-        x = block_feature_matrix(
-            values=inst.cpit.value, tonnage=inst.tonnage, grade=inst.grade, level=inst.level,
-            x=inst.x, y=inst.y, in_pit=inst.upit_in_pit, prec=inst.precedence,
-            scenario=case.scenario, dims=inst.dims,
-        )
-        e_hat = model.forward(x.astype(np.float64)).reshape(-1) * (case.scenario.periods + 1)
-        s_hat = ob.toposort_schedule(inst.cpit, inst.precedence, weight=-e_hat, allowed=inst.upit_in_pit)
-        s_true = ob.toposort_schedule(inst.cpit, inst.precedence, weight="expected",
-                                      relaxation=m["relaxation"], allowed=inst.upit_in_pit)
-        s_greedy = ob.toposort_schedule(inst.cpit, inst.precedence, weight="greedy", allowed=inst.upit_in_pit)
+    for m, npv in zip(data["meta"], learned, strict=True):
         periods, rate, caps = m["scenario"]
         rows.append({
-            "case": case.id,
+            "case": m["case"],
             "seed": m["seed"],
             "archetype": m["archetype"],
+            "n_blocks": m["n_blocks"],
             "periods": periods,
             "rate": rate,
             "cap_mining": caps[0],
             "cap_processing": caps[1],
-            "learned_npv": float(s_hat.npv),
-            "exact_exts_npv": float(s_true.npv),
-            "greedy_npv": float(s_greedy.npv),
-            "vs_true": float(s_hat.npv / max(1e-9, s_true.npv)),
+            "learned_npv": npv,
+            "exact_exts_npv": m["exact_exts_npv"],
+            "greedy_npv": m["greedy_npv"],
+            "vs_true": float(npv / max(1e-9, m["exact_exts_npv"])),
             # NOT a ratio: greedy can produce a near-zero NPV, and dividing by it yields a number in
             # the 1e14 range that means nothing and would still have looked like a triumph on a slide.
-            "beats_greedy": bool(s_hat.npv > s_greedy.npv),
+            "beats_greedy": bool(npv > m["greedy_npv"]),
         })
     return rows
 
@@ -190,6 +225,11 @@ def score_cases(model, data: dict) -> list[dict]:
 #: universal constant: it is the line below which the app stops presenting the learned rung as an
 #: alternative and starts presenting it as a warning.
 FAILURE_BELOW = 0.90
+
+#: A guard may flag at most this share of the TRAINING cases. A rule that flags most cases is not a
+#: warning, it is the background: after the two-size sweep the archetype rule grew to all four
+#: archetypes, flagged 432 of 432 held-out cases, and still won on F2 because its recall was 1.0.
+MAX_FLAGGED_SHARE = 0.5
 
 
 def _refutation_text(train_rows: list[dict], holdout_rows: list[dict]) -> str:
@@ -309,6 +349,11 @@ def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> d
             "test": lambda r: r["rate"] >= 0.20 and r["periods"] >= 12,
             "why": "the single most aggressive scenario in the sweep",
         },
+        "none": {
+            "statement": "no rule",
+            "test": lambda r: False,
+            "why": "shipped when no candidate both catches failures and flags at most half the cases",
+        },
     }
 
     def confusion(rows: list[dict], test) -> dict:
@@ -356,10 +401,14 @@ def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> d
         percent while flagging three quarters.
         """
         cm = rules[name]["train"]
+        if cm["flagged"] > MAX_FLAGGED_SHARE * max(1, len(train_rows)):
+            return -1.0
         p_, r_ = cm["precision"] or 0.0, cm["recall"] or 0.0
         return (5 * p_ * r_ / (4 * p_ + r_)) if (p_ + r_) > 0 else 0.0
 
     shipped = max(rules, key=_score)
+    if _score(shipped) <= 0.0:
+        shipped = "none"
 
     return {
         "failure_below": FAILURE_BELOW,
@@ -374,6 +423,7 @@ def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> d
             "n": len(train_rows),
             "failures": len(train_fail),
             "by_archetype": by(train_rows, "archetype"),
+            "by_size": by(train_rows, "n_blocks"),
             "by_rate": by(train_rows, "rate"),
             "by_periods": by(train_rows, "periods"),
             "rows": train_rows,
@@ -382,6 +432,7 @@ def characterise_failures(train_rows: list[dict], holdout_rows: list[dict]) -> d
             "n": len(holdout_rows),
             "failures": int(sum(1 for r in holdout_rows if r["vs_true"] < FAILURE_BELOW)),
             "by_archetype": by(holdout_rows, "archetype"),
+            "by_size": by(holdout_rows, "n_blocks"),
             "by_rate": by(holdout_rows, "rate"),
             "by_periods": by(holdout_rows, "periods"),
             "rows": holdout_rows,
@@ -442,7 +493,8 @@ def main() -> int:
     assert not (set(TRAIN_SEEDS) & set(HOLDOUT_SEEDS)), "the splits share a deposit seed"
     MODELS.mkdir(parents=True, exist_ok=True)
 
-    print(f"collecting TRAIN ({len(TRAIN_SEEDS)} seeds x {len(ARCHETYPES)} archetypes x {len(SCENARIOS)} scenarios)")
+    print(f"collecting TRAIN ({len(TRAIN_SEEDS)} seeds x {len(ARCHETYPES)} archetypes x {len(SCENARIOS)} scenarios "
+          f"x {len(SIZES)} sizes, {WORKERS} workers)")
     t0 = time.time()
     tr = collect(TRAIN_SEEDS)
     print(f"collecting HOLDOUT ({len(HOLDOUT_SEEDS)} disjoint seeds)")
@@ -450,8 +502,9 @@ def main() -> int:
     print(f"data collected in {time.time() - t0:.0f}s: {tr['xb'].shape[0]:,} block rows, {tr['xd'].shape[0]} deposit rows")
 
     # ---- model 1: expected extraction time
+    # eight times the rows of the single-size sweep, so half the epochs
     m1 = train_mlp(tr["xb"], tr["yb"], feature_names=BLOCK_FEATURES, target="expected_time_fraction",
-                   hidden=(48, 24), epochs=120, batch=2048, lr=4e-3, seed=17)
+                   hidden=(48, 24), epochs=60, batch=2048, lr=4e-3, seed=17)
     pred = m1.forward(ho["xb"]).reshape(-1)
     rho = spearman(pred, ho["yb"])
     mae = float(np.abs(pred - ho["yb"]).mean())
@@ -490,6 +543,11 @@ def main() -> int:
         "n_holdout_rows": int(ho["xb"].shape[0]),
         "train_seeds": TRAIN_SEEDS,
         "holdout_seeds": HOLDOUT_SEEDS,
+        "sizes": [list(d) for d in SIZES],
+        "holdout_npv_vs_exact_exts_median_by_size": {
+            str(k): v["median"] for k, v in study["holdout"]["by_size"].items()
+        },
+        "target_relaxation": "the tightest single-resource relaxation, as the ExTS rung uses",
         "split": "by deposit seed, never by row",
     }
     export_onnx(m1, MODELS / "expected-time.onnx", sample=ho["xb"][:128])
@@ -500,14 +558,14 @@ def main() -> int:
     print(f"  beats greedy on   {100 * m1.metrics['holdout_beats_greedy_rate']:.0f}% of held-out cases")
 
     (MODELS / "learned-failure-modes.json").write_text(
-        json.dumps(study, indent=1), encoding="utf-8", newline="\n"
+        json.dumps(json_safe(study), indent=1, allow_nan=False), encoding="utf-8", newline="\n"
     )
     print("\nWHERE IT FAILS (a plan below "
           f"{100 * FAILURE_BELOW:.0f}% of the exact-ExTS plan)")
     for split in ("train", "holdout"):
         st = study[split]
         print(f"  {split:8s} {st['failures']:3d} of {st['n']:3d} cases")
-        for key in ("by_archetype", "by_rate", "by_periods"):
+        for key in ("by_archetype", "by_size", "by_rate", "by_periods"):
             parts = [f"{k}={v['failures']}/{v['n']}" for k, v in st[key].items()]
             print(f"    {key[3:]:11s} " + "  ".join(parts))
     print(f"  REFUTED: {study['refuted']}")
@@ -553,18 +611,19 @@ def main() -> int:
     print(f"\nbound surrogate: holdout mean rel err {rel_err.mean():.4f}, p90 {np.quantile(rel_err, 0.9):.4f}")
 
     (MODELS / "training-report.json").write_text(
-        json.dumps({
+        json.dumps(json_safe({
             "expected_time": m1.metrics,
             "expected_time_per_case": ratios,
             "bound": m2.metrics,
             "archetypes": ARCHETYPES,
             "scenarios": [{"periods": s[0], "rate": s[1], "capacity_fraction": list(s[2])} for s in SCENARIOS],
+            "sizes": [list(d) for d in SIZES],
             "honesty": (
                 "Neither model certifies anything. The certified bound always comes from the critical "
                 "multiplier algorithm or from Bienstock-Zuckerberg; these are scored against the exact "
                 "quantity they approximate, on deposits they never saw, split by deposit seed."
             ),
-        }, indent=2) + "\n",
+        }), indent=2, allow_nan=False) + "\n",
         encoding="utf-8", newline="\n",
     )
     print(f"\nwrote {MODELS}")

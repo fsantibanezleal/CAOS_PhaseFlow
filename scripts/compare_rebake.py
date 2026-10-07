@@ -19,6 +19,10 @@ def _read(path: Path) -> tuple[dict, str]:
     return json.loads(data), hashlib.sha256(data).hexdigest()
 
 
+# Wall times of the bounds (the bound summary is in the manifest since 0.08); measured, never science.
+_BOUND_TIMES_MANIFEST = {"/bound_summary/algorithm4_ms", "/bound_summary/joint_ms", "/bound_summary/pcpsp_lp_ms"}
+
+
 def _allowed(kind: str, path: str, old: dict, new: dict) -> bool:
     parts = path.strip("/").split("/")
     if kind == "index":
@@ -40,11 +44,12 @@ def _allowed(kind: str, path: str, old: dict, new: dict) -> bool:
         return (
             path in {"/engine/version", "/gate/offline_ms", "/gate/trace_bytes", "/artifact/bytes"}
             or len(parts) == 3 and parts[0] == "scoreboard" and parts[2] == "runtime_ms"
+            or path in _BOUND_TIMES_MANIFEST
         )
     if kind == "trace":
         return (
             len(parts) == 2 and parts[0] in {"title", "role"} and parts[1] in {"en", "es"}
-            or path in {"/bound/algorithm4_ms", "/bound/joint_ms"}
+            or path in {"/bound/algorithm4_ms", "/bound/joint_ms", "/bound/pcpsp_lp_ms"}
             or len(parts) == 3 and parts[0] == "methods" and parts[2] == "runtimeMs"
         )
     raise ValueError(kind)

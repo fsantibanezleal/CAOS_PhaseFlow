@@ -2,7 +2,7 @@
 // GitHub Pages CDN happily serves a stale JSON next to a fresh bundle and the result is an app that
 // shows last release's numbers with this release's labels.
 
-import type { CaseIndex, CaseManifest, ScheduleTrace } from './contract.types.ts';
+import type { BoundSummary, CaseIndex, CaseManifest, ScheduleTrace } from './contract.types.ts';
 import type { CapacityOverrun } from './feasibility.ts';
 import { INDEX_SCHEMA, MANIFEST_SCHEMA, TRACE_SCHEMA } from './contract.types.ts';
 import { useLangStore } from '@fasl-work/caos-app-shell';
@@ -109,4 +109,53 @@ export function fmtTonnes(v: number): string {
   if (a >= 1e6) return `${dec(v / 1e6, 2)} Mt`;
   if (a >= 1e3) return `${dec(v / 1e3, 1)} kt`;
   return `${dec(v, 0)} t`;
+}
+
+/** A rung's name in the app's language; the rung keys themselves are data. */
+export function rungLabel(rung: string): string {
+  const es = useLangStore.getState().lang === 'es';
+  const names: Record<string, string> = {
+    classical: es ? 'clásico' : 'classical', sota: 'SOTA',
+    learned: es ? 'aprendido' : 'learned', beyond: es ? 'más allá' : 'beyond',
+  };
+  return names[rung] ?? rung;
+}
+
+/** A wall time in the unit a reader can hold: ms, s, min, or h above an hour. */
+export function fmtDuration(ms: number | null | undefined): string {
+  if (ms == null || !Number.isFinite(ms)) return '-';
+  if (ms >= 3_600_000) return `${dec(ms / 3_600_000, 2)} h`;
+  if (ms >= 60_000) return `${dec(ms / 60_000, 1)} min`;
+  if (ms >= 1000) return `${dec(ms / 1000, 1)} s`;
+  return `${dec(ms, 0)} ms`;
+}
+
+/** Why a case has no joint bound: with one resource Algorithm 4 is already the exact LP, otherwise the
+ *  time-expanded graph is over the certification budget. */
+export function jointAbsentText(b: BoundSummary): string {
+  const es = useLangStore.getState().lang === 'es';
+  const why = (b.joint_skipped ?? '').toLowerCase();
+  if (why.startsWith('one resource')) return es ? 'un recurso: Alg. 4 es exacto' : 'one resource: Alg. 4 is exact';
+  if (why.includes('budget')) return es ? 'sobre presupuesto' : 'over budget';
+  return es ? 'no calculada' : 'not computed';
+}
+
+/** Slack of Algorithm 4 over the joint LP. Column generation stops on a relative tolerance and can settle
+ *  a few parts in ten million ABOVE Algorithm 4; that is no slack, and "-0.000%" would say otherwise. */
+export function boundSlackText(pct: number | null | undefined): string {
+  if (pct == null) return '-';
+  if (pct < 0) return useLangStore.getState().lang === 'es' ? 'ninguna' : 'none';
+  return `${dec(pct, 3)}%`;
+}
+
+/** Which method produced a case's PCPSP bound. Above the HiGHS row budget it is the Lagrangian dual by
+ *  maximum closures; an absent method key is the HiGHS LP. */
+export function pcpspBoundMethod(b: BoundSummary | null | undefined): string {
+  if (!b || b.pcpsp_lp == null) return '-';
+  const es = useLangStore.getState().lang === 'es';
+  if (b.pcpsp_lp_method === 'lagrangian') {
+    const it = b.pcpsp_lp_iterations ? ` (${b.pcpsp_lp_iterations} iter.)` : '';
+    return es ? `dual lagrangiano${it}` : `Lagrangian dual${it}`;
+  }
+  return es ? 'LP con HiGHS' : 'LP by HiGHS';
 }
