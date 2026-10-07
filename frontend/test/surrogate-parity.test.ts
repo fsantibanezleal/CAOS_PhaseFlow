@@ -40,7 +40,8 @@ test('the expected-time features match the pipeline definition on a committed tw
   });
   const model = read<MlpModel>('models', 'expected-time.json');
   f.rows.forEach((b, k) => {
-    for (let j = 0; j < 12; j++) {
+    assert.equal(rows[b].length, model.features.length, `block ${b}: ${rows[b].length} features, the model reads ${model.features.length}`);
+    for (let j = 0; j < model.features.length; j++) {
       assert.ok(Math.abs(rows[b][j] - f.values[k][j]) < 1e-6, `block ${b} feature ${j}: ${rows[b][j]} vs ${f.values[k][j]}`);
     }
     assert.ok(Math.abs(mlpForward(model, rows[b]) - f.prediction[k]) < 1e-6, `block ${b} prediction`);
