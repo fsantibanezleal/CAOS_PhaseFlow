@@ -288,3 +288,27 @@ def test_onnx_parity_refuses_a_sample_that_saturates_the_output(tmp_path):
     export_onnx(model, tmp_path / "own.onnx")
     err = json.loads((tmp_path / "own.json").read_text(encoding="utf-8"))["onnx_parity_max_abs_err"]
     assert 0.0 < err < 1e-5
+
+
+def test_the_value_of_replanning_is_measured_not_a_floor():
+    """Until 0.09.000 each realisation was re-solved by a fresh Gershon plan, weaker than the fixed
+    sliding-window plan it was compared with, so the value of re-planning was 0.000 on every case by
+    construction. The re-plan now improves the best fixed plan with the exact restricted re-solve: it
+    can never fall below that plan, so the number is non-negative without a maximum, and on a deposit
+    whose plans are not optimal it is positive."""
+    from types import SimpleNamespace
+
+    import oreblocks as ob
+
+    from pipeline.stages.evaluate import RESOLVE_METHOD, run_ensemble
+
+    inst = build_instance(_tiny_case())
+    cpit, prec = inst.cpit, inst.precedence
+    plans = [ob.toposort_schedule(cpit, prec, weight=w, allowed=inst.upit_in_pit) for w in ("greedy", "gershon")]
+    results = [SimpleNamespace(method=p.method, rung="classical", period_of_block=np.array(p.period_of_block))
+               for p in plans]
+    e = run_ensemble(inst, results)
+    assert e["ran"] and e["resolveMethod"] == RESOLVE_METHOD
+    assert "best fixed plan" in RESOLVE_METHOD
+    assert e["valueOfReplanning"] >= 0.0
+    assert e["valueOfReplanningPct"] > 0.0, "the exact re-plan found nothing to move on a greedy plan"

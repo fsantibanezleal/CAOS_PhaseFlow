@@ -127,8 +127,8 @@ export interface BoundReport {
 
 /** The risk readout: every candidate plan scored on every realisation. */
 export interface EnsembleReport {
-  /** which weight the per-realisation re-solve used. Written since the ensemble stopped
-   *  computing the certified bound it never read; the mirror did not know it existed. */
+  /** how each realisation was re-planned (since 0.09.000 the exact restricted re-solve started
+   *  from the best fixed plan; before, a Gershon TopoSort). Read with the value of re-planning. */
   resolveMethod?: string;
   ran: boolean;
   reason?: string;
