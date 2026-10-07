@@ -14,8 +14,8 @@ first, because its weight is the relaxation's expected extraction time; that rel
 maximum closures, and in the browser it is about one to four seconds per change on the larger cases.
 When a reader drags a slider, that is what stands between the gesture and the answer.
 
-**What it predicts.** Each block's expected extraction time as a fraction of the horizon, from twelve
-features a block and a scenario carry: the block's value, tonnage and grade, its depth fraction, the
+**What it predicts.** Each block's expected extraction time as a fraction of the horizon, from eleven
+features a block and a scenario carry: the block's value and grade, its depth fraction, the
 size and value of the cone above it, its radial distance from the centre, whether it is in the ultimate
 pit, the discount rate, the two capacity fractions and the number of periods. The plan is the same
 TopoSort walk with the predicted weight, and it costs one forward pass:
@@ -24,10 +24,35 @@ $$
 \hat E_b=(T+1)\,\sigma\!\Bigl(W_3\,\mathrm{ReLU}\bigl(W_2\,\mathrm{ReLU}(W_1\tilde f_b+b_1)+b_2\bigr)+b_3\Bigr),\qquad \tilde f_b=\frac{f_b-\mu}{s}.
 $$
 
-**The model.** A multilayer perceptron with hidden layers of 48 and 24 ReLU units and a sigmoid output,
-trained with explicit Adam (Kingma and Ba, [arXiv:1412.6980](https://arxiv.org/abs/1412.6980)) on a
+**The model.** Five multilayer perceptrons, each with hidden layers of 48 and 24 ReLU units and a
+sigmoid output, trained on the same rows with five seeds and averaged (the formula above is one member;
+$\hat E_b$ is the mean of the five). Each is trained with explicit Adam (Kingma and Ba, [arXiv:1412.6980](https://arxiv.org/abs/1412.6980)) on a
 squared loss, written in numpy so the whole vertical is inspectable in one file: no optimiser state
 behind an API, no framework version to reproduce.
+
+**Why five members, and why no tonnage feature (0.09.000).** Two findings on the real `kd-declared`
+deposit, where the 0.08 model reached 0.413 of the exact ExTS plan after 0.856 for the 0.07 model.
+
+- *A single training run is a lottery off the twins.* Five seeds of the same model on the same cached rows
+  reached 0.717, 0.843, 0.879, 0.772 and 0.781 on KD while agreeing within 0.013 on held-out twins
+  (median 0.930 to 0.943). On KD no input leaves the training range (no row beyond three standard
+  deviations), yet holding any one geometry feature at its training mean moved a single model from 0.413
+  to about 0.8: each run learns its own joint relations among the geometry features, and which of them
+  hold on a real deposit is luck. The mean of the five reached 0.886 on KD, 0.996 on newman1 and a
+  held-out twin median of 0.945, as good as the best single seed everywhere. Averaging is the standard
+  remedy for that variance (Breiman, bagging, [doi:10.1007/BF00058655](https://doi.org/10.1007/BF00058655)).
+- *An input that never varies in training is never trained.* Every training twin has uniform block
+  tonnage, so `tonnage_norm` was 1.0 on every training row; after centring its input was zero, its 48
+  first-layer weights got no gradient and kept their random initial values (norm 2.84, against 2.83
+  expected from the initialisation), and they acted on every real deposit whose tonnage varies. The
+  0.08 record measured that this was not what moved KD, but weights nobody trained do not ship: the
+  feature is gone, and `train_mlp` refuses any input that is constant in the training rows.
+
+Two remedies were measured and rejected on the same cached data. Training on a real deposit as well
+(newman1 under the nine training scenarios, weighted twenty times) lowered KD to 0.812. Dropping the
+radial distance, which assumes a centred orebody, left KD at 0.839 and broke the held-out twins (median
+0.772, worst 0.099). The real deposits stay a held-out CHECK (`real_holdout` in the training report),
+never training data.
 
 **What it is trained on, and why each choice was made.**
 
