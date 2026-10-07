@@ -57,7 +57,7 @@ test('the certified bound matches the offline lane', () => {
 
   const bounds = inst.coef.map((_, r) => cpitLpRelaxation(inst, r).bound);
   const bound = Math.min(...bounds);
-  const baked = t.methods[0].bound;
+  const baked = t.bound?.algorithm4 ?? t.methods[0].bound;  // the browser computes Algorithm 4, not the joint LP
   const rel = Math.abs(bound - baked) / Math.abs(baked);
   assert.ok(rel < 1e-6, `bound relative error ${rel} (live ${bound}, baked ${baked})`);
 });
@@ -177,10 +177,11 @@ test('the ladder spans its rungs and none is empty by accident', () => {
   assert.ok(t.methods.length >= 10, `only ${t.methods.length} methods ran`);
 });
 
-test('every schedule is measured against the SAME bound, and the tighter one is used', () => {
+test('every CPIT schedule is measured against the SAME bound, and the tighter one is used', () => {
   const t = load(CASE);
-  const bounds = new Set(t.methods.map((m) => Math.round(m.bound)));
-  assert.equal(bounds.size, 1, 'methods are being compared against different bounds');
+  // the destination plans solve PCPSP and carry its bound; the next test holds them to it
+  const bounds = new Set(t.methods.filter((m) => !m.method.startsWith('destination-')).map((m) => Math.round(m.bound)));
+  assert.equal(bounds.size, 1, 'CPIT plans are being compared against different bounds');
   const b = t.bound;
   // `bound` is optional in the mirror because an artifact baked before it existed is a valid older
   // artifact. On a case in THIS bake it is always present, and saying so here is the assertion.
@@ -198,10 +199,26 @@ test('every schedule is measured against the SAME bound, and the tighter one is 
   }
 });
 
-test('the beyond rungs are labelled, because they are not NPV-comparable', () => {
+test('every beyond rung is explained and measured against the bound of its own problem', () => {
   const t = load(CASE);
+  const cpitBound = t.methods.find((m) => m.rung !== 'beyond')!.bound;
   for (const m of t.methods.filter((x) => x.rung === 'beyond')) {
     assert.ok(m.notes.length > 20, `${m.method} has no note explaining what it is`);
+    assert.ok(m.npv <= m.bound * (1 + 1e-9), `${m.method} exceeds its own bound`);
+    if (m.method.startsWith('destination-')) {
+      // PCPSP contains CPIT (the fixed cutoff is one feasible destination policy), so its LP is no lower
+      assert.ok(m.bound >= cpitBound * (1 - 1e-9), `${m.method} carries a bound below the CPIT bound`);
+    } else if (m.method === 'min-width') {
+      // a smoothed CPIT plan under the same capacities: the CPIT bound. Its NPV is NOT bounded by the
+      // plan it smooths: absorbing a sliver into an earlier neighbour's period can gain a little
+      // (twin-vein, 0.08: +0.01 percent over the sliding window), so the check is the provenance.
+      assert.equal(m.bound, cpitBound);
+      const base = /^from ([a-z0-9-]+):/.exec(m.notes)?.[1];
+      assert.ok(
+        base !== undefined && t.methods.some((x) => x.method === base && x.rung !== 'beyond'),
+        'min-width does not name the comparable plan it smooths',
+      );
+    }
   }
 });
 

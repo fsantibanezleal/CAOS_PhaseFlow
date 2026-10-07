@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" role="img" aria-labelledby="t d">
+  <title id="t">The method ladder</title>
+  <desc id="d">Bounds on the left (critical multiplier, Algorithm 4, Bienstock-Zuckerberg, PCPSP LP); rungs grouped classical, sota, learned, and beyond; CPIT rungs scored against the CPIT bound, destination rungs against the PCPSP LP.</desc>
+  <style>
+    :root { --bg:#ffffff; --card:#f6f8fa; --ink:#1f2328; --muted:#59636e; --line:#d0d7de;
+            --a:#0969da; --b:#8250df; --c:#1a7f37; --d:#9a6700; --e:#cf222e;
+            --a2:#ddf4ff; --b2:#fbefff; --c2:#dafbe1; --d2:#fff8c5; --e2:#ffebe9; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1117; --card:#151b23; --ink:#f0f6fc; --muted:#aab4c0; --line:#3d444d;
+              --a:#58a6ff; --b:#bc8cff; --c:#3fb950; --d:#e3b341; --e:#ff7b72;
+              --a2:#0c2d6b; --b2:#3c1e70; --c2:#04260f; --d2:#3b2300; --e2:#490202; }
+    }
+    .bg { fill:var(--bg); }
+    .card { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .t { fill:var(--ink); font:600 15px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .h { fill:var(--ink); font:600 13px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .s { fill:var(--muted); font:12px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .m { fill:var(--ink); font:12px ui-monospace, Consolas, monospace; }
+    .ms { fill:var(--muted); font:11px ui-monospace, Consolas, monospace; }
+    .ln { stroke:var(--line); stroke-width:1.5; fill:none; }
+    .lnd { stroke:var(--muted); stroke-width:1.2; fill:none; stroke-dasharray:4 3; }
+    .ar { stroke:var(--muted); stroke-width:1.6; fill:none; marker-end:url(#ah); }
+    .ara { stroke:var(--a); stroke-width:1.8; fill:none; marker-end:url(#aha); }
+    .fa { fill:var(--a2); stroke:var(--a); stroke-width:1.2; }
+    .fb { fill:var(--b2); stroke:var(--b); stroke-width:1.2; }
+    .fc { fill:var(--c2); stroke:var(--c); stroke-width:1.2; }
+    .fd { fill:var(--d2); stroke:var(--d); stroke-width:1.2; }
+    .fe { fill:var(--e2); stroke:var(--e); stroke-width:1.2; }
+    .fw { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .ka { fill:var(--a); } .kb { fill:var(--b); } .kc { fill:var(--c); } .kd { fill:var(--d); } .ke { fill:var(--e); }
+    .sa { stroke:var(--a); } .sb { stroke:var(--b); } .sc { stroke:var(--c); } .sd { stroke:var(--d); } .se { stroke:var(--e); }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/></marker>
+    <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--a)"/></marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="960" height="440" rx="10"/>
+  <text x="480" y="30" class="t" text-anchor="middle">The ladder: bounds first, then every plan against the bound of its own problem</text>
+  <rect x="30" y="60" width="240" height="56" rx="8" class="fc"/>
+  <text x="150.0" y="78.5" class="h" text-anchor="middle">critical multiplier</text>
+  <text x="150.0" y="95.5" class="s" text-anchor="middle">exact CPIT LP, one resource</text>
+  <rect x="30" y="128" width="240" height="56" rx="8" class="fc"/>
+  <text x="150.0" y="146.5" class="h" text-anchor="middle">Algorithm 4</text>
+  <text x="150.0" y="163.5" class="s" text-anchor="middle">min of single-resource LPs</text>
+  <rect x="30" y="196" width="240" height="56" rx="8" class="fc"/>
+  <text x="150.0" y="214.5" class="h" text-anchor="middle">Bienstock-Zuckerberg</text>
+  <text x="150.0" y="231.5" class="s" text-anchor="middle">joint CPIT LP, certified</text>
+  <rect x="30" y="300" width="240" height="56" rx="8" class="fb"/>
+  <text x="150.0" y="318.5" class="h" text-anchor="middle">PCPSP LP (HiGHS)</text>
+  <text x="150.0" y="335.5" class="s" text-anchor="middle">destinations free</text>
+  <text x="30" y="278" class="ms" text-anchor="start">CPIT bound used: the joint LP, else Algorithm 4</text>
+  <rect x="330" y="64" width="190" height="122" rx="8" class="fw"/>
+  <text x="425" y="86" class="h" text-anchor="middle">classical</text>
+  <text x="425" y="108" class="ms" text-anchor="middle">bench-by-bench</text>
+  <text x="425" y="130" class="ms" text-anchor="middle">nested-shells</text>
+  <text x="425" y="152" class="ms" text-anchor="middle">toposort-greedy</text>
+  <text x="425" y="174" class="ms" text-anchor="middle">toposort-gershon</text>
+  <rect x="535" y="64" width="190" height="144" rx="8" class="fa"/>
+  <text x="630" y="86" class="h" text-anchor="middle">sota</text>
+  <text x="630" y="108" class="ms" text-anchor="middle">toposort-expected</text>
+  <text x="630" y="130" class="ms" text-anchor="middle">exts-two-resource</text>
+  <text x="630" y="152" class="ms" text-anchor="middle">shift-local-search</text>
+  <text x="630" y="174" class="ms" text-anchor="middle">sliding-window</text>
+  <text x="630" y="196" class="ms" text-anchor="middle">cpitD-local-search</text>
+  <rect x="740" y="64" width="190" height="56" rx="8" class="fd"/>
+  <text x="835" y="86" class="h" text-anchor="middle">learned</text>
+  <text x="835" y="108" class="ms" text-anchor="middle">learned-expected-time</text>
+  <rect x="330" y="300" width="395" height="90" rx="8" class="fb"/>
+  <text x="527" y="322" class="h" text-anchor="middle">beyond: destinations (PCPSP)</text>
+  <text x="527" y="344" class="ms" text-anchor="middle">destination-toposort</text>
+  <text x="527" y="362" class="ms" text-anchor="middle">destination-sliding-window</text>
+  <text x="527" y="380" class="ms" text-anchor="middle">destination-local-search</text>
+  <rect x="740" y="300" width="190" height="90" rx="8" class="fw"/>
+  <text x="835" y="322" class="h" text-anchor="middle">beyond: questions</text>
+  <text x="835" y="344" class="ms" text-anchor="middle">min-width (CPIT bound)</text>
+  <text x="835" y="362" class="ms" text-anchor="middle">ensemble</text>
+  <path d="M330 52 L925 52" class="ln sa"/>
+  <text x="627" y="46" class="ms" text-anchor="middle">scored against the CPIT bound</text>
+  <path d="M272 224 L320 56" class="ara"/>
+  <path d="M272 328 L326 340" class="ar"/>
+  <text x="480" y="420" class="s" text-anchor="middle">three controls on every case; every plan checked for precedence, capacity and its own bound before it is recorded</text>
+
+</svg>

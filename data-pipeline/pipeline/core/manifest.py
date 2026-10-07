@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any
 
 from .. import __version__
+from ..model.learned import capacity_fractions
 from .trace import TRACE_SCHEMA
 
 MANIFEST_SCHEMA = "phaseflow.manifest/v1"
@@ -19,12 +20,13 @@ INDEX_SCHEMA = "phaseflow.index/v1"
 
 #: The rungs a "best method" may be chosen from.
 #:
-#: `beyond` is EXCLUDED and this is not a nicety. `min-width` does not re-impose capacity, and
-#: `destination-toposort` solves PCPSP, a richer problem over a different objective. Ranking them
-#: alongside the CPIT rungs made an INFEASIBLE plan the headline result on three cases (`min-width`
-#: overshot a period capacity by up to 18.65 percent on `twin-vein` while being reported as the best
-#: gap on it) and, worse, made it the DEFAULT SELECTED METHOD, so the 3D pit opened on a schedule
-#: nobody could run. `run_ensemble` already filtered on exactly this predicate one file away.
+#: `beyond` is EXCLUDED and this is not a nicety. The destination rungs solve PCPSP, a richer problem
+#: over a different objective, and `min-width` is the best plan traded for workability. Smoothing almost
+#: always costs value but can gain a little where an absorbed block moves to an earlier period (twin-vein in
+#: 0.08 ends 0.01 percent above the sliding window it smooths), so it is excluded by RULE. Before oreblocks 0.6.0 `min-width` also broke capacity, and ranking it with
+#: the CPIT rungs made an INFEASIBLE plan the headline result on three cases (it overshot a period
+#: capacity by up to 18.65 percent on `twin-vein` while reported as the best gap on it) and the DEFAULT
+#: SELECTED METHOD, so the 3D pit opened on a schedule nobody could run.
 COMPARABLE_RUNGS = ("classical", "sota", "learned")
 
 
@@ -42,6 +44,35 @@ def best_comparable(results):
         return None
     return max(pool, key=lambda r: (r.npv, r.method))
 
+_BOUND_KEYS = (
+    "algorithm4", "algorithm4_ms", "closure_solves", "joint", "joint_ms", "joint_iterations",
+    "joint_converged", "tightening_pct", "used", "joint_nodes", "joint_edges", "joint_skipped",
+    "joint_note", "pcpsp_lp", "pcpsp_lp_ms", "pcpsp_lp_rows", "pcpsp_lp_status",
+)
+_DUAL_KEYS = (
+    "pcpsp_lp_method", "pcpsp_lp_iterations", "pcpsp_lp_gap_estimate", "pcpsp_lp_slack", "pcpsp_lp_note",
+    "pcpsp_lp_error",
+)
+
+
+def _bound_summary(br: dict) -> dict:
+    """The bound report, compact. The dual's keys appear only where the PCPSP bound IS the Lagrangian
+    dual, so the record of a HiGHS case is unchanged by the dual's existence and an absent method key
+    reads as the HiGHS LP."""
+    keys = list(_BOUND_KEYS)
+    if br.get("pcpsp_lp_method") == "lagrangian":
+        keys += _DUAL_KEYS
+    elif "pcpsp_lp_error" in br:
+        keys.append("pcpsp_lp_error")
+    keys.append("skipped_methods")
+    return {key: br.get(key) for key in keys}
+
+
+def _mean(values) -> float:
+    vals = [float(v) for v in values]
+    return sum(vals) / len(vals) if vals else 0.0
+
+
 def build_case_manifest(
     *,
     case: Any,
@@ -52,9 +83,13 @@ def build_case_manifest(
     gate: dict,
     controls: dict,
     engine_versions: dict,
+    bound_report: dict | None = None,
+    ensemble: dict | None = None,
 ) -> dict:
     cpit = instance.cpit
     best = best_comparable(results)
+    br = bound_report or {}
+    en = ensemble or {}
     return {
         "schema": MANIFEST_SCHEMA,
         "case_id": case.id,
@@ -73,6 +108,11 @@ def build_case_manifest(
             "period_one_undiscounted": cpit.period_one_undiscounted,
             "n_resources": cpit.n_resources,
             "declared": not bool(case.published),
+            # per-period limit over (pit resource total / periods), read off the instance so a
+            # published file with absolute limits is described on the same scale as a twin
+            "capacity_fraction": [round(f, 4) for f in capacity_fractions(cpit, instance.upit_in_pit)],
+            "limit_per_period": [round(float(v), 2) for v in cpit.limit[:, 0]],
+            "resource_names": list(cpit.resource_names or ()),
         },
         "instance": {
             "n_blocks": instance.n_blocks,
@@ -99,9 +139,30 @@ def build_case_manifest(
                 "bound": round(r.bound, 2),
                 "gap_pct": round(r.gap_pct, 4),
                 "runtime_ms": round(r.runtime_ms, 1),
+                # what a reading page needs without loading the trace: the method's own account of
+                # what it did, the learned/exact ratio where it exists, and its spatial coherence
+                "notes": r.notes[:600],
+                "measured_vs_exact": None if r.measured_vs_exact is None else round(r.measured_vs_exact, 6),
+                "components_mean": round(_mean(p.components for p in r.periods if p.blocks > 0), 3),
+                "largest_share_mean": round(_mean(p.largest_component_share for p in r.periods if p.blocks > 0), 4),
+                # use over limit per resource and period: which capacity binds, and when
+                "utilization": [
+                    [round(p.resource_use[k] / p.resource_limit[k], 4) if p.resource_limit[k] > 0 else None
+                     for p in r.periods]
+                    for k in range(len(r.periods[0].resource_use) if r.periods else 0)
+                ],
+                "extra": getattr(r, "extra", {}) or {},
             }
             for r in results
         ],
+        "bound_summary": _bound_summary(br),
+        "ensemble_summary": {
+            key: en.get(key)
+            for key in (
+                "ran", "reason", "nRealisations", "sigma", "methods", "expected", "p10", "p90", "meanModel",
+                "optimism", "bestByExpected", "bestByP10", "valueOfReplanningPct",
+            )
+        },
         "best": None if best is None else {"method": best.method, "gap_pct": round(best.gap_pct, 4)},
     }
 

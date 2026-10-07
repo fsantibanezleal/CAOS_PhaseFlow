@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 306" role="img" aria-labelledby="t d">
+  <title id="t">The lanes</title>
+  <desc id="d">Offline bake, committed artifact, browser with replay and live re-solve; parity tests between the lanes.</desc>
+  <style>
+    :root { --bg:#ffffff; --card:#f6f8fa; --ink:#1f2328; --muted:#59636e; --line:#d0d7de;
+            --a:#0969da; --b:#8250df; --c:#1a7f37; --d:#9a6700; --e:#cf222e;
+            --a2:#ddf4ff; --b2:#fbefff; --c2:#dafbe1; --d2:#fff8c5; --e2:#ffebe9; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1117; --card:#151b23; --ink:#f0f6fc; --muted:#aab4c0; --line:#3d444d;
+              --a:#58a6ff; --b:#bc8cff; --c:#3fb950; --d:#e3b341; --e:#ff7b72;
+              --a2:#0c2d6b; --b2:#3c1e70; --c2:#04260f; --d2:#3b2300; --e2:#490202; }
+    }
+    .bg { fill:var(--bg); }
+    .card { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .t { fill:var(--ink); font:600 15px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .h { fill:var(--ink); font:600 13px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .s { fill:var(--muted); font:12px system-ui, -apple-system, Segoe UI, sans-serif; }
+    .m { fill:var(--ink); font:12px ui-monospace, Consolas, monospace; }
+    .ms { fill:var(--muted); font:11px ui-monospace, Consolas, monospace; }
+    .ln { stroke:var(--line); stroke-width:1.5; fill:none; }
+    .lnd { stroke:var(--muted); stroke-width:1.2; fill:none; stroke-dasharray:4 3; }
+    .ar { stroke:var(--muted); stroke-width:1.6; fill:none; marker-end:url(#ah); }
+    .ara { stroke:var(--a); stroke-width:1.8; fill:none; marker-end:url(#aha); }
+    .fa { fill:var(--a2); stroke:var(--a); stroke-width:1.2; }
+    .fb { fill:var(--b2); stroke:var(--b); stroke-width:1.2; }
+    .fc { fill:var(--c2); stroke:var(--c); stroke-width:1.2; }
+    .fd { fill:var(--d2); stroke:var(--d); stroke-width:1.2; }
+    .fe { fill:var(--e2); stroke:var(--e); stroke-width:1.2; }
+    .fw { fill:var(--card); stroke:var(--line); stroke-width:1; }
+    .ka { fill:var(--a); } .kb { fill:var(--b); } .kc { fill:var(--c); } .kd { fill:var(--d); } .ke { fill:var(--e); }
+    .sa { stroke:var(--a); } .sb { stroke:var(--b); } .sc { stroke:var(--c); } .sd { stroke:var(--d); } .se { stroke:var(--e); }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/></marker>
+    <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--a)"/></marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="900" height="306" rx="10"/>
+  <text x="450" y="30" class="t" text-anchor="middle">Three lanes: the bake, the artifact, the browser</text>
+  <rect x="30" y="70" width="250" height="90" rx="8" class="fa"/>
+  <text x="155.0" y="90.5" class="h" text-anchor="middle">offline bake (Python)</text>
+  <text x="155.0" y="107.5" class="s" text-anchor="middle">oreblocks, HiGHS, numpy</text>
+  <text x="155.0" y="122.5" class="s" text-anchor="middle">all rungs, bounds, controls</text>
+  <text x="155.0" y="137.5" class="s" text-anchor="middle">hours per release</text>
+  <rect x="325" y="70" width="250" height="90" rx="8" class="fc"/>
+  <text x="450.0" y="90.5" class="h" text-anchor="middle">committed artifact</text>
+  <text x="450.0" y="107.5" class="s" text-anchor="middle">trace + manifest + index</text>
+  <text x="450.0" y="122.5" class="s" text-anchor="middle">models/ (weights, studies)</text>
+  <text x="450.0" y="137.5" class="s" text-anchor="middle">the evidence the site replays</text>
+  <rect x="620" y="70" width="250" height="90" rx="8" class="fb"/>
+  <text x="745.0" y="90.5" class="h" text-anchor="middle">browser (TypeScript)</text>
+  <text x="745.0" y="107.5" class="s" text-anchor="middle">replay: every page, always</text>
+  <text x="745.0" y="122.5" class="s" text-anchor="middle">live: re-solve twins on</text>
+  <text x="745.0" y="137.5" class="s" text-anchor="middle">a control change</text>
+  <path d="M282 115 L323 115" class="ar"/>
+  <path d="M577 115 L618 115" class="ar"/>
+  <rect x="620" y="190" width="250" height="70" rx="8" class="fw"/>
+  <text x="745.0" y="208.0" class="h" text-anchor="middle">per control change</text>
+  <text x="745.0" y="225.0" class="s" text-anchor="middle">learned plan on the next frame;</text>
+  <text x="745.0" y="240.0" class="s" text-anchor="middle">exact bound and plans in a worker</text>
+  <path d="M745 162 L745 188" class="ar"/>
+  <rect x="30" y="190" width="545" height="70" rx="8" class="fw"/>
+  <text x="302.5" y="208.0" class="h" text-anchor="middle">parity tests hold the port to the trace</text>
+  <text x="302.5" y="225.0" class="s" text-anchor="middle">precedence arc for arc, the pit block for block, the bound to 1e-6,</text>
+  <text x="302.5" y="240.0" class="s" text-anchor="middle">the forward pass to 1e-9 and the features to 1e-6</text>
+  <text x="450" y="290" class="s" text-anchor="middle">no backend, no Python in the browser; a published MineLib case replays only (licence)</text>
+
+</svg>

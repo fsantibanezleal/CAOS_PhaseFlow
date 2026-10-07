@@ -66,13 +66,16 @@ CASES: list[Case] = [
             periods=8, discount_rate=0.10, capacity_fraction=(0.85, 0.55), resource_names=_TWO
         ),
         role_en=(
-            "A real block model at ten times the scale, under a scenario we declare because the "
-            "published .cpit for it is not reachable. The gap here is against OUR bound, not a "
-            "published one."
+            "A real block model with nearly nine times the blocks of newman1, under a scenario "
+            "declared here because its published scheduling file is not reachable. The gap is against "
+            "this product's certified bound, not a published one; the ultimate pit is still comparable "
+            "with the published optimum."
         ),
         role_es=(
-            "Un modelo de bloques real a diez veces la escala, bajo un escenario que declaramos "
-            "porque el .cpit publicado no es alcanzable. La brecha es contra NUESTRA cota."
+            "Un modelo de bloques real con casi nueve veces los bloques de newman1, bajo un escenario "
+            "declarado aquí porque su archivo de programación publicado no es alcanzable. La brecha es "
+            "contra la cota certificada de este producto, no contra una publicada; el pit final sí es "
+            "comparable con el óptimo publicado."
         ),
         published={"upit_optimum": 1_422_726_898},
     ),
@@ -118,8 +121,14 @@ CASES: list[Case] = [
         scenario=Scenario(
             periods=8, discount_rate=0.10, capacity_fraction=(0.8, 0.5), resource_names=_TWO
         ),
-        role_en="The fast case: small enough that every method re-solves in the browser instantly.",
-        role_es="El caso rápido: tan pequeño que cada método se resuelve al instante en el navegador.",
+        role_en=(
+            "The smaller porphyry: the browser re-solves its bound and three plans in about two seconds "
+            "and draws the learned plan at once, so it is the case to drag the controls on."
+        ),
+        role_es=(
+            "El pórfido menor: el navegador re-resuelve su cota y tres planes en cerca de dos segundos y "
+            "dibuja el plan aprendido de inmediato, así que es el caso para mover los controles."
+        ),
     ),
     Case(
         id="twin-vein",
@@ -131,12 +140,16 @@ CASES: list[Case] = [
             periods=10, discount_rate=0.10, capacity_fraction=(0.7, 0.4), resource_names=_TWO
         ),
         role_en=(
-            "A narrow high-grade body. The stress test for spatial coherence: the optimiser wants "
-            "the vein and the vein is not a workable shape."
+            "A narrow high-grade body. The stress test for spatial coherence (the optimiser wants the "
+            "vein and the vein is not a workable shape) and for Gershon's weight, which opens the whole "
+            "strike length at once because every block above the vein unlocks it. With the core-halo it is "
+            "one of the two archetypes on which the learned rung fails most."
         ),
         role_es=(
-            "Un cuerpo angosto de alta ley. La prueba de coherencia espacial: el optimizador quiere "
-            "la veta y la veta no es una forma operable."
+            "Un cuerpo angosto de alta ley. La prueba de coherencia espacial (el optimizador quiere la "
+            "veta y la veta no es una forma operable) y del peso de Gershon, que abre todo el largo del "
+            "rumbo de una vez porque todo bloque sobre la veta la libera. Junto con el núcleo-halo es uno "
+            "de los dos arquetipos en que el peldaño aprendido falla más."
         ),
     ),
     Case(
@@ -161,12 +174,16 @@ CASES: list[Case] = [
             periods=10, discount_rate=0.10, capacity_fraction=(0.7, 0.45), resource_names=_TWO
         ),
         role_en=(
-            "Concentric grade. Nested pits look entirely sensible on this deposit and the schedule "
-            "still does something different, which is the whole point of solving rather than nesting."
+            "Concentric grade. Nested pits look sensible on this deposit and the schedule still does "
+            "something different, which is the point of solving rather than nesting. With the vein it is "
+            "one of the two archetypes on which the learned rung is measured to fail most: a thin rich "
+            "core makes the order of extraction delicate."
         ),
         role_es=(
-            "Ley concéntrica. Los pits anidados se ven razonables en este depósito y el plan igual "
-            "hace algo distinto, que es exactamente el punto de resolver en vez de anidar."
+            "Ley concéntrica. Los pits anidados se ven razonables en este depósito y el plan igual hace "
+            "algo distinto, que es el punto de resolver en vez de anidar. Junto con la veta es uno de los "
+            "dos arquetipos en que el peldaño aprendido falla más: un núcleo rico y delgado vuelve "
+            "delicado el orden de extracción."
         ),
     ),
     # ------------------------------------------------------------------ regimes
@@ -249,14 +266,14 @@ CASES: list[Case] = [
         role_en=(
             "Loose-capacity diagnostic. The best CPIT schedule approaches the certified bound, but "
             "classical schedules still lose value because period timing and slope precedence matter "
-            "at a positive discount rate. Compare only CPIT-feasible methods; the zero-rate, "
-            "single-period ctrl-degenerate case is the exact collapse control."
+            "at a positive discount rate. The zero-rate, single-period ctrl-degenerate case is the "
+            "exact collapse control; this one is not."
         ),
         role_es=(
             "Diagnóstico con capacidad holgada. El mejor plan CPIT se acerca a la cota certificada, "
             "pero los planes clásicos pierden valor porque el período de extracción y la precedencia "
-            "importan con descuento positivo. Compare solo métodos CPIT factibles; ctrl-degenerate, "
-            "con tasa cero y un período, es el control de colapso exacto."
+            "importan con descuento positivo. ctrl-degenerate, con tasa cero y un período, es el "
+            "control de colapso exacto; este no lo es."
         ),
     ),
 ]

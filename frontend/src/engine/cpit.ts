@@ -7,7 +7,7 @@
 // brochure with a slider on it. Everything below runs on the block model the trace already carries,
 // so moving the rate re-solves the actual problem rather than fetching a different answer.
 //
-// References, transcribed in `docs/methods/`:
+// References, transcribed in `docs/methodologies/`:
 // - Chicoisne, Espinoza, Goycoolea, Moreno and Rubio, Operations Research 60(3):517-528, 2012,
 //   doi:10.1287/opre.1120.1050. Theorem 3.1 (the critical multiplier algorithm), section 3.2
 //   (the TopoSort heuristic family), equations (3a)-(3f) (the formulation).
@@ -372,27 +372,58 @@ export function toposortSchedule(
   };
 }
 
-/** w(b) = p_b + the total value of the whole successor cone (Gershon 1987a). */
+/**
+ * w(b) = the sum of p_a over the successor SET B+(b) (Gershon 1987a, as tabulated by Chicoisne et al.
+ * 2012): every block that has b as a predecessor, transitively, each counted ONCE, b itself excluded.
+ *
+ * Mirrors `oreblocks.schedule._successor_profit_sums`. Summing the successors' accumulated weights
+ * instead counts a deep block once per precedence PATH, and with five or nine arcs per block that
+ * number grows geometrically with depth. The cones are bitsets built in reverse topological order and
+ * released as soon as every predecessor has read them.
+ */
 export function gershonWeights(inst: CpitInstance): Float64Array {
   const n = inst.nBlocks;
   const { sstart, slist } = successors(inst.prec, n);
-  const indeg = new Int32Array(n);
-  for (let b = 0; b < n; b++) indeg[b] = inst.prec.pstart[b + 1] - inst.prec.pstart[b];
+  const deg = new Int32Array(n);
+  for (let b = 0; b < n; b++) deg[b] = inst.prec.pstart[b + 1] - inst.prec.pstart[b];
+  const readers = Int32Array.from(deg);
   const stack: number[] = [];
-  for (let b = 0; b < n; b++) if (indeg[b] === 0) stack.push(b);
+  for (let b = 0; b < n; b++) if (deg[b] === 0) stack.push(b);
   const order: number[] = [];
-  const deg = Int32Array.from(indeg);
   while (stack.length) {
     const b = stack.pop()!;
     order.push(b);
     for (let k = sstart[b]; k < sstart[b + 1]; k++) if (--deg[slist[k]] === 0) stack.push(slist[k]);
   }
-  const w = Float64Array.from(inst.value);
+  if (order.length !== n) throw new Error('precedence graph has a cycle');
+
+  const words = (n + 31) >>> 5;
+  const cones = new Map<number, Uint32Array>();
+  const w = new Float64Array(n);
   for (let i = order.length - 1; i >= 0; i--) {
     const b = order[i];
-    let acc = 0;
-    for (let k = sstart[b]; k < sstart[b + 1]; k++) acc += w[slist[k]];
-    w[b] += acc;
+    let cone: Uint32Array | null = null;
+    for (let k = sstart[b]; k < sstart[b + 1]; k++) {
+      const c = slist[k];
+      if (!cone) cone = new Uint32Array(words);
+      const cc = cones.get(c);
+      if (cc) for (let j = 0; j < words; j++) cone[j] |= cc[j];
+      cone[c >>> 5] |= 1 << (c & 31);
+      if (--readers[c] === 0) cones.delete(c);
+    }
+    if (cone) {
+      let acc = 0;
+      for (let j = 0; j < words; j++) {
+        let word = cone[j];
+        while (word !== 0) {
+          const low = word & -word;
+          acc += inst.value[(j << 5) + (31 - Math.clz32(low))];
+          word ^= low;
+        }
+      }
+      w[b] = acc;
+      if (readers[b] > 0) cones.set(b, cone);
+    }
   }
   return w;
 }
