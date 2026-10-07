@@ -66,15 +66,24 @@ $$
 - the **value of re-planning** once the realisation is known.
 
 That last quantity was first called EVPI. It is not: true EVPI needs the per-realisation OPTIMUM, and the
-per-realisation solve here is a heuristic, so the number is a **lower bound** on EVPI. Computed naively it
-came out negative on `newman1` (-0.148 percent), because a fixed plan can beat a heuristic re-solve on a
-lucky realisation; the re-solve is now the maximum of the heuristic and every candidate already evaluated,
-which makes it a proper, non-negative lower bound, and a test asserts both.
+per-realisation solve here is not one, so the number is a **lower bound** on EVPI:
 
-**The per-realisation solve is deliberately the cheap one** (Gershon weights and a shift search, no bound):
-the ensemble compares NPVs and never reads a bound, and with the bound left on, the first full bake ran for
-four hours and finished one case. The trace carries `resolveMethod` so the number is never read without
-knowing what produced it.
+$$
+\text{VoR}=\mathbb E_k\bigl[\max\bigl(\mathrm{NPV}(\mathrm{LS}_k(\pi^\star);v^{(k)}),\ \max_{\pi}\mathrm{NPV}(\pi;v^{(k)})\bigr)\bigr]-\max_{\pi}\mathbb E_k\bigl[\mathrm{NPV}(\pi;v^{(k)})\bigr]
+$$
+
+where $\pi^\star$ is the fixed plan with the best expected NPV and $\mathrm{LS}_k$ is the exact restricted
+re-solve (C-PIT[D], 16 rounds of neighbourhoods of up to 180 blocks, no bound) run on realisation $k$ from
+that plan. It only accepts proven improvements, so $\mathrm{LS}_k(\pi^\star)$ is never below $\pi^\star$ on
+$v^{(k)}$, and the difference is non-negative by construction.
+
+**How this read zero for two releases.** Until 0.09.000 the per-realisation solve was a fresh Gershon
+TopoSort with a shift search, chosen because it is cheap. Its gaps are 19 to 92 percent; the fixed plans
+include the sliding window at 1 to 6 percent; and the per-realisation value taken was the larger of the two,
+so it was the fixed plan on every realisation of every case and the column was 0.000 everywhere. That was
+a floor, not a measurement (backlog BL-049). Re-planning the way a planner does, by improving the plan in
+hand once the values are known, costs seconds per case and measures something. The trace carries
+`resolveMethod` so the number is never read without knowing what produced it.
 
 ## 5. Measured on every case, and what the value of re-planning says here
 
@@ -96,12 +105,10 @@ knowing what produced it.
 | [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | not run | - | - | - | - | a single-period scenario has no schedule to stress |
 <!-- /generated -->
 
-**Read the value-of-re-planning column for what it is.** It is zero on every case. The fixed plans
-include the sliding window, within a few percent of the bound, and the cheap per-realisation re-solve
-never beats it, so the lower bound collapses to its floor. Zero here does NOT mean that knowing the
-realisation is worthless; it means this lower bound is too weak to say anything in this release. A
-re-solve strong enough to matter costs a sliding window per realisation (backlog BL-049), and until then
-the column is shown with this reading attached.
+**Read the value-of-re-planning column for what it is.** It is how much the exact neighbourhoods find to
+move in the best fixed plan once a realisation's values are known, averaged over the twelve realisations.
+It is a lower bound on EVPI: a re-plan that could also change the pit limits or restart from a different
+plan could find more.
 
 ## 6. The label that stays on it
 

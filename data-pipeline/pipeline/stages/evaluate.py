@@ -48,10 +48,18 @@ def run_controls(instance, results) -> dict:
     }
 
 
-# Gershon's successor-cone weight: a combinatorial score that needs no LP relaxation, so the
-# per-realisation solve is one maximum closure plus a topological pass instead of a parametric family
-# of them. Named here rather than inline because the trace reports it and the docs quote it.
-RESOLVE_METHOD = "gershon"
+# How each realisation is RE-PLANNED: the exact restricted re-solve (C-PIT[D]) started from the fixed
+# plan with the best expected value, on that realisation's values. Until 0.09.000 the re-solve was a
+# fresh Gershon TopoSort (gaps of 19 to 92 percent) compared against fixed plans that include the
+# sliding window (1 to 6 percent), and the per-realisation optimum taken was the larger of the two:
+# the fixed plan won on every realisation of every case, so the value of re-planning was 0.000 BY
+# CONSTRUCTION, a floor and not a measurement. Re-planning the way a planner does, by improving the
+# plan in hand once the block values are known, can only gain, so the number is never negative
+# without taking a maximum, and a zero now means the exact neighbourhoods found nothing to move.
+# Named here because the trace reports it and the docs quote it.
+RESOLVE_METHOD = "cpitD-local-search from the best fixed plan"
+REPLAN_ROUNDS = 16  # the same neighbourhoods and count the ladder's cpitD-local-search uses
+REPLAN_D_MAX = 180
 
 
 def run_ensemble(instance, results, *, n: int = 12, sigma: float = 0.25, seed: int = 31) -> dict:
@@ -66,13 +74,12 @@ def run_ensemble(instance, results, *, n: int = 12, sigma: float = 0.25, seed: i
     substitute (the best of the plans you happened to bring) is a much smaller quantity and calling it
     EVPI would overstate the case for stochastic methods.
 
-    The per-realisation re-solve runs WITHOUT the certified bound and on a combinatorial weight. The
-    ensemble compares NPVs across realisations and never reads a bound, and computing one costs a
-    parametric family of maximum closures per resource against the single closure a schedule needs.
-    Leaving it on made the ensemble a hundred times more expensive than the thing it was measuring:
-    the first full bake spent four hours and finished one case of thirteen, inside this loop. The
-    weaker per-realisation solve makes the reported quantity a LOOSER lower bound on EVPI, which is
-    what it already was, and the trace records which method produced it.
+    The per-realisation re-plan never computes a certified bound. The ensemble compares NPVs across
+    realisations and never reads one, and computing it costs a parametric family of maximum closures
+    per resource: leaving it on once made the ensemble a hundred times more expensive than the thing
+    it measured. The re-plan is the exact restricted re-solve started from the best fixed plan (see
+    RESOLVE_METHOD), so the reported quantity is a lower bound on EVPI that is never negative by
+    construction, and the trace records which method produced it.
     """
     import numpy as np
     import oreblocks as ob
@@ -101,6 +108,8 @@ def run_ensemble(instance, results, *, n: int = 12, sigma: float = 0.25, seed: i
     if not plans:
         return {"ran": False, "reason": "no comparable plan"}
 
+    naive = ob.evaluate_across(cpit, ens, plans)
+    start_plan = plans[naive.best_by_expected]
     optima = []
     for j in range(ens.n_realisations):
         inst_j = ob.Cpit(
@@ -109,15 +118,20 @@ def run_ensemble(instance, results, *, n: int = 12, sigma: float = 0.25, seed: i
             sense=cpit.sense, coef=cpit.coef,
             period_one_undiscounted=cpit.period_one_undiscounted,
         )
-        rj, _ = ob.solve_cpit(
-            inst_j, instance.precedence, method=RESOLVE_METHOD, bound=False,
+        npv0, pv0, pr0 = ob.schedule_value(inst_j, start_plan)
+        fixed = ob.ScheduleResult(
+            method=naive.best_by_expected, period_of_block=start_plan.copy(), npv=npv0,
+            per_period_value=pv0, per_period_resource=pr0, mined_blocks=int((start_plan >= 0).sum()),
+        )
+        rj = ob.exact_local_search(
+            inst_j, instance.precedence, fixed, d_max=REPLAN_D_MAX, rounds=REPLAN_ROUNDS,
+            time_limit=None, mip_gap=1e-4, seed=11 + j,
         )
         optima.append(rj.npv)
 
-    # The per-realisation solve is a HEURISTIC, so a fixed plan can beat it on a lucky realisation
-    # and a naive difference goes negative. Take the maximum with the best candidate already
-    # evaluated: the quantity is then a lower bound on EVPI and cannot be negative.
-    naive = ob.evaluate_across(cpit, ens, plans)
+    # The re-plan starts from the best fixed plan and only accepts proven improvements, so on every
+    # realisation it is at least that plan; another fixed plan can still be better on a single
+    # realisation, and that one was available without knowing the values, so it counts too.
     best_achievable = np.maximum(np.array(optima), naive.per_realisation_best)
     out = ob.evaluate_across(cpit, ens, plans, per_realisation_optimum=best_achievable)
     return {
@@ -139,8 +153,9 @@ def run_ensemble(instance, results, *, n: int = 12, sigma: float = 0.25, seed: i
             100.0 * float(out.value_of_replanning) / max(1e-9, float(out.expected.max())), 3
         ),
         "replanningNote": (
-            "A LOWER bound on the expected value of perfect information, not EVPI: the per-realisation "
-            "re-solve is itself a heuristic, so this understates by whatever that heuristic loses."
+            "A LOWER bound on the expected value of perfect information, not EVPI: each realisation is "
+            "re-planned by the exact restricted re-solve started from the best fixed plan, which only "
+            "accepts proven improvements, so this understates by whatever its neighbourhoods miss."
         ),
         "note": ens.note,
     }
