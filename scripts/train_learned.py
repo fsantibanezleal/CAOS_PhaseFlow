@@ -103,6 +103,13 @@ WORKERS = int(os.environ.get("PHASEFLOW_TRAIN_WORKERS") or max(1, min(8, (os.cpu
 #: average reached 0.886. The 0.08 model's 0.413 on KD was one draw from that spread.
 ENSEMBLE_SEEDS = (17, 29, 41, 53, 67)
 
+#: Epochs per member. It was 60. Measured on cached data (the training rows of six seeds), two seeds
+#: each: the held-out TWIN median is 0.938 at 10 epochs and 0.935 to 0.937 at 60, so the extra fifty
+#: buy nothing on the domain the model is trained for, while on the real `kd-declared` deposit they cost
+#: transfer and stability (0.871 and 0.850 at 10 epochs; 0.758 and 0.155 at 60). The smallest budget at
+#: the twin plateau is the rule; the full 0.09 retrain then scored KD at 0.425 with 60 epochs before this.
+EPOCHS = 10
+
 #: Real deposits scored as a HELD-OUT check, never used as training data: the twins teach the model,
 #: and these say whether what it learned transfers. Scored only where the MineLib cache is present
 #: (PHASEFLOW_DATA_DIR); a run without it records that it could not check.
@@ -167,7 +174,25 @@ def _jobs(seeds: list[int]) -> list[tuple]:
 
 
 def collect(seeds: list[int]) -> dict:
-    """Solve every (deposit, scenario, size) exactly, in parallel, and record features and targets."""
+    """Solve every (deposit, scenario, size) exactly, in parallel, and record features and targets.
+
+    With ``PHASEFLOW_TRAIN_CACHE`` set (a folder outside the repo, on the data drive), the collected
+    arrays are cached per seed set and features, so a failure after the hour of exact solves does not
+    cost the hour again. The key covers everything the data depends on; a changed feature list misses.
+    """
+    cache_dir = os.environ.get("PHASEFLOW_TRAIN_CACHE")
+    cache = None
+    if cache_dir:
+        import hashlib
+
+        key = hashlib.sha256(json.dumps([seeds, ARCHETYPES, SCENARIOS, SIZES, list(BLOCK_FEATURES),
+                                         list(DEPOSIT_FEATURES)]).encode()).hexdigest()[:16]
+        cache = Path(cache_dir) / f"collect-{key}.npz"
+        if cache.exists():
+            d = np.load(cache, allow_pickle=True)
+            print(f"  loaded {cache.name} from the cache", flush=True)
+            return {"xb": d["xb"].astype(np.float64), "yb": d["yb"], "xd": d["xd"], "yd": d["yd"],
+                    "meta": list(d["meta"])}
     jobs = _jobs(seeds)
     out: list[dict | None] = [None] * len(jobs)
     with ProcessPoolExecutor(max_workers=WORKERS) as pool:
@@ -179,13 +204,18 @@ def collect(seeds: list[int]) -> dict:
             print(f"  [{done}/{len(jobs)}] {m['archetype']:10s} seed {m['seed']:4d} {m['n_blocks']:5d} blocks "
                   f"T={m['scenario'][0]:2d} r={m['scenario'][1]:.2f} -> bound {m['bound']:,.0f}", flush=True)
     res = [r for r in out if r is not None]
-    return {
+    data = {
         "xb": np.concatenate([r["xb"] for r in res]).astype(np.float64),
         "yb": np.concatenate([r["yb"] for r in res]).astype(np.float64),
         "xd": np.stack([r["xd"] for r in res]).astype(np.float64),
         "yd": np.array([r["yd"] for r in res], dtype=np.float64),
         "meta": [r["meta"] for r in res],
     }
+    if cache is not None:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        np.savez(cache, xb=data["xb"].astype(np.float32), yb=data["yb"], xd=data["xd"], yd=data["yd"],
+                 meta=np.array(data["meta"], dtype=object))
+    return data
 
 
 def _score_one(args: tuple) -> float:
@@ -570,7 +600,7 @@ def main() -> int:
     # ---- model 1: expected extraction time
     # eight times the rows of the single-size sweep, so half the epochs
     m1 = train_ensemble(tr["xb"], tr["yb"], seeds=ENSEMBLE_SEEDS, feature_names=BLOCK_FEATURES,
-                        target="expected_time_fraction", hidden=(48, 24), epochs=60, batch=2048, lr=4e-3)
+                        target="expected_time_fraction", hidden=(48, 24), epochs=EPOCHS, batch=2048, lr=4e-3)
     pred = m1.forward(ho["xb"]).reshape(-1)
     rho = spearman(pred, ho["yb"])
     mae = float(np.abs(pred - ho["yb"]).mean())
@@ -616,9 +646,13 @@ def main() -> int:
         "target_relaxation": "the tightest single-resource relaxation, as the ExTS rung uses",
         "split": "by deposit seed, never by row",
         "ensemble_seeds": list(ENSEMBLE_SEEDS),
+        "epochs": EPOCHS,
         "real_holdout": score_real(m1),
     }
-    export_onnx(m1, MODELS / "expected-time.onnx", sample=ho["xb"][:128])
+    # the parity sample is spread over the whole held-out set: its first rows are one deposit's blocks,
+    # and outside the pit those saturate, so a prefix can prove nothing
+    pick = np.random.default_rng(0).choice(ho["xb"].shape[0], size=min(512, ho["xb"].shape[0]), replace=False)
+    export_onnx(m1, MODELS / "expected-time.onnx", sample=ho["xb"][pick])
     print(f"\nexpected-time surrogate: holdout Spearman {rho:.3f}, MAE {mae:.4f}")
     print(f"  NPV vs exact ExTS  median {m1.metrics['holdout_npv_vs_exact_exts_median']:.4f}"
           f"  P10 {m1.metrics['holdout_npv_vs_exact_exts_p10']:.4f}"
