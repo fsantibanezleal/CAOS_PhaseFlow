@@ -26,27 +26,65 @@ export interface MlpModel {
   metrics?: Record<string, unknown>;
 }
 
-/**
- * Forward pass: standardise, ReLU through the hidden layers, sigmoid head, averaged over the ensemble
- * members when there are any (`Mlp.forward` in the pipeline, term for term).
- */
-export function mlpForward(model: Pick<MlpModel, 'mu' | 'sigma' | 'layers' | 'members'>, x: ArrayLike<number>): number {
-  const z = Array.from(x, (v, i) => (v - model.mu[i]) / (model.sigma[i] > 1e-8 ? model.sigma[i] : 1));
-  const sets: Layers[] = [model.layers, ...(model.members ?? []).map((m) => m.layers)];
-  let sum = 0;
-  for (const layers of sets) sum += memberForward(layers, z);
-  return sum / sets.length;
+/** One member's layers compiled once: weights transposed into contiguous rows, buffers reused. */
+interface Compiled { w: Float64Array[]; b: Float64Array[]; nIn: number[]; buf: Float64Array[] }
+interface CompiledModel { mu: Float64Array; inv: Float64Array; z: Float64Array; members: Compiled[] }
+
+const compiledCache = new WeakMap<object, CompiledModel>();
+
+function compileLayers(layers: Layers): Compiled {
+  const w: Float64Array[] = [], b: Float64Array[] = [], nIn: number[] = [], buf: Float64Array[] = [];
+  for (const layer of layers) {
+    const inN = layer.w.length, outN = layer.b.length;
+    const wt = new Float64Array(outN * inN);
+    for (let j = 0; j < outN; j++) for (let i = 0; i < inN; i++) wt[j * inN + i] = layer.w[i][j];
+    w.push(wt);
+    b.push(Float64Array.from(layer.b));
+    nIn.push(inN);
+    buf.push(new Float64Array(outN));
+  }
+  return { w, b, nIn, buf };
 }
 
-function memberForward(layers: Layers, z: number[]): number {
-  let a = z;
-  for (let li = 0; li < layers.length; li++) {
-    const layer = layers[li];
-    const out = new Array<number>(layer.b.length);
+function compile(model: Pick<MlpModel, 'mu' | 'sigma' | 'layers' | 'members'>): CompiledModel {
+  let c = compiledCache.get(model);
+  if (!c) {
+    c = {
+      mu: Float64Array.from(model.mu),
+      inv: Float64Array.from(model.sigma, (s) => (s > 1e-8 ? s : 1)),
+      z: new Float64Array(model.mu.length),
+      members: [model.layers, ...(model.members ?? []).map((m) => m.layers)].map(compileLayers),
+    };
+    compiledCache.set(model, c);
+  }
+  return c;
+}
+
+/**
+ * Forward pass: standardise, ReLU through the hidden layers, sigmoid head, averaged over the ensemble
+ * members when there are any (`Mlp.forward` in the pipeline, term for term, in the same summation order).
+ * The model is compiled once (transposed contiguous weights, reused buffers): the five-member ensemble of
+ * 0.09.000 ran two to three times slower than one member through nested arrays allocated per block.
+ */
+export function mlpForward(model: Pick<MlpModel, 'mu' | 'sigma' | 'layers' | 'members'>, x: ArrayLike<number>): number {
+  const c = compile(model);
+  const z = c.z;
+  for (let i = 0; i < z.length; i++) z[i] = (x[i] - c.mu[i]) / c.inv[i];
+  let sum = 0;
+  for (const m of c.members) sum += memberForward(m, z);
+  return sum / c.members.length;
+}
+
+function memberForward(m: Compiled, z: Float64Array): number {
+  let a: Float64Array = z;
+  const last = m.w.length - 1;
+  for (let li = 0; li <= last; li++) {
+    const w = m.w[li], b = m.b[li], out = m.buf[li], inN = m.nIn[li];
     for (let j = 0; j < out.length; j++) {
-      let s = layer.b[j];
-      for (let i = 0; i < a.length; i++) s += a[i] * layer.w[i][j];
-      out[j] = li < layers.length - 1 ? Math.max(0, s) : 1 / (1 + Math.exp(-s));
+      let s = b[j];
+      const row = j * inN;
+      for (let i = 0; i < inN; i++) s += a[i] * w[row + i];
+      out[j] = li < last ? Math.max(0, s) : 1 / (1 + Math.exp(-s));
     }
     a = out;
   }

@@ -131,9 +131,11 @@ the table above, and the panel refuses to draw a plane from a model that breaks 
 ## 3. In the browser: the instant plan
 
 The learned rung's job in the product is the instant plan. On every control change in the focus view,
-the browser rebuilds the precedence for the slope, solves the ultimate pit, computes the twelve features
-(rounded to single precision as the pipeline does), runs the forward pass and walks TopoSort: the learned
-plan, drawn on the next frame. When the control has been still for 220 ms a worker computes the bounds
+the browser rebuilds the precedence for the slope, solves the ultimate pit, computes the eleven features
+(rounded to single precision as the pipeline does), runs the five members' forward passes and walks
+TopoSort: the learned plan, drawn 94 to 226 ms after the change on the committed cases (the table below;
+one member took 39 to 149 ms, and the first five-member build, through nested arrays allocated per block,
+143 to 328 ms before the forward pass was compiled to contiguous typed weights). When the control has been still for 220 ms a worker computes the bounds
 and the exact plans; when they arrive the exact plan replaces the learned one and the HUD shows the
 learned plan's share of the exact ExTS plan and how much sooner it came:
 

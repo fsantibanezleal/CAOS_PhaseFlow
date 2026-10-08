@@ -26,7 +26,7 @@ is not redistributed; the page says so.
 ## The focus view: live re-solving
 
 On a live case (the synthetic twins), the focus view (`/focus/<case>`, entered from the App) lets you change
-the discount rate, the capacities and the slope, and **re-solves**: on the next frame the learned plan is drawn; when the control has been still
+the discount rate, the capacities and the slope, and **re-solves**: within about 0.1 to 0.25 s the learned plan is drawn; when the control has been still
 for 220 ms a worker computes the bounds and the exact plans, the exact plan replaces the learned one, and the
 HUD shows the learned plan's share of it and how much sooner it came, plus the measured solve time
 ([methodologies/07](../methodologies/07_learned.md)). Nothing is fetched from a pre-baked grid of answers.
