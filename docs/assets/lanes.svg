@@ -57,7 +57,7 @@
   <path d="M577 115 L618 115" class="ar"/>
   <rect x="620" y="190" width="250" height="70" rx="8" class="fw"/>
   <text x="745.0" y="208.0" class="h" text-anchor="middle">per control change</text>
-  <text x="745.0" y="225.0" class="s" text-anchor="middle">learned plan on the next frame;</text>
+  <text x="745.0" y="225.0" class="s" text-anchor="middle">learned plan in 0.1 to 0.25 s;</text>
   <text x="745.0" y="240.0" class="s" text-anchor="middle">exact bound and plans in a worker</text>
   <path d="M745 162 L745 188" class="ar"/>
   <rect x="30" y="190" width="545" height="70" rx="8" class="fw"/>
