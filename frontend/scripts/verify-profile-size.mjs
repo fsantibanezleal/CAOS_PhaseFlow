@@ -25,7 +25,7 @@ async function measure(page) {
 
 function check(rows, viewportHeight, label) {
   assert.equal(rows.length, 2, `${label}: both section drawings must exist`);
-  const ceiling = Math.max(260, Math.min(viewportHeight * 0.5, 480)) + 2;
+  const ceiling = Math.max(340, Math.min(viewportHeight * 0.825, 660)) + 2;
   for (const [i, row] of rows.entries()) {
     assert.ok(row.host >= 200 && row.host <= ceiling,
       `${label}: section ${i} host grew to ${row.host}px (ceiling ${ceiling}px)`);
@@ -49,10 +49,10 @@ try {
     const page = await browser.newPage({ viewport: { width, height } });
     const errors = [];
     page.on('pageerror', (error) => errors.push(String(error)));
-    const response = await page.goto(base, { waitUntil: 'networkidle', timeout: 60000 });
+    const response = await page.goto(new URL('/app', base).toString(), { waitUntil: 'networkidle', timeout: 60000 });
     assert.equal(response?.status(), 200, `${width}x${height}: PhaseFlow must load`);
     assert.match(await page.title(), /^PhaseFlow\b/, `${width}x${height}: wrong app at ${base}`);
-    const tab = page.locator('button', { hasText: 'Profile and plan' }).first();
+    const tab = page.getByRole('tab', { name: 'Profile and plan' });
     await tab.click();
     const initial = await measure(page);
     check(initial, height, `${width}x${height} initial`);
@@ -87,7 +87,7 @@ try {
     }
     if (width === 390) {
       await page.locator('button').filter({ hasText: /^en$/ }).click();
-      await page.locator('button', { hasText: 'Perfil y planta' }).click();
+      await page.getByRole('tab', { name: 'Perfil y planta' }).click();
       check(await measure(page), height, '390x844 Spanish profile');
     }
     assert.deepEqual(errors, [], `${width}x${height}: browser errors`);

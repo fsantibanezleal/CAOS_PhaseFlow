@@ -1,6 +1,6 @@
 # Learned destination policy: design
 
-Status: proposed. [Requirements](requirements.md) and [tasks](tasks.md).
+Status: proposed. [Proposal](proposal.md); this proposal has no approved implementation tasks.
 
 The current `oreblocks.destination_toposort` accepts a priority weight and
 then chooses each block's destination against remaining capacity. This gives a

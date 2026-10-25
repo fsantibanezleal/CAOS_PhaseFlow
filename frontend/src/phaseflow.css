@@ -14,16 +14,16 @@
 }
 
 /* ---------- the workbench route ---------- */
-.pf-layout {
+.caos-wb {
   display: grid;
-  grid-template-columns: var(--pf-rail) minmax(0, 1fr);
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
   gap: var(--pf-gap);
   height: 100%;
   min-height: 0;
   min-width: 0;
 }
 
-.pf-rail {
+.caos-wb-rail {
   min-width: 0;
   min-height: 0;
   overflow-y: auto;
@@ -34,11 +34,27 @@
   gap: 10px;
 }
 
-.pf-main {
+.caos-wb-main {
+  position: relative;
   min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+/* Keep the Focus affordance on the tab row instead of reserving a second navigation row.
+   This restores an extra 35px to the instrument at desktop sizes without hiding the control. */
+@media (min-width: 901px) {
+  .caos-wb-main > .caos-cw > .tabs > .tabs-slot {
+    position: absolute;
+    z-index: 5;
+    top: 0;
+    right: 0;
+    height: 42px;
+    display: flex;
+    align-items: center;
+  }
+  .caos-wb-main > .caos-cw > .tabs > .tabs-slot .pf-focus-enter { margin: 0; }
 }
 
 /* ADR-0071 rule 8: the instrument gets at least half an App route.
@@ -49,7 +65,8 @@
  * sized to its content at 359px and every descendant inherited that ceiling, leaving the stage at its
  * 260px min-height and 22 percent of the viewport while presence, pixels and no-scroll all passed.
  * Making the shell's wrapper a filling flex column is the fix; the tab panel alone was not. */
-.pf-main > .tabs {
+.caos-wb-main > .caos-cw > .tabs {
+  position: relative;
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -61,7 +78,7 @@
  * two-class `display:flex` beats it and every hidden panel comes back as a 76px empty box. Five of
  * them sat above the active panel, stealing 380px of the stage, and the symptom was a tab whose
  * content began two thirds of the way down an empty page. */
-.pf-main .tabpanel:not([hidden]),
+.caos-wb-main .tabpanel:not([hidden]),
 .pf-tabpanel:not([hidden]) {
   flex: 1 1 auto;
   min-height: 0;
@@ -71,12 +88,12 @@
   flex-direction: column;
 }
 
-.pf-main .tabpanel[hidden],
+.caos-wb-main .tabpanel[hidden],
 .pf-tabpanel[hidden] {
   display: none;
 }
 
-.pf-main .tabpanel > * {
+.caos-wb-main .tabpanel > * {
   min-height: 0;
 }
 
@@ -89,10 +106,12 @@
  *
  * Two things were wrong and both are fixed here: a row that clips its own labels, and a row that
  * changes size when you switch tabs. `flex: 0 0 auto` pins it to its content on every tab. */
-.pf-main > .tabs > .tablist {
+.caos-wb-main > .caos-cw > .tabs > .tablist {
   flex: 0 0 auto;
   min-height: 0;
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
 }
 
 /* ONE declaration. There were two, and the second silently dropped the first's 340px floor,
@@ -105,8 +124,8 @@
 }
 
 @media (max-width: 900px) {
-  .pf-layout { grid-template-columns: minmax(0, 1fr); }
-  .pf-rail { max-height: 44vh; }
+  .caos-wb { grid-template-columns: minmax(0, 1fr); }
+  .caos-wb-rail { max-height: 44vh; }
 }
 
 /* ---------- the 3D stage ---------- */
@@ -233,9 +252,14 @@
  * in-flow canvas fed the host its own height back and the pit profile grew to 1216px, leaving the
  * drawing a thin line at the bottom of an empty panel. The host takes a definite height from the
  * viewport and the canvas sits out of flow inside it. */
-.pf-canvas-host { position: relative; width: 100%; height: clamp(260px, 50vh, 480px); overflow: hidden; }
+.pf-canvas-host { position: relative; width: 100%; height: clamp(340px, 82.5vh, 660px); overflow: hidden; }
 .pf-canvas-host > canvas { position: absolute; inset: 0; }
+.pf-split--wide:has(.pf-canvas-host) > .pf-panel:has(.pf-canvas-host) { grid-column: 1 / -1; order: -1; }
+.tabpanel[data-panel="production"] .pf-split--wide > .pf-panel:first-child { grid-column: 1 / -1; }
+.tabpanel[data-panel="diagnostics"] .pf-split--wide > .pf-panel:has([data-testid="capacity-chart"]) { grid-column: 1 / -1; order: -1; }
+.tabpanel[data-panel="diagnostics"] .pf-split--wide > .pf-chart[data-testid="capacity-chart"] { grid-column: 1 / -1; order: -1; }
 .pf-chart { width: 100%; }
+.caos-wb-main .tabpanel[data-panel="production"] .pf-chart { width: calc(100% - 10px); }
 
 .pf-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
 .pf-table th, .pf-table td { border-bottom: 1px solid var(--color-border); padding: 5px 8px; text-align: right; }
@@ -275,6 +299,15 @@
  * is, which is the whole point of re-encoding it: the right edge is the certified bound, not the worst
  * method in the table. */
 .pf-mb-scale { padding-bottom: 2px; }
+.pf-method-chart { display: block; width: 100%; height: auto; min-height: 620px; color: var(--color-fg); }
+.pf-mc-axis { fill: var(--color-fg-subtle); font: 650 12px system-ui, sans-serif; letter-spacing: 0.06em; }
+.pf-mc-grid { stroke: var(--color-border); stroke-width: 1; stroke-dasharray: 3 5; }
+.pf-mc-tick { fill: var(--color-fg-faint); font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.pf-mc-method { fill: var(--color-fg); font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.pf-mc-value { fill: var(--color-fg-subtle); font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.pf-mc-track { fill: color-mix(in srgb, var(--color-fg-subtle) 12%, transparent); }
+.pf-mc-legend { fill: var(--color-fg-subtle); font: 11px system-ui, sans-serif; }
+.pf-mc-row:hover text { fill: var(--color-accent); }
 .pf-mb-ruler { background: none; height: 14px; overflow: visible; }
 .pf-mb-ruler i {
   position: absolute; top: 6px; width: 1px; height: 6px;
@@ -368,13 +401,13 @@
       one, which is why the visualization read as a thumbnail across the whole line. */
 .app-shell { height: 100dvh; min-height: 100dvh; overflow: hidden; }
 .app-shell > .page { flex: 1 1 auto; min-height: 0; display: flex; }
-.page-body.pf-layout { max-width: none; width: 100%; flex: 1 1 auto; min-height: 0;
+.page-body.wide.caos-wb { max-width: none; width: 100%; margin-inline: 0; flex: 1 1 auto; min-height: 0;
   padding: 1rem 1.25rem; align-items: stretch; }
 @media (min-width: 901px) and (max-width: 1350px) {
-  .pf-layout { --pf-rail: 19vw; }
-  .page-body.pf-layout { padding: 0.125rem 0.5rem; }
-  .pf-rail { gap: 6px; }
-  .pf-rail .pf-group { gap: 4px; padding-bottom: 6px; }
+  .caos-wb { --rail-w: clamp(180px, 16vw, 280px); }
+  .page-body.caos-wb { padding: 0.125rem 0.5rem; }
+  .caos-wb-rail { gap: 6px; }
+  .caos-wb-rail .pf-group { gap: 4px; padding-bottom: 6px; }
 }
 html, body { overflow-x: hidden; }
 
@@ -388,7 +421,12 @@ html, body { overflow-x: hidden; }
       ADR-0071 rule 1 says scrolling belongs INSIDE the container that owns long content: v1
       implemented the "not on the document" half and skipped the "inside the container" half.
       A prose route is any page-body that is NOT the app layout, so it gets the inner scroll. */
-main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
+.app-shell.fixed.contain > main.page:has(.page-body:not(.caos-wb):not(.caos-surface)) {
+  display: block;
+  overflow-y: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
 
 /* 2. The prose footer margin (3rem) is dead space in a viewport-filling app: measured as exactly the
       48px gap users saw between the content and the footer. */
@@ -397,7 +435,7 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
 /* 3. Containment. A flex or grid item defaults to `min-width: auto` and will not shrink below its
       content, so ONE nowrap row silently sizes the page wider than the screen (measured 1817px on a
       1600px viewport). Every ancestor of a scrollable row must be allowed to shrink. */
-.page-body.pf-layout > * { min-width: 0; max-width: 100%; }
+.page-body.caos-wb > * { min-width: 0; max-width: 100%; }
 .tabs, .tabpanel, .tablist { min-width: 0; max-width: 100%; }
 
 /* 4. Navigation chrome gets ONE row. `flex-wrap: wrap` let 12-to-18 tabs occupy two and three rows,
@@ -495,11 +533,11 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
  * collapsed and the obvious first guess is a render error.
  *
  * These blocks keep their natural height; the PANEL is what scrolls. */
-.pf-main .tabpanel:not([hidden]) .pf-scroll-x,
-.pf-main .tabpanel:not([hidden]) .pf-fig,
-.pf-main .tabpanel:not([hidden]) .pf-split,
-.pf-main .tabpanel:not([hidden]) .pf-panel,
-.pf-main .tabpanel:not([hidden]) .callout,
+.caos-wb-main .tabpanel:not([hidden]) .pf-scroll-x,
+.caos-wb-main .tabpanel:not([hidden]) .pf-fig,
+.caos-wb-main .tabpanel:not([hidden]) .pf-split,
+.caos-wb-main .tabpanel:not([hidden]) .pf-panel,
+.caos-wb-main .tabpanel:not([hidden]) .callout,
 .pf-tabpanel:not([hidden]) .pf-scroll-x,
 .pf-tabpanel:not([hidden]) .pf-fig {
   flex-shrink: 0;
@@ -510,6 +548,7 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
  * drawing near its design width and centre it; the caption keeps the full column so it still reads as
  * body text. */
 .pf-fig > svg { max-width: 760px; margin-inline: auto; }
+.caos-wb-main .tabpanel[data-panel="evidence"] .pf-fig > svg { max-width: 100%; }
 .pf-fig > figcaption { max-width: 860px; margin-inline: auto; }
 
 /* The bound table's NOTE column carries a sentence ("14 iterations, 109,760 nodes, compiled pricing,
@@ -542,30 +581,30 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
  *
  * One hairline between sections is enough.
  * --------------------------------------------------------------------------------------------- */
-.pf-rail .pf-group {
+.caos-wb-rail .pf-group {
   border: 0;
   border-radius: 0;
   border-bottom: 1px solid var(--color-border);
   padding: 0 0 11px;
   gap: 7px;
 }
-.pf-rail .pf-group:last-child { border-bottom: 0; padding-bottom: 0; }
-.pf-rail .pf-group > h4 { margin-bottom: 1px; }
-.pf-rail .pf-scenario { display: block; }
-.pf-rail .pf-scenario > summary { cursor: pointer; font-size: 0.72rem; font-weight: 700;
+.caos-wb-rail .pf-group:last-child { border-bottom: 0; padding-bottom: 0; }
+.caos-wb-rail .pf-group > h4 { margin-bottom: 1px; }
+.caos-wb-rail .pf-scenario { display: block; }
+.caos-wb-rail .pf-scenario > summary { cursor: pointer; font-size: 0.72rem; font-weight: 700;
   letter-spacing: 0.07rem; text-transform: uppercase; color: var(--color-fg-subtle); }
-.pf-rail .pf-scenario > summary::marker { color: var(--color-accent); }
-.pf-rail .pf-scenario[open] > summary { margin-bottom: 8px; }
+.caos-wb-rail .pf-scenario > summary::marker { color: var(--color-accent); }
+.caos-wb-rail .pf-scenario[open] > summary { margin-bottom: 8px; }
 
 /* The KPI readouts were boxes inside a box inside a box. A tint separates them from the rail perfectly
  * well and costs no border, no radius and no extra padding. */
-.pf-rail .pf-kpis { gap: 6px; grid-template-columns: 1fr 1fr; }
-.pf-rail .pf-kpi {
+.caos-wb-rail .pf-kpis { gap: 6px; grid-template-columns: 1fr 1fr; }
+.caos-wb-rail .pf-kpi {
   border: 0;
   background: color-mix(in srgb, var(--color-fg-subtle) 9%, transparent);
   padding: 6px 9px;
 }
-.pf-rail .pf-kpi b { font-size: 0.95rem; }
+.caos-wb-rail .pf-kpi b { font-size: 0.95rem; }
 
 /* The scenario facts: label left, value right, one tight row each. */
 .pf-kv { margin: 0; display: flex; flex-direction: column; gap: 0; }
@@ -584,7 +623,7 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
 .pf-declared { margin: 2px 0 0; }
 
 /* The case blurb is orientation, not reading matter: it should not out-weigh the control under it. */
-.pf-rail .pf-group > .pf-cap { line-height: 1.4; }
+.caos-wb-rail .pf-group > .pf-cap { line-height: 1.4; }
 
 /* The footer content is now the one-line provenance and one-line disclaimer ADR-0016 asks for, and it
  * is fully readable with nothing hidden. What was left was pure chrome: 24px of padding on every side
@@ -613,7 +652,7 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
  * roughly twice a readable measure.
  *
  * Only TEXT is capped. Tables and figures keep the full column, because a wide table wants the room.
- * The App route is a dashboard rather than prose and is excluded by the :not(.pf-layout).
+ * The App route is a dashboard rather than prose and is excluded by the :not(.caos-wb).
  *
  * The `.tabpanel` selectors are load-bearing and are the reason a first attempt at this did not work:
  * a content page that puts its prose inside tabs has no top-level paragraphs at all, so a rule written
@@ -622,7 +661,7 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
 /* The five reading pages (.pfd-page) are NOT capped here: they fill the width with prose beside its
  * figure, symbols and notes, and cap only their running text at a reading measure (content.css).
  * Capping the page at 1000px put a narrow column in the middle of a wide screen. */
-.page-body:not(.pf-layout):not(.pfd-page) {
+.page-body:not(.caos-wb):not(.caos-surface):not(.pfd-page) {
   max-width: 1000px;
   margin-inline: auto;
 }
@@ -633,34 +672,46 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
  * A child combinator is an assumption about markup depth, and these pages wrap prose at whatever depth
  * the section needed. This is safe precisely because `max-width` can only narrow: a paragraph already
  * inside a narrow panel is unaffected. */
-.page-body:not(.pf-layout) p,
-.page-body:not(.pf-layout) li,
-.page-body:not(.pf-layout) h2,
-.page-body:not(.pf-layout) h3,
-.page-body:not(.pf-layout) .callout,
-.page-body:not(.pf-layout) figcaption {
+.page-body:not(.caos-wb):not(.caos-surface) p,
+.page-body:not(.caos-wb):not(.caos-surface) li,
+.page-body:not(.caos-wb):not(.caos-surface) h2,
+.page-body:not(.caos-wb):not(.caos-surface) h3,
+.page-body:not(.caos-wb):not(.caos-surface) .callout,
+.page-body:not(.caos-wb):not(.caos-surface) figcaption {
   max-width: 78ch;
 }
+.page-body:not(.caos-wb):not(.caos-surface) p.lede { max-width: none; }
+/* The executive shell view is a full-width decision brief; its key statement and section lead
+   must use the available document column, while the technical prose below keeps a reading measure. */
+.page-body:not(.caos-wb):not(.caos-surface) .caos-exec-key,
+.page-body:not(.caos-wb):not(.caos-surface) .caos-exec-paragraph,
+.page-body:not(.caos-wb):not(.caos-surface) .caos-exec-sub,
+.page-body:not(.caos-wb):not(.caos-surface) .caos-exec-setting,
+.page-body:not(.caos-wb):not(.caos-surface) .caos-exec-interaction,
+.page-body:not(.caos-wb):not(.caos-surface) .caos-exec-status,
+.page-body:not(.caos-wb):not(.caos-surface) .caos-exec-handoff { max-width: none; }
+.caos-exec-fig[data-lang="en"] .pf-exec-es,
+.caos-exec-fig[data-lang="es"] .pf-exec-en { display: none; }
 
 /* Tables, figures and any explicit horizontal scroller keep the full column: a wide table wants the
  * room, and capping it would trade a readability win for a worse one. */
-.page-body:not(.pf-layout) table,
-.page-body:not(.pf-layout) figure,
-.page-body:not(.pf-layout) svg,
-.page-body:not(.pf-layout) canvas,
-.page-body:not(.pf-layout) [class*="scroll-x"] {
+.page-body:not(.caos-wb):not(.caos-surface) table,
+.page-body:not(.caos-wb):not(.caos-surface) figure,
+.page-body:not(.caos-wb):not(.caos-surface) svg,
+.page-body:not(.caos-wb):not(.caos-surface) canvas,
+.page-body:not(.caos-wb):not(.caos-surface) [class*="scroll-x"] {
   max-width: none;
 }
-.page-body:not(.pf-layout) table p,
-.page-body:not(.pf-layout) table li {
+.page-body:not(.caos-wb):not(.caos-surface) table p,
+.page-body:not(.caos-wb):not(.caos-surface) table li {
   max-width: none;
 }
 
 /* A sentence in a table cell must read from a straight left edge. Numeric tables right-align every
  * column but the first, which is right for numbers and wrong for prose: it gives the column a ragged
  * LEFT edge, which is the edge the eye returns to on every line. */
-.page-body:not(.pf-layout) table td.wrap,
-.page-body:not(.pf-layout) table th.wrap {
+.page-body:not(.caos-wb):not(.caos-surface) table td.wrap,
+.page-body:not(.caos-wb):not(.caos-surface) table th.wrap {
   text-align: left;
   white-space: normal;
 }
@@ -675,8 +726,8 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
  * Only paragraphs and list items. Safe for the dense parts of a dashboard for the same reason as
  * before: max-width can only narrow, so a short status readout is already inside the cap and is
  * unaffected, and tables, canvases, KPI grids and the rail are not paragraphs. */
-.page-body.pf-layout p,
-.page-body.pf-layout li {
+.page-body.caos-wb p,
+.page-body.caos-wb li {
   max-width: 78ch;
 }
 
@@ -684,27 +735,28 @@ main.page:has(> .page-body:not(.pf-layout)) { overflow-y: auto; min-height: 0; }
  * squeezed the 3D stage to 180px while the footer occupied a quarter of the screen. Let the page
  * grow vertically, reserve a real instrument height, and let the footer follow the work. */
 @media (max-width: 900px) {
+  .pf-method-chart { min-height: 0; }
   html, body, #root { height: auto; min-height: 100%; }
   .app-shell { height: auto; min-height: 100dvh; overflow: visible; }
   .app-shell > .page { display: block; flex: 0 0 auto; min-height: 0; }
-  main.page:has(> .page-body:not(.pf-layout)) { overflow: visible; }
-  .page-body.pf-layout { height: auto; min-height: 0; display: flex; flex-direction: column;
+  main.page:has(> .page-body:not(.caos-wb):not(.caos-surface)) { overflow: visible; }
+  .page-body.wide.caos-wb { width: 100%; max-width: none; margin: 0; height: auto; min-height: 0; display: flex; flex-direction: column;
     flex: 0 0 auto; padding: 0.75rem; }
-  .pf-rail { max-height: none; overflow: visible; flex: 0 0 auto; }
-  .pf-main { height: auto; min-height: max(62dvh, 500px); flex: 0 0 auto; }
-  .pf-main > .tabs { flex: 0 0 auto; }
-  .pf-main > .tabs > .tablist { overflow-x: auto; overflow-y: hidden; }
-  .pf-main .tabpanel:not([hidden]) { flex: 0 0 auto; overflow: visible; min-height: 440px; }
-  .pf-layout .pf-stagewrap { flex: 0 0 auto; min-height: 0; flex-direction: column; }
-  .pf-layout .pf-stage3d { flex: 0 0 440px; height: 440px; }
-  .pf-layout .pf-hud { position: static; max-width: none; order: 2; pointer-events: auto;
+  .caos-wb-rail { max-height: none; overflow: visible; flex: 0 0 auto; }
+  .caos-wb-main { height: auto; min-height: max(62dvh, 500px); flex: 0 0 auto; }
+  .caos-wb-main > .caos-cw > .tabs { flex: 0 0 auto; }
+  .caos-wb-main > .caos-cw > .tabs > .tablist { overflow-x: auto; overflow-y: hidden; }
+  .caos-wb-main .tabpanel:not([hidden]) { flex: 0 0 auto; overflow: visible; min-height: 440px; }
+  .caos-wb .pf-stagewrap { flex: 0 0 auto; min-height: 0; flex-direction: column; }
+  .caos-wb .pf-stage3d { flex: 0 0 440px; height: 440px; }
+  .caos-wb .pf-hud { position: static; max-width: none; order: 2; pointer-events: auto;
     margin-top: 8px; }
-  .pf-layout .pf-hud-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .pf-layout .pf-hud-row { flex-direction: column; gap: 1px; }
-  .pf-layout .pf-hud-val { min-width: 0; }
+  .caos-wb .pf-hud-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .caos-wb .pf-hud-row { flex-direction: column; gap: 1px; }
+  .caos-wb .pf-hud-val { min-width: 0; }
   .pf-stage3d canvas { touch-action: pan-y !important; }
-  .page-body:not(.pf-layout) figure,
-  .page-body:not(.pf-layout) .tabpanel { max-width: 100%; min-width: 0;
+  .page-body:not(.caos-wb):not(.caos-surface) figure,
+  .page-body:not(.caos-wb):not(.caos-surface) .tabpanel { max-width: 100%; min-width: 0;
     overflow-x: auto; overscroll-behavior-x: contain; }
   .app-shell .site-footer { flex: 0 0 auto; }
   .pf-focus { position: relative; inset: auto; display: flex; flex-direction: column;

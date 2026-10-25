@@ -1,6 +1,6 @@
 # Sliding-window scale: design
 
-Status: proposed. [Requirements](requirements.md) and [tasks](tasks.md).
+Status: proposed. [Proposal](proposal.md); this proposal has no approved implementation tasks.
 
 The current `oreblocks.sliding_window_schedule` builds a joint MILP for a
 three-period window plus one optimistic tail, freezes one period per slide,

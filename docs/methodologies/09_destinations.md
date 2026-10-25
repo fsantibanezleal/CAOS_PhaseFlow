@@ -187,5 +187,5 @@ is stated.
 
 `oreblocks.pcpsp_lp_bound(solution=True)`, `oreblocks.pcpsp_lagrangian_bound`,
 `PcpspBound.preferred_destination`, `oreblocks.restrict_destinations`, `oreblocks.lift_to_pcpsp`, `oreblocks.exact_destination_local_search`,
-`oreblocks.solve_opbsp_exact`, `oreblocks.lane_cutoffs` (engine 0.6.1); the three rungs in
+`oreblocks.solve_opbsp_exact`, `oreblocks.lane_cutoffs` (engine 0.6.3); the three rungs in
 `data-pipeline/pipeline/stages/solve.py`.
