@@ -4,7 +4,7 @@
  * exact pipeline. The numbers are read by the panels; the prose says what each comparison can and
  * cannot establish.
  */
-import type { TopicGroup } from './doc.tsx';
+import type { TopicGroup, Lang } from './doc.tsx';
 import { Algorithm4, BzLoop, DestinationRecut, ProblemInclusion, TopoSortWalk } from './figures/method.tsx';
 import { ClosureNetwork, LaneFidelity } from './figures/impl.tsx';
 import { BoundSummaryPanel } from './panels.tsx';
@@ -12,6 +12,25 @@ import {
   BestPerCasePanel, LiveParityPanel, NewmanCpitPanel, NewmanGapPanel, NewmanPcpspPanel, RealPitsPanel, RuntimePanel,
 } from './panels-bench.tsx';
 import { PreviewTimingTable } from './static-tables.tsx';
+import { useManifests, caseTitle } from './panels.tsx';
+import { fmtDuration } from '../lib/artifacts.ts';
+
+function RobustnessChart({ lang }: { lang: Lang }) {
+  const es = lang === 'es';
+  const data = useManifests();
+  if (!data || data === 'error') return <p>{es ? 'Cargando tiempos medidos…' : 'Loading measured runtimes…'}</p>;
+  const rows = data.manifests.filter((m) => m.bound_summary?.algorithm4_ms != null).slice(0, 10);
+  const max = Math.max(1, ...rows.map((m) => m.bound_summary!.algorithm4_ms!));
+  return <svg data-chart="bars" role="img" aria-label={es ? 'Tiempo medido del Algoritmo 4 por caso' : 'Measured Algorithm 4 runtime by case'} viewBox={`0 0 720 ${Math.max(120, 34 * rows.length + 42)}`}>
+    <title>{es ? 'Tiempo de pared por caso' : 'Wall time by case'}</title>
+    <desc>{es ? 'Milisegundos medidos en el horneado versionado; no compara hardware.' : 'Milliseconds measured in the versioned bake; not a hardware comparison.'}</desc>
+    {rows.map((m, i) => { const ms = m.bound_summary!.algorithm4_ms!; const y = 28 + i * 34; return <g key={m.case_id}>
+      <text x="8" y={y + 16} fontSize="12">{caseTitle(data.index, m.case_id, lang)}</text>
+      <rect x="245" y={y} width={Math.max(1, 430 * ms / max)} height="20" rx="3" fill="var(--color-accent, #3979c3)" />
+      <text x={Math.min(684, 252 + 430 * ms / max)} y={y + 15} fontSize="11">{fmtDuration(ms)}</text>
+    </g>; })}
+  </svg>;
+}
 
 export const BENCHMARK: TopicGroup[] = [
   {
@@ -141,6 +160,14 @@ export const BENCHMARK: TopicGroup[] = [
           },
         ],
         figure: { caption: { en: 'The Bienstock-Zuckerberg loop: master LP, closure pricing, new columns, until none prices out.', es: 'El ciclo de Bienstock-Zuckerberg: LP maestra, precios por clausura, columnas nuevas, hasta que ninguna mejora.' }, render: (lang) => <BzLoop lang={lang} /> },
+        table: {
+          head: [{ en: 'Loop stage', es: 'Etapa del ciclo' }, { en: 'Operation and stop condition', es: 'Operación y condición de parada' }],
+          rows: [
+            [{ en: 'Master', es: 'Maestro' }, { en: 'Solve the restricted LP over current closure columns', es: 'Resolver la LP restringida sobre las columnas de clausura actuales' }],
+            [{ en: 'Pricing', es: 'Precios' }, { en: 'Find a maximum closure from the dual-adjusted weights', es: 'Encontrar una clausura máxima con los pesos ajustados por duales' }],
+            [{ en: 'Stop', es: 'Parada' }, { en: 'No positive reduced value; master equals the joint LP', es: 'Ningún valor reducido positivo; el maestro iguala la LP conjunta' }],
+          ],
+        },
         equations: [
           { tex: String.raw`Z^{\text{BZ}}=Z^{\text{LP}}_{\text{CPIT}}\le Z^{\text{Alg4}}=\min_{r}\,Z^{\text{LP}}_{r}`, caption: { en: 'The joint LP is never looser than the best single-resource relaxation', es: 'La LP conjunta nunca es más floja que la mejor relajación de un recurso' } },
         ],
@@ -214,6 +241,41 @@ export const BENCHMARK: TopicGroup[] = [
         data: (lang) => <LiveParityPanel lang={lang} />,
         figure: { caption: { en: 'What each lane computes, and where they must agree.', es: 'Qué calcula cada carril, y dónde deben coincidir.' }, render: (lang) => <LaneFidelity lang={lang} />, wide: true },
         refs: ['chicoisne2012', 'picard1976'],
+      },
+    ],
+  },
+  {
+    id: 'robustness',
+    label: { en: 'Robustness and limits', es: 'Robustez y límites' },
+    topics: [
+      {
+        id: 'robustness',
+        title: { en: 'What the evidence does and does not stress', es: 'Qué estresa y qué no la evidencia' },
+        paragraphs: [
+          {
+            en: 'The committed cases vary deposit geometry, capacity regimes, horizon and discount settings, so the ladder is exercised against distinct scheduling pressures. Runtime and skip reasons are recorded per method and case; an absent result is not silently treated as a slow result or a zero gap. This supports comparisons within the measured bake and reveals where a method is not admitted.',
+            es: 'Los casos versionados varían la geometría del depósito, los regímenes de capacidad, el horizonte y los ajustes de descuento, por lo que la escalera se prueba frente a presiones de programación distintas. El tiempo de ejecución y las razones de omisión se registran por método y caso; un resultado ausente no se trata en silencio como un resultado lento o una brecha cero. Esto permite comparaciones dentro del horneado medido y muestra dónde no se admite un método.',
+          },
+          {
+            en: 'These artifacts are not a hardware scaling study: the bake does not claim cross-machine runtime stability, geological calibration from drill data, or a confidence interval over mine sites. The defensible conclusion is narrower: each displayed result passed the same feasibility, capacity and own-bound checks under the pinned engine environment, and the per-case runtime is descriptive evidence for that environment.',
+            es: 'Estos artefactos no son un estudio de escalamiento de hardware: el horneado no afirma estabilidad de tiempos entre máquinas, calibración geológica desde datos de sondajes ni un intervalo de confianza entre yacimientos. La conclusión defendible es más acotada: cada resultado mostrado pasó las mismas verificaciones de factibilidad, capacidad y cota propia bajo el entorno fijado del motor, y el tiempo por caso es evidencia descriptiva de ese entorno.',
+          },
+        ],
+        table: {
+          head: [{ en: 'Stress or limitation', es: 'Esfuerzo o límite' }, { en: 'Evidence boundary', es: 'Límite de evidencia' }],
+          rows: [
+            [{ en: 'Deposit geometry', es: 'Geometría del depósito' }, { en: 'Four seeded synthetic archetypes; not conditional drillhole simulations', es: 'Cuatro arquetipos sintéticos sembrados; no son simulaciones condicionales de sondajes' }],
+            [{ en: 'Capacity regime', es: 'Régimen de capacidad' }, { en: 'Mining-limited, plant-limited, discount and control cases from declared scenarios', es: 'Casos limitados por mina, por planta, descuento y control desde escenarios declarados' }],
+            [{ en: 'Runtime', es: 'Tiempo de ejecución' }, { en: 'Per-case measurement on the pinned bake environment; not a hardware scaling curve', es: 'Medición por caso en el entorno de horneado fijado; no es una curva de escalamiento de hardware' }],
+            [{ en: 'Source licence', es: 'Licencia de fuente' }, { en: 'MineLib values are aggregate-only; no source blocks or schedules redistributed', es: 'Los valores MineLib son solo agregados; no se redistribuyen bloques ni programas fuente' }],
+          ],
+        },
+        data: (lang) => <RuntimePanel lang={lang} />,
+        figure: { caption: { en: 'Measured Algorithm 4 wall time by committed case.', es: 'Tiempo de pared medido del Algoritmo 4 por caso versionado.' }, render: (lang) => <RobustnessChart lang={lang} />, wide: true },
+        limits: [
+          { en: 'Observed cases establish reproducible case-level results, not expected performance on an unobserved mine.', es: 'Los casos observados establecen resultados reproducibles por caso, no el rendimiento esperado en una mina no observada.' },
+        ],
+        refs: ['espinoza2013', 'huangfu2018'],
       },
     ],
   },

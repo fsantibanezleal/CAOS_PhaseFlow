@@ -87,6 +87,21 @@ the largest, and the narrowest mined run, next to the NPV that would otherwise f
 architecture, the frameworks and the guides; its measured tables are generated from the committed
 artifacts and checked in CI.
 
+## Areas
+
+| area | folder | status | what it holds |
+|---|---|---|---|
+| Web | [`frontend/`](frontend/) | active | Bilingual research workbench, Focus view, charts, and shell routes; build with `cd frontend && npm ci && npm run build`. |
+| API | [`app/`](app/) | dormant: no hosted service is in the product contract | PhaseFlow is a static research application and its reserved API boundary documents the current scope. |
+| Core pipelines | [`data-pipeline/`](data-pipeline/) | active | Case ingestion, scheduling methods, validation, and reproducible artifact baking. |
+| Packages | [oreblocks 0.6.3](https://pypi.org/project/oreblocks/0.6.3/) | active | Product methods remain in the local pipeline package; OreBlocks supplies the pinned optimization engine. |
+| Notebooks | [`notebooks/`](notebooks/) | active | Bilingual, executed research notebooks teach the problem, methods, and evidence. |
+| Data | [`data/`](data/) | active | Compact derived traces, manifests, metrics, and source provenance; raw MineLib data stays external. |
+| Contracts | [`docs/contracts/`](docs/contracts/) | active | Versioned trace and manifest schemas with producer and consumer gates. |
+| Documentation | [`docs/`](docs/) | active | Product wiki, design record, method dossiers, case studies, data contract, and operator guides. |
+| Tests and gates | [`tests/`](tests/) and [`scripts/`](scripts/) | active | Scientific, artifact, content, frontend, and release validation gates. |
+| Deploy | [`deploy/`](deploy/) | active | Static hosting target and deployment configuration; deploy through the repository workflow. |
+
 ## Run it
 
 Numbered scripts, in the order you run them. Each ends by printing the next command. Full detail,

@@ -2,12 +2,10 @@
 // the numbers that say how far this plan is from the certified bound.
 
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Maximize2 } from 'lucide-react';
-import { Callout, Cite, Tabs } from '@fasl-work/caos-app-shell';
+import { Callout, CaseWorkbench, Cite, Readout, Tabs, useWorkbenchState, type CaseDef } from '@fasl-work/caos-app-shell';
 import { fmtDuration, fmtInt, fmtMoney, fmtTonnes, dec, exp, overrunText, resourceLabel, rungLabel } from '../lib/artifacts.ts';
 import { largestOverrun } from '../lib/feasibility.ts';
-import type { CaseIndexEntry } from '../lib/contract.types.ts';
+import { loadManifest } from '../lib/artifacts.ts';
 import { stageLabel, useCase } from '../lib/useCase.ts';
 import { ScheduleView3D, type StageMode } from '../viz/ScheduleView3D.tsx';
 import { BenchPlan, PitProfile } from '../viz/SectionViews.tsx';
@@ -19,6 +17,28 @@ import { Absent, PanelBoundary } from '../viz/PanelBoundary.tsx';
 import { SensitivitySurface } from '../viz/Sensitivity.tsx';
 import { EngineText } from '../lib/EngineText.tsx';
 
+function SelectionReadout({ method, period, share, infeasible, provenance }: {
+  method: { npv: number; gapPct: number; rung: string };
+  period: { minedTonnes: number } | undefined;
+  share: number;
+  infeasible: number | null;
+  provenance: 'real' | 'synthetic';
+}) {
+  const state = useWorkbenchState();
+  return <Readout
+    title={{ en: 'Selected result', es: 'Resultado seleccionado' }}
+    lane="replay"
+    provenance={provenance}
+    dataKey={state?.stateKey}
+    items={[
+      { label: { en: 'Net present value', es: 'Valor presente neto' }, text: { en: fmtMoney(method.npv), es: fmtMoney(method.npv) }, unitless: true, hint: { en: 'Committed result for the selected method and case.', es: 'Resultado comprometido del método y caso seleccionados.' } },
+      { label: { en: infeasible == null ? 'Gap to bound' : 'Capacity overrun', es: infeasible == null ? 'Brecha a la cota' : 'Exceso de capacidad' }, text: { en: infeasible != null ? `+${dec(infeasible, 1)}%` : method.rung === 'beyond' ? 'another bound' : `${dec(method.gapPct, 2)}%`, es: infeasible != null ? `+${dec(infeasible, 1)}%` : method.rung === 'beyond' ? 'otra cota' : `${dec(method.gapPct, 2)}%` }, unitless: true, hint: { en: 'A gap is reported only for a feasible schedule against its matching CPIT bound; other problem families use another bound.', es: 'La brecha solo se informa para un plan factible frente a su cota CPIT; otras familias de problemas usan otra cota.' }, tone: infeasible == null ? 'neutral' : 'warn' },
+      { label: { en: 'Mined this period', es: 'Extraído este período' }, text: { en: fmtTonnes(period?.minedTonnes ?? 0), es: fmtTonnes(period?.minedTonnes ?? 0) }, unitless: true, hint: { en: 'Material assigned to the current period in the committed schedule.', es: 'Material asignado al período actual en el plan comprometido.' } },
+      { label: { en: 'Largest connected component', es: 'Componente conexa mayor' }, text: { en: `${dec(share * 100, 0)}%`, es: `${dec(share * 100, 0)}%` }, unitless: true, hint: { en: 'Share of this period’s mined blocks in its largest connected component.', es: 'Proporción de los bloques extraídos del período que pertenece a su componente conexa mayor.' } },
+    ]}
+  />;
+}
+
 export default function Tool() {
   const st = useCase();
   const [mode, setMode] = useState<StageMode>('schedule');
@@ -27,6 +47,24 @@ export default function Tool() {
   // entirely outside the pit: the panel drew a correct and completely empty rectangle.
   const [northing, setNorthing] = useState<number | null>(null);
   const [bench, setBench] = useState<number | null>(null);
+  const [caseDefs, setCaseDefs] = useState<CaseDef[]>([]);
+  useEffect(() => {
+    let active = true;
+    if (!st.index) return () => { active = false; };
+    Promise.all(st.index.cases.map(async (entry) => {
+      const manifest = await loadManifest(entry.case_id);
+      return {
+        id: entry.case_id,
+        name: entry.title[st.lang],
+        category: entry.category,
+        kind: manifest.real_or_synthetic,
+        anchor: manifest.published.best_known != null
+          ? `published ${manifest.published.problem ?? 'objective'} ${fmtMoney(manifest.published.best_known)}`
+          : undefined,
+      } satisfies CaseDef;
+    })).then((cases) => { if (active) setCaseDefs(cases); }).catch(() => { if (active) setCaseDefs([]); });
+    return () => { active = false; };
+  }, [st.index, st.lang]);
   // Static scenario facts begin folded in the viewport-locked workbench, so all actions can fit
   // without rail scrolling. They begin open in the vertically scrolling phone/tablet layout.
   const [scenarioOpen, setScenarioOpen] = useState(() => window.matchMedia('(max-width: 900px)').matches);
@@ -117,12 +155,17 @@ export default function Tool() {
       </div>
     </div>
   ) : (
-    <Callout variant="note" title={es ? 'Sin replay 3D para esta instancia' : 'No 3D replay for this instance'}>
-      {es
-        ? 'MineLib concede descarga académica y no redistribución, así que ningún plan por bloque de una instancia publicada entra en este repositorio. Este caso muestra números y gráficos reales, no un depósito distinto disfrazado.'
-        : 'MineLib grants an academic download and not redistribution, so no per-block schedule of a published instance enters this repository. This case shows real numbers and charts, not a different deposit dressed up as this one.'}
-      <div style={{ marginTop: 6 }}>{trace.instance.licence}</div>
-    </Callout>
+    <div className="pf-panel pf-replay-summary">
+      <h3>{es ? 'Programa agregado del caso publicado' : 'Aggregate schedule for the published case'}</h3>
+      <ProductionChart periods={method.periods} bound={method.bound} theme={st.theme} height={600} />
+      <Callout variant="note" title={es ? 'Sin replay 3D para esta instancia' : 'No 3D replay for this instance'}>
+        {es
+          ? 'MineLib concede descarga académica y no redistribución, así que ningún plan por bloque de una instancia publicada entra en este repositorio. Este caso muestra números y gráficos reales, no un depósito distinto disfrazado.'
+          : 'MineLib grants an academic download and not redistribution, so no per-block schedule of a published instance enters this repository. This case shows real numbers and charts, not a different deposit dressed up as this one.'}
+        <div style={{ marginTop: 6 }}>{trace.instance.licence}</div>
+      </Callout>
+      <p className="pf-cap pf-muted">{es ? 'Se muestran los agregados comprometidos por período; no se reconstruyen bloques que no se pueden redistribuir.' : 'Committed period aggregates are shown; blocks that cannot be redistributed are not reconstructed.'}</p>
+    </div>
   );
 
   const tabs = [
@@ -190,7 +233,7 @@ export default function Tool() {
         <div className="pf-split pf-split--wide">
           <div className="pf-panel">
             <h4>{es ? 'Producción y NPV acumulado' : 'Production and cumulative NPV'}</h4>
-            <ProductionChart periods={method.periods} bound={method.bound} theme={st.theme} />
+            <ProductionChart periods={method.periods} bound={method.bound} theme={st.theme} height={540} />
             <p className="pf-cap pf-muted">
               {es ? 'Barras de mineral y lastre por período, NPV acumulado en el eje derecho, y la cota certificada como referencia' : 'Ore and waste bars per period, cumulative NPV on the right axis, and the certified bound as the reference'} <Cite id="morales2015" />.
             </p>
@@ -228,7 +271,7 @@ export default function Tool() {
       label: es ? 'Métodos' : 'Methods',
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <MethodBars rows={trace.methods.filter((m) => !m.method.startsWith('destination-')).map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs }))} />
+          <MethodBars rows={trace.methods.filter((m) => !m.method.startsWith('destination-')).map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs, comparable: m.rung !== 'beyond' }))} />
           <Callout variant="note" title={es ? 'Como leer esto' : 'How to read this'}>
             {es
               ? 'La pista es la cota certificada CPIT usada para este caso y el relleno es el NPV capturado por cada plan CPIT. Lo rayado muestra la brecha a la misma escala. La cota no es un plan: BZ aproxima el óptimo LP dentro de su tolerancia cuando converge; en otros casos puede usarse la cota más holgada del Algoritmo 4. min-width es el mejor plan suavizado hacia un ancho operable con las mismas capacidades: un plan CPIT factible, dibujado con su brecha, que por regla no compite por el mejor: suavizar casi siempre cuesta valor y puede ganar un poco donde un bloque absorbido pasa a un período anterior. Los planes con destino resuelven PCPSP contra su propia cota y aparecen solo en la tabla.'
@@ -265,6 +308,21 @@ export default function Tool() {
       label: es ? 'Análisis' : 'Analysis',
       content: (
         <div className="pf-split pf-split--wide">
+          {!hasBlocks && (
+            <PanelBoundary title={es ? 'Capacidad por período' : 'Capacity by period'}>
+              <CapacityChart
+                periods={method.periods}
+                names={resources.map((r) => r.name)}
+                theme={st.theme}
+                height={600}
+              />
+              <p className="pf-cap pf-muted">
+                {es
+                  ? 'Diagnóstico construido con agregados comprometidos; no reconstruye bloques que la licencia no permite redistribuir.'
+                  : 'A diagnostic from committed aggregates; it does not reconstruct blocks the licence does not allow us to redistribute.'}
+              </p>
+            </PanelBoundary>
+          )}
           <PanelBoundary title={es ? 'Las dos cotas' : 'The two bounds'}>
             {trace.bound
               ? <BoundPanel bound={trace.bound} best={trace.methods.filter((m) => m.rung !== 'beyond').reduce((a, b) => (a.npv >= b.npv ? a : b))} es={es} />
@@ -319,6 +377,10 @@ export default function Tool() {
       label: es ? 'Controles' : 'Controls',
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <DegeneracyCollapse
+            setMatches={trace.controls.dualitySetMatches}
+            relativeError={exp(trace.controls.dualityBoundError, 1)}
+          />
           {/* A row of PASS chips is a CLAIM. This tab has to be where the claim is backed, so each
               control now states what it asserts, what was actually measured on THIS case, and only then
               the verdict. The four chips read PASS, 0.0e+0, PASS, PASS, with nothing tying the number to
@@ -370,8 +432,6 @@ export default function Tool() {
               </tbody>
             </table>
           </div>
-
-          <DegeneracyCollapse />
 
           <div className="pf-split pf-split--wide">
             <div className="pf-panel">
@@ -451,34 +511,35 @@ export default function Tool() {
     },
   ];
 
-  return (
-    <div className="page-body pf-layout">
+  const labels: Record<string, { en: string; es: string }> = {
+    stage: { en: '3D pit', es: 'Rajo 3D' },
+    sections: { en: 'Profile and plan', es: 'Perfil y planta' },
+    production: { en: 'Production', es: 'Producción' },
+    methods: { en: 'Methods', es: 'Métodos' },
+    analysis: { en: 'Analysis', es: 'Análisis' },
+    evidence: { en: 'Controls', es: 'Controles' },
+  };
+  const analysisTab = tabs.find((tab) => tab.id === 'analysis')!;
+  const evidenceTab = tabs.find((tab) => tab.id === 'evidence')!;
+  const workbenchGroups = [
+    ...tabs.filter((tab) => tab.id !== 'analysis' && tab.id !== 'evidence')
+      .map((tab) => ({ id: tab.id, label: labels[tab.id], content: tab.content })),
+    {
+      id: 'diagnostics',
+      label: { en: 'Diagnostics', es: 'Diagnóstico' },
+      content: <Tabs ariaLabel={es ? 'Análisis y controles' : 'Analysis and controls'} tabs={[
+        { id: analysisTab.id, label: labels.analysis[st.lang], content: analysisTab.content },
+        { id: evidenceTab.id, label: labels.evidence[st.lang], content: evidenceTab.content },
+      ]} />,
+    },
+  ];
+  const rail = (
       <aside className="pf-rail">
-        <div className="pf-group">
-          <h4>{es ? 'Caso' : 'Case'}</h4>
-          <select value={st.caseId} onChange={(e) => st.setCaseId(e.target.value)} aria-label={es ? 'Caso' : 'Case'}>
-            {Object.entries(
-              (st.index?.cases ?? []).reduce<Record<string, CaseIndexEntry[]>>((acc, c) => {
-                (acc[c.category] ??= []).push(c); return acc;
-              }, {}),
-            ).map(([cat, items]) => (
-              <optgroup key={cat} label={cat}>
-                {items.map((c) => <option key={c.case_id} value={c.case_id}>{es ? c.title.es : c.title.en}</option>)}
-              </optgroup>
-            ))}
-          </select>
-          <p className="pf-cap pf-muted">{es ? trace.role.es : trace.role.en}</p>
-          <Link to={`/focus/${st.caseId}`} className="pf-chip" data-testid="focus-entry">
-            <Maximize2 size={13} style={{ verticalAlign: -2, marginRight: 4 }} />
-            {es ? 'Abrir en vista enfocada' : 'Open in focus view'}
-          </Link>
-        </div>
-
         <div className="pf-group">
           <h4>{es ? 'Reloj de períodos' : 'Period clock'}</h4>
           <label className="pf-ctl">
             <span>{es ? 'período' : 'period'} <b>{st.cursor + 1} / {T}</b></span>
-            <input type="range" min={0} max={T - 1} value={st.cursor} onChange={(e) => { st.setPlaying(false); st.setCursor(+e.target.value); }} data-testid="cursor" />
+            <input type="range" min={0} max={T - 1} value={st.cursor} onChange={(e) => { st.setPlaying(false); st.setCursor(+e.target.value); }} data-testid="cursor" data-control="period" />
           </label>
           <div className="pf-row">
             <button className="pf-chip" onClick={() => st.setPlaying(!st.playing)} data-testid="play">
@@ -499,7 +560,7 @@ export default function Tool() {
 
         <div className="pf-group">
           <h4>{es ? 'Método' : 'Method'}</h4>
-          <select value={st.methodId} onChange={(e) => st.setMethodId(e.target.value)} aria-label={es ? 'Método' : 'Method'}>
+          <select value={st.methodId} onChange={(e) => st.setMethodId(e.target.value)} aria-label={es ? 'Método' : 'Method'} data-control="method">
             {trace.methods.map((m) => (
               <option key={m.method} value={m.method}>
                 {m.unreliable ? '! ' : ''}{m.method}{optionSuffix(m)}
@@ -546,16 +607,7 @@ export default function Tool() {
                 : 'Without the exact plan in this bake there is no guard: the measured rule is about the orebody and needs an archetype label a real deposit does not carry.'}
             </p>
           )}
-          <div className="pf-kpis">
-            <div className="pf-kpi"><b>{fmtMoney(method.npv)}</b><span>NPV</span></div>
-            {overrun ? (
-              <div className="pf-kpi pf-warn"><b>+{dec(overrun.pct, 1)}%</b><span>{es ? 'sobre capacidad' : 'over capacity'}</span></div>
-            ) : (
-              <div className="pf-kpi"><b>{method.rung === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</b><span>{es ? 'brecha' : 'gap'}</span></div>
-            )}
-            <div className="pf-kpi"><b>{fmtTonnes(p?.minedTonnes ?? 0)}</b><span>{es ? 'período' : 'this period'}</span></div>
-            <div className="pf-kpi"><b>{dec((100 * (p?.largestComponentShare ?? 0)), 0)}%</b><span>{es ? 'en el mayor' : 'in largest'}</span></div>
-          </div>
+          <SelectionReadout method={method} period={p} share={p?.largestComponentShare ?? 0} infeasible={overrun?.pct ?? null} provenance={manifest.real_or_synthetic} />
         </div>
 
         <details className="pf-group pf-scenario" open={scenarioOpen}
@@ -588,10 +640,21 @@ export default function Tool() {
           )}
         </details>
       </aside>
-
-      <section className="pf-main">
-        <Tabs tabs={tabs} ariaLabel={es ? 'Vistas' : 'Views'} />
-      </section>
-    </div>
+  );
+  return (
+    <CaseWorkbench
+      caseId={st.caseId}
+      source={manifest.real_or_synthetic}
+      controls={{ period: st.cursor, method: st.methodId, stageMode: mode, northing: northingAt, bench: benchAt }}
+      cases={{ cases: caseDefs, selectedId: st.caseId, onSelect: st.setCaseId, lang: st.lang, layout: 'select', deepLink: true }}
+      rail={rail}
+      railLabel={{ en: 'Case controls', es: 'Controles del caso' }}
+      groups={workbenchGroups}
+      context={{
+        label: { en: 'Case context', es: 'Contexto del caso' },
+        content: <div className="pf-panel"><h3>{es ? trace.title.es : trace.title.en}</h3><p>{es ? trace.role.es : trace.role.en}</p><p>{es ? 'Fuente:' : 'Source:'} {manifest.real_or_synthetic}; {fmtInt(manifest.instance.n_blocks, st.lang)} {es ? 'bloques' : 'blocks'}; {fmtInt(manifest.instance.n_precedence_arcs, st.lang)} {es ? 'arcos de precedencia' : 'precedence arcs'}.</p><p>{es ? 'Los resultados son los artefactos de este caso y sus controles declarados; los métodos que resuelven otro problema se informan por separado.' : 'Results are this case’s committed artifacts and declared controls; methods that solve a different problem are reported separately.'}</p></div>,
+      }}
+      focus
+    />
   );
 }

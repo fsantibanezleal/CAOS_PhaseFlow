@@ -1,7 +1,7 @@
 # scipy and HiGHS · 01 · Installation
 
 ```bash
-pip install -r requirements.txt     # oreblocks[milp]==0.6.1 brings scipy (HiGHS inside)
+pip install -r requirements-precompute.txt  # exact SciPy, highspy and ONNX pins for a full bake
 ```
 
 HiGHS is bundled in the scipy wheel: no separate install, no licence. Without scipy the engine still

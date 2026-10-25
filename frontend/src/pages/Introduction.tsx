@@ -1,12 +1,14 @@
-import { useShellLang } from '@fasl-work/caos-app-shell';
+import { ExecutiveView, Tabs, useShellLang } from '@fasl-work/caos-app-shell';
 import { DocPage, TopicGroups, type Lang } from '../content/doc.tsx';
 import { INTRODUCTION } from '../content/introduction.tsx';
+import executive from '../../../content/executive.json';
+import product from '../../../product.json';
 
 const T = {
   title: { en: 'Introduction', es: 'Introducción' },
   lede: {
-    en: 'PhaseFlow schedules an open pit: it decides in which year each block of an ultimate pit is mined, under slope precedence in every period and mining and processing capacity per period, and it judges every schedule by its distance to a certified upper bound. It is a research instrument on published and synthetic instances, not a production planning tool.',
-    es: 'PhaseFlow programa un rajo abierto: decide en qué año se extrae cada bloque de un pit final, bajo precedencia de talud en cada período y capacidad de mina y de planta por período, y juzga cada plan por su distancia a una cota superior certificada. Es un instrumento de investigación sobre instancias publicadas y sintéticas, no una herramienta de planificación de producción.',
+    en: 'The executive view frames the decision problem. The technical view explains the model, data, methods, and limits of the evidence.',
+    es: 'La vista ejecutiva enmarca el problema de decisión. La vista técnica explica el modelo, los datos, los métodos y los límites de la evidencia.',
   },
   sections: { en: 'Introduction sections', es: 'Secciones de la introducción' },
 };
@@ -14,8 +16,14 @@ const T = {
 export default function Introduction() {
   const lang = useShellLang() as Lang;
   return (
-    <DocPage title={T.title[lang]} lede={T.lede[lang]}>
-      <TopicGroups lang={lang} label={T.sections} groups={INTRODUCTION} />
+    <DocPage title={T.title[lang]} lede={`${product.tagline[lang]} ${T.lede[lang]}`}>
+      <Tabs
+        ariaLabel={lang === 'es' ? 'Vistas de la introducción' : 'Introduction views'}
+        tabs={[
+          { id: 'executive', label: lang === 'es' ? 'Ejecutiva' : 'Executive', content: <ExecutiveView data={executive} base={import.meta.env.BASE_URL} /> },
+          { id: 'technical', label: lang === 'es' ? 'Técnica' : 'Technical', content: <TopicGroups lang={lang} label={T.sections} page="introduction" groups={INTRODUCTION} /> },
+        ]}
+      />
     </DocPage>
   );
 }
