@@ -49,8 +49,12 @@ export default function Tool() {
   const [bench, setBench] = useState<number | null>(null);
   const [caseDefs, setCaseDefs] = useState<CaseDef[]>([]);
   const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight);
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
   useEffect(() => {
-    const resize = () => setViewportHeight(window.innerHeight);
+    const resize = () => {
+      setViewportHeight(window.innerHeight);
+      setViewportWidth(window.innerWidth);
+    };
     window.addEventListener('resize', resize);
     return () => window.removeEventListener('resize', resize);
   }, []);
@@ -84,10 +88,15 @@ export default function Tool() {
   // The aggregate chart is the only instrument available for cases whose source licence prohibits
   // per-block replay. Scale it with the viewport height so it remains a legible, dominant drawing on
   // a tall display without taking an unbounded height from its own ResizeObserver.
-  const replayChartHeight = Math.min(900, Math.max(600, Math.round(viewportHeight * 0.6)));
-  const productionChartHeight = viewportHeight >= 1200
-    ? Math.min(900, Math.round(viewportHeight * 0.58))
-    : Math.min(600, Math.max(520, viewportHeight - 265));
+  const compactChartHeight = Math.max(250, viewportHeight - 380);
+  const replayChartHeight = viewportWidth <= 760
+    ? compactChartHeight
+    : Math.min(900, Math.max(600, Math.round(viewportHeight * 0.6)));
+  const productionChartHeight = viewportWidth <= 760
+    ? compactChartHeight
+    : viewportHeight >= 1200
+      ? Math.min(900, Math.round(viewportHeight * 0.58))
+      : Math.min(600, Math.max(450, viewportHeight - 300));
 
   const dims = useMemo<[number, number, number]>(
     () => (st.trace ? [st.trace.instance.dims[0], st.trace.instance.dims[1], st.trace.instance.dims[2]] : [1, 1, 1]),
@@ -339,7 +348,7 @@ export default function Tool() {
                 periods={method.periods}
                 names={resources.map((r) => r.name)}
                 theme={st.theme}
-                height={800}
+                height={productionChartHeight}
               />
               <p className="pf-cap pf-muted">
                 {es
