@@ -61,6 +61,16 @@
   .pfd-page .subtabpanel { overflow-x: clip; }
   .pfd-page .subtabpanel > * { min-width: 0; max-width: 100%; }
 }
+/* At tablet widths the document scrolls as a whole and a vertical topic rail would consume the
+   reading column without staying alongside the section. Use the shell's single horizontal SubTabs
+   row from 900px down, preserving the full reading width and keeping the topic controls together. */
+@media (max-width: 900px) {
+  .pfd-page .subtabs-vertical { grid-template-columns: minmax(0, 1fr); }
+  .pfd-page .subtabs-vertical > .subtablist {
+    flex-direction: row; overflow-x: auto; overflow-y: hidden; position: static;
+  }
+  .pfd-page .subtabs-vertical .subtab { white-space: nowrap; }
+}
 @media (max-width: 600px) {
   .pfd-page .subtabs-vertical > .subtablist { flex-wrap: wrap; overflow: visible; }
   .pfd-page .subtabs-vertical .subtab { flex: 1 1 140px; white-space: normal; }

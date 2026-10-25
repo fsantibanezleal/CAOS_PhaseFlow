@@ -25,7 +25,7 @@ async function measure(page) {
 
 function check(rows, viewportHeight, label) {
   assert.equal(rows.length, 2, `${label}: both section drawings must exist`);
-  const ceiling = Math.max(340, Math.min(viewportHeight * 0.825, 660)) + 2;
+  const ceiling = Math.max(340, Math.min(viewportHeight * 0.825, 900)) + 2;
   for (const [i, row] of rows.entries()) {
     assert.ok(row.host >= 200 && row.host <= ceiling,
       `${label}: section ${i} host grew to ${row.host}px (ceiling ${ceiling}px)`);

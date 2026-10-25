@@ -179,7 +179,7 @@ export function CapacityChart({ periods, names, theme, height = 400 }: { periods
 }
 
 /** Spatial coherence: how many disconnected fragments each period is, and how big the largest is. */
-export function CoherenceChart({ periods, theme }: { periods: TracePeriod[]; theme: string }) {
+export function CoherenceChart({ periods, theme, height = 400 }: { periods: TracePeriod[]; theme: string; height?: number }) {
   const t = periods.map((p) => p.t);
   const comps = periods.map((p) => p.components);
   const share = periods.map((p) => 100 * p.largestComponentShare);
@@ -189,6 +189,7 @@ export function CoherenceChart({ periods, theme }: { periods: TracePeriod[]; the
       key={`coh-${theme}`}
       testId="coherence-chart"
       data={data}
+      height={height}
       build={(w, h) => ({
         width: w, height: h,
         scales: { x: { time: false }, y: {}, pct: { range: [0, 105] } },
@@ -209,7 +210,7 @@ export function CoherenceChart({ periods, theme }: { periods: TracePeriod[]; the
 }
 
 /** Head grade and strip ratio by period: does the schedule really pull high grade forward. */
-export function GradeStripChart({ periods, theme, gradeAvailable = true }: { periods: TracePeriod[]; theme: string; gradeAvailable?: boolean }) {
+export function GradeStripChart({ periods, theme, gradeAvailable = true, height = 400 }: { periods: TracePeriod[]; theme: string; gradeAvailable?: boolean; height?: number }) {
   const t = periods.map((p) => p.t);
   const g = periods.map((p) => p.headGrade * 100);
   const sr = periods.map((p) => p.stripRatio);
@@ -219,6 +220,7 @@ export function GradeStripChart({ periods, theme, gradeAvailable = true }: { per
       key={`gs-${theme}-${gradeAvailable}`}
       testId="grade-strip-chart"
       data={data}
+      height={height}
       build={(w, h) => ({
         width: w, height: h,
         scales: { x: { time: false }, ...(gradeAvailable ? { g: {} } : {}), sr: {} },

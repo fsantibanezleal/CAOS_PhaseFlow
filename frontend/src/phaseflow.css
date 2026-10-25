@@ -252,13 +252,29 @@
  * in-flow canvas fed the host its own height back and the pit profile grew to 1216px, leaving the
  * drawing a thin line at the bottom of an empty panel. The host takes a definite height from the
  * viewport and the canvas sits out of flow inside it. */
-.pf-canvas-host { position: relative; width: 100%; height: clamp(340px, 82.5vh, 660px); overflow: hidden; }
+.pf-canvas-host { position: relative; width: 100%; height: clamp(340px, 82.5vh, 900px); overflow: hidden; }
+.tabpanel[data-panel="diagnostics"] .pf-canvas-host { height: clamp(550px, 75vh, 720px); }
 .pf-canvas-host > canvas { position: absolute; inset: 0; }
 .pf-split--wide:has(.pf-canvas-host) > .pf-panel:has(.pf-canvas-host) { grid-column: 1 / -1; order: -1; }
 .tabpanel[data-panel="production"] .pf-split--wide > .pf-panel:first-child { grid-column: 1 / -1; }
 .tabpanel[data-panel="diagnostics"] .pf-split--wide > .pf-panel:has([data-testid="capacity-chart"]) { grid-column: 1 / -1; order: -1; }
 .tabpanel[data-panel="diagnostics"] .pf-split--wide > .pf-chart[data-testid="capacity-chart"] { grid-column: 1 / -1; order: -1; }
+.tabpanel[data-panel="diagnostics"] .tabpanel[data-panel="analysis"] .pf-split--wide > .pf-panel[data-testid="bound-panel"] { grid-column: 1 / -1; }
 .pf-chart { width: 100%; }
+/* Let uPlot's inline legend span the plot and wrap long bilingual names inside their cells while
+   retaining the library's native table layout. */
+.pf-chart table.u-legend.u-inline { width: 100%; max-width: 100%; }
+.pf-chart table.u-legend.u-inline tbody { display: block; width: 100%; text-align: center; }
+.pf-chart table.u-legend.u-inline tr.u-series {
+  width: 20%; max-width: 20%; white-space: normal; vertical-align: top; box-sizing: border-box;
+  padding: 5px 4px; border: 1px solid var(--color-border); border-radius: 6px;
+  background: var(--color-surface-2, #f1f4f8);
+}
+.pf-chart table.u-legend.u-inline .u-label { white-space: normal; overflow-wrap: anywhere; text-align: center; font-size: 1rem; }
+@media (min-width: 1800px) {
+  .pf-chart table.u-legend.u-inline .u-label { font-size: 1.3rem; }
+  .pf-panel .pf-bound-table th, .pf-panel .pf-bound-table td { padding: 18px 14px; font-size: 1.15rem; line-height: 1.55; }
+}
 .caos-wb-main .tabpanel[data-panel="production"] .pf-chart { width: calc(100% - 10px); }
 
 .pf-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
@@ -353,10 +369,12 @@
  * empty page underneath. Two columns give each chart 600x300 and use the height the tab already
  * has. ADR-0071 rule 8 is about the INSTRUMENT filling its route, and a row of postage stamps above
  * an empty half-page satisfies the letter of it and none of the point. */
-.pf-split--wide { grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr)); align-content: start; }
+.pf-split--wide { grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
+@media (max-width: 1200px) { .pf-split--wide { grid-template-columns: minmax(0, 1fr); } }
 .pf-split > * { min-width: 0; }
 .pf-panel { border: 1px solid var(--color-border); border-radius: 8px; padding: 10px; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
 .pf-panel > h4 { margin: 0; font-size: 0.78rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--color-fg-subtle); }
+.pf-panel > .pf-chart + .pf-cap { margin-block: 6px 0; }
 
 .pf-badge { display: inline-block; border-radius: 999px; padding: 1px 8px; font-size: 0.68rem; letter-spacing: 0.05em; text-transform: uppercase; border: 1px solid var(--color-border); }
 .pf-badge.live { color: var(--color-good, #3fb950); border-color: currentColor; }
@@ -475,6 +493,9 @@ html, body { overflow-x: hidden; }
 .pf-tabmenu button:hover { background: color-mix(in srgb, var(--color-accent) 14%, transparent); color: var(--color-accent); }
 .pf-tabmenu button.on { color: var(--color-accent); font-weight: 700; }
 .pf-tabpanel { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 4px; }
+@media (min-width: 901px) {
+  .caos-wb-main .tabpanel .pf-tabpanel:not([hidden]) { flex: 0 0 auto; min-height: 0; overflow: visible; }
+}
 
 /* ADR-0070 entry control. Without a visible control in the App the focus route is an orphan: it
    passes route tests, ships in the CHANGELOG, and no user ever reaches it. */
@@ -524,7 +545,7 @@ html, body { overflow-x: hidden; }
 .pf-facts td:last-child { text-align: right; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
 /* The range plot inherits the page colour; it must never be taller than a panel wants to be. */
-.pf-riskplot { max-height: 320px; }
+.pf-riskplot { max-height: 320px; flex: none; }
 
 /* CONTENT BLOCKS IN A SCROLLING TAB PANEL MUST NOT SHRINK.
  *
@@ -545,6 +566,7 @@ html, body { overflow-x: hidden; }
 .caos-wb-main .tabpanel:not([hidden]) .pf-fig,
 .caos-wb-main .tabpanel:not([hidden]) .pf-split,
 .caos-wb-main .tabpanel:not([hidden]) .pf-panel,
+.caos-wb-main .tabpanel:not([hidden]) .pf-chart,
 .caos-wb-main .tabpanel:not([hidden]) .callout,
 .pf-tabpanel:not([hidden]) .pf-scroll-x,
 .pf-tabpanel:not([hidden]) .pf-fig {
@@ -564,6 +586,8 @@ html, body { overflow-x: hidden; }
  * was allotted about 9ch and wrapped into an eight-line cell, which made one row taller than the four
  * numeric columns beside it put together. Give the sentence the room it needs and pin the numbers. */
 .pf-bound-table { table-layout: fixed; width: 100%; }
+.tabpanel:not([hidden]) .pf-bound-table { flex: 0 0 auto; }
+.tabpanel:not([hidden]) .pf-scroll-x:has(.pf-bound-table) { flex: 0 0 auto; min-height: max-content; }
 .pf-bound-table th:nth-child(1), .pf-bound-table td:nth-child(1) { width: 26%; white-space: normal; }
 .pf-bound-table th:nth-child(2), .pf-bound-table td:nth-child(2) { width: 11%; }
 .pf-bound-table th:nth-child(3), .pf-bound-table td:nth-child(3) { width: 12%; }
@@ -747,7 +771,11 @@ html, body { overflow-x: hidden; }
   html, body, #root { height: auto; min-height: 100%; }
   .app-shell { height: auto; min-height: 100dvh; overflow: visible; }
   .app-shell > .page { display: block; flex: 0 0 auto; min-height: 0; }
-  main.page:has(> .page-body:not(.caos-wb):not(.caos-surface)) { overflow: visible; }
+  /* Match the shell's fixed.contain selector specificity: prose routes need document scrolling at
+     tablet widths so tall tab panels can be brought below the sticky header by pointer navigation. */
+  .app-shell.fixed.contain > main.page:has(.page-body:not(.caos-wb):not(.caos-surface)) {
+    overflow-y: visible;
+  }
   .page-body.wide.caos-wb { width: 100%; max-width: none; margin: 0; height: auto; min-height: 0; display: flex; flex-direction: column;
     flex: 0 0 auto; padding: 0.75rem; }
   .caos-wb-rail { max-height: none; overflow: visible; flex: 0 0 auto; }
@@ -755,6 +783,19 @@ html, body { overflow-x: hidden; }
   .caos-wb-main > .caos-cw > .tabs { flex: 0 0 auto; }
   .caos-wb-main > .caos-cw > .tabs > .tablist { overflow-x: auto; overflow-y: hidden; }
   .caos-wb-main .tabpanel:not([hidden]) { flex: 0 0 auto; overflow: visible; min-height: 440px; }
+  .caos-wb-main .tabpanel .tabs > .tablist { flex: 0 0 auto; min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+  /* The two-row compact header remains sticky. When a reader or keyboard navigation brings a tall
+     tab panel into view, keep its leading edge below that header so its tabpanel target is reachable. */
+  .caos-wb-main .tabpanel:not([hidden]), .pf-tabpanel:not([hidden]),
+  .pfd-page .subtabpanel:not([hidden]) { scroll-margin-block-start: 104px; }
+  /* A tabindex=0 tabpanel is itself a pointer target. Keep its box within the tablet viewport and
+     let the panel own long-content scrolling; a 1,000px panel cannot fit below the sticky header. */
+  .page-body:not(.caos-wb):not(.caos-surface) .tabpanel:not([hidden]),
+  .page-body.caos-wb .caos-wb-main .tabpanel:not([hidden]),
+  .pfd-page .subtabpanel:not([hidden]) {
+    max-height: calc(100dvh - 160px);
+    overflow-y: auto;
+  }
   .caos-wb .pf-stagewrap { flex: 0 0 auto; min-height: 0; flex-direction: column; }
   .caos-wb .pf-stage3d { flex: 0 0 440px; height: 440px; }
   .caos-wb .pf-hud { position: static; max-width: none; order: 2; pointer-events: auto;
@@ -763,9 +804,12 @@ html, body { overflow-x: hidden; }
   .caos-wb .pf-hud-row { flex-direction: column; gap: 1px; }
   .caos-wb .pf-hud-val { min-width: 0; }
   .pf-stage3d canvas { touch-action: pan-y !important; }
-  .page-body:not(.caos-wb):not(.caos-surface) figure,
-  .page-body:not(.caos-wb):not(.caos-surface) .tabpanel { max-width: 100%; min-width: 0;
+  /* Keep horizontal scrolling at the actual wide figure. Making the whole top-level tab panel an
+     overflow scroller traps the nested vertical SubTabs' sticky rail in a box that never scrolls
+     vertically; G12 reproduced the rail disappearing from every long reading section at 768px. */
+  .page-body:not(.caos-wb):not(.caos-surface) figure { max-width: 100%; min-width: 0;
     overflow-x: auto; overscroll-behavior-x: contain; }
+  .page-body:not(.caos-wb):not(.caos-surface) .tabpanel { max-width: 100%; min-width: 0; }
   .app-shell .site-footer { flex: 0 0 auto; }
   .pf-focus { position: relative; inset: auto; display: flex; flex-direction: column;
     min-height: 100dvh; height: auto; overflow: visible; }
