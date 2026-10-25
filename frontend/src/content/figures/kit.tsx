@@ -7,7 +7,9 @@
 import type { ReactNode } from 'react';
 
 export type Lang = 'en' | 'es';
-export const tr = (lang: Lang, en: string, es: string) => (lang === 'es' ? es : en);
+export const tr = (lang: Lang, en: string, es: string) => lang === 'es'
+  ? es.replace(/(?<![\w.])(-?\d+)\.(\d+)(?=(?:[eE][+-]?\d+|\s*%|\s|[,)\]}]|$))/g, '$1,$2')
+  : en;
 
 export function Svg({ vb, label, children, wide }: { vb: string; label: string; children: ReactNode; wide?: boolean }) {
   const id = `pfa-${label.length}-${vb.replace(/\s+/g, '')}`;

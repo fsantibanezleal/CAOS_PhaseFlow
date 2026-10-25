@@ -4,7 +4,7 @@ import { Svg, tr, type Lang } from './kit.tsx';
 const NAMES = [
   { en: 'Algorithm 4 bound', es: 'cota Algoritmo 4' },
   { en: 'joint CPIT LP', es: 'LP CPIT conjunta' },
-  { en: 'integer optimum (external AMPL solve)', es: 'óptimo entero (resolución externa AMPL)' },
+  { en: 'external integer optimum (AMPL)', es: 'óptimo entero externo (AMPL)' },
   { en: 'best plan here', es: 'mejor plan aquí' },
 ];
 
@@ -28,7 +28,7 @@ export function GapLadderFigure({ lang, levels, planMethod }: { lang: Lang; leve
   ];
   // the two top levels are close on newman1; spread their labels so they never overlap
   const labelY = levels.map((v) => y(v) + 4);
-  if (labelY[1] - labelY[0] < 14) { labelY[0] = labelY[1] - 14; }
+  if (labelY[1] - labelY[0] < 20) { labelY[0] = labelY[1] - 20; }
   const gapLp = (levels[1] - levels[3]) / levels[1];
   const loss = (levels[2] - levels[3]) / levels[2];
   return (

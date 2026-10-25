@@ -17,5 +17,18 @@ export default defineConfig({
   base: '/',
   plugins: [react()],
   define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(version) },
-  build: { chunkSizeWarningLimit: 1200 },
+  resolve: { dedupe: ['react', 'react-dom', 'react-router'] },
+  build: {
+    chunkSizeWarningLimit: 1200,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'react-vendor', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/, priority: 20, includeDependenciesRecursively: false },
+            { name: 'math-vendor', test: /node_modules[\\/]katex[\\/]/, priority: 10, includeDependenciesRecursively: false },
+          ],
+        },
+      },
+    },
+  },
 });

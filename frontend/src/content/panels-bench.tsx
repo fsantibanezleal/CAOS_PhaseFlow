@@ -341,13 +341,13 @@ export function LiveParityPanel({ lang }: { lang: Lang }) {
   const rel = (r: ParityRow) => (r.browser == null || r.baked == null ? null : r.baked === 0 ? Math.abs(r.browser) : Math.abs(r.browser - r.baked) / Math.abs(r.baked));
   return (
     <div className="pfd-panel" data-testid="live-parity">
-      <div className="pfd-controls">
+      <div className="pfd-controls" data-control-group="live-parity">
         <label>{es ? 'caso' : 'case'}{' '}
-          <select value={caseId} onChange={(e) => { setCaseId(e.target.value); setState('idle'); setRows([]); setMeta(null); }}>
+          <select value={caseId} onChange={(e) => { setCaseId(e.target.value); setState('idle'); setRows([]); setMeta(null); }} aria-label={es ? 'Caso para verificar' : 'Case to verify'} data-control="case">
             {live.map((m) => <option key={m.case_id} value={m.case_id}>{caseTitle(data.index, m.case_id, lang)} ({fmtInt(m.instance.n_blocks, lang)})</option>)}
           </select>
         </label>
-        <button className="pf-chip" onClick={run} disabled={state === 'running'} data-testid="live-parity-run">
+        <button className="pf-chip" onClick={run} disabled={state === 'running'} data-testid="live-parity-run" data-control="run">
           {state === 'running' ? (es ? 'resolviendo en este navegador...' : 'solving in this browser...') : (es ? 'resolver en este navegador' : 'solve in this browser')}
         </button>
         {meta && <span className="pfd-muted">{es ? `${timeTxt(meta.ms)} en total, cota ${timeTxt(meta.boundMs)}; bloques en desacuerdo sobre el pit: ${meta.mismatched}` : `${timeTxt(meta.ms)} in all, bound ${timeTxt(meta.boundMs)}; blocks disagreeing on the pit: ${meta.mismatched}`}</span>}
