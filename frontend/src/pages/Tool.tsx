@@ -2,7 +2,7 @@
 // the numbers that say how far this plan is from the certified bound.
 
 import { useEffect, useMemo, useState } from 'react';
-import { Callout, CaseWorkbench, Cite, Readout, Tabs, useWorkbenchState, type CaseDef } from '@fasl-work/caos-app-shell';
+import { Callout, CaseWorkbench, Cite, Readout, SubTabs, Tabs, useWorkbenchState, type CaseDef } from '@fasl-work/caos-app-shell';
 import { fmtDuration, fmtInt, fmtMoney, fmtTonnes, dec, exp, overrunText, resourceLabel, rungLabel } from '../lib/artifacts.ts';
 import { largestOverrun } from '../lib/feasibility.ts';
 import { loadManifest } from '../lib/artifacts.ts';
@@ -48,6 +48,12 @@ export default function Tool() {
   const [northing, setNorthing] = useState<number | null>(null);
   const [bench, setBench] = useState<number | null>(null);
   const [caseDefs, setCaseDefs] = useState<CaseDef[]>([]);
+  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight);
+  useEffect(() => {
+    const resize = () => setViewportHeight(window.innerHeight);
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, []);
   useEffect(() => {
     let active = true;
     if (!st.index) return () => { active = false; };
@@ -75,6 +81,13 @@ export default function Tool() {
     return () => stacked.removeEventListener('change', resize);
   }, []);
   const es = st.lang === 'es';
+  // The aggregate chart is the only instrument available for cases whose source licence prohibits
+  // per-block replay. Scale it with the viewport height so it remains a legible, dominant drawing on
+  // a tall display without taking an unbounded height from its own ResizeObserver.
+  const replayChartHeight = Math.min(900, Math.max(600, Math.round(viewportHeight * 0.6)));
+  const productionChartHeight = viewportHeight >= 1200
+    ? Math.min(900, Math.round(viewportHeight * 0.58))
+    : Math.min(600, Math.max(520, viewportHeight - 265));
 
   const dims = useMemo<[number, number, number]>(
     () => (st.trace ? [st.trace.instance.dims[0], st.trace.instance.dims[1], st.trace.instance.dims[2]] : [1, 1, 1]),
@@ -157,7 +170,7 @@ export default function Tool() {
   ) : (
     <div className="pf-panel pf-replay-summary">
       <h3>{es ? 'Programa agregado del caso publicado' : 'Aggregate schedule for the published case'}</h3>
-      <ProductionChart periods={method.periods} bound={method.bound} theme={st.theme} height={600} />
+      <ProductionChart periods={method.periods} bound={method.bound} theme={st.theme} height={replayChartHeight} />
       <Callout variant="note" title={es ? 'Sin replay 3D para esta instancia' : 'No 3D replay for this instance'}>
         {es
           ? 'MineLib concede descarga académica y no redistribución, así que ningún plan por bloque de una instancia publicada entra en este repositorio. Este caso muestra números y gráficos reales, no un depósito distinto disfrazado.'
@@ -230,40 +243,52 @@ export default function Tool() {
       id: 'production',
       label: es ? 'Producción y NPV' : 'Production and NPV',
       content: (
-        <div className="pf-split pf-split--wide">
-          <div className="pf-panel">
-            <h4>{es ? 'Producción y NPV acumulado' : 'Production and cumulative NPV'}</h4>
-            <ProductionChart periods={method.periods} bound={method.bound} theme={st.theme} height={540} />
-            <p className="pf-cap pf-muted">
-              {es ? 'Barras de mineral y lastre por período, NPV acumulado en el eje derecho, y la cota certificada como referencia' : 'Ore and waste bars per period, cumulative NPV on the right axis, and the certified bound as the reference'} <Cite id="morales2015" />.
-            </p>
-          </div>
-          <div className="pf-panel">
-            <h4>{es ? 'Uso de capacidad' : 'Capacity utilisation'}</h4>
-            <CapacityChart periods={method.periods} names={trace.scenario.resources.map((r) => resourceLabel(r.name))} theme={st.theme} />
-            <p className="pf-cap pf-muted">
-              {es ? 'Qué restricción limita en cada año. Una capacidad que nunca llega a 100% no está limitando nada.' : 'Which constraint binds in each year. A capacity that never reaches 100 percent is not limiting anything.'}
-            </p>
-          </div>
-          <div className="pf-panel">
-            <h4>{trace.instance.gradeSource
-              ? (es ? 'Ley de cabeza y razón lastre-mineral' : 'Head grade and strip ratio')
-              : (es ? 'Razón lastre-mineral' : 'Strip ratio')}</h4>
-            <GradeStripChart periods={method.periods} theme={st.theme} gradeAvailable={Boolean(trace.instance.gradeSource)} />
-            <p className="pf-cap pf-muted">
-              {trace.instance.gradeSource
-                ? (es ? 'La ley procede del modelo de bloques o de la semilla sintética. El descuento puede adelantar mineral de mayor ley; la curva permite verificarlo.' : `Source grade: ${trace.instance.gradeSource}. Discounting can pull higher grade forward; the curve lets you check.`)
-                : (es ? 'La fuente MineLib no proporciona ley por bloque para este caso. Se muestra solo la razón lastre-mineral.' : 'The MineLib source has no block grade for this case. Only strip ratio is shown.')}
-            </p>
-          </div>
-          <div className="pf-panel">
-            <h4>{es ? 'Coherencia espacial' : 'Spatial coherence'}</h4>
-            <CoherenceChart periods={method.periods} theme={st.theme} />
-            <p className="pf-cap pf-muted">
-              {es ? 'Componentes conexas por período y la fracción en la mayor. Chicoisne et al. predicen que un plan por bloque se dispersa; esto lo mide en vez de suponerlo' : 'Connected components per period and the share in the largest. Chicoisne et al. predict a block-level schedule scatters; this measures it instead of assuming'} <Cite id="chicoisne2012" />.
-            </p>
-          </div>
-        </div>
+        <SubTabs ariaLabel={es ? 'Vistas de producción' : 'Production views'} tabs={[
+          {
+            id: 'volumes-value', label: es ? 'Volúmenes y valor' : 'Volumes and value',
+            content: <div className="pf-panel">
+              <h4>{es ? 'Producción y NPV acumulado' : 'Production and cumulative NPV'}</h4>
+              <ProductionChart periods={method.periods} bound={method.bound} theme={st.theme} height={productionChartHeight} />
+              <p className="pf-cap pf-muted">
+                {es ? 'Barras de mineral y lastre por período, NPV acumulado en el eje derecho, y la cota certificada como referencia' : 'Ore and waste bars per period, cumulative NPV on the right axis, and the certified bound as the reference'} <Cite id="morales2015" />.
+              </p>
+            </div>,
+          },
+          {
+            id: 'capacity', label: es ? 'Capacidad' : 'Capacity',
+            content: <div className="pf-panel">
+              <h4>{es ? 'Uso de capacidad' : 'Capacity utilisation'}</h4>
+              <CapacityChart periods={method.periods} names={trace.scenario.resources.map((r) => resourceLabel(r.name))} theme={st.theme} height={productionChartHeight} />
+              <p className="pf-cap pf-muted">
+                {es ? 'Qué restricción limita en cada año. Una capacidad que nunca llega a 100% no está limitando nada.' : 'Which constraint binds in each year. A capacity that never reaches 100 percent is not limiting anything.'}
+              </p>
+            </div>,
+          },
+          {
+            id: 'grade-strip', label: es ? 'Ley y razón' : 'Grade and strip ratio',
+            content: <div className="pf-panel">
+              <h4>{trace.instance.gradeSource
+                ? (es ? 'Ley de cabeza y razón lastre-mineral' : 'Head grade and strip ratio')
+                : (es ? 'Razón lastre-mineral' : 'Strip ratio')}</h4>
+              <GradeStripChart periods={method.periods} theme={st.theme} gradeAvailable={Boolean(trace.instance.gradeSource)} height={productionChartHeight} />
+              <p className="pf-cap pf-muted">
+                {trace.instance.gradeSource
+                  ? (es ? 'La ley procede del modelo de bloques o de la semilla sintética. El descuento puede adelantar mineral de mayor ley; la curva permite verificarlo.' : `Source grade: ${trace.instance.gradeSource}. Discounting can pull higher grade forward; the curve lets you check.`)
+                  : (es ? 'La fuente MineLib no proporciona ley por bloque para este caso. Se muestra solo la razón lastre-mineral.' : 'The MineLib source has no block grade for this case. Only strip ratio is shown.')}
+              </p>
+            </div>,
+          },
+          {
+            id: 'spatial-coherence', label: es ? 'Coherencia espacial' : 'Spatial coherence',
+            content: <div className="pf-panel">
+              <h4>{es ? 'Coherencia espacial' : 'Spatial coherence'}</h4>
+              <CoherenceChart periods={method.periods} theme={st.theme} height={productionChartHeight} />
+              <p className="pf-cap pf-muted">
+                {es ? 'Componentes conexas por período y la fracción en la mayor. Chicoisne et al. predicen que un plan por bloque se dispersa; esto lo mide en vez de suponerlo' : 'Connected components per period and the share in the largest. Chicoisne et al. predict a block-level schedule scatters; this measures it instead of assuming'} <Cite id="chicoisne2012" />.
+              </p>
+            </div>,
+          },
+        ]} />
       ),
     },
     {
@@ -314,7 +339,7 @@ export default function Tool() {
                 periods={method.periods}
                 names={resources.map((r) => r.name)}
                 theme={st.theme}
-                height={600}
+                height={800}
               />
               <p className="pf-cap pf-muted">
                 {es
