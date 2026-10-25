@@ -57,7 +57,7 @@ export function BoundPanel({ bound, best, es }: { bound: BoundReport; best: Trac
                   : bound.joint_error
                     ? bound.joint_error
                     : bound.joint_note
-                      ? bound.joint_note
+                      ? <EngineText text={bound.joint_note} />
                     : `${bound.joint_iterations} ${es ? 'iteraciones' : 'iterations'}, ${fmtInt(bound.joint_nodes ?? 0, es ? 'es' : 'en')} ${es ? 'nodos' : 'nodes'}${
                         bound.joint_solver === 'scipy-maxflow'
                           ? es
