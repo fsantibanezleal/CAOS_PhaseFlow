@@ -404,10 +404,18 @@
 .page-body.wide.caos-wb { max-width: none; width: 100%; margin-inline: 0; flex: 1 1 auto; min-height: 0;
   padding: 1rem 1.25rem; align-items: stretch; }
 @media (min-width: 901px) and (max-width: 1350px) {
-  .caos-wb { --rail-w: clamp(180px, 16vw, 280px); }
+  .caos-wb { --rail-w: clamp(190px, 17vw, 280px); }
   .page-body.caos-wb { padding: 0.125rem 0.5rem; }
-  .caos-wb-rail { gap: 6px; }
-  .caos-wb-rail .pf-group { gap: 4px; padding-bottom: 6px; }
+  .caos-wb-rail { gap: 3px; }
+  .caos-wb-rail .pf-group { gap: 2px; padding-bottom: 4px; }
+  .caos-wb-rail { line-height: 1.15; }
+  .caos-wb-rail * { min-width: 0; }
+  .caos-wb-rail :is(select, button, input) { box-sizing: border-box; max-width: 100%; }
+  .caos-wb-rail .caos-badges { max-width: 100%; min-width: 0; display: flex; flex-wrap: wrap; }
+  .caos-wb-rail .caos-badges > * { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+  .caos-wb-rail .pf-kv > div { gap: 4px; }
+  .caos-wb-rail .pf-kv dt { min-width: 0; overflow-wrap: anywhere; }
+  .caos-wb-rail .pf-kv dd { flex: 0 0 auto; font-size: 0.68rem; }
 }
 html, body { overflow-x: hidden; }
 
