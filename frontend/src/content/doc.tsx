@@ -181,7 +181,6 @@ export function TopicView({ topic, lang, area, kind }: { topic: Topic; lang: Lan
     <DocSection title={topic.title} id={topic.id} area={area} kind={kind} refs={topic.refs}
       noRefsReason={topic.refs.length ? undefined : { en: 'This section makes no source-bound claim.', es: 'Esta sección no formula afirmaciones que requieran fuentes.' }}>
     <article className="prose pfd-topic" data-topic={topic.id}>
-      <h2>{topic.title[lang]}</h2>
       {topic.figure?.wide && figure}
       <div className={topic.figure && !topic.figure.wide ? 'pfd-body with-side' : 'pfd-body'}>
         <div className="pfd-text">
