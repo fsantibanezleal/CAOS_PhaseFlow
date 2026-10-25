@@ -4,6 +4,17 @@ import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
 
+async function assertCapacityLegendClearsFooter(page, tabName) {
+  await page.locator('[role="tab"]', { hasText: tabName }).click();
+  const legend = page.locator('.u-legend').first();
+  await legend.waitFor();
+  const legendBox = await legend.boundingBox();
+  const footerBox = await page.locator('.footer-inner').boundingBox();
+  assert.ok(legendBox && footerBox, `${tabName}: expected a rendered legend and app footer`);
+  assert.ok(legendBox.y + legendBox.height <= footerBox.y - 8,
+    `${tabName}: chart legend reaches the footer (${Math.round(legendBox.y + legendBox.height)}px / ${Math.round(footerBox.y)}px)`);
+}
+
 let server;
 let browser;
 try {
@@ -26,6 +37,7 @@ try {
   await caseSelect.selectOption('newman1-published');
   await page.getByText('Source grade: MineLib Newman1 .blocks grade column (percent).', { exact: false }).waitFor();
   assert.equal(await page.locator('.pf-panel h4').filter({ hasText: 'Head grade and strip ratio' }).count(), 1);
+  await assertCapacityLegendClearsFooter(page, 'Capacity');
   await page.locator('button').filter({ hasText: /^en$/ }).click();
   assert.equal(await caseSelect.getAttribute('aria-label'), 'Selector de casos');
   await caseSelect.selectOption('zuck-small-declared');
@@ -33,6 +45,7 @@ try {
   await page.locator('[role="tab"]', { hasText: 'Ley y razón' }).click();
   await page.getByText('La fuente MineLib no proporciona ley por bloque para este caso.', { exact: false }).waitFor();
   assert.equal(await page.locator('.pf-panel h4').filter({ hasText: 'Razón lastre-mineral' }).count(), 1);
+  await assertCapacityLegendClearsFooter(page, 'Capacidad');
   assert.deepEqual(errors, []);
   console.log('PASS MineLib grade provenance: Zuck omits grade in EN/ES; Newman1 renders sourced grade');
 } finally {
