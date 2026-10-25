@@ -5,7 +5,7 @@
  * attributed constants, each with its source and the date it was read.
  */
 import { useEffect, useRef, useState } from 'react';
-import { boundSlackText, dec, fmtDuration, fmtInt, fmtMoney, loadTrace } from '../lib/artifacts.ts';
+import { boundSlackText, dec, exp, fmtDuration, fmtInt, fmtMoney, loadTrace } from '../lib/artifacts.ts';
 import type { CaseManifest, ScheduleTrace, ScoreboardRow } from '../lib/contract.types.ts';
 import type { ParityResponse } from '../engine/solver.worker.ts';
 import { GapLadderFigure } from './figures/gap.tsx';
@@ -189,7 +189,7 @@ export function RealPitsPanel({ lang }: { lang: Lang }) {
                 <td className="num">{fmtInt(m.instance.upit_blocks, lang)}</td>
                 <td className="num">{exact(m.instance.upit_value)}</td>
                 <td className="num">{exact(pub)}</td>
-                <td className="num">{rel == null ? '-' : rel === 0 ? '0' : rel.toExponential(1)}</td>
+                <td className="num">{rel == null ? '-' : rel === 0 ? '0' : exp(rel, 1)}</td>
                 <td className="num">{pctTxt(m.best?.gap_pct, 3)}</td>
                 <td>{m.scenario.declared ? (es ? 'declarado aquí' : 'declared here') : (es ? 'publicado' : 'published')}</td>
               </tr>

@@ -26,8 +26,8 @@ function RobustnessChart({ lang }: { lang: Lang }) {
     <desc>{es ? 'Milisegundos medidos en el horneado versionado; no compara hardware.' : 'Milliseconds measured in the versioned bake; not a hardware comparison.'}</desc>
     {rows.map((m, i) => { const ms = m.bound_summary!.algorithm4_ms!; const y = 28 + i * 34; return <g key={m.case_id}>
       <text x="8" y={y + 16} fontSize="12">{caseTitle(data.index, m.case_id, lang)}</text>
-      <rect x="245" y={y} width={Math.max(1, 430 * ms / max)} height="20" rx="3" fill="var(--color-accent, #3979c3)" />
-      <text x={Math.min(684, 252 + 430 * ms / max)} y={y + 15} fontSize="11">{fmtDuration(ms)}</text>
+      <rect x="245" y={y} width={Math.max(1, 360 * ms / max)} height="20" rx="3" fill="var(--color-accent, #3979c3)" />
+      <text x={Math.min(612, 252 + 360 * ms / max)} y={y + 15} fontSize="11" fill="var(--color-fg)">{fmtDuration(ms)}</text>
     </g>; })}
   </svg>;
 }
