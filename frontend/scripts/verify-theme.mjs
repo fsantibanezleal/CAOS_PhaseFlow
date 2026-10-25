@@ -39,7 +39,7 @@ try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   const errors = [];
   page.on('pageerror', (error) => errors.push(String(error)));
-  await page.goto(server.resolvedUrls.local[0], { waitUntil: 'networkidle' });
+  await page.goto(new URL('/app', server.resolvedUrls.local[0]).href, { waitUntil: 'networkidle' });
   await page.locator('select[aria-label="Method"]').waitFor();
 
   for (const theme of ['light', 'dark']) {
@@ -48,8 +48,15 @@ try {
     const pageBg = rgb(await page.evaluate(() => getComputedStyle(document.body).backgroundColor));
     const selects = await page.locator('select').evaluateAll((els) =>
       els.map((el) => {
-        const cs = getComputedStyle(el);
-        return { label: el.getAttribute('aria-label') ?? el.name ?? '?', color: cs.color, bg: cs.backgroundColor, scheme: cs.colorScheme };
+        // The shell's case picker is a transparent native select over an accessible custom display.
+        // Measure the rendered display text and surface, while reading color-scheme from the native control.
+        const visual = el.matches('.cs-select-native')
+          ? el.closest('.cs-select-wrap')?.querySelector('.cs-select-display') ?? el
+          : el;
+        const text = visual.querySelector('.cs-select-text') ?? visual;
+        const cs = getComputedStyle(text);
+        return { label: el.getAttribute('aria-label') ?? el.name ?? '?', color: cs.color,
+          bg: getComputedStyle(visual).backgroundColor, scheme: getComputedStyle(el).colorScheme };
       }),
     );
     assert.ok(selects.length >= 2, `expected the Case and Method selects, found ${selects.length}`);
