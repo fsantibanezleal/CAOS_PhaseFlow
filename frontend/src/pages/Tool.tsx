@@ -671,7 +671,7 @@ export default function Tool() {
       caseId={st.caseId}
       source={manifest.real_or_synthetic}
       controls={{ period: st.cursor, method: st.methodId, stageMode: mode, northing: northingAt, bench: benchAt }}
-      cases={{ cases: caseDefs, selectedId: st.caseId, onSelect: st.setCaseId, lang: st.lang, layout: 'select', deepLink: true }}
+      cases={{ cases: caseDefs, selectedId: st.caseId, onSelect: st.setCaseId, lang: st.lang, ariaLabel: es ? 'Selector de casos' : 'Case selector', layout: 'select', deepLink: true }}
       rail={rail}
       railLabel={{ en: 'Case controls', es: 'Controles del caso' }}
       groups={workbenchGroups}
