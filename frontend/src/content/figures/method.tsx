@@ -23,7 +23,7 @@ export function ConeAndStep({ lang }: { lang: Lang }) {
       <text x={cx} y={24} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'the cone above block b', 'el cono sobre el bloque b')}</text>
       {cells}
       <text x={cx} y={top + 3 * s + 16} textAnchor="middle" className="dg-marker-label">b</text>
-      <text x={cx} y={top + 4 * s + 22} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'every block in it is mined in a period no later than b', 'todo bloque en él se extrae en un período no posterior a b')}</text>
+      <text x={cx} y={top + 4 * s + 22} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'cone blocks are mined no later than b', 'bloques del cono: período no posterior a b')}</text>
       <text x={cx} y={top + 4 * s + 38} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'in EVERY period, not only at the end', 'en CADA período, no solo al final')}</text>
       <text x={420} y={24} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'x_bt is cumulative', 'x_bt es acumulada')}</text>
       <line x1={310} y1={190} x2={540} y2={190} className="dg-axis" />
@@ -89,7 +89,7 @@ export function AbelSplit({ lang }: { lang: Lang }) {
           <text x={43 + i * 37} y={216} textAnchor="middle" className="dg-tick">{i + 1}</text>
         </g>
       ))}
-      <text x={135} y={240} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'pale: d_t at 8 percent; solid: γ_t = d_t - d_t+1 > 0', 'claro: d_t al 8 por ciento; sólido: γ_t = d_t - d_t+1 > 0')}</text>
+      <text x={135} y={240} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'pale: d_t (8%); solid: γ_t = d_t - d_t+1 > 0', 'claro: d_t (8%); sólido: γ_t = d_t - d_t+1 > 0')}</text>
       <text x={410} y={22} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'T separate problems', 'T problemas separados')}</text>
       {[0, 1, 2, 3].map((t) => (
         <g key={t}>
@@ -318,8 +318,8 @@ export function ShellsAsWeights({ lang }: { lang: Lang }) {
           </g>
         );
       })}
-      <text x={280} y={230} textAnchor="middle" className="dg-note">{tr(lang, 'a lower price can only shrink the optimal pit; shell k = blocks that enter at revenue factor k',
-        'un precio menor solo puede achicar el pit óptimo; la cáscara k son los bloques que entran con el factor k')}</text>
+      <text x={280} y={230} textAnchor="middle" className="dg-note">{tr(lang, 'lower price shrinks the pit; shell k enters at factor k',
+        'precio menor achica el pit; la cáscara k entra al factor k')}</text>
       <text x={280} y={248} textAnchor="middle" className="dg-note">{tr(lang, 'PhaseFlow takes 12 factors from 1.0 to 0.35 and mines inner shells first', 'PhaseFlow toma 12 factores de 1,0 a 0,35 y extrae primero las cáscaras internas')}</text>
     </Svg>
   );

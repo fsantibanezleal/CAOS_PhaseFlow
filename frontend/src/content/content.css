@@ -55,7 +55,16 @@
 .pfd-steps li { margin: 0.3rem 0; line-height: 1.55; }
 
 .pfd-data { margin: 1.2rem 0 0.4rem; min-width: 0; }
-.pfd-scroll { overflow-x: auto; min-width: 0; }
+.pfd-scroll { overflow-x: auto; min-width: 0; max-width: 100%; width: 100%; }
+.pfd-page .subtabpanels, .pfd-page .subtabpanel { min-width: 0; max-width: 100%; }
+@media (max-width: 1000px) {
+  .pfd-page .subtabpanel { overflow-x: clip; }
+  .pfd-page .subtabpanel > * { min-width: 0; max-width: 100%; }
+}
+@media (max-width: 600px) {
+  .pfd-page .subtabs-vertical > .subtablist { flex-wrap: wrap; overflow: visible; }
+  .pfd-page .subtabs-vertical .subtab { flex: 1 1 140px; white-space: normal; }
+}
 .pfd-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin: 0.8rem 0; font-variant-numeric: tabular-nums; }
 .pfd-table th, .pfd-table td { padding: 6px 10px; border-bottom: 1px solid var(--color-border); text-align: left; vertical-align: top; }
 .pfd-table thead th { color: var(--color-fg-subtle); font-weight: 600; white-space: nowrap; }
@@ -74,6 +83,7 @@
 .pfd-controls select { font: inherit; color: var(--color-fg); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 4px 8px; max-width: 100%; }
 .pfd-reading { margin: 0; min-height: 1.4em; font-size: 0.84rem; color: var(--color-fg-subtle); font-variant-numeric: tabular-nums; }
 .pfd-chart { min-width: 0; }
+.page-body:not(.caos-wb) svg[data-chart] text { fill: var(--color-fg); }
 .pfd-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; min-width: 0; }
 @media (max-width: 1000px) { .pfd-two { grid-template-columns: minmax(0, 1fr); } }
 

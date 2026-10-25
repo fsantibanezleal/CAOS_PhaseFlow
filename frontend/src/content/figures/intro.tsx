@@ -78,7 +78,7 @@ export function WhichWhen({ lang }: { lang: Lang }) {
       {draw(400, true)}
       <text x={20 + (cols * s) / 2} y={208} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'one set, maximum undiscounted value, polynomial', 'un conjunto, máximo valor sin descontar, polinomial')}</text>
       <text x={400 + (cols * s) / 2} y={208} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'a period per block, discounted, capacity per period, NP-hard', 'un período por bloque, descontado, capacidad por período, NP-duro')}</text>
-      <text x={400 + (cols * s) / 2} y={228} textAnchor="middle" className="dg-note">{tr(lang, 'numbers: extraction period; a block is never mined before the rock above it', 'números: período de extracción; un bloque nunca se extrae antes que la roca sobre él')}</text>
+      <text x={400 + (cols * s) / 2} y={228} textAnchor="middle" className="dg-note">{tr(lang, 'numbers: extraction period; never before overlying rock', 'número: período de extracción; respeta la roca superior')}</text>
     </Svg>
   );
 }
