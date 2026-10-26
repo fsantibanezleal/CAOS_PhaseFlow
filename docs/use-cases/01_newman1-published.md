@@ -43,16 +43,16 @@ branch-and-bound tree or compared every parsed coefficient byte for byte.
 ![Four value levels for newman1](../assets/the-two-bounds.svg)
 
 In value units, at the precision of the sources (PhaseFlow's Algorithm 4 bound 24,487,410.43, joint LP
-24,486,184.09, sliding-window plan 24,149,869.40):
+24,486,184.09, sliding-window plan 24,142,200.23):
 
 ```text
 Algorithm 4 bound - PhaseFlow plan
   = (Algorithm 4 bound - joint LP bound)          1,226.34   bound slack
   + (joint LP bound - external integer optimum) 309,319.27   integrality
-  + (external integer optimum - PhaseFlow plan)  26,995.42   method loss
+  + (external integer optimum - PhaseFlow plan)  34,664.59   method loss
 ```
 
-The plan is 1.37 percent below its joint LP bound but only about 0.11 percent below the external integer
+The plan is 1.40 percent below its joint LP bound but only about 0.14 percent below the external integer
 optimum: the 1.26 percent LP integrality gap is most of the LP-referenced gap. Percentages use their own
 denominators; add value differences, not displayed percentages. No other case has a verified integer
 optimum, so no other case's gap can be split this way.
@@ -75,9 +75,9 @@ repository or the browser, and the app shows numbers and charts for this case bu
 | bound | value | time | detail |
 | --- | ---: | ---: | --- |
 | ultimate pit (UPIT, exact, undiscounted) | 26,086,899 |  | 1,059 of 1,060 blocks; no time, no capacity |
-| Algorithm 4 (min over single-resource LPs) | 24,487,410 | 2.1 s | 79 maximum closures |
-| joint LP (Bienstock-Zuckerberg) | 24,486,184 | 2.7 s | 9 iterations on 6,360 nodes, 28,832 edges; slack of Algorithm 4: 0.0050% |
-| PCPSP LP (HiGHS, destinations free) | 24,486,549 | 3.2 s | 35,204 rows, status optimal |
+| Algorithm 4 (min over single-resource LPs) | 24,487,410 | 1.5 s | 79 maximum closures |
+| joint LP (Bienstock-Zuckerberg) | 24,486,184 | 11.8 s | 9 iterations on 6,360 nodes, 28,832 edges; slack of Algorithm 4: 0.0050% |
+| PCPSP LP (HiGHS, destinations free) | 24,486,549 | 2.6 s | 35,204 rows, status optimal |
 | used for every CPIT gap on this case | joint LP |  |  |
 <!-- /generated -->
 
@@ -90,20 +90,20 @@ the largest one.
 <!-- generated:case:newman1-published -->
 | method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | 22,915,557 | joint LP | 6.41% | 13 ms | 6.0 / 92% |
+| `bench-by-bench` | classical | 22,915,557 | joint LP | 6.41% | 11 ms | 6.0 / 92% |
 | `nested-shells` | classical | 23,839,631 | joint LP | 2.64% | 11 ms | 4.8 / 93% |
-| `toposort-greedy` | classical | 23,552,842 | joint LP | 3.81% | 13 ms | 6.8 / 88% |
-| `toposort-gershon` | classical | 23,474,084 | joint LP | 4.13% | 25 ms | 12.2 / 75% |
-| `toposort-expected` | sota | 23,864,349 | joint LP | 2.54% | 2.2 s | 10.0 / 84% |
-| `exts-two-resource` | sota | 23,864,349 | joint LP | 2.54% | 2.2 s | 10.0 / 84% |
-| `shift-local-search` | sota | 23,873,589 | joint LP | 2.50% | 11 ms | 9.8 / 83% |
-| `sliding-window` **(best)** | sota | 24,149,869 | joint LP | 1.37% | 15.8 s | 11.7 / 89% |
-| `cpitD-local-search` | sota | 23,875,538 | joint LP | 2.49% | 1.2 s | 9.2 / 83% |
-| `learned-expected-time` | learned | 23,894,774 | joint LP | 2.42% | 23 ms | 8.7 / 91% |
-| `destination-toposort` | beyond | 23,864,349 | PCPSP LP | 2.54% | 2.6 s | 10.0 / 84% |
-| `destination-sliding-window` | beyond | 24,149,869 | PCPSP LP | 1.38% | 19.3 s | 11.7 / 89% |
-| `destination-local-search` | beyond | 24,151,564 | PCPSP LP | 1.37% | 2.6 s | 11.0 / 89% |
-| `min-width` | beyond | 24,052,701 | joint LP | 1.77% | 71 ms | 7.3 / 90% |
+| `toposort-greedy` | classical | 23,552,842 | joint LP | 3.81% | 11 ms | 6.8 / 88% |
+| `toposort-gershon` | classical | 23,474,084 | joint LP | 4.13% | 28 ms | 12.2 / 75% |
+| `toposort-expected` | sota | 23,864,349 | joint LP | 2.54% | 1.5 s | 10.0 / 84% |
+| `exts-two-resource` | sota | 23,864,349 | joint LP | 2.54% | 1.5 s | 10.0 / 84% |
+| `shift-local-search` | sota | 23,873,589 | joint LP | 2.50% | 12 ms | 9.8 / 83% |
+| `sliding-window` **(best)** | sota | 24,142,200 | joint LP | 1.40% | 25.2 s | 11.0 / 90% |
+| `cpitD-local-search` | sota | 23,875,538 | joint LP | 2.49% | 937 ms | 9.2 / 83% |
+| `learned-expected-time` | learned | 23,894,774 | joint LP | 2.42% | 14 ms | 8.7 / 91% |
+| `destination-toposort` | beyond | 23,864,349 | PCPSP LP | 2.54% | 2.1 s | 10.0 / 84% |
+| `destination-sliding-window` | beyond | 24,142,200 | PCPSP LP | 1.41% | 27.2 s | 11.0 / 90% |
+| `destination-local-search` | beyond | 24,142,200 | PCPSP LP | 1.41% | 2.1 s | 11.0 / 90% |
+| `min-width` | beyond | 24,047,160 | joint LP | 1.79% | 42 ms | 7.7 / 90% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/newman1-published.json` by `scripts/docs_tables.py`.*

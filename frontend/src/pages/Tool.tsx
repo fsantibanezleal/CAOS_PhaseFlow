@@ -89,11 +89,16 @@ export default function Tool() {
   // per-block replay. Scale it with the viewport height so it remains a legible, dominant drawing on
   // a tall display without taking an unbounded height from its own ResizeObserver.
   const compactChartHeight = Math.max(250, viewportHeight - 380);
+  const tabletChartHeight = Math.max(300, viewportHeight - 500);
   const replayChartHeight = viewportWidth <= 760
     ? compactChartHeight
+    : viewportWidth <= 900
+      ? tabletChartHeight
     : Math.min(900, Math.max(600, Math.round(viewportHeight * 0.6)));
   const productionChartHeight = viewportWidth <= 760
     ? compactChartHeight
+    : viewportWidth <= 900
+      ? tabletChartHeight
     : viewportHeight >= 1200
       ? Math.min(900, Math.round(viewportHeight * 0.58))
       : Math.min(600, Math.max(450, viewportHeight - 300));
