@@ -37,8 +37,8 @@ MineLib's published optimum, 1,422,726,898.
 | bound | value | time | detail |
 | --- | ---: | ---: | --- |
 | ultimate pit (UPIT, exact, undiscounted) | 1,422,726,898 |  | 9,399 of 9,400 blocks; no time, no capacity |
-| Algorithm 4 (min over single-resource LPs) | 719,234,226 | 10.3 min | 251 maximum closures |
-| joint LP (Bienstock-Zuckerberg) | 719,234,226 | 2.0 min | 16 iterations on 75,200 nodes, 1,230,920 edges; slack of Algorithm 4: 0.0000% |
+| Algorithm 4 (min over single-resource LPs) | 719,234,226 | 3.1 min | 251 maximum closures |
+| joint LP (Bienstock-Zuckerberg) | 719,234,226 | 59.3 s | 16 iterations on 75,200 nodes, 1,230,920 edges; slack of Algorithm 4: 0.0000% |
 | used for every CPIT gap on this case | joint LP |  |  |
 <!-- /generated -->
 
@@ -51,16 +51,16 @@ the largest one.
 <!-- generated:case:zuck-small-declared -->
 | method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | 346,832,457 | joint LP | 51.78% | 319 ms | 8.9 / 84% |
-| `nested-shells` | classical | 495,393,570 | joint LP | 31.12% | 312 ms | 63.2 / 72% |
-| `toposort-greedy` | classical | 386,377,893 | joint LP | 46.28% | 294 ms | 48.0 / 66% |
-| `toposort-gershon` | classical | 483,991,843 | joint LP | 32.71% | 866 ms | 104.0 / 52% |
-| `toposort-expected` | sota | 565,706,313 | joint LP | 21.35% | 10.3 min | 35.0 / 75% |
-| `exts-two-resource` | sota | 566,520,496 | joint LP | 21.23% | 10.3 min | 55.1 / 61% |
-| `shift-local-search` | sota | 594,985,768 | joint LP | 17.28% | 463 ms | 43.9 / 83% |
-| `sliding-window` **(best)** | sota | 698,987,493 | joint LP | 2.81% | 2.21 h | 58.9 / 72% |
-| `cpitD-local-search` | sota | 597,620,803 | joint LP | 16.91% | 722 ms | 48.1 / 78% |
-| `min-width` | beyond | 696,204,895 | joint LP | 3.20% | 496 ms | 29.2 / 83% |
+| `bench-by-bench` | classical | 346,832,457 | joint LP | 51.78% | 256 ms | 8.9 / 84% |
+| `nested-shells` | classical | 495,393,570 | joint LP | 31.12% | 249 ms | 63.2 / 72% |
+| `toposort-greedy` | classical | 386,377,893 | joint LP | 46.28% | 239 ms | 48.0 / 66% |
+| `toposort-gershon` | classical | 483,991,843 | joint LP | 32.71% | 722 ms | 104.0 / 52% |
+| `toposort-expected` | sota | 565,706,313 | joint LP | 21.35% | 3.1 min | 35.0 / 75% |
+| `exts-two-resource` | sota | 566,520,496 | joint LP | 21.23% | 3.1 min | 55.1 / 61% |
+| `shift-local-search` | sota | 594,985,768 | joint LP | 17.28% | 429 ms | 43.9 / 83% |
+| `sliding-window` **(best)** | sota | 705,009,489 | joint LP | 1.98% | 90.4 min | 64.0 / 69% |
+| `cpitD-local-search` | sota | 597,620,803 | joint LP | 16.91% | 406 ms | 48.4 / 78% |
+| `min-width` | beyond | 703,210,121 | joint LP | 2.23% | 284 ms | 42.9 / 74% |
 | `learned-expected-time` | - | not run | - | - | - | no source grade field for the learned input features |
 | `destination-toposort` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
 | `destination-sliding-window` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |

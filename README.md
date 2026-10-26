@@ -29,8 +29,8 @@ periods, its own eight percent rate, its own two capacities.
 |---|---|---|
 | ultimate pit optimum | 26,086,899 | 26,086,899 |
 | certified LP bound, joint (Bienstock-Zuckerberg) | 24,486,184 | 24,486,549 (PCPSP LP) |
-| best feasible schedule (`sliding-window` for PhaseFlow) | 24,149,869 | 24,176,861 |
-| gap to each problem's LP bound | 1.37% | 1.26% |
+| best feasible schedule (`sliding-window` for PhaseFlow) | 24,142,200 | 24,176,861 |
+| gap to each problem's LP bound | 1.40% | 1.26% |
 
 The ultimate pit reproduces exactly. The bound has a direct check on the same problem:
 [MineLib's results page](https://minelib.org/v1/Results.xhtml) lists a CPIT LP upper bound of
@@ -45,8 +45,8 @@ numbers are from Tables 3 and 4 of [Jelvez, Morales and Nancel-Penard](https://w
 
 An [external AMPL/Gurobi notebook](https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html)
 later reports an integer optimum of 24,176,864.82 for Newman1 CPIT, with a matching MIP best bound.
-Relative to that external result, PhaseFlow's feasible plan is 0.112% lower. Most of the displayed
-1.37% LP-bound gap is integrality gap rather than a loss of the scheduling method. This external
+Relative to that external result, PhaseFlow's feasible plan is 0.143% lower. Most of the displayed
+1.40% LP-bound gap is integrality gap rather than a loss of the scheduling method. This external
 certificate was not produced by PhaseFlow; [the source comparison](docs/use-cases/01_newman1-published.md)
 shows the inputs, calculations and limits.
 

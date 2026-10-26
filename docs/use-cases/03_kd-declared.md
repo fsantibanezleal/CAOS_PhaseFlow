@@ -58,17 +58,17 @@ the largest one.
 <!-- generated:case:kd-declared -->
 | method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | 161,242,754 | Algorithm 4 | 36.60% | 493 ms | 2.7 / 79% |
-| `nested-shells` | classical | 162,475,932 | Algorithm 4 | 36.12% | 571 ms | 12.0 / 77% |
-| `toposort-greedy` | classical | 173,166,103 | Algorithm 4 | 31.92% | 454 ms | 15.8 / 59% |
+| `bench-by-bench` | classical | 161,242,754 | Algorithm 4 | 36.60% | 444 ms | 2.7 / 79% |
+| `nested-shells` | classical | 162,475,932 | Algorithm 4 | 36.12% | 463 ms | 12.0 / 77% |
+| `toposort-greedy` | classical | 173,166,103 | Algorithm 4 | 31.92% | 450 ms | 15.8 / 59% |
 | `toposort-gershon` | classical | 122,846,660 | Algorithm 4 | 51.70% | 1.4 s | 98.8 / 50% |
 | `toposort-expected` | sota | 211,382,547 | Algorithm 4 | 16.89% | 20.4 min | 35.5 / 70% |
-| `exts-two-resource` | sota | 211,382,547 | Algorithm 4 | 16.89% | 20.5 min | 35.5 / 70% |
-| `shift-local-search` | sota | 215,466,062 | Algorithm 4 | 15.29% | 608 ms | 58.6 / 56% |
-| `sliding-window` **(best)** | sota | 238,512,077 | Algorithm 4 | 6.23% | 10.53 h | 40.4 / 66% |
-| `cpitD-local-search` | sota | 216,138,649 | Algorithm 4 | 15.02% | 865 ms | 64.3 / 57% |
-| `learned-expected-time` | learned | 87,285,802 | Algorithm 4 | 65.68% | 853 ms | 34.6 / 63% |
-| `min-width` | beyond | 238,084,634 | Algorithm 4 | 6.39% | 399 ms | 26.6 / 70% |
+| `exts-two-resource` | sota | 211,382,547 | Algorithm 4 | 16.89% | 20.4 min | 35.5 / 70% |
+| `shift-local-search` | sota | 215,466,062 | Algorithm 4 | 15.29% | 580 ms | 58.6 / 56% |
+| `sliding-window` **(best)** | sota | 237,922,440 | Algorithm 4 | 6.46% | 11.11 h | 39.0 / 70% |
+| `cpitD-local-search` | sota | 216,143,500 | Algorithm 4 | 15.02% | 839 ms | 63.3 / 55% |
+| `learned-expected-time` | learned | 87,285,802 | Algorithm 4 | 65.68% | 1.1 s | 34.6 / 63% |
+| `min-width` | beyond | 237,448,231 | Algorithm 4 | 6.64% | 404 ms | 25.9 / 75% |
 | `destination-toposort` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
 | `destination-sliding-window` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
 | `destination-local-search` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
