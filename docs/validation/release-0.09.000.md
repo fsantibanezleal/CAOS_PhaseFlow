@@ -97,7 +97,7 @@ accepts the measured solver changes explicitly; the report is not represented as
 | `python -m pytest -q` in `.venv-pipeline` | PASS, full suite |
 | four bilingual notebook executions and freshness check | PASS, 4/4 executed top to bottom; committed outputs are fresh |
 | artifact, docs table, README number/area, content, SDD, template-residue, technology-matrix and Ruff guards | PASS |
-| GitHub `develop` CI, Pages deployment, deployed URL and live browser gates | Pending promotion |
+| GitHub CI, Pages deployment and live verification | PASS: `develop` CI 40424505757, `main` CI 40424630640, Pages 40424630653; release tag `v0.09.000` points to `455f8bb`; 20 materialized routes and 27 manifest/trace JSON files return HTTP 200; live Profile and plan resize/slider loop passes at 1600×900, 1280×800, 768×900, 390×844 and 320×700. |
 
 The G4 result is a shell gate capture limitation, not a missing or malformed shipped file: the shell stores
 the first Playwright `response.text()` promise per JSON path, and a few bodies resolve empty after the
