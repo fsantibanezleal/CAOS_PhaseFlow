@@ -96,10 +96,9 @@ export function ScheduleView3D({
     // Fit to the model's own eight CORNERS, not to its bounding sphere. A deposit 28x28x14 and one
     // 20x20x20 do not want the same distance, and a sphere fit is right for neither: it reserves room
     // for a ball the deposit does not fill, so a flat orebody in a wide stage sits small in the middle
-    // of its own frame. Solving the two frustum inequalities per corner gives the smallest distance
-    // that clips nothing, for THIS aspect and THIS view direction. FILL is the requirement and
-    // CLIPPING is the failure, and the gate checks both: the non-background share AND whether the
-    // render touches the border of its own canvas.
+    // of its own frame. Solving the two frustum inequalities per corner gives a safe distance for
+    // THIS aspect and THIS view direction; a modest fill factor makes the pit legible in the full
+    // workbench. The browser gate checks painted area and edge clipping at every supported viewport.
     const span = Math.max(nx, ny, nz);
     const half: [number, number, number] = [nx / span, nz / span, ny / span];
     const vFov = (50 * Math.PI) / 180;
@@ -142,7 +141,7 @@ export function ScheduleView3D({
       return r;
     };
     const reserve0 = applyReserve(W, H);
-    const dist = fitDistance((W - reserve0) / H);
+    const dist = fitDistance((W - reserve0) / H) * 0.73;
     camera.position.copy(dir).multiplyScalar(dist);
     camera.lookAt(0, 0, 0);
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -239,7 +238,7 @@ export function ScheduleView3D({
       // CURRENT position preserves their view; only the distance changes.
       const cur = camera.position.length() || 1;
       const view = camera.position.clone().normalize();
-      camera.position.multiplyScalar(fitDistance((w2 - reserve) / h2, view) / cur);
+      camera.position.multiplyScalar((fitDistance((w2 - reserve) / h2, view) * 0.73) / cur);
       // setSize CLEARS the drawing buffer, so re-render here and now rather than waiting for the
       // next animation frame. On a software rasteriser that wait is about 100 ms of a stage that has
       // gone completely black, and the layout settles late enough that a reader sees it.

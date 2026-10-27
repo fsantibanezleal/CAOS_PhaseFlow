@@ -1,5 +1,5 @@
 /** Figures for Methodology: one schematic per method family, drawn from the definitions in the sources. */
-import { periodCss } from '../../viz/colormap.ts';
+import { periodCss, periodTextColor } from '../../viz/colormap.ts';
 import { Arrow, Box, Svg, arrowId, tr, type Lang } from './kit.tsx';
 
 /** The slope cone and the cumulative variable: the two facts the formulation rests on. */
@@ -23,7 +23,7 @@ export function ConeAndStep({ lang }: { lang: Lang }) {
       <text x={cx} y={24} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'the cone above block b', 'el cono sobre el bloque b')}</text>
       {cells}
       <text x={cx} y={top + 3 * s + 16} textAnchor="middle" className="dg-marker-label">b</text>
-      <text x={cx} y={top + 4 * s + 22} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'every block in it is mined in a period no later than b', 'todo bloque en él se extrae en un período no posterior a b')}</text>
+      <text x={cx} y={top + 4 * s + 22} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'cone blocks are mined no later than b', 'bloques del cono: período no posterior a b')}</text>
       <text x={cx} y={top + 4 * s + 38} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'in EVERY period, not only at the end', 'en CADA período, no solo al final')}</text>
       <text x={420} y={24} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'x_bt is cumulative', 'x_bt es acumulada')}</text>
       <line x1={310} y1={190} x2={540} y2={190} className="dg-axis" />
@@ -89,7 +89,7 @@ export function AbelSplit({ lang }: { lang: Lang }) {
           <text x={43 + i * 37} y={216} textAnchor="middle" className="dg-tick">{i + 1}</text>
         </g>
       ))}
-      <text x={135} y={240} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'pale: d_t at 8 percent; solid: γ_t = d_t - d_t+1 > 0', 'claro: d_t al 8 por ciento; sólido: γ_t = d_t - d_t+1 > 0')}</text>
+      <text x={135} y={240} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'pale: d_t (8%); solid: γ_t = d_t - d_t+1 > 0', 'claro: d_t (8%); sólido: γ_t = d_t - d_t+1 > 0')}</text>
       <text x={410} y={22} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'T separate problems', 'T problemas separados')}</text>
       {[0, 1, 2, 3].map((t) => (
         <g key={t}>
@@ -163,7 +163,7 @@ export function BzLoop({ lang }: { lang: Lang }) {
       <Box x={150} y={150} w={260} h={64} title={tr(lang, 'Refine the partition', 'Refinar la partición')} sub={[tr(lang, 'parts AND v, parts MINUS v, v MINUS all', 'partes Y v, partes MENOS v, v MENOS todo')]} />
       <Arrow x1={425} y1={110} x2={380} y2={150} markerId={m} />
       <Arrow x1={180} y1={150} x2={130} y2={110} markerId={m} />
-      <text x={280} y={244} textAnchor="middle" className="dg-note">{tr(lang, 'stops when no closure has positive reduced profit: Z_BZ = Z_LP', 'se detiene cuando ningún cierre tiene beneficio reducido positivo: Z_BZ = Z_LP')}</text>
+      <text x={280} y={244} textAnchor="middle" className="dg-note">{tr(lang, 'stop: no positive reduced value; Z_BZ = Z_LP', 'parada: valor reducido no positivo; Z_BZ = Z_LP')}</text>
     </Svg>
   );
 }
@@ -192,7 +192,7 @@ export function TopoSortWalk({ lang }: { lang: Lang }) {
             <rect key={b} x={74 + t * 160 + k * 40} y={160} width={34} height={34} rx={4} style={{ fill: periodCss(t, 3) }} />
           ))}
           {order.filter((_, i) => periods[i] === t).map((b, k) => (
-            <text key={`t${b}`} x={91 + t * 160 + k * 40} y={182} textAnchor="middle" style={{ fill: t === 2 ? '#1f2328' : '#fff', font: '600 12px var(--font-mono)' }}>{b}</text>
+          <text key={`t${b}`} x={91 + t * 160 + k * 40} y={182} textAnchor="middle" style={{ fill: periodTextColor(t, 3), font: '600 12px var(--font-mono)' }}>{b}</text>
           ))}
           <text x={130 + t * 160} y={218} textAnchor="middle" className="dg-tick">{tr(lang, 'capacity used up', 'capacidad agotada')}</text>
         </g>
@@ -227,7 +227,7 @@ export function GershonCone({ lang }: { lang: Lang }) {
       <line x1={300} y1={106} x2={500} y2={114} className="pfd-dg-strike" />
       <text x={400} y={160} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'with nine arcs per block the number of paths', 'con nueve arcos por bloque el número de caminos')}</text>
       <text x={400} y={176} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'to a block k levels down grows geometrically', 'hacia un bloque k niveles abajo crece geométricamente')}</text>
-      <text x={400} y={216} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'the set is built as a bitset: each block counts once', 'el conjunto se construye como bitset: cada bloque cuenta una vez')}</text>
+      <text x={400} y={208} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'bitset: each successor counts once', 'bitset: cada sucesor cuenta una vez')}</text>
     </Svg>
   );
 }
@@ -314,12 +314,12 @@ export function ShellsAsWeights({ lang }: { lang: Lang }) {
           <g key={i}>
             <path d={`M${280 - w / 2} 40 L${280 + w / 2} 40 L${280 + w / 2 - h * 0.55} ${40 + h} L${280 - w / 2 + h * 0.55} ${40 + h} Z`}
                   style={{ fill: `color-mix(in oklab, var(--color-accent) ${12 + i * 12}%, transparent)`, stroke: 'var(--color-accent)', strokeWidth: 1 }} />
-            <text x={280 + w / 2 - 6} y={56} textAnchor="end" className="pfd-dg-mono">{`RF ${f.toFixed(2)}`}</text>
+            <text x={280 + w / 2 - 6} y={56} textAnchor="end" className="pfd-dg-mono">{`RF ${lang === 'es' ? f.toFixed(2).replace('.', ',') : f.toFixed(2)}`}</text>
           </g>
         );
       })}
-      <text x={280} y={230} textAnchor="middle" className="dg-note">{tr(lang, 'a lower price can only shrink the optimal pit; shell k = blocks that enter at revenue factor k',
-        'un precio menor solo puede achicar el pit óptimo; la cáscara k son los bloques que entran con el factor k')}</text>
+      <text x={280} y={230} textAnchor="middle" className="dg-note">{tr(lang, 'lower price shrinks the pit; shell k enters at factor k',
+        'precio menor achica el pit; la cáscara k entra al factor k')}</text>
       <text x={280} y={248} textAnchor="middle" className="dg-note">{tr(lang, 'PhaseFlow takes 12 factors from 1.0 to 0.35 and mines inner shells first', 'PhaseFlow toma 12 factores de 1,0 a 0,35 y extrae primero las cáscaras internas')}</text>
     </Svg>
   );
@@ -413,14 +413,15 @@ export function DestinationRecut({ lang }: { lang: Lang }) {
       <text x={125} y={207} textAnchor="middle" className="dg-note">{tr(lang, 'the rich ore below waits (period 3)', 'el mineral rico de abajo espera (período 3)')}</text>
       <text x={435} y={192} textAnchor="middle" className="dg-note">{tr(lang, 'the LP dumps the marginal ore;', 'la LP bota el mineral marginal;')}</text>
       <text x={435} y={207} textAnchor="middle" className="dg-note">{tr(lang, 'the plant goes to the rich ore now', 'la planta va al mineral rico ahora')}</text>
-      <text x={280} y={232} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'rows: waste, marginal ore, rich ore; P plant, D dump, digits the period the rich ore is processed', 'filas: estéril, mineral marginal, mineral rico; P planta, D botadero, dígitos el período en que se procesa el mineral rico')}</text>
+      <text x={280} y={232} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'rows: waste / marginal / rich; P plant; D dump; number = period', 'filas: estéril / marginal / rico; P planta; D botadero; número = período')}</text>
       {flow.map(([t, sub], i) => (
         <g key={t}>
           <Box x={14 + i * 108} y={250} w={96} h={44} title={t} sub={[sub]} accent={i === 1} />
           {i < flow.length - 1 && <Arrow x1={110 + i * 108} y1={272} x2={122 + i * 108} y2={272} markerId={mk} />}
         </g>
       ))}
-      <text x={280} y={318} textAnchor="middle" className="dg-note">{tr(lang, 'every plan of the re-cut CPIT is a PCPSP plan at the same value; the search frees every destination again', 'todo plan del CPIT re-cortado es un plan PCPSP del mismo valor; la búsqueda libera de nuevo todo destino')}</text>
+      <text x={280} y={314} textAnchor="middle" className="dg-note">{tr(lang, 'Every re-cut CPIT plan is a PCPSP plan of equal value;', 'Cada plan del CPIT re-cortado es un plan PCPSP de igual valor;')}</text>
+      <text x={280} y={328} textAnchor="middle" className="dg-note">{tr(lang, 'the search frees each destination again.', 'la búsqueda vuelve a liberar cada destino.')}</text>
     </Svg>
   );
 }
@@ -443,8 +444,9 @@ export function Operability({ lang }: { lang: Lang }) {
       {grid(320, after)}
       <text x={120} y={170} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'slivers one block wide; a stray block', 'astillas de un bloque; un bloque suelto')}</text>
       <text x={420} y={170} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'absorbed into the majority neighbour', 'absorbidas por el vecino mayoritario')}</text>
-      <text x={280} y={214} textAnchor="middle" className="dg-note">{tr(lang, 'a move is made only if precedence holds both ways and the receiving period has the capacity', 'un movimiento se hace solo si la precedencia se cumple en ambos sentidos y el período receptor tiene capacidad')}</text>
-      <text x={280} y={232} textAnchor="middle" className="dg-note">{tr(lang, 'measured per period: components, share of the largest, narrowest run', 'medido por período: componentes, fracción de la mayor, tramo más estrecho')}</text>
+      <text x={280} y={210} textAnchor="middle" className="dg-note">{tr(lang, 'a move must preserve precedence both ways', 'el movimiento debe conservar la precedencia en ambos sentidos')}</text>
+      <text x={280} y={226} textAnchor="middle" className="dg-note">{tr(lang, 'and fit within the receiving period capacity', 'y caber en la capacidad del período receptor')}</text>
+      <text x={280} y={245} textAnchor="middle" className="dg-note">{tr(lang, 'measure: components, largest share, narrowest run', 'medir: componentes, fracción mayor, tramo más estrecho')}</text>
     </Svg>
   );
 }

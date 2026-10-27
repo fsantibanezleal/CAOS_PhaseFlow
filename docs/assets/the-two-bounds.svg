@@ -3,7 +3,7 @@
   <title id="gap-title">Newman1: the two bounds, integer optimum, and PhaseFlow schedule</title>
   <desc id="gap-desc">Four value levels. Algorithm 4 is 24,487,410.43; the PhaseFlow joint LP
     bound is 24,486,184.09; an external AMPL notebook reports an integer optimum of 24,176,864.82;
-    PhaseFlow's sliding-window schedule is 24,149,869.40. The three differences are bound
+    PhaseFlow's sliding-window schedule is 24,142,200.23. The three differences are bound
     looseness, LP integrality gap, and feasible-method shortfall. Spacing is schematic.</desc>
   <style>
     :root { --bg: #f6f8fa; --card: #fff; --ink: #1f2328; --muted: #59636e;
@@ -49,13 +49,13 @@
   <text class="value" x="878" y="224" text-anchor="end">24,176,864.82</text>
 
   <line class="rule" x1="48" y1="251" x2="48" y2="270"/>
-  <text class="delta" x="66" y="265">26,995.42: PhaseFlow feasible-method shortfall</text>
+  <text class="delta" x="66" y="265">34,664.59: PhaseFlow feasible-method shortfall</text>
 
   <rect class="card" x="18" y="272" width="884" height="62" rx="8"/>
   <rect class="plan" x="18" y="272" width="6" height="62" rx="3"/>
   <text class="title" x="42" y="298">PhaseFlow sliding-window schedule</text>
   <text class="sub" x="42" y="318">Feasible on the published six-period CPIT scenario</text>
-  <text class="value" x="878" y="308" text-anchor="end">24,149,869.40</text>
+  <text class="value" x="878" y="308" text-anchor="end">24,142,200.23</text>
 
   <text class="sub" x="22" y="365">Value differences add in money units; percent gaps have different denominators.</text>
   <text class="sub" x="22" y="384">Levels are schematic, with no proportional vertical scale. Sources: PhaseFlow artifact and AMPL Colaboratory.</text>

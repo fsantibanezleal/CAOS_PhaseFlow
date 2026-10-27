@@ -2,8 +2,7 @@
 
 **What it is.** The math typesetter behind every equation on the reading pages.
 
-**Pin.** `katex@^0.16.11` in `frontend/package.json`; the shell declares it as a peer
-(`@fasl-work/caos-app-shell` expects `katex@^0.16.0`).
+**Pin.** `katex@0.19.1` in `frontend/package.json`; shell 0.19.2 accepts KaTeX `^0.16.0`, `^0.17.0`, `^0.18.0` or `^0.19.0` as a peer dependency.
 
 **Why this one.** It renders synchronously to HTML with no layout reflow, fast enough for pages with dozens
 of display equations, and its output follows the page's text colour, so equations invert with the theme.

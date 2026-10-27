@@ -56,7 +56,9 @@ export function SensitivitySurface({
     if (!c || surface.length === 0) return;
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const w = c.parentElement?.clientWidth ?? 520;
-    const h = 320;
+    // Fill the fixed, viewport-bounded canvas host. A hard-coded 320px left half of the
+    // diagnostics stage empty even though the surface is the tab's primary visual evidence.
+    const h = Math.max(320, c.parentElement?.clientHeight ?? 320);
     c.width = Math.round(w * dpr);
     c.height = Math.round(h * dpr);
     c.style.width = `${w}px`;

@@ -3,6 +3,22 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.09.000] - 2026-10-26
+
+Rebuilt on CAOS App Shell 0.19.2 and CAOS Product Template 0.11.002. Full release evidence:
+`docs/validation/release-0.09.000.md`.
+
+### Changed
+
+- Re-baked all thirteen cases with oreblocks 0.6.3. The exact certified bounds are unchanged; the
+  updated cold-window search changes heuristic schedules. Every candidate trace passes the capacity,
+  precedence, schema, and own-bound guards. The release record lists each best-plan gap change and the
+  destination-schedule regression on `twin-layered`.
+- Bounded the Profile and plan plots and workbench charts across shell resizing, including the phone
+  capacity view and its wrapped legend. The five viewport profile gate and 1,976-state shell gate pass.
+- Migrated shell integration and product documentation to the latest template and shell contracts;
+  refreshed generated result tables from the 0.6.3 artifacts.
+
 ## [0.08.000] - 2026-10-05
 
 An adversarial review of the implementation, the models, the data and the results, and the fixes it

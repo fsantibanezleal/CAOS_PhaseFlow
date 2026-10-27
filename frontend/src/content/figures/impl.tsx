@@ -1,5 +1,5 @@
 /** Figures for Implementation: how each method is computed here. */
-import { Arrow, Box, Svg, arrowId, tr, type Lang } from './kit.tsx';
+import { Arrow, Svg, arrowId, tr, type Lang } from './kit.tsx';
 
 /** Picard's reduction: the maximum closure is the source side of a minimum cut. */
 export function ClosureNetwork({ lang }: { lang: Lang }) {
@@ -60,7 +60,8 @@ export function TimeExpanded({ lang }: { lang: Lang }) {
       <text x={60} y={124} className="pfd-dg-small">{tr(lang, 'precedence', 'precedencia')}</text>
       <text x={205} y={60} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'monotone', 'monótona')}</text>
       <text x={280} y={226} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'capacity rows: +a on (b, t), -a on (b, t - 1), per resource and period', 'filas de capacidad: +a en (b, t), -a en (b, t - 1), por recurso y período')}</text>
-      <text x={280} y={252} textAnchor="middle" className="dg-note">{tr(lang, 'n T nodes; arcs T + n (T - 1) edges: a 10,976-block twin over 10 periods is 109,760 nodes', 'n T nodos; arcos T + n (T - 1) aristas: un gemelo de 10.976 bloques en 10 períodos son 109.760 nodos')}</text>
+      <text x={280} y={246} textAnchor="middle" className="dg-note">{tr(lang, 'nT nodes; T + n(T - 1) precedence arcs', 'nT nodos; T + n(T - 1) arcos de precedencia')}</text>
+      <text x={280} y={262} textAnchor="middle" className="dg-note">{tr(lang, '10,976 blocks x 10 periods = 109,760 nodes', '10.976 bloques x 10 períodos = 109.760 nodos')}</text>
     </Svg>
   );
 }
@@ -97,7 +98,10 @@ export function Archetypes({ lang }: { lang: Lang }) {
         return (
           <g key={a}>
             {cells}
-            <text x={ox + (nx * s) / 2} y={30 + nz * s + 18} textAnchor="middle" className="pfd-dg-small">{title}</text>
+            <text x={ox + (nx * s) / 2} y={30 + nz * s + 16} textAnchor="middle" className="pfd-dg-small">
+              <tspan x={ox + (nx * s) / 2} dy="0">{title.split(': ')[0]}:</tspan>
+              <tspan x={ox + (nx * s) / 2} dy="13">{title.split(': ').slice(1).join(': ')}</tspan>
+            </text>
           </g>
         );
       })}
@@ -113,7 +117,8 @@ export function LaneFidelity({ lang }: { lang: Lang }) {
   const label = tr(lang, 'Recomputed in the browser, and replayed', 'Recalculado en el navegador, y reproducido');
   return (
     <Svg vb={vb} label={label}>
-      <Box x={10} y={20} w={260} h={250} title={tr(lang, 'Recomputed live (twins)', 'Recalculado en vivo (gemelos)')} sub={[]} accent />
+      <rect x={10} y={38} width={260} height={232} rx={8} className="dg-box accent" />
+      <text x={140} y={30} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'Recomputed live (twins)', 'Recalculado en vivo (gemelos)')}</text>
       {[
         tr(lang, 'slope precedence from the angle', 'precedencia de talud desde el ángulo'),
         tr(lang, 'ultimate pit (Dinic)', 'pit final (Dinic)'),
@@ -122,8 +127,9 @@ export function LaneFidelity({ lang }: { lang: Lang }) {
         tr(lang, 'greedy, Gershon, ExTS + shift', 'codicioso, Gershon, ExTS + desplazamiento'),
         tr(lang, 'learned plan (no LP)', 'plan aprendido (sin LP)'),
         tr(lang, 'coherence per period', 'coherencia por período'),
-      ].map((t, i) => <text key={i} x={30} y={70 + i * 26} className="pfd-dg-small">{t}</text>)}
-      <Box x={290} y={20} w={260} h={250} title={tr(lang, 'Replayed from the bake', 'Reproducido desde el horneado')} sub={[]} />
+      ].map((t, i) => <text key={i} x={24} y={66 + i * 27} className="pfd-dg-small">{t}</text>)}
+      <rect x={290} y={38} width={260} height={232} rx={8} className="dg-box" />
+      <text x={420} y={30} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'Replayed from the bake', 'Reproducido desde el horneado')}</text>
       {[
         tr(lang, 'joint Bienstock-Zuckerberg bound', 'cota conjunta Bienstock-Zuckerberg'),
         tr(lang, 'PCPSP LP (HiGHS or dual)', 'LP PCPSP (HiGHS o dual)'),
@@ -131,7 +137,7 @@ export function LaneFidelity({ lang }: { lang: Lang }) {
         tr(lang, 'destination methods', 'métodos con destino'),
         tr(lang, 'min-width, ensemble', 'ancho mínimo, ensamble'),
         tr(lang, 'every MineLib case', 'todo caso MineLib'),
-      ].map((t, i) => <text key={i} x={310} y={70 + i * 26} className="pfd-dg-small">{t}</text>)}
+      ].map((t, i) => <text key={i} x={304} y={72 + i * 31} className="pfd-dg-small">{t}</text>)}
       <text x={280} y={292} textAnchor="middle" className="dg-note">{tr(lang, 'parity: the live pit matches block for block and the live bound to 1e-6', 'paridad: el pit en vivo coincide bloque a bloque y la cota en vivo a 1e-6')}</text>
     </Svg>
   );

@@ -1,5 +1,5 @@
 /** Figures for the Introduction: where scheduling sits, what it adds to a pit, and what PhaseFlow does. */
-import { periodCss } from '../../viz/colormap.ts';
+import { periodCss, periodTextColor } from '../../viz/colormap.ts';
 import { Arrow, Box, Svg, arrowId, tr, type Lang } from './kit.tsx';
 
 /** The long-term planning chain, with the step this product answers. */
@@ -64,7 +64,7 @@ export function WhichWhen({ lang }: { lang: Lang }) {
         );
         if (pit && scheduled) {
           cells.push(<text key={`t${r}-${c}`} x={x + s / 2 - 0.7} y={y + s / 2 + 3.5} textAnchor="middle"
-                           style={{ fill: period(c, r) >= 3 ? '#1f2328' : '#ffffff', font: '600 10px var(--font-mono)' }}>{period(c, r) + 1}</text>);
+                           style={{ fill: periodTextColor(period(c, r), 6), font: '600 10px var(--font-mono)' }}>{period(c, r) + 1}</text>);
         }
       }
     }
@@ -78,7 +78,7 @@ export function WhichWhen({ lang }: { lang: Lang }) {
       {draw(400, true)}
       <text x={20 + (cols * s) / 2} y={208} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'one set, maximum undiscounted value, polynomial', 'un conjunto, máximo valor sin descontar, polinomial')}</text>
       <text x={400 + (cols * s) / 2} y={208} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'a period per block, discounted, capacity per period, NP-hard', 'un período por bloque, descontado, capacidad por período, NP-duro')}</text>
-      <text x={400 + (cols * s) / 2} y={228} textAnchor="middle" className="dg-note">{tr(lang, 'numbers: extraction period; a block is never mined before the rock above it', 'números: período de extracción; un bloque nunca se extrae antes que la roca sobre él')}</text>
+      <text x={400 + (cols * s) / 2} y={228} textAnchor="middle" className="dg-note">{tr(lang, 'numbers: extraction period; never before overlying rock', 'número: período de extracción; respeta la roca superior')}</text>
     </Svg>
   );
 }
@@ -139,7 +139,7 @@ export function FourStepChain({ lang }: { lang: Lang }) {
             const per = Math.min(5, (k === 0 ? 0 : k <= 1 ? 2 : 4) + Math.floor(r / 3));
             if (p === 3) fill = periodCss(per, 6);
             cells.push(<rect key={`${r}-${c}`} x={x} y={y} width={s - 1} height={s - 1} style={{ fill }} />);
-            if (p === 3) cells.push(<text key={`t${r}-${c}`} x={x + s / 2 - 0.5} y={y + s / 2 + 3} textAnchor="middle" style={{ fill: per >= 3 ? '#1f2328' : '#fff', font: '600 8px var(--font-mono)' }}>{per + 1}</text>);
+            if (p === 3) cells.push(<text key={`t${r}-${c}`} x={x + s / 2 - 0.5} y={y + s / 2 + 3} textAnchor="middle" style={{ fill: periodTextColor(per, 6), font: '600 8px var(--font-mono)' }}>{per + 1}</text>);
           }
           if (p === 2) cells.push(<line key={`b${r}`} x1={ox} x2={ox + cols * s} y1={46 + r * s - 0.5} y2={46 + r * s - 0.5} className="dg-axis" />);
         }

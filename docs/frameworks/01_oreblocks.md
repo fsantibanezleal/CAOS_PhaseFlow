@@ -5,7 +5,7 @@ closure (pure-Python Dinic and a compiled path), the critical multiplier algorit
 Bienstock-Zuckerberg, the TopoSort family, the sliding time window, the shift and exact local searches,
 the PCPSP LP and the destination methods, Lane's cutoffs, operability and the uncertainty ensemble.
 
-**Pin.** `oreblocks[milp]==0.6.1` in `requirements.txt`. The `milp` extra brings scipy (and with it HiGHS),
+**Pin.** `oreblocks[milp]==0.6.3` in `requirements.txt`. The `milp` extra brings SciPy and highspy; both are pinned in the precompute environment,
 because five rungs need a solver: the BZ restricted master, the sliding window, the exact C-PIT[D]
 re-solve, the PCPSP LP and the exact OPBSP-[D] search. Without it those rungs record NOT RUN with the
 reason rather than quietly substituting a weaker method.

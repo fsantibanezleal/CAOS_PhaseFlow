@@ -5,7 +5,7 @@
  * attributed constants, each with its source and the date it was read.
  */
 import { useEffect, useRef, useState } from 'react';
-import { boundSlackText, dec, fmtDuration, fmtInt, fmtMoney, loadTrace } from '../lib/artifacts.ts';
+import { boundSlackText, dec, exp, fmtDuration, fmtInt, fmtMoney, loadTrace } from '../lib/artifacts.ts';
 import type { CaseManifest, ScheduleTrace, ScoreboardRow } from '../lib/contract.types.ts';
 import type { ParityResponse } from '../engine/solver.worker.ts';
 import { GapLadderFigure } from './figures/gap.tsx';
@@ -189,7 +189,7 @@ export function RealPitsPanel({ lang }: { lang: Lang }) {
                 <td className="num">{fmtInt(m.instance.upit_blocks, lang)}</td>
                 <td className="num">{exact(m.instance.upit_value)}</td>
                 <td className="num">{exact(pub)}</td>
-                <td className="num">{rel == null ? '-' : rel === 0 ? '0' : rel.toExponential(1)}</td>
+                <td className="num">{rel == null ? '-' : rel === 0 ? '0' : exp(rel, 1)}</td>
                 <td className="num">{pctTxt(m.best?.gap_pct, 3)}</td>
                 <td>{m.scenario.declared ? (es ? 'declarado aquí' : 'declared here') : (es ? 'publicado' : 'published')}</td>
               </tr>
@@ -341,13 +341,13 @@ export function LiveParityPanel({ lang }: { lang: Lang }) {
   const rel = (r: ParityRow) => (r.browser == null || r.baked == null ? null : r.baked === 0 ? Math.abs(r.browser) : Math.abs(r.browser - r.baked) / Math.abs(r.baked));
   return (
     <div className="pfd-panel" data-testid="live-parity">
-      <div className="pfd-controls">
+      <div className="pfd-controls" data-control-group="live-parity">
         <label>{es ? 'caso' : 'case'}{' '}
-          <select value={caseId} onChange={(e) => { setCaseId(e.target.value); setState('idle'); setRows([]); setMeta(null); }}>
+          <select value={caseId} onChange={(e) => { setCaseId(e.target.value); setState('idle'); setRows([]); setMeta(null); }} aria-label={es ? 'Caso para verificar' : 'Case to verify'} data-control="case">
             {live.map((m) => <option key={m.case_id} value={m.case_id}>{caseTitle(data.index, m.case_id, lang)} ({fmtInt(m.instance.n_blocks, lang)})</option>)}
           </select>
         </label>
-        <button className="pf-chip" onClick={run} disabled={state === 'running'} data-testid="live-parity-run">
+        <button className="pf-chip" onClick={run} disabled={state === 'running'} data-testid="live-parity-run" data-control="run">
           {state === 'running' ? (es ? 'resolviendo en este navegador...' : 'solving in this browser...') : (es ? 'resolver en este navegador' : 'solve in this browser')}
         </button>
         {meta && <span className="pfd-muted">{es ? `${timeTxt(meta.ms)} en total, cota ${timeTxt(meta.boundMs)}; bloques en desacuerdo sobre el pit: ${meta.mismatched}` : `${timeTxt(meta.ms)} in all, bound ${timeTxt(meta.boundMs)}; blocks disagreeing on the pit: ${meta.mismatched}`}</span>}

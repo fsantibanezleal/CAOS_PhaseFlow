@@ -60,6 +60,10 @@ jobs:
           python-version: "3.12"
       - name: No template residue (instantiated products must replace the example pipeline)
         run: python scripts/check_template_residue.py
+      - name: Bilingual product notebooks (static anatomy, mirror and provenance)
+        run: python scripts/check_notebooks.py
+      - name: README describes every product area
+        run: python scripts/check_readme_areas.py
       - name: No em-dash or emoji in product content (ADR-0067)
         run: python scripts/check_content_standards.py
       - name: Every tracked .sh is executable (a 100644 .sh is Permission denied on a Linux clone)

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 260" role="img" aria-label="A traceable path from case inputs to checked results">
+  <rect width="560" height="260" rx="16" fill="var(--color-surface)"/>
+  <g fill="var(--color-bg)" stroke="var(--color-fg-subtle)" stroke-width="2">
+    <rect x="28" y="76" width="104" height="104" rx="12"/><rect x="164" y="76" width="104" height="104" rx="12"/><rect x="300" y="76" width="104" height="104" rx="12"/><rect x="436" y="76" width="96" height="104" rx="12"/>
+  </g>
+  <g fill="var(--color-accent)"><rect x="47" y="95" width="66" height="14" rx="4"/><rect x="183" y="95" width="66" height="14" rx="4"/><rect x="319" y="95" width="66" height="14" rx="4"/><rect x="451" y="95" width="66" height="14" rx="4"/></g>
+  <g fill="var(--color-surface-2)"><rect x="47" y="122" width="28" height="36" rx="4"/><rect x="80" y="122" width="33" height="36" rx="4"/><path d="M184 149l15 14 34-39 9 8-42 48-24-22z"/><path d="M325 149h62M325 135h45M325 163h54" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round"/><path d="M457 147h54M457 133h42M457 161h32" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round"/></g>
+  <g fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round"><path d="M134 128h24m-9-9 9 9-9 9M270 128h24m-9-9 9 9-9 9M406 128h24m-9-9 9 9-9 9"/></g>
+  <path d="M80 211h400" stroke="var(--color-accent)" stroke-width="3" stroke-dasharray="7 8"/>
+  <text class="pf-exec-label pf-exec-en" lang="en" x="280" y="248" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Inputs to evidence</text>
+  <text class="pf-exec-label pf-exec-es" lang="es" x="280" y="248" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Entradas hasta evidencia</text>
+</svg>
