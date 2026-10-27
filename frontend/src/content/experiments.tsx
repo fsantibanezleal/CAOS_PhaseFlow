@@ -148,6 +148,10 @@ export const EXPERIMENTS: TopicGroup[] = [
             en: 'The grid is the whole experiment in one table: every method on every case, as the gap to the bound of its own problem, with the best comparable plan of each case outlined. Select a case, or click its row, to draw its methods as captured share of the bound; hovering a bar gives the plan\'s value and its gap. Rows without a value say why the method did not run on that case.',
             es: 'La grilla es todo el experimento en una tabla: cada método en cada caso, como brecha a la cota de su propio problema, con el mejor plan comparable de cada caso enmarcado. Seleccione un caso, o haga clic en su fila, para dibujar sus métodos como fracción capturada de la cota; al pasar sobre una barra se ven el valor del plan y su brecha. Las filas sin valor dicen por qué el método no corrió en ese caso.',
           },
+          {
+            en: 'Read the outline as a within-case selection, not a global ranking: each case has its own bound and scale. The chart uses only comparable CPIT rungs; destination methods remain in their separate PCPSP panel so a larger objective from a larger feasible set is never presented as a better CPIT schedule.',
+            es: 'Lea el contorno como una selección dentro de cada caso, no como un ranking global: cada caso tiene su propia cota y escala. El gráfico usa solo peldaños CPIT comparables; los métodos con destino quedan en su panel PCPSP separado para que un objetivo mayor de un conjunto factible más grande nunca se presente como mejor programa CPIT.',
+          },
         ],
         figure: { caption: { en: 'The walk every TopoSort rung shares; only the weight differs.', es: 'El recorrido que comparten todos los peldaños TopoSort; solo cambia el peso.' }, render: (lang) => <TopoSortWalk lang={lang} /> },
         data: (lang) => <LadderGridPanel lang={lang} />,
@@ -161,6 +165,10 @@ export const EXPERIMENTS: TopicGroup[] = [
             en: 'The published argument for computing the bound before scheduling is that the expected times it yields are a far better ordering than any classical weight. Here the comparison is made on each non-trivial case against the BEST of the four classical rungs, not against greedy alone, so the advantage shown is the smallest one that can be claimed.',
             es: 'El argumento publicado para calcular la cota antes de programar es que los tiempos esperados que entrega son un orden mucho mejor que cualquier peso clásico. Aquí la comparación se hace en cada caso no trivial contra el MEJOR de los cuatro peldaños clásicos, no solo contra el codicioso, de modo que la ventaja mostrada es la menor que se puede afirmar.',
           },
+          {
+            en: 'This is a measured plan outcome, not a claim that the relaxation solves the integer schedule. A share above one means the rounded plan captured more NPV than the best classical plan on that case; feasibility and the shared certified bound still decide whether that result is valid.',
+            es: 'Es un resultado medido del plan, no una afirmación de que la relajación resuelva el programa entero. Una fracción sobre uno significa que el plan redondeado capturó más VAN que el mejor plan clásico en ese caso; la factibilidad y la cota certificada común siguen determinando si el resultado es válido.',
+          },
         ],
         figure: { caption: { en: 'The same walk with a different weight is the whole difference.', es: 'El mismo recorrido con otro peso es toda la diferencia.' }, render: (lang) => <TopoSortWalk lang={lang} /> },
         data: (lang) => <SeedingPanel lang={lang} />,
@@ -173,6 +181,10 @@ export const EXPERIMENTS: TopicGroup[] = [
           {
             en: 'On top of the rounding, three rungs try to close the gap: the shift search moves single blocks, the exact re-solve moves neighbourhoods, and the sliding window plans three periods jointly. The table gives the gap of each on every non-trivial case and the time the window takes, which is the price of its look-ahead.',
             es: 'Sobre el redondeo, tres peldaños intentan cerrar la brecha: la búsqueda de desplazamiento mueve bloques sueltos, la re-resolución exacta mueve vecindarios, y la ventana deslizante planifica tres períodos en conjunto. La tabla da la brecha de cada uno en cada caso no trivial y el tiempo que toma la ventana, que es el precio de su anticipación.',
+          },
+          {
+            en: 'These methods spend progressively more work to improve an already feasible plan: a local move, an exact neighbourhood solve, then a short coupled horizon. The measured runtime belongs to the pinned bake environment; it is not a prediction for another machine or a pit outside the recorded size range.',
+            es: 'Estos métodos invierten trabajo progresivamente mayor para mejorar un plan ya factible: un movimiento local, una resolución exacta del vecindario y luego un horizonte acoplado corto. El tiempo medido pertenece al entorno de horneado fijado; no predice otra máquina ni un rajo fuera del rango de tamaño registrado.',
           },
         ],
         figure: { caption: { en: 'The window solves three periods with a tail and keeps one.', es: 'La ventana resuelve tres períodos con una cola y conserva uno.' }, render: (lang) => <SlidingWindow lang={lang} />, wide: true },
@@ -193,6 +205,10 @@ export const EXPERIMENTS: TopicGroup[] = [
             en: 'Four cases share one deposit and differ only in the scenario. The table gives, for the best plan of each, the use of each resource as a share of its limit in every period: a cell at 100 is a capacity that binds. Reading across a row shows when a resource stops binding; reading down a case shows which one sets the pace. The shape of the early pit follows from it: a binding plant rewards stripping waste while the plant is full, a binding fleet rewards the ore that is cheapest to reach.',
             es: 'Cuatro casos comparten un depósito y difieren solo en el escenario. La tabla da, para el mejor plan de cada uno, el uso de cada recurso como fracción de su límite en cada período: una celda en 100 es una capacidad que limita. Leer una fila muestra cuándo un recurso deja de limitar; leer un caso muestra cuál marca el ritmo. La forma del rajo temprano se sigue de eso: una planta que limita premia remover estéril mientras la planta está llena, una flota que limita premia el mineral más barato de alcanzar.',
           },
+          {
+            en: 'This controlled comparison isolates the scenario while keeping the block model fixed. It does not infer a universal cutoff policy: the pattern is specific to these declared capacities, values and discount settings, and each case remains a separately validated feasible schedule.',
+            es: 'Esta comparación controlada aísla el escenario y mantiene fijo el modelo de bloques. No infiere una política universal de ley de corte: el patrón corresponde a estas capacidades, valores y tasas de descuento declaradas, y cada caso sigue siendo un programa factible validado por separado.',
+          },
         ],
         figure: { caption: { en: 'Capacity per period is what the walk spends.', es: 'La capacidad por período es lo que gasta el recorrido.' }, render: (lang) => <TopoSortWalk lang={lang} /> },
         data: (lang) => <RegimePanel lang={lang} />,
@@ -205,6 +221,10 @@ export const EXPERIMENTS: TopicGroup[] = [
           {
             en: 'The four archetypes under the same kind of scenario separate the methods by what they assume. Greedy and Gershon weights encode a view of what matters (the block itself, or what it unlocks), and each archetype rewards or punishes that view; the expected time encodes the relaxation\'s balance of value, discounting and capacity, and holds up across shapes. The learned share and the coherence of the best plan complete the row: a deposit can be easy for the bound and hard for the surrogate, or easy in value and scattered in space.',
             es: 'Los cuatro arquetipos bajo el mismo tipo de escenario separan a los métodos por lo que suponen. Los pesos codicioso y de Gershon codifican una visión de lo que importa (el bloque mismo, o lo que libera), y cada arquetipo premia o castiga esa visión; el tiempo esperado codifica el equilibrio de la relajación entre valor, descuento y capacidad, y se sostiene entre formas. La fracción aprendida y la coherencia del mejor plan completan la fila: un depósito puede ser fácil para la cota y difícil para el sustituto, o fácil en valor y disperso en el espacio.',
+          },
+          {
+            en: 'Because geometry changes while the broad scenario stays comparable, differences across these rows are evidence about method sensitivity to spatial structure. They remain synthetic archetype comparisons and do not estimate performance on a named mine without calibrated, redistributable block data.',
+            es: 'Como cambia la geometría mientras el escenario general se mantiene comparable, las diferencias entre filas son evidencia de sensibilidad del método a la estructura espacial. Siguen siendo comparaciones de arquetipos sintéticos y no estiman el rendimiento en una mina identificada sin datos de bloques calibrados y redistribuibles.',
           },
         ],
         figure: { caption: { en: 'The four shapes being compared.', es: 'Las cuatro formas que se comparan.' }, render: (lang) => <Archetypes lang={lang} />, wide: true },
@@ -225,6 +245,10 @@ export const EXPERIMENTS: TopicGroup[] = [
             en: 'On deposits it never saw, the surrogate\'s plans are scored against the plans the true expected times produce. The tables give the summary, the breakdown by archetype and by grid size, and the guard that was chosen on the training deposits measured on a third split that had no part in choosing it. A rule over the archetype cannot be applied to a real deposit, which carries no archetype label; that is why, wherever the exact plan exists, the product shows the measured share instead of the rule.',
             es: 'En depósitos que nunca vio, los planes del sustituto se juzgan contra los planes que producen los tiempos esperados verdaderos. Las tablas dan el resumen, el desglose por arquetipo y por tamaño de grilla, y la guarda elegida con los depósitos de entrenamiento medida en una tercera partición que no participó en elegirla. Una regla sobre el arquetipo no se puede aplicar a un depósito real, que no trae rótulo de arquetipo; por eso, donde existe el plan exacto, el producto muestra la fracción medida en vez de la regla.',
           },
+          {
+            en: 'The deposit split is the unit of generalisation: scenarios from one generated body stay together, preventing near-duplicate blocks from leaking across train and evaluation. The surrogate is only an ordering aid; the exact bound, feasibility checks and reported score come from the established scheduling path.',
+            es: 'La partición por depósito es la unidad de generalización: los escenarios de un mismo cuerpo generado permanecen juntos, lo que evita filtrar bloques casi duplicados entre entrenamiento y evaluación. El sustituto solo ayuda a ordenar; la cota exacta, las verificaciones de factibilidad y la puntuación informada provienen de la ruta de programación establecida.',
+          },
         ],
         figure: { caption: { en: 'The protocol behind every number in these tables.', es: 'El protocolo detrás de cada número de estas tablas.' }, render: (lang) => <DepositSplit lang={lang} /> },
         data: (lang) => <LearnedStudyPanel lang={lang} />,
@@ -237,6 +261,10 @@ export const EXPERIMENTS: TopicGroup[] = [
           {
             en: 'The product\'s cases are larger than most training deposits and include real block models, so the held-out numbers do not transfer by assumption. The table measures the learned plan against the exact ExTS plan of each case in the same bake, with both times. A share below 90 percent is the line the study calls a failure, and it is marked.',
             es: 'Los casos del producto son mayores que la mayoría de los depósitos de entrenamiento e incluyen modelos de bloques reales, así que los números retenidos no se transfieren por supuesto. La tabla mide el plan aprendido contra el plan ExTS exacto de cada caso en el mismo horneado, con ambos tiempos. Una fracción bajo 90 por ciento es la línea que el estudio llama falla, y se marca.',
+          },
+          {
+            en: 'A low share identifies a case where an inexpensive prediction is not a safe replacement for the exact ordering. The product keeps the actual measurement beside the method instead of applying a deposit-wide rule to a case with no verified archetype label.',
+            es: 'Una fracción baja identifica un caso donde una predicción económica no es un reemplazo seguro del orden exacto. El producto mantiene la medición real junto al método en vez de aplicar una regla de arquetipo a un caso que no tiene una etiqueta verificada.',
           },
         ],
         figure: { caption: { en: 'Two paths to one walk.', es: 'Dos caminos a un recorrido.' }, render: (lang) => <TopoSortWalk lang={lang} /> },
@@ -274,6 +302,10 @@ export const EXPERIMENTS: TopicGroup[] = [
             en: 'The best plan of each case is measured for coherence, then smoothed toward a minimum width of three blocks with capacity and precedence kept. The table gives the components and the largest share of the best plan, the blocks in runs narrower than the target before and after, the moves made and refused for capacity, and the NPV the smoothing cost.',
             es: 'El mejor plan de cada caso se mide en coherencia y luego se suaviza hacia un ancho mínimo de tres bloques manteniendo capacidad y precedencia. La tabla da las componentes y la fracción mayor del mejor plan, los bloques en tramos más estrechos que el objetivo antes y después, los movimientos hechos y rechazados por capacidad, y el VAN que costó el suavizado.',
           },
+          {
+            en: 'The operation is a post-processing trade-off, not a new optimum: accepted moves preserve feasibility and the table reports the corresponding value cost. The smallest connected pieces are measured on each period surface, so improved bench widths do not imply that the global pit shape or economics changed.',
+            es: 'La operación es un compromiso de posprocesamiento, no un nuevo óptimo: los movimientos aceptados preservan la factibilidad y la tabla informa el costo de valor correspondiente. Las piezas conexas más pequeñas se miden en la superficie de cada período, así que mejorar anchos de banco no implica que cambió la forma global del rajo ni su economía.',
+          },
         ],
         figure: { caption: { en: 'Slivers absorbed when capacity allows.', es: 'Astillas absorbidas cuando la capacidad lo permite.' }, render: (lang) => <Operability lang={lang} /> },
         data: (lang) => <OperabilityPanel lang={lang} />,
@@ -286,6 +318,10 @@ export const EXPERIMENTS: TopicGroup[] = [
           {
             en: 'Every candidate plan is evaluated on twelve correlated realisations of the block values. Where the best plan on average and the best plan at the tenth percentile differ, the robust choice is a different plan, and it is highlighted. The value of re-planning compares re-solving each realisation with keeping the best fixed plan, and is a lower bound on the value of perfect information. Read its column for what it is: where it is zero, the cheap per-realisation re-solve (Gershon weights and a shift search) never beat the fixed plan, which includes the sliding window, so the lower bound sits at its floor; zero there does not mean that knowing the realisation is worthless.',
             es: 'Cada plan candidato se evalúa en doce realizaciones correlacionadas de los valores de bloque. Donde el mejor plan en promedio y el mejor plan en el décimo percentil difieren, la elección robusta es otro plan, y se resalta. El valor de re-planificar compara re-resolver cada realización con mantener el mejor plan fijo, y es una cota inferior del valor de la información perfecta. Su columna se lee por lo que es: donde vale cero, la re-resolución barata por realización (pesos de Gershon y una búsqueda de desplazamiento) nunca superó al plan fijo, que incluye la ventana deslizante, de modo que la cota inferior está en su piso; cero ahí no significa que conocer la realización no valga nada.',
+          },
+          {
+            en: 'The spread describes only the declared correlated perturbation experiment. It is not a geological confidence interval, a calibrated conditional simulation, or an estimate of mine-wide uncertainty; the robust-choice marker says which of the candidate plans fares best under this finite set of realisations.',
+            es: 'La dispersión describe solo el experimento declarado de perturbaciones correlacionadas. No es un intervalo de confianza geológico, una simulación condicional calibrada ni una estimación de incertidumbre de toda la mina; la marca de elección robusta indica cuál de los planes candidatos se desempeña mejor en este conjunto finito de realizaciones.',
           },
         ],
         figure: { caption: { en: 'Plans read by their spread.', es: 'Planes leídos por su dispersión.' }, render: (lang) => <EnsembleFan lang={lang} /> },

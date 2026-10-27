@@ -1,42 +1,39 @@
-import { StrictMode, useEffect } from 'react';
+import { StrictMode, Suspense, lazy, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router';
 import { CalendarClock } from 'lucide-react';
-import { AppShell, applyTheme, CitationsProvider, readTheme, useShellLang, type ShellConfig } from '@fasl-work/caos-app-shell';
+import { AppShell, applyTheme, CitationsProvider, Landing, readTheme, STANDARD_ROUTES, useShellLang, type ShellConfig } from '@fasl-work/caos-app-shell';
+import 'katex/dist/katex.min.css';
 import '@fasl-work/caos-app-shell/styles.css';
 import './phaseflow.css';
 import './content/content.css';
 import { CITATIONS } from './data/citations.ts';
+import product from '../../product.json';
 import { architecture } from './architecture.ts';
 import { APP_VERSION } from './lib/artifacts.ts';
-import Tool from './pages/Tool.tsx';
-import Focus from './pages/Focus.tsx';
-import Introduction from './pages/Introduction.tsx';
-import Methodology from './pages/Methodology.tsx';
-import Implementation from './pages/Implementation.tsx';
-import Experiments from './pages/Experiments.tsx';
-import Benchmark from './pages/Benchmark.tsx';
+const Tool = lazy(() => import('./pages/Tool.tsx'));
+const Focus = lazy(() => import('./pages/Focus.tsx'));
+const Introduction = lazy(() => import('./pages/Introduction.tsx'));
+const Methodology = lazy(() => import('./pages/Methodology.tsx'));
+const Implementation = lazy(() => import('./pages/Implementation.tsx'));
+const Experiments = lazy(() => import('./pages/Experiments.tsx'));
+const Benchmark = lazy(() => import('./pages/Benchmark.tsx'));
 
 applyTheme(readTheme());
 
 const config: ShellConfig = {
-  product: { name: 'PhaseFlow', mark: <CalendarClock size={18} aria-hidden="true" /> },
-  routes: [
-    { path: '/', en: 'App', es: 'App' },
-    { path: '/introduction', en: 'Introduction', es: 'Introducción' },
-    { path: '/methodology', en: 'Methodology', es: 'Metodología' },
-    { path: '/implementation', en: 'Implementation', es: 'Implementación' },
-    { path: '/experiments', en: 'Experiments', es: 'Experimentos' },
-    { path: '/benchmark', en: 'Benchmark', es: 'Comparación' },
-  ],
-  links: { github: 'https://github.com/fsantibanezleal/CAOS_PhaseFlow' },
+  product: { name: product.name, mark: <CalendarClock size={18} aria-hidden="true" /> },
+  routes: STANDARD_ROUTES,
+  links: { github: product.repo },
   version: APP_VERSION,
+  license: { en: `${product.license} license`, es: `Licencia ${product.license}` },
+  visibility: product.visibility === 'private' ? 'private' : 'public',
+  contain: true,
   architecture,
   footer: {
     // One short line: what the numbers run on and the one limit a reader needs. The long form (bounds,
     // licences, scope) lives on the content pages and in the architecture modal.
     attribution: { en: 'Developed by Felipe Santibáñez-Leal', es: 'Desarrollado por Felipe Santibáñez-Leal' },
-    license: { en: 'MIT', es: 'MIT' },
     provenance: {
       en: 'Engine: oreblocks (MIT); MineLib not redistributed',
       es: 'Motor: oreblocks (MIT); MineLib no redistribuido',
@@ -62,20 +59,23 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           {/* ADR-0070: the focus view renders OUTSIDE the shell. The header and footer are exactly the
               chrome a focus view exists to escape, so it cannot be a child of AppShell. */}
-          <Route path="/focus/:caseId" element={<Focus />} />
+          <Route path="/focus/:caseId" element={<Suspense fallback={<p data-state="loading" role="status">Loading PhaseFlow…</p>}><Focus /></Suspense>} />
           <Route
             path="*"
             element={
               <AppShell config={config}>
+                <Suspense fallback={<p data-state="loading" role="status">Loading PhaseFlow…</p>}>
                 <Routes>
-                  <Route path="/" element={<Tool />} />
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/app" element={<Tool />} />
                   <Route path="/introduction" element={<Introduction />} />
                   <Route path="/methodology" element={<Methodology />} />
                   <Route path="/implementation" element={<Implementation />} />
                   <Route path="/experiments" element={<Experiments />} />
                   <Route path="/benchmark" element={<Benchmark />} />
-                  <Route path="*" element={<Tool />} />
+                  <Route path="*" element={<Landing />} />
                 </Routes>
+                </Suspense>
               </AppShell>
             }
           />

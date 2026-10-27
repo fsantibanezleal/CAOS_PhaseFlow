@@ -17,7 +17,7 @@ let server;
 let browser;
 
 async function selectCase(page, id, best) {
-  await page.locator('select[aria-label="Case"]').selectOption(id);
+  await page.locator('[data-control="case"]').selectOption(id);
   // the case is loaded when the method picker opens on that case's own best plan
   await page.waitForFunction((b) => document.querySelector('select[aria-label="Method"]')?.value === b, best,
     { timeout: 60000 });
@@ -37,7 +37,7 @@ try {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (error) => errors.push(String(error)));
-  await page.goto(base, { waitUntil: 'networkidle' });
+  await page.goto(new URL('/app', base).href, { waitUntil: 'networkidle' });
 
   const cases = await page.evaluate(async () => {
     const idx = await (await fetch('/data/manifests/index.json')).json();

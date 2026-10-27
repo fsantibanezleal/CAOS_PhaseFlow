@@ -399,6 +399,10 @@ export const BEYOND: TopicGroup = {
           es: 'La mezcla y otras restricciones laterales generales se leen del archivo .pcpsp y no se resuelven; una fila de producción mínima (sentido G) hace que la cota se niegue a correr en vez de resolver en silencio otro problema. La programación estocástica en dos etapas se cita, no se reclama. Transporte, despacho y política de ley de corte como productos pertenecen a otros miembros de esta línea, y un estudio de pit final no es el tema de este producto.',
         },
         {
+          en: 'These exclusions preserve the model boundary used by every certificate and comparison on this page. A capability that changes the feasible set would need its own formulation, solution method, independent feasibility and bound checks, and a separate benchmark protocol before its objective could be compared with the CPIT or PCPSP results shown here.',
+          es: 'Estas exclusiones preservan el límite del modelo que usan cada certificado y comparación de esta página. Una capacidad que cambie el conjunto factible necesitaría su propia formulación, método de solución, verificaciones independientes de factibilidad y cota, y un protocolo de referencia separado antes de comparar su objetivo con los resultados CPIT o PCPSP mostrados aquí.',
+        },
+        {
           en: 'Each exclusion is stated where a reader would otherwise assume the capability: on this page, in the scope of the introduction, and in the footer\'s one line.',
           es: 'Cada exclusión se declara donde un lector supondría la capacidad: en esta página, en el alcance de la introducción y en la línea del pie de página.',
         },

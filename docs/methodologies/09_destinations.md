@@ -102,36 +102,36 @@ integer solve could separate:
 <!-- generated:destinations -->
 | case | method | NPV | gap to the PCPSP bound | against best CPIT plan | blocks to plant / dump | blocks changing destination | effective cutoff range (grade) |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| [`newman1-published`](../use-cases/01_newman1-published.md) | `destination-toposort` | 23,864,349 | 2.54% | -1.18% | 572 / 487 | 0 | 0.004749 to 0.01129 |
-| [`newman1-published`](../use-cases/01_newman1-published.md) | `destination-sliding-window` | 24,149,869 | 1.38% | +0.00% | 572 / 487 | 0 | 0.004749 to 0.005214 |
-| [`newman1-published`](../use-cases/01_newman1-published.md) | `destination-local-search` | 24,151,564 | 1.37% | +0.01% | 572 / 487 | 0 | 0.004749 to 0.005214 |
-| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | `destination-toposort` | 285,163,568 | 9.89% | +23.40% | 1,692 / 1,999 | 702 | 0.004747 to 0.006918 |
-| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | `destination-sliding-window` | 312,574,802 | 1.23% | +35.26% | 1,815 / 1,871 | 702 | 0.004747 to 0.007026 |
-| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | `destination-local-search` | 313,204,288 | 1.03% | +35.54% | 1,840 / 1,846 | 690 | 0.001144 to 0.007026 |
+| [`newman1-published`](../use-cases/01_newman1-published.md) | `destination-toposort` | 23,864,349 | 2.54% | -1.15% | 572 / 487 | 0 | 0.004749 to 0.01129 |
+| [`newman1-published`](../use-cases/01_newman1-published.md) | `destination-sliding-window` | 24,142,200 | 1.41% | +0.00% | 572 / 487 | 0 | 0.004749 to 0.005214 |
+| [`newman1-published`](../use-cases/01_newman1-published.md) | `destination-local-search` | 24,142,200 | 1.41% | +0.00% | 572 / 487 | 0 | 0.004749 to 0.005214 |
+| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | `destination-toposort` | 285,163,568 | 9.89% | +23.12% | 1,692 / 1,999 | 700 | 0.004747 to 0.006918 |
+| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | `destination-sliding-window` | 314,005,926 | 0.78% | +35.57% | 1,831 / 1,863 | 700 | 0.004747 to 0.007026 |
+| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | `destination-local-search` | 314,279,336 | 0.69% | +35.69% | 1,840 / 1,854 | 697 | 0.001358 to 0.007026 |
 | [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | `destination-toposort` | 391,770,770 | 11.37% | +21.90% | 2,405 / 2,915 | 967 | 0.004942 to 0.007497 |
-| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | `destination-sliding-window` | 435,005,094 | 1.58% | +35.35% | 2,580 / 2,717 | 967 | 0.004631 to 0.007497 |
-| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | `destination-local-search` | 435,739,549 | 1.42% | +35.58% | 2,608 / 2,689 | 955 | 0.001199 to 0.007345 |
-| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | `destination-toposort` | 110,093,185 | 16.51% (dual) | +16.77% | 1,964 / 3,666 | 762 | 0.001713 to 0.001928 |
-| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | `destination-sliding-window` | 121,471,873 | 7.88% (dual) | +28.84% | 2,041 / 3,275 | 762 | 0.00114 to 0.001972 |
-| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | `destination-local-search` | 121,612,412 | 7.77% (dual) | +28.99% | 2,084 / 3,232 | 730 | 0.001137 to 0.001972 |
+| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | `destination-sliding-window` | 434,585,393 | 1.68% | +35.22% | 2,580 / 2,717 | 967 | 0.004631 to 0.007362 |
+| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | `destination-local-search` | 435,284,800 | 1.52% | +35.44% | 2,610 / 2,687 | 952 | 0.001215 to 0.007353 |
+| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | `destination-toposort` | 110,093,185 | 16.51% (dual) | +16.62% | 1,964 / 3,666 | 758 | 0.001713 to 0.001928 |
+| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | `destination-sliding-window` | 124,663,892 | 5.46% (dual) | +32.06% | 2,077 / 3,374 | 758 | 0.001713 to 0.001928 |
+| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | `destination-local-search` | 124,888,370 | 5.29% (dual) | +32.30% | 2,140 / 3,311 | 696 | 0.00114 to 0.001928 |
 | [`twin-layered`](../use-cases/07_twin-layered.md) | `destination-toposort` | 1,199,918,922 | 12.13% (dual) | +11.96% | 5,282 / 3,600 | 2,293 | 0.01284 to 0.0198 |
-| [`twin-layered`](../use-cases/07_twin-layered.md) | `destination-sliding-window` | 1,228,207,800 | 10.06% (dual) | +14.60% | 5,478 / 3,600 | 2,293 | 0.005845 to 0.0198 |
-| [`twin-layered`](../use-cases/07_twin-layered.md) | `destination-local-search` | 1,239,325,459 | 9.24% (dual) | +15.64% | 5,644 / 3,434 | 2,211 | 0.001238 to 0.0198 |
-| [`twin-vein`](../use-cases/08_twin-vein.md) | `destination-toposort` | 299,979,372 | 18.99% (dual) | +5.28% | 2,040 / 2,964 | 551 | 0.001136 to 0.01131 |
-| [`twin-vein`](../use-cases/08_twin-vein.md) | `destination-sliding-window` | 298,880,354 | 19.29% (dual) | +4.90% | 1,735 / 2,531 | 551 | 0.001138 to 0.01164 |
-| [`twin-vein`](../use-cases/08_twin-vein.md) | `destination-local-search` | 300,153,975 | 18.95% (dual) | +5.34% | 2,040 / 2,964 | 551 | 0.001136 to 0.01131 |
-| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | `destination-toposort` | 225,093,470 | 12.23% | +24.85% | 1,715 / 1,981 | 723 | 0.001183 to 0.007356 |
-| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | `destination-sliding-window` | 249,039,950 | 2.90% | +38.13% | 1,782 / 1,858 | 723 | 0.004497 to 0.007409 |
-| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | `destination-local-search` | 251,018,180 | 2.12% | +39.23% | 1,840 / 1,800 | 690 | 0.001277 to 0.007409 |
-| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | `destination-toposort` | 190,273,768 | 8.36% | +52.15% | 1,129 / 2,250 | 664 | 0.008898 to 0.01197 |
-| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | `destination-sliding-window` | 206,393,886 | 0.60% | +65.04% | 1,175 / 2,103 | 664 | 0.008797 to 0.01193 |
-| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | `destination-local-search` | 206,469,921 | 0.56% | +65.10% | 1,176 / 2,102 | 664 | 0.007847 to 0.01193 |
-| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | `destination-toposort` | 173,833,945 | 7.53% | -4.80% | 1,707 / 369 | 0 | 0.001137 to 0.001174 |
-| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | `destination-sliding-window` | 182,599,408 | 2.87% | +0.00% | 1,703 / 373 | 0 | 0.001137 to 0.001192 |
-| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | `destination-local-search` | 182,788,398 | 2.77% | +0.10% | 1,703 / 373 | 0 | 0.001137 to 0.001192 |
+| [`twin-layered`](../use-cases/07_twin-layered.md) | `destination-sliding-window` | 1,212,945,739 | 11.17% (dual) | +13.18% | 5,390 / 3,600 | 2,293 | 0.01284 to 0.0198 |
+| [`twin-layered`](../use-cases/07_twin-layered.md) | `destination-local-search` | 1,225,030,048 | 10.29% (dual) | +14.31% | 5,549 / 3,441 | 2,177 | 0.00115 to 0.0198 |
+| [`twin-vein`](../use-cases/08_twin-vein.md) | `destination-toposort` | 299,979,372 | 18.99% (dual) | +5.22% | 2,040 / 2,964 | 551 | 0.001136 to 0.01131 |
+| [`twin-vein`](../use-cases/08_twin-vein.md) | `destination-sliding-window` | 299,142,002 | 19.22% (dual) | +4.92% | 1,736 / 2,531 | 551 | 0.001138 to 0.01164 |
+| [`twin-vein`](../use-cases/08_twin-vein.md) | `destination-local-search` | 300,153,975 | 18.95% (dual) | +5.28% | 2,040 / 2,964 | 551 | 0.001136 to 0.01131 |
+| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | `destination-toposort` | 225,093,470 | 12.23% | +24.30% | 1,715 / 1,981 | 721 | 0.001183 to 0.007356 |
+| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | `destination-sliding-window` | 250,128,042 | 2.47% | +38.12% | 1,806 / 1,860 | 721 | 0.002597 to 0.007409 |
+| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | `destination-local-search` | 251,355,084 | 1.99% | +38.80% | 1,840 / 1,826 | 695 | 0.001191 to 0.007356 |
+| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | `destination-toposort` | 190,273,768 | 8.36% | +52.51% | 1,129 / 2,250 | 664 | 0.008898 to 0.01197 |
+| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | `destination-sliding-window` | 206,495,929 | 0.55% | +65.51% | 1,176 / 2,103 | 664 | 0.008797 to 0.01199 |
+| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | `destination-local-search` | 206,495,929 | 0.55% | +65.51% | 1,176 / 2,103 | 664 | 0.008797 to 0.01199 |
+| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | `destination-toposort` | 173,833,945 | 7.53% | -4.99% | 1,707 / 369 | 0 | 0.001137 to 0.001174 |
+| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | `destination-sliding-window` | 182,955,949 | 2.68% | +0.00% | 1,705 / 371 | 0 | 0.001137 to 0.001192 |
+| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | `destination-local-search` | 182,965,952 | 2.67% | +0.01% | 1,705 / 371 | 0 | 0.001137 to 0.001192 |
 | [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | `destination-toposort` | 437,075,858 | 0.40% | +2.21% | 3,013 / 1,608 | 669 | 0.001139 to 0.002301 |
-| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | `destination-sliding-window` | 437,839,664 | 0.22% | +2.38% | 3,013 / 1,608 | 669 | 0.001139 to 0.002295 |
-| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | `destination-local-search` | 437,965,112 | 0.20% | +2.41% | 3,045 / 1,576 | 637 | 0.001139 to 0.002295 |
+| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | `destination-sliding-window` | 437,899,435 | 0.21% | +2.40% | 3,013 / 1,608 | 669 | 0.001139 to 0.002295 |
+| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | `destination-local-search` | 438,028,477 | 0.18% | +2.43% | 3,045 / 1,576 | 637 | 0.001139 to 0.002295 |
 | [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | `destination-toposort` | 473,615,066 | 0.00% | +0.00% | 3,682 / 939 | 0 | 0.001137 to 0.001137 |
 | [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | `destination-sliding-window` | 473,615,066 | 0.00% | +0.00% | 3,682 / 939 | 0 | 0.001137 to 0.001137 |
 | [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | `destination-local-search` | 473,615,066 | 0.00% | +0.00% | 3,682 / 939 | 0 | 0.001137 to 0.001137 |
@@ -187,5 +187,5 @@ is stated.
 
 `oreblocks.pcpsp_lp_bound(solution=True)`, `oreblocks.pcpsp_lagrangian_bound`,
 `PcpspBound.preferred_destination`, `oreblocks.restrict_destinations`, `oreblocks.lift_to_pcpsp`, `oreblocks.exact_destination_local_search`,
-`oreblocks.solve_opbsp_exact`, `oreblocks.lane_cutoffs` (engine 0.6.1); the three rungs in
+`oreblocks.solve_opbsp_exact`, `oreblocks.lane_cutoffs` (engine 0.6.3); the three rungs in
 `data-pipeline/pipeline/stages/solve.py`.

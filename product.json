@@ -1,0 +1,18 @@
+{
+  "name": "PhaseFlow",
+  "slug": "phaseflow",
+  "tagline": {
+    "en": "A research workbench for multi-period open-pit production scheduling, its bounds, and the assumptions behind each result.",
+    "es": "Un banco de investigación para la programación de producción en rajos abiertos multiperíodo, sus cotas y los supuestos detrás de cada resultado."
+  },
+  "repo": "https://github.com/fsantibanezleal/CAOS_PhaseFlow",
+  "visibility": "public",
+  "license": "MIT",
+  "holder": "Felipe Santibáñez-Leal",
+  "year": 2026,
+  "method_packages": [
+    "oreblocks"
+  ],
+  "app": "workbench",
+  "focus": true
+}
