@@ -24,9 +24,9 @@ The exact collapse control is `ctrl-degenerate`.
 | bound | value | time | detail |
 | --- | ---: | ---: | --- |
 | ultimate pit (UPIT, exact, undiscounted) | 473,615,066 |  | 4,621 of 6,912 blocks; no time, no capacity |
-| Algorithm 4 (min over single-resource LPs) | 428,750,527 | 19.3 s | 138 maximum closures |
-| joint LP (Bienstock-Zuckerberg) | 428,750,584 | 11.5 s | 13 iterations on 55,296 nodes, 479,584 edges; slack of Algorithm 4: none (BZ ended 0.13 ppm above, inside its tolerance) |
-| PCPSP LP (HiGHS, destinations free) | 438,824,759 | 99.9 s | 534,896 rows, status optimal |
+| Algorithm 4 (min over single-resource LPs) | 428,750,527 | 11.4 s | 138 maximum closures |
+| joint LP (Bienstock-Zuckerberg) | 428,750,584 | 9.3 s | 13 iterations on 55,296 nodes, 479,584 edges; slack of Algorithm 4: none (BZ ended 0.13 ppm above, inside its tolerance) |
+| PCPSP LP (HiGHS, destinations free) | 438,824,759 | 51.8 s | 534,896 rows, status optimal |
 | used for every CPIT gap on this case | Algorithm 4 |  |  |
 <!-- /generated -->
 
@@ -39,20 +39,20 @@ the largest one.
 <!-- generated:case:ctrl-abundant -->
 | method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | 398,634,010 | Algorithm 4 | 7.02% | 163 ms | 1.4 / 100% |
-| `nested-shells` | classical | 404,889,616 | Algorithm 4 | 5.57% | 159 ms | 8.0 / 87% |
-| `toposort-greedy` | classical | 401,470,358 | Algorithm 4 | 6.36% | 163 ms | 2.2 / 87% |
-| `toposort-gershon` | classical | 419,591,568 | Algorithm 4 | 2.14% | 545 ms | 1.8 / 90% |
-| `toposort-expected` | sota | 427,325,801 | Algorithm 4 | 0.33% | 19.5 s | 3.2 / 88% |
-| `exts-two-resource` | sota | 427,325,801 | Algorithm 4 | 0.33% | 19.8 s | 3.2 / 88% |
-| `shift-local-search` | sota | 427,637,346 | Algorithm 4 | 0.26% | 195 ms | 1.4 / 89% |
-| `sliding-window` | sota | 425,008,862 | Algorithm 4 | 0.87% | 8.1 min | 2.0 / 83% |
-| `cpitD-local-search` **(best)** | sota | 427,644,503 | Algorithm 4 | 0.26% | 1.1 s | 1.4 / 89% |
-| `learned-expected-time` | learned | 424,178,034 | Algorithm 4 | 1.07% | 355 ms | 2.0 / 90% |
-| `destination-toposort` | beyond | 437,075,858 | PCPSP LP | 0.40% | 18.8 s | 19.0 / 85% |
-| `destination-sliding-window` | beyond | 437,839,664 | PCPSP LP | 0.22% | 22.9 min | 26.8 / 79% |
-| `destination-local-search` | beyond | 437,965,112 | PCPSP LP | 0.20% | 6.9 s | 28.2 / 79% |
-| `min-width` | beyond | 427,631,216 | Algorithm 4 | 0.26% | 510 ms | 1.4 / 89% |
+| `bench-by-bench` | classical | 398,634,010 | Algorithm 4 | 7.02% | 90 ms | 1.4 / 100% |
+| `nested-shells` | classical | 404,889,616 | Algorithm 4 | 5.57% | 87 ms | 8.0 / 87% |
+| `toposort-greedy` | classical | 401,470,358 | Algorithm 4 | 6.36% | 87 ms | 2.2 / 87% |
+| `toposort-gershon` | classical | 419,591,568 | Algorithm 4 | 2.14% | 282 ms | 1.8 / 90% |
+| `toposort-expected` | sota | 427,325,801 | Algorithm 4 | 0.33% | 11.5 s | 3.2 / 88% |
+| `exts-two-resource` | sota | 427,325,801 | Algorithm 4 | 0.33% | 11.6 s | 3.2 / 88% |
+| `shift-local-search` | sota | 427,637,346 | Algorithm 4 | 0.26% | 72 ms | 1.4 / 89% |
+| `sliding-window` | sota | 425,960,871 | Algorithm 4 | 0.65% | 4.6 min | 2.0 / 83% |
+| `cpitD-local-search` **(best)** | sota | 427,644,503 | Algorithm 4 | 0.26% | 936 ms | 1.4 / 89% |
+| `learned-expected-time` | learned | 424,178,034 | Algorithm 4 | 1.07% | 125 ms | 2.0 / 90% |
+| `destination-toposort` | beyond | 437,075,858 | PCPSP LP | 0.40% | 13.0 s | 19.0 / 85% |
+| `destination-sliding-window` | beyond | 437,899,435 | PCPSP LP | 0.21% | 12.4 min | 26.8 / 79% |
+| `destination-local-search` | beyond | 438,028,477 | PCPSP LP | 0.18% | 4.4 s | 27.2 / 79% |
+| `min-width` | beyond | 427,631,216 | Algorithm 4 | 0.26% | 376 ms | 1.4 / 89% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/ctrl-abundant.json` by `scripts/docs_tables.py`.*

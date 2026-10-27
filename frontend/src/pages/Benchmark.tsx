@@ -15,7 +15,7 @@ export default function Benchmark() {
   const lang = useShellLang() as Lang;
   return (
     <DocPage title={T.title[lang]} lede={T.lede[lang]}>
-      <TopicGroups lang={lang} label={T.sections} groups={BENCHMARK} />
+      <TopicGroups lang={lang} label={T.sections} page="benchmark" groups={BENCHMARK} />
     </DocPage>
   );
 }

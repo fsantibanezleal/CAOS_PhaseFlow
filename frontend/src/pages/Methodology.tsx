@@ -16,7 +16,7 @@ export default function Methodology() {
   const lang = useShellLang() as Lang;
   return (
     <DocPage title={T.title[lang]} lede={T.lede[lang]}>
-      <TopicGroups lang={lang} label={T.sections} groups={[FORMULATION, BOUND, SCHEDULES, LEARNED, BEYOND]} />
+      <TopicGroups lang={lang} label={T.sections} page="methodology" groups={[FORMULATION, BOUND, SCHEDULES, LEARNED, BEYOND]} />
     </DocPage>
   );
 }

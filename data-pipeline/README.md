@@ -1,16 +1,14 @@
-# data-pipeline/, the offline engine (`pipeline`)
+# PhaseFlow data pipeline
 
-Rename `pipeline` → `pipeline` per product. The **single source of physics/algorithm truth**; `frontend/` and
-`app/` consume it, never re-implement it. Its own venv: **`.venv-pipeline`** (heavy SOTA engines, local-only).
+The repository-local Python package under `pipeline/` is the sole implementation of the offline bake and scientific evaluation. It reads declared source data, validates model contracts, runs the method ladder, and emits versioned traces and manifests into `data/derived/`. The browser consumes those artifacts; it does not reimplement offline scheduling for real cases.
 
-## Layout (the package lives directly under `data-pipeline/`)
-- `pipeline/pipeline.py`, orchestrator + CLI (`python data-pipeline/run.py [all|<case>] [--seed N]`)
-- `pipeline/registry.py`, cases grouped by CATEGORY · `pipeline/live.py`, Pyodide live entrypoint
-- `pipeline/io/`, `contract.py` (**CONTRACT 1**) · `formats.py` (standard readers/writers) · `schema.py` (types)
-- `pipeline/core/`, `rng.py` (seeded determinism) · `trace.py` · `manifest.py` (**CONTRACT 2**) · `gate.py`
-- `pipeline/model/`, the shared pure-Python core (Pyodide-safe); EXAMPLE = SIR
-- `pipeline/stages/`, `preprocess → feature_extraction → train → infer → evaluate → export`
-- `pipeline/cases/`, documented cases
+## Layout
 
-Setup + run: `scripts/setup.{sh,ps1}` then `scripts/precompute.{sh,ps1}`. See
-[../docs/architecture/05_precompute-pipeline.md](../docs/architecture/05_precompute-pipeline.md).
+- `pipeline/io/`: source readers, normalization and input contracts.
+- `pipeline/model/`: shared feasibility, economics and learned-model features.
+- `pipeline/core/`: trace, manifest, random-seed and lane contracts.
+- `pipeline/stages/`: preprocessing, training, inference, evaluation and export.
+- `pipeline/cases/`: case definitions and supported scenarios.
+- `run.py`: deterministic CLI entry point.
+
+Install the isolated scientific environment with `scripts/setup.ps1` (Windows) or `scripts/setup.sh`, then read [the pipeline guide](../docs/guides/01_bake-the-artifacts.md) before baking. Raw MineLib source files belong outside the repository; only licensed, compact derived evidence is committed.
