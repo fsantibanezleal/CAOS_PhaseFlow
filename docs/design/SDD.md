@@ -5,7 +5,7 @@ PhaseFlow predates [ADR-0075](https://github.com/fsantibanezleal/CAOS_MANAGE/blo
 This document records what the shipped system does and the gates that can disprove its claims.
 New units require their own reviewed feature design before implementation.
 
-## Problem and boundary
+## Problem and non-goals
 
 PhaseFlow answers when blocks in an open pit can be extracted under slope precedence,
 per-period capacities and discounting, and what NPV a feasible schedule captures.
@@ -19,7 +19,25 @@ in CPIT ranking or gap envelopes. A minimum-width view does not reimpose capacit
 The app does not solve stockpiles, blending, geological stochastic programming,
 or production mine planning. Its ensemble is seeded synthetic stress analysis.
 
-## Contracts and authoritative data
+## Executive brief
+
+Data file: `content/executive.json`
+
+The shell renders the industry problem frame as the first Introduction view. This record identifies the source file; the view itself remains in the data contract and is not duplicated here. Its role-level actions address a general mining audience, not a named client.
+
+## Research basis
+
+The product model and claims are bounded to these primary sources and independent benchmark records:
+
+- Chicoisne et al. (2012), multi-period open-pit planning and parametric maximum closures, https://doi.org/10.1287/opre.1120.1050
+- Jelvez et al. (2018), destination-aware open-pit scheduling, https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf
+- Rivera Letelier et al. (2020), production scheduling formulation and evaluated methods, https://doi.org/10.1287/opre.2019.1965
+- MineLib Newman1 CPIT benchmark, https://minelib.org/v1/Results.xhtml
+- Morales et al. (2015), production schedules and pit-profile visualisation, https://www.delphoslab.cl/Publicaciones/2015/Morales_et_al_APCOM2015.pdf
+
+UNVERIFIED: no claim is made about a universal distribution of mine-block sizes or a general industry-wide economic benefit; published results remain bounded to their study data and formulations.
+
+## Sizing and contracts
 
 | Boundary | Contract | Gate |
 |---|---|---|
@@ -35,7 +53,55 @@ results. A release bake is all cases at once because mixed engine versions can p
 per-case checks. MineLib files remain in a local ignored cache. The repository does
 not redistribute per-block data or per-block schedules for MineLib instances.
 
-## Lanes and deployment
+## Technology and versions
+
+The table records every pinned direct dependency of the scientific, development, notebook, and frontend environments. Python versions come from exact requirement files; JavaScript versions are the resolutions in `frontend/package-lock.json`.
+
+| component | package | version | use | alternative considered |
+|---|---|---|---|---|
+| pipeline | `scipy` | `1.18.1` | scientific routines and HiGHS-backed optimisation (`requirements-precompute.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| pipeline | `onnx` | `1.22.0` | portable learned-model interchange (`requirements-precompute.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| pipeline | `onnxruntime` | `1.28.0` | CPU learned-model inference and export parity (`requirements-precompute.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| tests | `pytest` | `9.1.1` | Python contract and scientific tests (`requirements-dev.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| tests | `ruff` | `0.15.18` | Python lint and formatting checks (`requirements-dev.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| pipeline | `numpy` | `2.5.1` | numerical arrays and model features (`requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| pipeline | `oreblocks` | `0.6.3` | scheduling engine and MILP rungs (`requirements.txt`) | A product-local solver would duplicate tested scheduling and solver integration. |
+| notebooks | `matplotlib` | `3.11.2` | notebook plots (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| notebooks | `nbclient` | `0.11.0` | fresh-kernel notebook execution (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| notebooks | `nbformat` | `5.11.1` | notebook structure and deterministic serialization (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| notebooks | `ipykernel` | `7.4.0` | Python notebook kernel (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `@fasl-work/caos-app-shell` | `0.19.2` | shared navigation, documentation, shell gate and workbench primitives (`frontend/package-lock.json`); release tag `v0.19.002` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
+| frontend | `katex` | `0.19.1` | math rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `lucide-react` | `1.61.0` | interface icons (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `react` | `19.3.1` | component rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `react-dom` | `19.3.1` | browser rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `react-router` | `8.5.0` | client-side routing (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `three` | `0.171.0` | 3D schedule rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `uplot` | `1.6.32` | aggregate charts (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `zustand` | `5.0.16` | local app state (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `@types/node` | `24.19.2` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `@types/react` | `19.3.0` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `@types/react-dom` | `19.3.0` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `@types/three` | `0.171.0` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `@vitejs/plugin-react` | `6.1.1` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `playwright` | `1.64.1` | browser verification (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `tsx` | `4.23.11` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `typescript` | `5.9.3` | static type checking (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend | `vite` | `8.3.5` | development and production build (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+## Beyond the state of the art
+
+None claimed. PhaseFlow implements and evaluates published methods and engineering integrations on bounded cases. No universal algorithmic novelty or general performance improvement is asserted.
+
+## Resources
+
+| stage | memory | disk | time | where it runs |
+|---|---|---|---|---|
+| bake | peak memory not yet instrumented; no fixed estimate claimed | clean candidate directory under the configured external data root | solver and case dependent; each manifest records method timings, while full-run elapsed time is recorded separately | isolated `.venv-pipeline`; MineLib source cache stays local |
+| tests | peak memory not yet instrumented | temporary solver files under the configured external temp root | 173.68 seconds for the current OreBlocks 0.6.3 scientific suite; one stale-artifact guard failed as expected before rebake | isolated `.venv-pipeline` and `frontend/` Node environment |
+| build | peak memory not yet instrumented | `frontend/dist/` including committed replay artifacts | Vite build completed in under one second in the current local run; route materialisation followed | Vite production build |
+| deploy | no deployment in this change set | GitHub Pages workflow artifact | remote duration is recorded by Actions after a release | GitHub Pages at `https://phaseflow.fasl-work.com` |
+
+## Lanes
 
 | Lane | Work | Driver and limit |
 |---|---|---|
@@ -49,7 +115,7 @@ in bounded hosts; `npm run verify:profile` measures their height at desktop and
 phone widths after time, control and viewport changes. The measured live fix was
 already deployed in 0.07.002; the gate protects it.
 
-## Method ladder and acceptance
+## Method ladder
 
 | Method family | Acceptance criterion | Gate |
 |---|---|---|
@@ -67,7 +133,7 @@ guard, a second learned schedule rung, and a scalable sliding window on larger
 instances. Their requirements, design and tasks live under `docs/design/features/`.
 Until their gates pass, the UI must not claim they exist.
 
-## Case taxonomy and evaluation oracle
+## Cases
 
 The committed case set has a published Newman1 CPIT scenario, declared real
 scenarios, synthetic pit shapes, and controls. `ctrl-degenerate` has one period,
@@ -82,6 +148,8 @@ reports a **PCPSP** bound and feasible result in its Tables 3 and 4; those
 numbers are cross-problem context. An [external AMPL/Gurobi CPIT run](https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html)
 reports an integer optimum for Newman1. It is attributed, not a PhaseFlow
 certificate. See [the source comparison](../use-cases/01_newman1-published.md).
+
+## Oracles
 
 The oracle order is: exact mathematical controls and feasibility; committed
 trace/manifest parity; independent published dimensions and LP values; external
@@ -105,7 +173,11 @@ No single HTTP 200 or green build substitutes for this chain.
 | P-11 | WHEN a source block model lacks grade, THE trace SHALL name that absence, omit a measured grade curve and skip grade-dependent learned output. | `scripts/check_artifacts.py` grade-source gate; `npm run verify:grade`; EN/ES Zuck Small browser QA |
 | P-12 | WHEN a synthetic case enters the live lane, THE browser SHALL use the baked fixed-destination processing coefficient for every block; a positive net-value test is not equivalent. | `scripts/check_artifacts.py` processing-array gate; `frontend/test/parity.test.ts` bound and feasibility checks; `npm run verify:focus` |
 
-## Risks and stop conditions
+## Deploy driver
+
+The product template's CI runs static and scientific contract checks on every change. Release deployment is gated on a clean production build, the full shell gate, artifact and provenance checks, bilingual/theme/browser checks, and the Pages workflow. A direct route or artifact that returns HTML in place of JSON blocks release. Local checks are not evidence of remote deployment; the Pages run and live route/artifact checks are separate release records.
+
+## Risks and kill criteria
 
 - If a schedule breaches a period capacity or the bound is below a feasible
   objective, stop the release; never explain it away as a high NPV.
@@ -118,9 +190,25 @@ No single HTTP 200 or green build substitutes for this chain.
 - If a diagram or translated statement conflicts with an artifact or primary
   source, fix the source-bound narrative before promotion.
 
+## ADR fit
+
+| ADR | Fit |
+|---|---|
+| ADR-0011 | EN/ES content and shell language controls; both languages are checked on rendered pages. |
+| ADR-0012 | light/dark theme tokens for all product-owned drawings and charts. |
+| ADR-0016 | shared application shell and five substantive documentation pages. |
+| ADR-0017 | domain depth and page-area requirements verified by the shell gate. |
+| ADR-0057 | product repository architecture and template adoption. |
+| ADR-0058 | in-app architecture modal from `frontend/src/architecture.ts`. |
+| ADR-0069 | offline processing, evaluation, export, replay/live separation, and complete vertical implementations for shipped methods. |
+| ADR-0070 | Focus route for interactive simulation and state-preserving return to the workbench. |
+| ADR-0071 | measured route sizing, bounded charts and responsive navigation. |
+| ADR-0075 | retrospective SDD plus feature-level requirements and named adversarial gates before new feature work. |
+| ADR-0078 | base defects are fixed in the shared base before adopting releases; product pins are exact. |
+
 ## Convergence record
 
 This SDD backfills a shipped product and is awaiting review under ADR-0075.
-The existing requirements are checked by the named gates above. The three
-feature designs are proposals; their code and claimed outcomes remain pending
+The existing requirements are checked by the named gates above.
+The three feature designs are proposals; their code and claimed outcomes remain pending
 until review and their own convergence evidence.

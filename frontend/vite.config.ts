@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { readFileSync } from 'node:fs';
 
-// The display form from the repo's VERSION file (0.08.000), not package.json: npm requires semver there
+// The display form from the repo's VERSION file (0.09.000), not package.json: npm requires semver there
 // (0.7.6), and the footer printed that form. The same string cache-busts every artifact fetch.
 const version = readFileSync(new URL('../VERSION', import.meta.url), 'utf8').trim();
 
@@ -17,5 +17,18 @@ export default defineConfig({
   base: '/',
   plugins: [react()],
   define: { 'import.meta.env.VITE_APP_VERSION': JSON.stringify(version) },
-  build: { chunkSizeWarningLimit: 1200 },
+  resolve: { dedupe: ['react', 'react-dom', 'react-router'] },
+  build: {
+    chunkSizeWarningLimit: 1200,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'react-vendor', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/, priority: 20, includeDependenciesRecursively: false },
+            { name: 'math-vendor', test: /node_modules[\\/]katex[\\/]/, priority: 10, includeDependenciesRecursively: false },
+          ],
+        },
+      },
+    },
+  },
 });

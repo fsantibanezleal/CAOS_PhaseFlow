@@ -67,6 +67,18 @@ export const INTRODUCTION: TopicGroup[] = [
           { tex: String.raw`\mathrm{UPL}(p)=\max\sum_{b\in\mathcal B}p_b\,x_b\quad\text{s.t.}\quad x_b\le x_a\ \ \forall (a,b)\in\mathcal A,\quad x_b\in\{0,1\}`, caption: { en: 'UPIT: the most valuable precedence-closed set of blocks (Chicoisne et al. 2012, equations 1a to 1c)', es: 'UPIT: el conjunto cerrado por precedencias de mayor valor (Chicoisne et al. 2012, ecuaciones 1a a 1c)' } },
           { tex: String.raw`\max\sum_{b}\sum_{t=1}^{T}p_{bt}\,(x_{bt}-x_{b,t-1})\quad\text{s.t.}\quad \sum_b a_{rb}(x_{bt}-x_{b,t-1})\le c_{rt},\ \ x_{bt}\le x_{at},\ \ x_{bt}\le x_{b,t+1}`, caption: { en: 'CPIT in cumulative variables: x_bt = 1 when block b is mined by the end of period t', es: 'CPIT en variables acumuladas: x_bt = 1 cuando el bloque b fue extraído al final del período t' } },
         ],
+        symbols: [
+          { tex: '\\mathcal B', text: { en: 'set of blocks in the model', es: 'conjunto de bloques del modelo' } },
+          { tex: '\\mathcal A', text: { en: 'directed arcs from a block to the blocks that must precede it', es: 'arcos dirigidos de un bloque a los bloques que deben precederlo' } },
+          { tex: 'b,a', text: { en: 'block indices; a is a required predecessor of b', es: 'índices de bloque; a es un predecesor requerido de b' } },
+          { tex: 't,T', text: { en: 'period index and total number of periods', es: 'índice de período y número total de períodos' } },
+          { tex: 'p_b', text: { en: 'fixed net value of block b when destinations are fixed', es: 'valor neto fijo del bloque b cuando los destinos están fijados' } },
+          { tex: 'p_{bt}', text: { en: 'discounted value of block b assigned to period t', es: 'valor descontado del bloque b asignado al período t' } },
+          { tex: 'x_b', text: { en: 'binary inclusion decision for block b in the ultimate pit', es: 'decisión binaria de inclusión del bloque b en el pit final' } },
+          { tex: 'x_{bt}', text: { en: 'cumulative binary decision: block b is mined by the end of t', es: 'decisión binaria acumulada: el bloque b se extrae antes del fin de t' } },
+          { tex: 'a_{rb}', text: { en: 'amount of resource r consumed by mining block b', es: 'cantidad del recurso r consumida al extraer el bloque b' } },
+          { tex: 'c_{rt}', text: { en: 'capacity of resource r available in period t', es: 'capacidad del recurso r disponible en el período t' } },
+        ],
         facts: [
           { k: { en: 'UPIT', es: 'UPIT' }, v: { en: 'a set; maximum closure; polynomial; LP is integral', es: 'un conjunto; cierre máximo; polinomial; la LP es entera' } },
           { k: { en: 'CPIT', es: 'CPIT' }, v: { en: 'a period per block; destinations fixed; NP-hard', es: 'un período por bloque; destinos fijos; NP-duro' } },
@@ -147,6 +159,15 @@ export const INTRODUCTION: TopicGroup[] = [
             es: 'Esa medición es el marco de este producto. PhaseFlow no afirma que la programación directa gane por un gran margen de VAN; muestra lado a lado un plan clásico de cáscaras anidadas, heurísticas directas y la cota certificada, de modo que el lector ve valores cercanos, brechas que no lo son y una geometría de los primeros períodos que difiere. Los planes directos por bloque también traen su propia advertencia, de los autores del algoritmo que usa PhaseFlow: es probable que los bloques programados en un mismo período queden dispersos por la mina, y por eso aquí la coherencia espacial se mide en vez de suponerse.',
           },
         ],
+        steps: {
+          title: { en: 'From source data to a checked result', es: 'De datos fuente a resultado verificado' },
+          items: [
+            { en: 'Declare the case, resource limits, discount rate, and source rights.', es: 'Declarar el caso, los límites de recursos, la tasa de descuento y los derechos de la fuente.' },
+            { en: 'Validate precedence, dimensions, capacities, units, and economic coefficients before solving.', es: 'Validar precedencia, dimensiones, capacidades, unidades y coeficientes económicos antes de resolver.' },
+            { en: 'Run feasible schedules and certified bounds only for the same formulation.', es: 'Ejecutar planes factibles y cotas certificadas solo para la misma formulación.' },
+            { en: 'Persist the trace, manifest, provenance, validation results, and stated limitations together.', es: 'Guardar juntos la traza, el manifiesto, la procedencia, las validaciones y las limitaciones declaradas.' },
+          ],
+        },
         facts: [
           { k: { en: 'Classical chain', es: 'Cadena clásica' }, v: { en: 'nested pits, pushbacks, bench-phases, periods, then a cutoff', es: 'pits anidados, expansiones, fases-banco, períodos, luego una ley de corte' } },
           { k: { en: 'Algorithms in it', es: 'Algoritmos en ella' }, v: { en: 'steps 1 and 3; step 2 is the planner', es: 'pasos 1 y 3; el paso 2 es el planificador' } },

@@ -12,7 +12,7 @@
 // them rather than requesting the URL.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router';
 import { Minimize2 } from 'lucide-react';
 import { LanguageToggle, ThemeToggle } from '@fasl-work/caos-app-shell';
 import { APP_VERSION, fmtMoney, dec } from '../lib/artifacts.ts';

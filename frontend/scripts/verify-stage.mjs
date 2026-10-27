@@ -59,7 +59,7 @@ try {
     const page = await ctx.newPage();
     const errors = [];
     page.on('pageerror', (error) => errors.push(String(error)));
-    const response = await page.goto(base, { waitUntil: 'networkidle', timeout: 60000 });
+    const response = await page.goto(new URL('/app', base).toString(), { waitUntil: 'networkidle', timeout: 60000 });
     assert.equal(response?.status(), 200, `${theme}: PhaseFlow must load`);
     assert.match(await page.title(), /^PhaseFlow\b/, `${theme}: wrong app at ${base}`);
     await page.waitForSelector('[data-testid="schedule-stage"][data-drawn="1"]', { timeout: 60000 });

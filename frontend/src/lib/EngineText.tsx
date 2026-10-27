@@ -10,10 +10,11 @@ export function EngineText({ text }: { text: string | null | undefined }) {
   const es = useShellLang() === 'es';
   if (!text) return null;
   if (!es) return <>{text}</>;
+  const localized = text.replace(/(?<![\w.])(-?\d+)\.(\d+)(?=(?:[eE][+-]?\d+|\s*%|\s|[,)\]}]|$))/g, '$1,$2');
   return (
     <>
       <span className="pf-engine-tag" title="Texto escrito por el motor, en inglés">motor · EN</span>{' '}
-      <span lang="en">{text}</span>
+      <span lang="en">{localized}</span>
     </>
   );
 }
