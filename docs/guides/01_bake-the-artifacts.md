@@ -23,8 +23,12 @@ sandbox and assert the committed files are byte-identical afterwards.
 
 ## What it costs, and how to run it
 
-The whole set takes about a day; the longest case of the 0.08 release took 22.4 hours. Per case, two BLAS threads each, cases side by side (the
-0.08 release; every number per case is in `docs/validation/release-0.08.000.md`):
+The 0.09.000 rebake completed all thirteen cases with oreblocks 0.6.3. The longest measured case took
+21.1 hours (`twin-core-halo`); `twin-layered` took 18.8 hours and `kd-declared` 11.5 hours. Per-case
+times are recorded in [`release-0.09.000.md`](../validation/release-0.09.000.md). The 0.08.000 release
+times remain in [`release-0.08.000.md`](../validation/release-0.08.000.md) for historical comparison.
+
+For the previous 0.08 release, per-case cost was (two BLAS threads each, cases side by side):
 
 | step | where it bites |
 |---|---|

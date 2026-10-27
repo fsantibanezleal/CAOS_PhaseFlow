@@ -15,7 +15,7 @@ export default function Implementation() {
   const lang = useShellLang() as Lang;
   return (
     <DocPage title={T.title[lang]} lede={T.lede[lang]}>
-      <TopicGroups lang={lang} label={T.sections} groups={IMPLEMENTATION} />
+      <TopicGroups lang={lang} label={T.sections} page="implementation" groups={IMPLEMENTATION} />
     </DocPage>
   );
 }

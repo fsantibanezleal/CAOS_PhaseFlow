@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from 'react';
 import { APP_VERSION, boundSlackText, dec, fmtDuration, fmtInt, fmtMoney, jointAbsentText, pcpspBoundMethod } from '../lib/artifacts.ts';
+import { EngineText } from '../lib/EngineText.tsx';
 import type { CaseIndex, CaseManifest, ScoreboardRow } from '../lib/contract.types.ts';
 import type { Lang } from './doc.tsx';
 
@@ -213,7 +214,7 @@ export function MethodCasesPanel({ lang, method, showNotes = false }: { lang: La
                   <td className="num">{fmtMoney(r.bound)}</td>
                   <td className="num">{`${dec(r.gap_pct, 2)}%`}</td>
                   <td className="num">{fmtDuration(r.runtime_ms)}</td>
-                  {showNotes && <td style={{ whiteSpace: 'normal', minWidth: '18rem' }}>{r.notes ?? ''}</td>}
+                  {showNotes && <td style={{ whiteSpace: 'normal', minWidth: '18rem' }}><EngineText text={r.notes} /></td>}
                 </>
               ) : (
                 <td colSpan={showNotes ? 5 : 4} className="pfd-muted" style={{ whiteSpace: 'normal' }}>

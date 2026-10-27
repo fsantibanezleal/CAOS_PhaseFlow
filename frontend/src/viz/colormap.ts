@@ -31,3 +31,13 @@ export function periodColor(period: number, nPeriods: number): [number, number, 
 export function periodCss(period: number, nPeriods: number): string {
   return viridisCss(nPeriods > 1 ? period / (nPeriods - 1) : 0);
 }
+
+/** Select black or white for WCAG text contrast on the period ramp. */
+export function periodTextColor(period: number, nPeriods: number): string {
+  const [r, g, b] = periodColor(period, nPeriods).map((v) => {
+    const c = Math.min(1, Math.max(0, v));
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminance > 0.179 ? '#111827' : '#ffffff';
+}

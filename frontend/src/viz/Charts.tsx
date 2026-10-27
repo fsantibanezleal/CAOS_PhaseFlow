@@ -7,7 +7,7 @@
 // PhaseFlow ships exactly that, plus the certified bound as a reference line, because a cumulative
 // NPV curve with no bound on it is a number with no scale.
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import uPlot from 'uplot';
 import { useShellLang } from '@fasl-work/caos-app-shell';
 import 'uplot/dist/uPlot.min.css';
@@ -48,7 +48,7 @@ function useChartLang(): void {
   LANG = useShellLang();
 }
 
-export function UPlotChart({ data, build, height = 300, testId, onCursor }: PlotProps) {
+export function UPlotChart({ data, build, height = 400, testId, onCursor }: PlotProps) {
   useChartLang();
   const host = useRef<HTMLDivElement>(null);
   const plot = useRef<uPlot | null>(null);
@@ -72,8 +72,10 @@ export function UPlotChart({ data, build, height = 300, testId, onCursor }: Plot
     // The no-change guard is belt and braces for sub-pixel jitter.
     let lastW = el.clientWidth || w;
     const ro = new ResizeObserver(() => {
-      const host = el.parentElement ?? el;
-      const w2 = host.clientWidth || lastW;
+      // The parent is observed to break the self-resizing loop, but it may include panel padding.
+      // Size the plot to its own constrained host, or it can exceed the two-column panel by that
+      // padding on every responsive width.
+      const w2 = el.clientWidth || lastW;
       if (Math.abs(w2 - lastW) < 1) return;
       lastW = w2;
       p.setSize({ width: w2, height });
@@ -106,8 +108,8 @@ const baseAxes = () => {
 };
 
 /** Ore and waste per period as stacked bars, cumulative NPV as a line, the bound as a reference. */
-export function ProductionChart({ periods, bound, theme, onCursor }: {
-  periods: TracePeriod[]; bound: number; theme: string; onCursor?: (i: number | null) => void;
+export function ProductionChart({ periods, bound, theme, height = 400, onCursor }: {
+  periods: TracePeriod[]; bound: number; theme: string; height?: number; onCursor?: (i: number | null) => void;
 }) {
   const t = periods.map((p) => p.t);
   const ore = periods.map((p) => p.oreTonnes / 1e6);
@@ -120,6 +122,7 @@ export function ProductionChart({ periods, bound, theme, onCursor }: {
       key={`prod-${theme}`}
       testId="production-chart"
       data={data}
+      height={height}
       onCursor={onCursor}
       build={(w, h) => ({
         width: w, height: h, cursor: { drag: { x: true, y: false, uni: 20 } },
@@ -146,7 +149,7 @@ export function ProductionChart({ periods, bound, theme, onCursor }: {
 }
 
 /** Capacity utilisation per resource, with the limit drawn as the ceiling it is. */
-export function CapacityChart({ periods, names, theme }: { periods: TracePeriod[]; names: string[]; theme: string }) {
+export function CapacityChart({ periods, names, theme, height = 400 }: { periods: TracePeriod[]; names: string[]; theme: string; height?: number }) {
   const t = periods.map((p) => p.t);
   const series: number[][] = [];
   const nRes = periods[0]?.resourceUse.length ?? 0;
@@ -160,6 +163,7 @@ export function CapacityChart({ periods, names, theme }: { periods: TracePeriod[
       key={`cap-${theme}`}
       testId="capacity-chart"
       data={data}
+      height={height}
       build={(w, h) => ({
         width: w, height: h,
         scales: { x: { time: false }, y: { range: [0, 105] } },
@@ -175,7 +179,7 @@ export function CapacityChart({ periods, names, theme }: { periods: TracePeriod[
 }
 
 /** Spatial coherence: how many disconnected fragments each period is, and how big the largest is. */
-export function CoherenceChart({ periods, theme }: { periods: TracePeriod[]; theme: string }) {
+export function CoherenceChart({ periods, theme, height = 400 }: { periods: TracePeriod[]; theme: string; height?: number }) {
   const t = periods.map((p) => p.t);
   const comps = periods.map((p) => p.components);
   const share = periods.map((p) => 100 * p.largestComponentShare);
@@ -185,6 +189,7 @@ export function CoherenceChart({ periods, theme }: { periods: TracePeriod[]; the
       key={`coh-${theme}`}
       testId="coherence-chart"
       data={data}
+      height={height}
       build={(w, h) => ({
         width: w, height: h,
         scales: { x: { time: false }, y: {}, pct: { range: [0, 105] } },
@@ -205,7 +210,7 @@ export function CoherenceChart({ periods, theme }: { periods: TracePeriod[]; the
 }
 
 /** Head grade and strip ratio by period: does the schedule really pull high grade forward. */
-export function GradeStripChart({ periods, theme, gradeAvailable = true }: { periods: TracePeriod[]; theme: string; gradeAvailable?: boolean }) {
+export function GradeStripChart({ periods, theme, gradeAvailable = true, height = 400 }: { periods: TracePeriod[]; theme: string; gradeAvailable?: boolean; height?: number }) {
   const t = periods.map((p) => p.t);
   const g = periods.map((p) => p.headGrade * 100);
   const sr = periods.map((p) => p.stripRatio);
@@ -215,6 +220,7 @@ export function GradeStripChart({ periods, theme, gradeAvailable = true }: { per
       key={`gs-${theme}-${gradeAvailable}`}
       testId="grade-strip-chart"
       data={data}
+      height={height}
       build={(w, h) => ({
         width: w, height: h,
         scales: { x: { time: false }, ...(gradeAvailable ? { g: {} } : {}), sr: {} },
@@ -240,7 +246,6 @@ export function MethodBars({
 }: {
   rows: { method: string; rung: string; gapPct: number; npv: number; runtimeMs: number; comparable?: boolean }[];
 }) {
-  const [hover, setHover] = useState<number | null>(null);
   const es = useShellLang() === 'es';
 
   // WHY THE BAR IS NPV AND NOT THE GAP.
@@ -258,72 +263,52 @@ export function MethodBars({
     classical: 'var(--color-fg-subtle)', sota: 'var(--color-accent)',
     learned: '#8957e5', beyond: 'var(--color-warn)',
   };
-  const seen: string[] = [];
-  rows.forEach((r) => { if (!seen.includes(r.rung)) seen.push(r.rung); });
+  const seen = [...new Set(rows.map((r) => r.rung))];
+  const rowTop = 104;
+  const rowHeight = 46;
+  const barX = 258;
+  const barWidth = 520;
+  const fmtMillions = (value: number) => `${dec(value / 1e6, 1)} M`;
 
   return (
     <div className="pf-methodbars" data-testid="method-bars">
-      <div className="pf-mb-scale" aria-hidden="true">
-        <span className="pf-mb-name" />
-        <span className="pf-mb-track pf-mb-ruler">
-          <i style={{ left: '0%' }} data-l="0" />
-          <i style={{ left: '50%' }} data-l="50%" />
-          <i style={{ left: '100%' }} data-l={es ? 'cota certificada' : 'certified bound'} />
-        </span>
-        <span className="pf-mb-val" />
-        <span className="pf-mb-sub" />
-      </div>
-
-      {rows.map((r, i) => {
-        const off = r.comparable === false;
-        // A row outside the comparison (a plan of another problem, or one whose record breaks a
-        // capacity) draws no captured share and prints no gap: a fill against a bound it does not answer
-        // to reads as a result it is not.
-        const captured = off ? 0 : Math.max(0, Math.min(100, 100 - r.gapPct));
-        return (
-          <div
-            key={r.method}
-            className={`pf-mb-row${hover === i ? ' on' : ''}`}
-            data-comparable={off ? 'false' : 'true'}
-            onMouseEnter={() => setHover(i)}
-            onMouseLeave={() => setHover(null)}
-            title={off
-              ? `${r.method} - ${dec((r.npv / 1e6), 1)} M, ${es ? 'no se compara con la cota certificada' : 'not compared with the certified bound'}`
-              : `${r.method} - ${dec((r.npv / 1e6), 1)} M, ${dec(captured, 2)}% ${
-                es ? 'de la cota certificada' : 'of the certified bound'}, ${es ? 'brecha' : 'gap'} ${dec(r.gapPct, 2)}%`}
-          >
-            <span className="pf-mb-name">
-              {off ? <span title={es ? 'no comparable: otro problema o una vista de operabilidad' : 'not comparable: a different problem or an operability view'}>* </span> : null}
-              {r.method}
-            </span>
-            <span className="pf-mb-track">
-              {!off && (
-                <>
-                  <span
-                    className="pf-mb-fill"
-                    style={{ width: `${captured}%`, background: rungColor[r.rung] ?? 'var(--color-fg-subtle)' }}
-                  />
-                  {/* the remainder of the track IS the gap, at the same scale on every row */}
-                  <span className="pf-mb-gap" style={{ left: `${captured}%`, width: `${100 - captured}%` }} />
-                </>
-              )}
-            </span>
-            <span className="pf-mb-val">{dec((r.npv / 1e6), 1)} M</span>
-            <span className="pf-mb-sub">
-              {off
-                ? <b className="off">{es ? 'no comparable' : 'not comparable'}</b>
-                : <><b>{dec(r.gapPct, 2)}%</b> {es ? 'brecha' : 'gap'}</>} · {fmtDuration(r.runtimeMs)}
-            </span>
-          </div>
-        );
-      })}
-
-      <div className="pf-mb-key">
-        {seen.map((g) => (
-          <span key={g}><i style={{ background: rungColor[g] ?? 'var(--color-fg-subtle)' }} />{rungLabel(g)}</span>
-        ))}
-        <span className="pf-mb-keygap"><i />{es ? 'brecha a la cota' : 'gap to the bound'}</span>
-      </div>
+      <svg className="pf-method-chart" viewBox={`0 0 1000 ${Math.max(760, rowTop + rows.length * rowHeight + 92)}`} role="img"
+        aria-label={es ? 'Valor neto presente capturado por método frente a la cota CPIT certificada' : 'Net present value captured by method against the certified CPIT bound'}>
+        <title>{es ? 'Comparación de métodos contra una cota común' : 'Method comparison against a common bound'}</title>
+        <desc>{es ? 'Cada barra muestra la fracción de la cota CPIT común alcanzada por un plan factible. El tramo rayado es la brecha; las etiquetas indican el NPV, la brecha y el tiempo.' : 'Each bar shows the share of the common CPIT bound reached by a feasible schedule. The hatched remainder is the gap; labels give NPV, gap, and runtime.'}</desc>
+        <defs>
+          <pattern id="pf-gap-hatch" width="7" height="7" patternTransform="rotate(35)" patternUnits="userSpaceOnUse">
+            <rect width="7" height="7" fill="var(--color-surface-2)" />
+            <line x1="0" y1="0" x2="0" y2="7" stroke="var(--color-fg-subtle)" strokeOpacity="0.5" strokeWidth="2" />
+          </pattern>
+        </defs>
+        <text x="24" y="38" className="pf-mc-axis">{es ? 'MÉTODO' : 'METHOD'}</text>
+        <text x={barX} y="38" className="pf-mc-axis">{es ? 'NPV COMO FRACCIÓN DE LA COTA CERTIFICADA' : 'NPV AS A SHARE OF THE CERTIFIED BOUND'}</text>
+        <text x="790" y="38" className="pf-mc-axis">NPV</text>
+        <text x="850" y="38" className="pf-mc-axis">{es ? 'BRECHA · TIEMPO' : 'GAP · TIME'}</text>
+        {[0, 50, 100].map((pct) => {
+          const x = barX + (barWidth * pct) / 100;
+          return <g key={pct}><line x1={x} x2={x} y1="64" y2={rowTop + rows.length * rowHeight - 10} className="pf-mc-grid" /><text x={x} y="59" textAnchor={pct === 0 ? 'start' : pct === 100 ? 'end' : 'middle'} className="pf-mc-tick">{pct === 100 ? (es ? 'cota' : 'bound') : `${pct}%`}</text></g>;
+        })}
+        {rows.map((r, i) => {
+          const off = r.comparable === false;
+          const captured = off ? 0 : Math.max(0, Math.min(100, 100 - r.gapPct));
+          const y = rowTop + i * rowHeight;
+          return <g key={r.method} className="pf-mc-row">
+            <title>{off ? `${r.method}: ${fmtMillions(r.npv)}, ${es ? 'no comparable con la cota CPIT' : 'not comparable with the CPIT bound'}` : `${r.method}: ${fmtMillions(r.npv)}, ${dec(r.gapPct, 2)}% ${es ? 'de brecha' : 'gap'}, ${fmtDuration(r.runtimeMs)}`}</title>
+            <text x="24" y={y + 5} className="pf-mc-method">{r.method}</text>
+            <rect x={barX} y={y - 12} width={barWidth} height="22" rx="5" className="pf-mc-track" />
+            {!off && <>
+              <rect x={barX} y={y - 12} width={barWidth * captured / 100} height="22" rx="5" fill={rungColor[r.rung] ?? 'var(--color-fg-subtle)'} />
+              {captured < 100 && <rect x={barX + barWidth * captured / 100} y={y - 12} width={barWidth * (100 - captured) / 100} height="22" fill="url(#pf-gap-hatch)" />}
+            </>}
+            <text x="790" y={y + 5} className="pf-mc-value">{fmtMillions(r.npv)}</text>
+            <text x="850" y={y + 5} className="pf-mc-value">{off ? (es ? 'no comparable' : 'not comparable') : `${dec(r.gapPct, 2)}% · ${fmtDuration(r.runtimeMs)}`}</text>
+          </g>;
+        })}
+        {seen.map((g, i) => <g key={g} transform={`translate(${24 + i * 175} 728)`}><rect width="13" height="13" rx="3" fill={rungColor[g] ?? 'var(--color-fg-subtle)'} /><text x="20" y="11" className="pf-mc-legend">{rungLabel(g)}</text></g>)}
+        <g transform={`translate(${24 + seen.length * 175} 728)`}><rect width="13" height="13" fill="url(#pf-gap-hatch)" stroke="var(--color-border)" /><text x="20" y="11" className="pf-mc-legend">{es ? 'brecha a la cota' : 'gap to the bound'}</text></g>
+      </svg>
     </div>
   );
 }

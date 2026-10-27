@@ -15,7 +15,7 @@ export default function Experiments() {
   const lang = useShellLang() as Lang;
   return (
     <DocPage title={T.title[lang]} lede={T.lede[lang]}>
-      <TopicGroups lang={lang} label={T.sections} groups={EXPERIMENTS} />
+      <TopicGroups lang={lang} label={T.sections} page="experiments" groups={EXPERIMENTS} />
     </DocPage>
   );
 }

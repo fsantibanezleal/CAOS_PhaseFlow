@@ -1,6 +1,6 @@
 # Canonical OFFLINE lane: the bake, the joint bound, the exact local search, and the learned
 # verticals with their verified ONNX export. Never installed by CI and never by the deploy.
 -r data-pipeline/requirements.txt
-scipy==1.18.0
+scipy==1.18.1
 onnx==1.22.0
 onnxruntime==1.28.0

@@ -1,9 +1,3 @@
-# app/, DORMANT FastAPI backend
+# API boundary
 
-**This solution does not require a request-time backend at the moment.** The product is static
-deterministic-replay (ADR-0054): the frontend loads the committed artifacts in `data/derived/` directly.
-
-Activate this lane ONLY on an ADR-0002 trigger (server-side processing of uploaded data, auth-gated private data,
-paid heavy compute). To activate: pin `requirements-api.txt`, install it, run `uvicorn app.main:app`. The
-endpoints serve the SAME committed artifacts read-only, a thin layer over `data/`, never a re-implementation of
-the engine.
+PhaseFlow currently ships a static browser workbench and offline Python pipeline. No hosted API is implemented or required by the current product contract. This folder records the reserved service boundary only; it is dormant until a reviewed feature requires one.

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 260" role="img" aria-label="A schedule and its bound must describe the same problem">
+  <rect width="560" height="260" rx="16" fill="var(--color-surface)"/>
+  <g fill="var(--color-bg)" stroke="var(--color-fg-subtle)" stroke-width="2">
+    <rect x="34" y="52" width="142" height="146" rx="12"/><rect x="209" y="52" width="142" height="146" rx="12"/><rect x="384" y="52" width="142" height="146" rx="12"/>
+  </g>
+  <g fill="var(--color-accent)"><rect x="57" y="76" width="96" height="18" rx="5"/><rect x="232" y="76" width="96" height="18" rx="5"/><rect x="407" y="76" width="96" height="18" rx="5"/></g>
+  <g fill="var(--color-surface-2)"><rect x="57" y="110" width="28" height="28" rx="4"/><rect x="91" y="110" width="28" height="28" rx="4"/><rect x="125" y="110" width="28" height="28" rx="4"/><rect x="232" y="110" width="28" height="28" rx="4"/><rect x="266" y="110" width="28" height="28" rx="4"/><rect x="300" y="110" width="28" height="28" rx="4"/><rect x="407" y="110" width="28" height="28" rx="4"/><rect x="441" y="110" width="28" height="28" rx="4"/><rect x="475" y="110" width="28" height="28" rx="4"/></g>
+  <g fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round"><path d="M54 165h100M229 165h100M404 165h100"/><path d="m184 118 16 16m0-16-16 16m175-16 16 16m0-16-16 16"/></g>
+  <g fill="var(--color-accent)"><circle cx="105" cy="165" r="7"/><circle cx="280" cy="165" r="7"/><circle cx="455" cy="165" r="7"/></g>
+  <path d="M80 220h400" fill="none" stroke="var(--color-accent)" stroke-width="3" stroke-dasharray="7 8"/>
+  <text class="pf-exec-label pf-exec-en" lang="en" x="280" y="248" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Plan and bound, same model</text>
+  <text class="pf-exec-label pf-exec-es" lang="es" x="280" y="248" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Plan y cota, mismo modelo</text>
+</svg>

@@ -1,6 +1,6 @@
 # Deposit-statistics live guard: design
 
-Status: proposed. [Requirements](requirements.md) and [tasks](tasks.md).
+Status: proposed. [Proposal](proposal.md); this proposal has no approved implementation tasks.
 
 ## Data flow
 

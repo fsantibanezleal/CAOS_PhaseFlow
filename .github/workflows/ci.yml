@@ -41,7 +41,8 @@ jobs:
         run: |
           fail=0
           # a real .env must never be tracked (only .env.example)
-          if git ls-files | grep -qE '(^|/)\.env(\..+)?$' && ! git ls-files | grep -qx '.env.example'; then
+          envs="$(git ls-files | grep -E '(^|/)\.env(\..+)?$' | grep -vE '(^|/)\.env(\..+)?\.example$' || true)"
+          if [ -n "$envs" ]; then
             echo "::error::a real .env is tracked (only .env.example may be)"; fail=1; fi
           # venvs / native binaries / heavy model blobs must never be tracked
           if git ls-files | grep -qiE '(^|/)\.?venv|\.(dll|so|dylib|pt|pth)$'; then
@@ -59,6 +60,10 @@ jobs:
           python-version: "3.12"
       - name: No template residue (instantiated products must replace the example pipeline)
         run: python scripts/check_template_residue.py
+      - name: Bilingual product notebooks (static anatomy, mirror and provenance)
+        run: python scripts/check_notebooks.py
+      - name: README describes every product area
+        run: python scripts/check_readme_areas.py
       - name: No em-dash or emoji in product content (ADR-0067)
         run: python scripts/check_content_standards.py
       - name: Every tracked .sh is executable (a 100644 .sh is Permission denied on a Linux clone)
