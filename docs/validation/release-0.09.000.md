@@ -74,10 +74,10 @@ accepts the measured solver changes explicitly; the report is not represented as
 ## Product changes and verification
 
 - The Profile and plan charts remain bounded through repeated resize/restore at 1600x900, 1280x800,
-  768x900, 390x844 and 320x700. Workbench charts use a viewport-aware phone height; the capacity legend
-  clears the shell footer in English and Spanish.
-- Shell adoption: `@fasl-work/caos-app-shell` 0.19.2 and template 0.11.002. The app build and the current
-  shell matrix are rerun against the refreshed data before promotion.
+  768x900, 390x844 and 320x700. Workbench chart heights are bounded separately for phone and tablet
+  layouts; the capacity legend clears the shell footer in English and Spanish.
+- Shell adoption: `@fasl-work/caos-app-shell` 0.19.2 and template 0.11.002. The app build and browser
+  matrix ran against the refreshed data.
 - The 0.08.000 docs wiki's generated tables are refreshed from 0.09.000 manifests. EN/ES prose,
   diagrams, controls and methodology explanations are checked against the new results.
 
@@ -88,6 +88,19 @@ accepts the measured solver changes explicitly; the report is not represented as
 | `python scripts/check_readme_numbers.py` | PASS after the trust-anchor refresh |
 | `python scripts/check_content_standards.py` | PASS |
 | `python scripts/check_sdd.py` | PASS |
-| `npm test`, `npm run build`, shell gate, profile, stage, grade, theme, infeasibility, focus | Re-run on the final release tree before promotion |
-| full Python suite and four bilingual notebook checks | Re-run on the final release tree before promotion |
-| GitHub CI, Pages deployment, deployed URL and browser gates | Pending promotion |
+| `npm test` and architecture labels | PASS, 30 tests and 52 labels |
+| `npm run build` | PASS, 19 materialized routes |
+| Profile resize/restore | PASS, 1600x900, 1280x800, 768x900, 390x844, 320x700 |
+| grade, theme, infeasibility, stage, focus | PASS, EN/ES provenance and all 13 cases where applicable |
+| full shell browser matrix | 1,976 states; all layout, interaction, content, and rendering checks pass. G4 reported three empty captured response bodies for JSON manifests. |
+| built Pages-style server JSON check | PASS, all 27 manifest/trace files return HTTP 200 and parse as JSON |
+| `python -m pytest -q` in `.venv-pipeline` | PASS, full suite |
+| four bilingual notebook executions and freshness check | PASS, 4/4 executed top to bottom; committed outputs are fresh |
+| artifact, docs table, README number/area, content, SDD, template-residue, technology-matrix and Ruff guards | PASS |
+| GitHub `develop` CI, Pages deployment, deployed URL and live browser gates | Pending promotion |
+
+The G4 result is a shell gate capture limitation, not a missing or malformed shipped file: the shell stores
+the first Playwright `response.text()` promise per JSON path, and a few bodies resolve empty after the
+browser's route walk. Independent requests through the exact built Pages-style server verified every
+manifest and trace as valid JSON; the artifact schema/control guard also passes. The G4 capture remains
+reported here as a limitation and is not counted as a fully green shell gate.
