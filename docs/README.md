@@ -52,7 +52,7 @@ MineLib's `newman1`, solved **as published** (its six periods, its eight percent
 | ultimate pit optimum | 26,086,899 | PhaseFlow, equal to the published UPIT optimum |
 | CPIT LP bound (joint, Bienstock-Zuckerberg) | 24,486,184 | PhaseFlow; MineLib's results page lists the same CPIT LP bound to the unit |
 | CPIT integer optimum | 24,176,864.82 | external: AMPL notebook, Gurobi 13.0.0, MIP gap 1e-9 |
-| best PhaseFlow plan (`sliding-window`) | 24,149,869 | 1.37 percent below the LP bound, about 0.11 percent below the integer optimum |
+| best PhaseFlow plan (`sliding-window`) | 24,142,200 | 1.40 percent below the LP bound, about 0.14 percent below the integer optimum |
 | PCPSP LP bound | 24,486,549 | PhaseFlow; equal to Jelvez et al. 2018, Table 3 |
 
 The full comparison, including the 2018 PCPSP result and the three-way split of the gap, is

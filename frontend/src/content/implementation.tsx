@@ -1,6 +1,6 @@
 /**
  * Implementation: how each method is computed in this product. Steps, constants, numerical choices,
- * approximations and measured cost, method by method. Transcribed from the engine (oreblocks 0.6.1),
+ * approximations and measured cost, method by method. Transcribed from the engine (oreblocks 0.6.3),
  * the pipeline and the browser engine, and from the research dossiers for the published parts.
  */
 import type { TopicGroup } from './doc.tsx';
@@ -56,6 +56,14 @@ export const IMPLEMENTATION: TopicGroup[] = [
           { en: 'Twins are not conditional simulations from drillholes; they are labelled synthetic wherever they appear.', es: 'Los gemelos no son simulaciones condicionales desde sondajes; se rotulan como sintéticos dondequiera que aparecen.' },
           { en: 'One grade, one metal, one recovery: no multi-element economics.', es: 'Una ley, un metal, una recuperación: sin economía multielemento.' },
         ],
+        table: {
+          head: [{ en: 'Design field', es: 'Campo de diseño' }, { en: 'Twin configuration', es: 'Configuración gemela' }],
+          rows: [
+            [{ en: 'Archetypes', es: 'Arquetipos' }, { en: 'porphyry shell, dipping vein, alternating layers, core-halo', es: 'cáscara de pórfido, veta inclinada, estratos alternados, núcleo-halo' }],
+            [{ en: 'Grid and density', es: 'Grilla y densidad' }, { en: '10 m blocks; 2,700 t per block', es: 'bloques de 10 m; 2.700 t por bloque' }],
+            [{ en: 'Randomness', es: 'Aleatoriedad' }, { en: 'seeded noise with three edge-corrected blur passes', es: 'ruido sembrado con tres pasadas de difuminado corregido en bordes' }],
+          ],
+        },
         refs: ['espinoza2013', 'lerchs1965', 'oreblocks'],
       },
       {
@@ -97,6 +105,14 @@ export const IMPLEMENTATION: TopicGroup[] = [
         limits: [
           { en: 'Only one MineLib instance has reachable scheduling files; the other two carry scenarios declared here.', es: 'Solo una instancia MineLib tiene archivos de programación alcanzables; las otras dos llevan escenarios declarados aquí.' },
         ],
+        table: {
+          head: [{ en: 'Instance', es: 'Instancia' }, { en: 'Role', es: 'Rol' }, { en: 'Block-level data', es: 'Datos por bloque' }],
+          rows: [
+            [{ en: 'newman1', es: 'newman1' }, { en: 'published six-period CPIT reference', es: 'referencia CPIT publicada de seis períodos' }, { en: 'not redistributed; aggregate replay', es: 'no redistribuidos; reproducción agregada' }],
+            [{ en: 'kd', es: 'kd' }, { en: 'declared scenario on a real block model', es: 'escenario declarado sobre modelo de bloques real' }, { en: 'not redistributed; aggregate replay', es: 'no redistribuidos; reproducción agregada' }],
+            [{ en: 'zuck_small', es: 'zuck_small' }, { en: 'declared scenario; source has no grade', es: 'escenario declarado; la fuente no tiene ley' }, { en: 'not redistributed; aggregate replay', es: 'no redistribuidos; reproducción agregada' }],
+          ],
+        },
         refs: ['espinoza2013', 'minelibresults', 'amplminelib'],
       },
     ],
@@ -537,6 +553,72 @@ export const IMPLEMENTATION: TopicGroup[] = [
           { en: 'Reproducible on the same library versions; a different HiGHS release may stop at a different point inside the same gap.', es: 'Reproducible con las mismas versiones de bibliotecas; otra versión de HiGHS puede detenerse en otro punto dentro de la misma brecha.' },
         ],
         refs: ['huangfu2018'],
+      },
+    ],
+  },
+  {
+    id: 'architecture',
+    label: { en: 'Architecture and delivery', es: 'Arquitectura y entrega' },
+    topics: [
+      {
+        id: 'architecture',
+        title: { en: 'From source cases to browser views', es: 'De los casos fuente a las vistas del navegador' },
+        paragraphs: [
+          {
+            en: 'The offline pipeline is the scientific authority: it loads a declared case, validates the model, runs pinned OreBlocks methods, checks feasibility and bound relations, then writes a trace, manifest and index. The browser consumes those versioned artifacts; it does not quietly rebake experiments when a reader opens a page. The trace contract keeps method rows, per-period plans and provenance together, while the index chooses exactly one default case.',
+            es: 'El pipeline fuera de línea es la autoridad científica: carga un caso declarado, valida el modelo, ejecuta métodos OreBlocks fijados, verifica factibilidad y relaciones entre cotas, y luego escribe una traza, manifiesto e índice. El navegador consume esos artefactos versionados; no vuelve a hornear experimentos en silencio cuando alguien abre una página. El contrato de la traza mantiene juntas las filas de métodos, los planes por período y la procedencia, mientras el índice elige exactamente un caso predeterminado.',
+          },
+          {
+            en: 'A replay view draws the committed result. A live view sends the same baked synthetic block arrays to a Web Worker for the explicitly supported fast subset. Keeping the worker off the document thread preserves interaction, and keeping the two lanes visible makes it clear which values were recomputed and which were replayed.',
+            es: 'Una vista de reproducción dibuja el resultado versionado. Una vista en vivo envía los mismos arreglos de bloques sintéticos horneados a un Web Worker para el subconjunto rápido explícitamente admitido. Mantener el worker fuera del hilo del documento preserva la interacción, y mostrar los dos carriles deja claro qué valores se recalcularon y cuáles se reprodujeron.',
+          },
+        ],
+        figure: { caption: { en: 'The evidence path and the browser boundary.', es: 'La ruta de evidencia y el límite del navegador.' }, render: (lang) => <LaneFidelity lang={lang} />, wide: true },
+        refs: ['chicoisne2012'],
+      },
+      {
+        id: 'admission',
+        title: { en: 'What admits a case to the live lane', es: 'Qué admite un caso al carril en vivo' },
+        paragraphs: [
+          {
+            en: 'Admission requires redistributable inputs and measured size budgets: at most 30,000 blocks, 300,000 precedence arcs and a 6 MB trace. MineLib cases fail the redistribution condition by design and therefore remain aggregate replay evidence. A synthetic case outside any size budget remains viewable from its trace but cannot be selected for a live solve.',
+            es: 'La admisión requiere entradas redistribuibles y presupuestos de tamaño medidos: como máximo 30.000 bloques, 300.000 arcos de precedencia y una traza de 6 MB. Los casos MineLib no cumplen la condición de redistribución por diseño y por eso permanecen como evidencia agregada de reproducción. Un caso sintético que excede cualquier presupuesto sigue visible desde su traza, pero no se puede elegir para una resolución en vivo.',
+          },
+          {
+            en: 'The limit is an explicit product boundary, not a claim that larger pits are unsupported by the underlying algorithms. A future case can enter only after its browser cost is measured, parity checks are added, and the artifact guard records why its input is safe to ship.',
+            es: 'El límite es una frontera explícita del producto, no una afirmación de que los algoritmos subyacentes no admitan rajos mayores. Un caso futuro solo puede entrar después de medir su costo en el navegador, agregar verificaciones de paridad y registrar en el control de artefactos por qué es seguro distribuir su entrada.',
+          },
+        ],
+        facts: [
+          { k: { en: 'Blocks', es: 'Bloques' }, v: { en: '30,000 maximum', es: '30.000 máximo' } },
+          { k: { en: 'Precedence arcs', es: 'Arcos de precedencia' }, v: { en: '300,000 maximum', es: '300.000 máximo' } },
+          { k: { en: 'Trace', es: 'Traza' }, v: { en: '6 MB maximum', es: '6 MB máximo' } },
+        ],
+        refs: ['chicoisne2012'],
+      },
+      {
+        id: 'deployment',
+        title: { en: 'Static deployment and route integrity', es: 'Despliegue estático e integridad de rutas' },
+        paragraphs: [
+          {
+            en: 'The product is a static client application deployed through the repository workflow to GitHub Pages at phaseflow.fasl-work.com. The production build materialises direct-route fallbacks and copies the committed data artifacts into the served bundle; no runtime service computes or substitutes scientific results.',
+            es: 'El producto es una aplicación cliente estática que se despliega mediante el flujo del repositorio a GitHub Pages en phaseflow.fasl-work.com. El build de producción materializa rutas directas de respaldo y copia los artefactos de datos versionados al paquete servido; ningún servicio en tiempo de ejecución calcula ni sustituye resultados científicos.',
+          },
+          {
+            en: 'A deployment is ready only when direct routes hydrate, every requested JSON artifact returns JSON rather than the SPA fallback, and the bilingual browser gate passes at phone and desktop sizes. A successful local build is a preparation check; the Actions deployment and live HTTPS route checks establish the remote state.',
+            es: 'Un despliegue está listo solo cuando las rutas directas hidratan, cada artefacto JSON solicitado devuelve JSON en vez del respaldo SPA y el control bilingüe del navegador pasa en tamaños de teléfono y escritorio. Un build local exitoso es una verificación de preparación; el despliegue de Actions y las comprobaciones de rutas HTTPS en vivo establecen el estado remoto.',
+          },
+        ],
+        steps: {
+          title: { en: 'Release checks', es: 'Controles de publicación' },
+          items: [
+            { en: 'Build and materialise direct routes.', es: 'Construir y materializar rutas directas.' },
+            { en: 'Validate every trace, manifest, index and provenance boundary.', es: 'Validar cada traza, manifiesto, índice y límite de procedencia.' },
+            { en: 'Run the full browser gate across routes, controls, languages, themes and viewport sizes.', es: 'Ejecutar el control completo del navegador en rutas, controles, idiomas, temas y tamaños de ventana.' },
+            { en: 'Verify the deployed HTTPS routes and artifact responses.', es: 'Verificar las rutas HTTPS desplegadas y las respuestas de artefactos.' },
+          ],
+        },
+        refs: ['chicoisne2012'],
       },
     ],
   },

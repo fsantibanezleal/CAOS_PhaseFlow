@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 260" role="img" aria-label="Blocks linked by slope precedence and period capacity">
+  <rect width="560" height="260" rx="16" fill="var(--color-surface)"/>
+  <g stroke="var(--color-border)" stroke-width="2" fill="none" stroke-linecap="round">
+    <path d="M115 68v36m0 0-44 34m44-34 44 34M280 68v36m0 0-44 34m44-34 44 34M445 68v36m0 0-44 34m44-34 44 34"/>
+    <path d="M185 192h190" stroke-dasharray="5 7"/>
+  </g>
+  <g fill="var(--color-bg)" stroke="var(--color-fg-subtle)" stroke-width="2">
+    <rect x="88" y="42" width="54" height="32" rx="6"/><rect x="57" y="126" width="48" height="32" rx="6"/><rect x="125" y="126" width="48" height="32" rx="6"/>
+    <rect x="253" y="42" width="54" height="32" rx="6"/><rect x="222" y="126" width="48" height="32" rx="6"/><rect x="290" y="126" width="48" height="32" rx="6"/>
+    <rect x="418" y="42" width="54" height="32" rx="6"/><rect x="387" y="126" width="48" height="32" rx="6"/><rect x="455" y="126" width="48" height="32" rx="6"/>
+  </g>
+  <g fill="var(--color-accent)"><rect x="62" y="184" width="110" height="42" rx="8"/><rect x="225" y="184" width="110" height="42" rx="8"/><rect x="388" y="184" width="110" height="42" rx="8"/></g>
+  <g fill="var(--color-bg)"><path d="M88 205h58" stroke="var(--color-bg)" stroke-width="5" stroke-linecap="round"/><path d="M251 205h58" stroke="var(--color-bg)" stroke-width="5" stroke-linecap="round"/><path d="M414 205h58" stroke="var(--color-bg)" stroke-width="5" stroke-linecap="round"/></g>
+  <g fill="var(--color-accent)"><circle cx="115" cy="58" r="5"/><circle cx="280" cy="58" r="5"/><circle cx="445" cy="58" r="5"/></g>
+  <text class="pf-exec-label pf-exec-en" lang="en" x="280" y="248" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Precedence and capacity</text>
+  <text class="pf-exec-label pf-exec-es" lang="es" x="280" y="248" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Precedencia y capacidad</text>
+</svg>

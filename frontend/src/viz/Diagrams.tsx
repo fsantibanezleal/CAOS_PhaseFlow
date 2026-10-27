@@ -194,11 +194,11 @@ export function TwoLanes() {
 
 /** What the degeneracy control actually proves. The Controls tab used to say PASS with no picture of
  *  what was compared, which is a claim rather than evidence. */
-export function DegeneracyCollapse() {
+export function DegeneracyCollapse({ setMatches, relativeError }: { setMatches: boolean; relativeError: string }) {
   const es = useShellLang() === 'es';
-  const cell = 20;
+  const cell = 40;
   // The two shared diagram classes are dg-ok at 13 percent and dg-f at 7 percent opacity, which on a
-  // 20px cell is no contrast at all: the first version drew both grids as a uniform grey rectangle and
+  // 40px cell is no contrast at all: the first version drew both grids as a uniform grey rectangle and
   // the cone that IS the point of the figure was invisible. In-set cells are drawn in the accent with a
   // real border; out-of-set cells stay faint. The distinction has to survive a glance.
   const grid = (ox: number, oy: number, fillFn: (c: number, r: number) => boolean) => {
@@ -222,21 +222,33 @@ export function DegeneracyCollapse() {
   // the same cone-shaped set on both sides: that IS the assertion
   const pit = (c: number, r: number) => Math.abs(c - 4) <= 4 - r;
   return (
-    <Fig vb="0 0 620 230"
+    <Fig vb="0 0 850 500"
          caption={es
            ? 'El control de degeneración: con tasa cero y capacidad ilimitada, el descuento y las capacidades desaparecen del objetivo y CPIT se reduce al pit final. Los dos conjuntos deben coincidir bloque a bloque y los dos valores a precisión de máquina. Es la única parte del producto con una respuesta conocida de antemano, y por eso fallar aquí es un error y no un resultado.'
            : 'The degeneracy control: at rate zero with unlimited capacity, the discounting and the capacities drop out of the objective and CPIT reduces to the ultimate pit. The two sets must agree block for block and the two values to machine precision. It is the only part of the product with a known answer in advance, which is why a failure here is a bug and not a result.'}>
-      <text className="dg-tb" x="52" y="24">CPIT</text>
-      <text className="dg-ts" x="52" y="41">{es ? 'tasa 0, capacidad infinita' : 'rate 0, unlimited capacity'}</text>
-      {grid(52, 54, pit)}
+      <text className="dg-tb" x="45" y="30">CPIT</text>
+      <text className="dg-ts" x="45" y="50">{es ? 'tasa 0, capacidad infinita' : 'rate 0, unlimited capacity'}</text>
+      {grid(45, 67, pit)}
 
-      <text className="dg-tb" x="392" y="24">{es ? 'Pit final' : 'Ultimate pit'}</text>
-      <text className="dg-ts" x="392" y="41">{es ? 'Lerchs-Grossmann exacto' : 'exact Lerchs-Grossmann'}</text>
-      {grid(392, 54, pit)}
+      <text className="dg-tb" x="480" y="30">{es ? 'Pit final' : 'Ultimate pit'}</text>
+      <text className="dg-ts" x="480" y="50">{es ? 'Lerchs-Grossmann exacto' : 'exact Lerchs-Grossmann'}</text>
+      {grid(480, 67, pit)}
 
-      <text className="dg-tb" x="312" y="140" textAnchor="middle" style={{ fontSize: 22 }}>=</text>
-      <text className="dg-ts" x="312" y="162" textAnchor="middle">{es ? 'bloque' : 'block'}</text>
-      <text className="dg-ts" x="312" y="176" textAnchor="middle">{es ? 'a bloque' : 'for block'}</text>
+      <text className="dg-tb" x="440" y="155" textAnchor="middle" style={{ fontSize: 22 }}>=</text>
+      <text className="dg-ts" x="440" y="177" textAnchor="middle">{es ? 'bloque' : 'block'}</text>
+      <text className="dg-ts" x="440" y="191" textAnchor="middle">{es ? 'a bloque' : 'for block'}</text>
+
+      <rect x="15" y="330" width="820" height="155" rx="10"
+            fill="var(--color-accent, currentColor)" fillOpacity="0.08"
+            stroke="var(--color-accent, currentColor)" strokeOpacity="0.35" />
+      <text className="dg-ts" x="38" y="360">{es ? 'MEDIDO EN ESTA INSTANCIA' : 'MEASURED ON THIS INSTANCE'}</text>
+      <path className="dg-b" d="M425 374 V465" />
+      <text className="dg-tb" x="40" y="402">{es ? 'Diferencia simétrica' : 'Symmetric set difference'}</text>
+      <text className="dg-ts" x="40" y="424">{es ? 'bloques que difieren entre CPIT y el pit final' : 'blocks that differ between CPIT and the ultimate pit'}</text>
+      <text className="dg-tb" x="385" y="414" textAnchor="end">{setMatches ? '0' : '≠ 0'}</text>
+      <text className="dg-tb" x="455" y="402">{es ? 'Error relativo de cota' : 'Relative bound error'}</text>
+      <text className="dg-ts" x="455" y="424">{es ? 'tasa cero, capacidad ilimitada' : 'zero rate, unlimited capacity'}</text>
+      <text className="dg-tb" x="812" y="414" textAnchor="end">{relativeError}</text>
     </Fig>
   );
 }
