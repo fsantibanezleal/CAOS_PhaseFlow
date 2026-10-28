@@ -13,7 +13,7 @@ product, and how to apply it elsewhere. Every card matches a pin in a `requireme
 | 04 | [ONNX and onnxruntime](frameworks/04_onnx.md) | the learned models' portable export and its verification (offline only) | `onnx==1.22.0`, `onnxruntime==1.28.0` |
 | 05 | [scipy and HiGHS](frameworks/05_scipy-highs.md) | the LP and MILP solver behind five rungs and the PCPSP LP | `scipy==1.18.0` |
 | 06 | [KaTeX](frameworks/06_katex.md) | the equations on the reading pages, through the shell | `katex@^0.16.11` |
-| 07 | [caos-app-shell](frameworks/07_caos-app-shell.md) | the shared header, footer, theme, language, modal, citations and document components | `@fasl-work/caos-app-shell@0.19.5` |
+| 07 | [caos-app-shell](frameworks/07_caos-app-shell.md) | the shared header, footer, theme, language, modal, citations and document components | `@fasl-work/caos-app-shell@0.19.6` |
 
 Also in the stack, without a card because nothing product-specific rides on them: numpy (`numpy==2.5.1`,
 the arrays and the hand-written MLP and Adam), React 19 with React Router 7, Vite 6 and TypeScript 5, and
