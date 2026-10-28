@@ -1,7 +1,8 @@
 # data/, the contract and the layout
 
-Governed by the two data contracts of ADR-0057. This page is the ingestion side; the artifact side is
-[`docs/architecture/08_data-contracts.md`](../docs/architecture/08_data-contracts.md).
+Governed by the two data contracts of ADR-0057. This page is the ingestion side; the artifact layout and replay
+boundary are described in [`docs/architecture/02_determinism-and-trace.md`](../docs/architecture/02_determinism-and-trace.md)
+and [`docs/architecture/05_precompute-pipeline.md`](../docs/architecture/05_precompute-pipeline.md).
 
 ## Layout
 

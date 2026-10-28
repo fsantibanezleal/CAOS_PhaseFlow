@@ -18,16 +18,23 @@
 // Focus routes are dynamic (/focus/<caseId>), so the case ids come from the built manifest index rather
 // than a hardcoded list that would drift the moment a case is added or removed.
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const dist = join(process.cwd(), 'dist');
 const indexHtml = join(dist, 'index.html');
+const version = readFileSync(join(process.cwd(), '..', 'VERSION'), 'utf8').trim();
 
 if (!existsSync(indexHtml)) {
   console.error('[spa-404] dist/index.html missing; nothing to do');
-  process.exit(0);
+  process.exit(1);
 }
+
+// The Pages release verifier needs to identify the exact commit being served.
+// GitHub Actions supplies GITHUB_SHA on the main-branch deploy; local builds
+// use an explicit marker instead of implying they correspond to a release.
+const buildSha = process.env.GITHUB_SHA?.trim() || 'local';
+writeFileSync(join(dist, 'build.json'), `${JSON.stringify({ sha: buildSha, version })}\n`, 'utf8');
 
 // 1. the fallback, for anything not pre-rendered below (an old link, a typo, a future route)
 copyFileSync(indexHtml, join(dist, '404.html'));

@@ -26,7 +26,7 @@ is read from the committed artifacts.
 | theme | start here | what it holds |
 |---|---|---|
 | methodologies | [methodologies.md](methodologies.md) | the four problems, the bounds, every method with its theory and its measured results, how to read them |
-| use cases | [use-cases.md](use-cases.md) | the thirteen cases, the role of each, every bound and plan per case |
+| use cases | [cases.md](cases.md) | the thirteen cases, the role of each, every bound and plan per case |
 | data contract | [data-contract.md](data-contract.md) | inputs, CONTRACT 1 (ingestion), CONTRACT 2 (artifacts), licences, model files |
 | architecture | [architecture.md](architecture.md) | the lanes, the bake, the live port, the gate, deploy |
 | frameworks | [frameworks.md](frameworks.md) | each engine and library: card, installation, usage, applying it elsewhere |
@@ -56,7 +56,7 @@ MineLib's `newman1`, solved **as published** (its six periods, its eight percent
 | PCPSP LP bound | 24,486,549 | PhaseFlow; equal to Jelvez et al. 2018, Table 3 |
 
 The full comparison, including the 2018 PCPSP result and the three-way split of the gap, is
-[use case 01](use-cases/01_newman1-published.md).
+[use case 01](cases/01_newman1-published.md).
 
 ## Defects worth reading about
 

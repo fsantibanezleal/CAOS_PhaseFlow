@@ -40,6 +40,6 @@ the worst missed case, not only recall.
 
 The baseline is the current label rule's **clean** 216-case result, not its
 flattering holdout result. G-04 is a predeclared minimum; if it fails, publish
-the negative measurement in `docs/methods/10_when_the_surrogate_fails.md` and
+the negative measurement in the surrogate-failure methodology page and
 leave the live lane unguarded. No test may redefine failure after seeing the
 third split.

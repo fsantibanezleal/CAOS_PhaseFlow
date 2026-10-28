@@ -1,109 +1,747 @@
 {
-  "title": { "en": "Planning an open pit across time", "es": "Planificar un rajo abierto a través del tiempo" },
+  "title": {
+    "en": "Planning an open pit across time",
+    "es": "Planificar un rajo abierto a través del tiempo"
+  },
   "key_statement": {
     "en": "A mine plan must choose when to extract each block while respecting slope precedence and production limits in every period. Comparing feasible schedules with valid bounds makes the value and the unresolved gap visible.",
     "es": "Un plan minero debe elegir cuándo extraer cada bloque, respetando la precedencia de talud y los límites de producción en cada período. Comparar planes factibles con cotas válidas hace visible el valor y la brecha aún no resuelta."
   },
   "headline_figures": [
-    { "heading": { "en": "Published instance scale", "es": "Escala de instancias publicadas" }, "value": { "en": "3–10 million", "es": "3–10 millones" }, "unit": { "en": "blocks in real cases reported in the multi-period open-pit scheduling study", "es": "bloques en casos reales informados en el estudio de programación multiperíodo de rajos abiertos" }, "source": "chicoisne-2012" },
-    { "heading": { "en": "Reported heuristic gap", "es": "Brecha heurística informada" }, "value": { "en": "1.52", "es": "1,52" }, "unit": { "en": "percent average gap in the published computational study; it is a paper result, not a PhaseFlow result", "es": "por ciento de brecha promedio en el estudio computacional publicado; es un resultado del artículo, no de PhaseFlow" }, "source": "rivera-2020" }
+    {
+      "heading": {
+        "en": "Published instance scale",
+        "es": "Escala de instancias publicadas"
+      },
+      "value": {
+        "en": "3–10 million",
+        "es": "3–10 millones"
+      },
+      "unit": {
+        "en": "blocks in real cases reported in the multi-period open-pit scheduling study",
+        "es": "bloques en casos reales informados en el estudio de programación multiperíodo de rajos abiertos"
+      },
+      "source": "chicoisne-2012"
+    },
+    {
+      "heading": {
+        "en": "Reported heuristic gap",
+        "es": "Brecha heurística informada"
+      },
+      "value": {
+        "en": "1.52",
+        "es": "1,52"
+      },
+      "unit": {
+        "en": "percent average gap in the published computational study; it is a paper result, not a PhaseFlow result",
+        "es": "por ciento de brecha promedio en el estudio computacional publicado; es un resultado del artículo, no de PhaseFlow"
+      },
+      "source": "rivera-2020"
+    }
   ],
   "pain": {
-    "key_message": { "en": "A feasible schedule is difficult to judge without both its operational constraints and a bound for the same mathematical problem.", "es": "Es difícil evaluar un plan factible sin conocer sus restricciones operativas y una cota del mismo problema matemático." },
+    "key_message": {
+      "en": "A feasible schedule is difficult to judge without both its operational constraints and a bound for the same mathematical problem.",
+      "es": "Es difícil evaluar un plan factible sin conocer sus restricciones operativas y una cota del mismo problema matemático."
+    },
     "paragraphs": [
-      { "en": "An open-pit schedule assigns blocks to periods. A block can be mined only after the blocks above it expose it, while mine and plant capacities restrict what can be moved and processed in each period. These dependencies couple decisions across space and time.", "es": "Un plan de rajo abierto asigna bloques a períodos. Un bloque solo puede extraerse después de que los bloques superiores lo expongan, mientras las capacidades de mina y planta restringen lo que puede moverse y procesarse en cada período. Estas dependencias acoplan decisiones en el espacio y el tiempo." },
-      { "en": "A high-value schedule is not enough by itself: it may violate capacity, use a bound for a different problem, or leave readers unable to reproduce the reported comparison. The cost is uncertainty about what the number proves, not a universal financial loss that these studies do not measure.", "es": "Un plan de alto valor no basta por sí solo: puede violar la capacidad, usar una cota de otro problema o impedir que se reproduzca la comparación informada. El costo es la incertidumbre sobre lo que demuestra la cifra, no una pérdida financiera universal que estos estudios no miden." }
+      {
+        "en": "An open-pit schedule assigns blocks to periods. A block can be mined only after the blocks above it expose it, while mine and plant capacities restrict what can be moved and processed in each period. These dependencies couple decisions across space and time.",
+        "es": "Un plan de rajo abierto asigna bloques a períodos. Un bloque solo puede extraerse después de que los bloques superiores lo expongan, mientras las capacidades de mina y planta restringen lo que puede moverse y procesarse en cada período. Estas dependencias acoplan decisiones en el espacio y el tiempo."
+      },
+      {
+        "en": "A high-value schedule is not enough by itself: it may violate capacity, use a bound for a different problem, or leave readers unable to reproduce the reported comparison. The cost is uncertainty about what the number proves, not a universal financial loss that these studies do not measure.",
+        "es": "Un plan de alto valor no basta por sí solo: puede violar la capacidad, usar una cota de otro problema o impedir que se reproduzca la comparación informada. El costo es la incertidumbre sobre lo que demuestra la cifra, no una pérdida financiera universal que estos estudios no miden."
+      }
     ],
     "bearers": [
-      { "who": { "en": "Mine-planning engineers", "es": "Ingenieros de planificación minera" }, "cost": { "en": "Time spent reconciling schedules, assumptions, and solver outputs", "es": "Tiempo dedicado a reconciliar planes, supuestos y resultados del solver" }, "measure": { "en": "Reproduction time and unresolved differences between reported results", "es": "Tiempo de reproducción y diferencias sin resolver entre resultados informados" } },
-      { "who": { "en": "Technical reviewers", "es": "Revisores técnicos" }, "cost": { "en": "Difficulty checking feasibility and whether a bound matches the objective", "es": "Dificultad para comprobar factibilidad y si una cota corresponde al objetivo" }, "measure": { "en": "Constraint violations and mismatched problem definitions found in review", "es": "Violaciones de restricciones y definiciones de problema incompatibles detectadas en la revisión" } },
-      { "who": { "en": "Researchers comparing methods", "es": "Investigadores que comparan métodos" }, "cost": { "en": "Comparisons that change with instances, capacities, or bound quality", "es": "Comparaciones que cambian con las instancias, capacidades o calidad de la cota" }, "measure": { "en": "Reported gap with its bound, instance, and runtime stated", "es": "Brecha informada junto con su cota, instancia y tiempo de ejecución" } }
+      {
+        "who": {
+          "en": "Mine-planning engineers",
+          "es": "Ingenieros de planificación minera"
+        },
+        "cost": {
+          "en": "Time spent reconciling schedules, assumptions, and solver outputs",
+          "es": "Tiempo dedicado a reconciliar planes, supuestos y resultados del solver"
+        },
+        "measure": {
+          "en": "Reproduction time and unresolved differences between reported results",
+          "es": "Tiempo de reproducción y diferencias sin resolver entre resultados informados"
+        }
+      },
+      {
+        "who": {
+          "en": "Technical reviewers",
+          "es": "Revisores técnicos"
+        },
+        "cost": {
+          "en": "Difficulty checking feasibility and whether a bound matches the objective",
+          "es": "Dificultad para comprobar factibilidad y si una cota corresponde al objetivo"
+        },
+        "measure": {
+          "en": "Constraint violations and mismatched problem definitions found in review",
+          "es": "Violaciones de restricciones y definiciones de problema incompatibles detectadas en la revisión"
+        }
+      },
+      {
+        "who": {
+          "en": "Researchers comparing methods",
+          "es": "Investigadores que comparan métodos"
+        },
+        "cost": {
+          "en": "Comparisons that change with instances, capacities, or bound quality",
+          "es": "Comparaciones que cambian con las instancias, capacidades o calidad de la cota"
+        },
+        "measure": {
+          "en": "Reported gap with its bound, instance, and runtime stated",
+          "es": "Brecha informada junto con su cota, instancia y tiempo de ejecución"
+        }
+      }
     ],
     "figures": [
-      { "heading": { "en": "Blocks in reported real cases", "es": "Bloques en casos reales informados" }, "value": { "en": "3–10 million", "es": "3–10 millones" }, "unit": { "en": "blocks in the study's real cases", "es": "bloques en los casos reales del estudio" }, "source": "chicoisne-2012" },
-      { "heading": { "en": "Computational test range", "es": "Rango de pruebas computacionales" }, "value": { "en": "20,000–5 million", "es": "20.000–5 millones" }, "unit": { "en": "blocks tested in the later algorithm study; not a universal industry distribution", "es": "bloques probados en un estudio algorítmico posterior; no es una distribución universal de la industria" }, "source": "rivera-2020" }
+      {
+        "heading": {
+          "en": "Blocks in reported real cases",
+          "es": "Bloques en casos reales informados"
+        },
+        "value": {
+          "en": "3–10 million",
+          "es": "3–10 millones"
+        },
+        "unit": {
+          "en": "blocks in the study's real cases",
+          "es": "bloques en los casos reales del estudio"
+        },
+        "source": "chicoisne-2012"
+      },
+      {
+        "heading": {
+          "en": "Computational test range",
+          "es": "Rango de pruebas computacionales"
+        },
+        "value": {
+          "en": "20,000–5 million",
+          "es": "20.000–5 millones"
+        },
+        "unit": {
+          "en": "blocks tested in the later algorithm study; not a universal industry distribution",
+          "es": "bloques probados en un estudio algorítmico posterior; no es una distribución universal de la industria"
+        },
+        "source": "rivera-2020"
+      },
+      {
+        "heading": {
+          "en": "Public benchmark problem classes",
+          "es": "Clases de problemas del benchmark público"
+        },
+        "value": {
+          "en": "3 classes",
+          "es": "3 clases"
+        },
+        "unit": {
+          "en": "ultimate pit limit and two open-pit production-scheduling variants in MineLib",
+          "es": "límite de pit final y dos variantes de programación de producción en MineLib"
+        },
+        "source": "minelib-2013"
+      },
+      {
+        "heading": {
+          "en": "Period-level schedule measures",
+          "es": "Medidas del plan por período"
+        },
+        "value": {
+          "en": "Ore · waste · grade · discounted value",
+          "es": "Mineral · estéril · ley · valor descontado"
+        },
+        "unit": {
+          "en": "reported for comparing conventional and direct block-scheduling methods",
+          "es": "informadas para comparar métodos convencionales y directos de programación de bloques"
+        },
+        "source": "morales-2015"
+      }
     ],
     "causes": [
-      { "cause": { "en": "Slope precedence couples extraction decisions across blocks and periods", "es": "La precedencia de talud acopla decisiones de extracción entre bloques y períodos" }, "weight": 35 },
-      { "cause": { "en": "Mine and plant capacities must hold separately in every period", "es": "Las capacidades de mina y planta deben cumplirse por separado en cada período" }, "weight": 30 },
-      { "cause": { "en": "Large instances make exact multi-period optimisation computationally demanding", "es": "Las instancias grandes hacen que la optimización multiperíodo exacta sea computacionalmente exigente" }, "weight": 25 },
-      { "cause": { "en": "Published methods may solve different objectives and require problem-specific bounds", "es": "Los métodos publicados pueden resolver objetivos distintos y requieren cotas específicas del problema" }, "weight": 10 }
+      {
+        "cause": {
+          "en": "Slope precedence couples extraction decisions across blocks and periods",
+          "es": "La precedencia de talud acopla decisiones de extracción entre bloques y períodos"
+        },
+        "weight": 35
+      },
+      {
+        "cause": {
+          "en": "Mine and plant capacities must hold separately in every period",
+          "es": "Las capacidades de mina y planta deben cumplirse por separado en cada período"
+        },
+        "weight": 30
+      },
+      {
+        "cause": {
+          "en": "Large instances make exact multi-period optimisation computationally demanding",
+          "es": "Las instancias grandes hacen que la optimización multiperíodo exacta sea computacionalmente exigente"
+        },
+        "weight": 25
+      },
+      {
+        "cause": {
+          "en": "Published methods may solve different objectives and require problem-specific bounds",
+          "es": "Los métodos publicados pueden resolver objetivos distintos y requieren cotas específicas del problema"
+        },
+        "weight": 10
+      }
     ]
   },
   "context": {
-    "key_message": { "en": "The result depends on the precise objective, precedence rules, capacities, and the problem a bound certifies.", "es": "El resultado depende del objetivo preciso, las reglas de precedencia, las capacidades y el problema que certifica una cota." },
+    "key_message": {
+      "en": "The result depends on the precise objective, precedence rules, capacities, and the problem a bound certifies.",
+      "es": "El resultado depende del objetivo preciso, las reglas de precedencia, las capacidades y el problema que certifica una cota."
+    },
     "paragraphs": [
-      { "en": "Open-pit production scheduling combines an ultimate-pit value model with decisions about extraction time. Research formulations add precedence and period capacities. Destination or blending variants add decisions and constraints, so their bounds and gaps cannot be silently compared with a different formulation.", "es": "La programación de producción en rajos abiertos combina el valor del pit final con decisiones sobre el momento de extracción. Las formulaciones agregan precedencia y capacidades por período. Las variantes con destinos o mezcla agregan otras decisiones, así que sus cotas y brechas no se comparan con otra formulación." }
+      {
+        "en": "Open-pit production scheduling combines an ultimate-pit value model with decisions about extraction time. Research formulations add precedence and period capacities. Destination or blending variants add decisions and constraints, so their bounds and gaps cannot be silently compared with a different formulation.",
+        "es": "La programación de producción en rajos abiertos combina el valor del pit final con decisiones sobre el momento de extracción. Las formulaciones agregan precedencia y capacidades por período. Las variantes con destinos o mezcla agregan otras decisiones, así que sus cotas y brechas no se comparan con otra formulación."
+      }
     ],
-    "setting": { "en": "Research and technical review of block-based, multi-period open-pit schedules with slope precedence, discounted value, and mining or processing capacity constraints.", "es": "Investigación y revisión técnica de planes de rajos abiertos por bloques y multiperíodo, con precedencia de talud, valor descontado y restricciones de capacidad de mina o planta." },
+    "setting": {
+      "en": "Research and technical review of block-based, multi-period open-pit schedules with slope precedence, discounted value, and mining or processing capacity constraints.",
+      "es": "Investigación y revisión técnica de planes de rajos abiertos por bloques y multiperíodo, con precedencia de talud, valor descontado y restricciones de capacidad de mina o planta."
+    },
     "forces": [
-      { "force": { "en": "Larger block models increase the size of time-expanded formulations", "es": "Los modelos de bloques mayores aumentan el tamaño de las formulaciones expandidas en el tiempo" }, "direction": "rising" },
-      { "force": { "en": "Multiple capacity resources make single-resource relaxations less informative", "es": "Múltiples recursos de capacidad vuelven menos informativas las relajaciones de un solo recurso" }, "direction": "steady" },
-      { "force": { "en": "Open benchmarks enable more reproducible comparisons", "es": "Los benchmarks abiertos permiten comparaciones más reproducibles" }, "direction": "rising" }
+      {
+        "force": {
+          "en": "Larger block models increase the size of time-expanded formulations",
+          "es": "Los modelos de bloques mayores aumentan el tamaño de las formulaciones expandidas en el tiempo"
+        },
+        "direction": "rising"
+      },
+      {
+        "force": {
+          "en": "Multiple capacity resources make single-resource relaxations less informative",
+          "es": "Múltiples recursos de capacidad vuelven menos informativas las relajaciones de un solo recurso"
+        },
+        "direction": "steady"
+      },
+      {
+        "force": {
+          "en": "Open benchmarks enable more reproducible comparisons",
+          "es": "Los benchmarks abiertos permiten comparaciones más reproducibles"
+        },
+        "direction": "rising"
+      }
     ],
     "evidence": [
-      { "statement": { "en": "The 2012 study reports real cases with 3–10 million blocks and 15–20 periods, and formulates precedence and capacity constraints across periods.", "es": "El estudio de 2012 informa casos reales con 3–10 millones de bloques y 15–20 períodos, y formula restricciones de precedencia y capacidad entre períodos." }, "source": "chicoisne-2012" },
-      { "statement": { "en": "The later study evaluates instances from 20,000 to 5 million blocks and reports its algorithmic results against its stated bound and test setup.", "es": "El estudio posterior evalúa instancias de 20.000 a 5 millones de bloques e informa resultados algorítmicos contra la cota y la configuración de prueba declaradas." }, "source": "rivera-2020" }
+      {
+        "statement": {
+          "en": "The 2012 study reports real cases with 3–10 million blocks and 15–20 periods, and formulates precedence and capacity constraints across periods.",
+          "es": "El estudio de 2012 informa casos reales con 3–10 millones de bloques y 15–20 períodos, y formula restricciones de precedencia y capacidad entre períodos."
+        },
+        "source": "chicoisne-2012"
+      },
+      {
+        "statement": {
+          "en": "The later study evaluates instances from 20,000 to 5 million blocks and reports its algorithmic results against its stated bound and test setup.",
+          "es": "El estudio posterior evalúa instancias de 20.000 a 5 millones de bloques e informa resultados algorítmicos contra la cota y la configuración de prueba declaradas."
+        },
+        "source": "rivera-2020"
+      },
+      {
+        "statement": {
+          "en": "Mine-planning research spans distinct design, pit-limit, and production-scheduling problem classes; a benchmark result must name which one it measures.",
+          "es": "La investigación de planificación minera abarca clases distintas de diseño, límite de pit y programación de producción; un resultado de benchmark debe indicar cuál mide."
+        },
+        "source": "newman-2010"
+      },
+      {
+        "statement": {
+          "en": "Some published open-pit scheduling methods model metal uncertainty explicitly, which is a separate question from replaying a deterministic schedule.",
+          "es": "Algunos métodos publicados de programación de rajo modelan explícitamente la incertidumbre metálica, una pregunta distinta de reproducir un plan determinista."
+        },
+        "source": "lamghari-2012"
+      }
     ]
   },
   "situation": {
-    "key_message": { "en": "Planning, optimisation, and review need a shared, auditable account of the same case and mathematical objective.", "es": "La planificación, optimización y revisión necesitan una descripción compartida y auditable del mismo caso y objetivo matemático." },
+    "key_message": {
+      "en": "Planning, optimisation, and review need a shared, auditable account of the same case and mathematical objective.",
+      "es": "La planificación, optimización y revisión necesitan una descripción compartida y auditable del mismo caso y objetivo matemático."
+    },
     "roles": [
-      { "role": { "en": "Mine-planning engineer", "es": "Ingeniero de planificación minera" }, "decides": { "en": "How to assign extraction across periods under operational limits", "es": "Cómo asignar la extracción entre períodos bajo límites operativos" }, "needs": { "en": "A feasible schedule and visible assumptions", "es": "Un plan factible y supuestos visibles" } },
-      { "role": { "en": "Operations researcher", "es": "Investigador de operaciones" }, "decides": { "en": "Which formulation and algorithm answer the stated question", "es": "Qué formulación y algoritmo responden la pregunta declarada" }, "needs": { "en": "Comparable instances, bounds, and reproducible measurements", "es": "Instancias, cotas y mediciones reproducibles y comparables" } },
-      { "role": { "en": "Technical reviewer", "es": "Revisor técnico" }, "decides": { "en": "Whether the evidence supports the reported conclusion", "es": "Si la evidencia respalda la conclusión informada" }, "needs": { "en": "Independent checks for feasibility, provenance, and scope", "es": "Comprobaciones independientes de factibilidad, procedencia y alcance" } }
+      {
+        "role": {
+          "en": "Mine-planning engineer",
+          "es": "Ingeniero de planificación minera"
+        },
+        "decides": {
+          "en": "How to assign extraction across periods under operational limits",
+          "es": "Cómo asignar la extracción entre períodos bajo límites operativos"
+        },
+        "needs": {
+          "en": "A feasible schedule and visible assumptions",
+          "es": "Un plan factible y supuestos visibles"
+        }
+      },
+      {
+        "role": {
+          "en": "Operations researcher",
+          "es": "Investigador de operaciones"
+        },
+        "decides": {
+          "en": "Which formulation and algorithm answer the stated question",
+          "es": "Qué formulación y algoritmo responden la pregunta declarada"
+        },
+        "needs": {
+          "en": "Comparable instances, bounds, and reproducible measurements",
+          "es": "Instancias, cotas y mediciones reproducibles y comparables"
+        }
+      },
+      {
+        "role": {
+          "en": "Technical reviewer",
+          "es": "Revisor técnico"
+        },
+        "decides": {
+          "en": "Whether the evidence supports the reported conclusion",
+          "es": "Si la evidencia respalda la conclusión informada"
+        },
+        "needs": {
+          "en": "Independent checks for feasibility, provenance, and scope",
+          "es": "Comprobaciones independientes de factibilidad, procedencia y alcance"
+        }
+      }
     ],
-    "interaction": { "en": "The planner defines the case and limits, the researcher selects a model and method, and the reviewer checks that each schedule and bound refer to that same declared problem.", "es": "El planificador define el caso y los límites, el investigador selecciona un modelo y método, y el revisor comprueba que cada plan y cota se refieran al mismo problema declarado." },
+    "interaction": {
+      "en": "The planner defines the case and limits, the researcher selects a model and method, and the reviewer checks that each schedule and bound refer to that same declared problem.",
+      "es": "El planificador define el caso y los límites, el investigador selecciona un modelo y método, y el revisor comprueba que cada plan y cota se refieran al mismo problema declarado."
+    },
     "state_of_the_art": [
-      { "approach": { "en": "Multi-period block scheduling", "es": "Programación de bloques multiperíodo" }, "achieves": { "en": "Explicit schedules and bounds on large instances under the paper's assumptions", "es": "Planes y cotas explícitos en instancias grandes bajo los supuestos del artículo" }, "falls_short": { "en": "Reported bounds and runtimes apply to the studied formulation, data, and computing setup", "es": "Las cotas y tiempos informados aplican a la formulación, datos y cómputo estudiados" }, "source": "chicoisne-2012" },
-      { "approach": { "en": "Heuristic methods evaluated against published bounds", "es": "Métodos heurísticos evaluados contra cotas publicadas" }, "achieves": { "en": "Quantified gaps and runtimes for the tested instances", "es": "Brechas y tiempos cuantificados para las instancias probadas" }, "falls_short": { "en": "A measured average does not guarantee the same gap on another deposit or formulation", "es": "Un promedio medido no garantiza la misma brecha en otro depósito o formulación" }, "source": "rivera-2020" }
-      ,{ "approach": { "en": "Relaxation-based approaches to multi-period scheduling", "es": "Enfoques de relajación para programación multiperíodo" }, "achieves": { "en": "Upper bounds that help assess how far a feasible heuristic schedule may be from an optimum", "es": "Cotas superiores que ayudan a evaluar cuán lejos puede estar un plan heurístico factible de un óptimo" }, "falls_short": { "en": "The bound quality depends on the relaxation and the exact problem definition", "es": "La calidad de la cota depende de la relajación y de la definición exacta del problema" }, "source": "chicoisne-2012" }
+      {
+        "approach": {
+          "en": "Multi-period block scheduling",
+          "es": "Programación de bloques multiperíodo"
+        },
+        "achieves": {
+          "en": "Explicit schedules and bounds on large instances under the paper's assumptions",
+          "es": "Planes y cotas explícitos en instancias grandes bajo los supuestos del artículo"
+        },
+        "falls_short": {
+          "en": "Reported bounds and runtimes apply to the studied formulation, data, and computing setup",
+          "es": "Las cotas y tiempos informados aplican a la formulación, datos y cómputo estudiados"
+        },
+        "source": "chicoisne-2012"
+      },
+      {
+        "approach": {
+          "en": "Heuristic methods evaluated against published bounds",
+          "es": "Métodos heurísticos evaluados contra cotas publicadas"
+        },
+        "achieves": {
+          "en": "Quantified gaps and runtimes for the tested instances",
+          "es": "Brechas y tiempos cuantificados para las instancias probadas"
+        },
+        "falls_short": {
+          "en": "A measured average does not guarantee the same gap on another deposit or formulation",
+          "es": "Un promedio medido no garantiza la misma brecha en otro depósito o formulación"
+        },
+        "source": "rivera-2020"
+      },
+      {
+        "approach": {
+          "en": "Relaxation-based approaches to multi-period scheduling",
+          "es": "Enfoques de relajación para programación multiperíodo"
+        },
+        "achieves": {
+          "en": "Upper bounds that help assess how far a feasible heuristic schedule may be from an optimum",
+          "es": "Cotas superiores que ayudan a evaluar cuán lejos puede estar un plan heurístico factible de un óptimo"
+        },
+        "falls_short": {
+          "en": "The bound quality depends on the relaxation and the exact problem definition",
+          "es": "La calidad de la cota depende de la relajación y de la definición exacta del problema"
+        },
+        "source": "chicoisne-2012"
+      },
+      {
+        "approach": {
+          "en": "Sliding time-window sequencing",
+          "es": "Secuenciación con ventana temporal deslizante"
+        },
+        "achieves": {
+          "en": "A restricted time window can make a large integer schedule tractable for a heuristic solve.",
+          "es": "Una ventana temporal restringida puede hacer tratable una programación entera grande para una resolución heurística."
+        },
+        "falls_short": {
+          "en": "Window size and candidate starvation can change coverage and solution quality; refusal is safer than a silently starved solve.",
+          "es": "El tamaño de ventana y la falta de candidatos pueden cambiar cobertura y calidad; rechazar es más seguro que resolver una ventana insuficiente."
+        },
+        "source": "cullenbine-2011"
+      },
+      {
+        "approach": {
+          "en": "Large-scale precedence relaxations",
+          "es": "Relajaciones de precedencia a gran escala"
+        },
+        "achieves": {
+          "en": "Lagrangian methods can produce useful LP bounds for large precedence-constrained schedules.",
+          "es": "Los métodos lagrangianos pueden producir cotas LP útiles para planes grandes con precedencia."
+        },
+        "falls_short": {
+          "en": "A relaxation bound is not a feasible schedule and is comparable only when its objective and constraints match.",
+          "es": "Una cota de relajación no es un plan factible y solo es comparable si coinciden objetivo y restricciones."
+        },
+        "source": "bienstock-zuckerberg-2010"
+      }
     ],
-    "status": { "heading": { "en": "Published test scope", "es": "Alcance de las pruebas publicadas" }, "value": { "en": "20,000–5 million", "es": "20.000–5 millones" }, "unit": { "en": "blocks in one study's computational instances", "es": "bloques en las instancias computacionales de un estudio" }, "date": { "en": "2020", "es": "2020" }, "source": "rivera-2020" }
+    "status": {
+      "heading": {
+        "en": "Published test scope",
+        "es": "Alcance de las pruebas publicadas"
+      },
+      "value": {
+        "en": "20,000–5 million",
+        "es": "20.000–5 millones"
+      },
+      "unit": {
+        "en": "blocks in one study's computational instances",
+        "es": "bloques en las instancias computacionales de un estudio"
+      },
+      "date": {
+        "en": "2020",
+        "es": "2020"
+      },
+      "source": "rivera-2020"
+    }
   },
   "trends": {
-    "key_message": { "en": "The useful direction is stronger reproducibility and more precise separation of feasible value, relaxation quality, and computational cost.", "es": "La dirección útil es una mayor reproducibilidad y una separación más precisa entre valor factible, calidad de relajación y costo computacional." },
+    "key_message": {
+      "en": "The useful direction is stronger reproducibility and more precise separation of feasible value, relaxation quality, and computational cost.",
+      "es": "La dirección útil es una mayor reproducibilidad y una separación más precisa entre valor factible, calidad de relajación y costo computacional."
+    },
     "items": [
-      { "trend": { "en": "Benchmark suites expose instance-specific behaviour", "es": "Las suites de benchmark exponen el comportamiento específico de cada instancia" }, "kind": "practice", "direction": "rising", "horizon": "now", "signal": { "statement": { "en": "Published computational studies report results across multiple instance sizes and periods rather than one case alone.", "es": "Los estudios computacionales publicados informan resultados en varios tamaños de instancia y períodos, no solo un caso." }, "source": "rivera-2020" }, "effect": { "en": "Researchers can test whether a method's measured gap and runtime persist across its stated benchmark range.", "es": "Los investigadores pueden comprobar si la brecha y el tiempo medidos persisten en el rango de benchmark declarado." }, "confidence": "medium" },
-      { "trend": { "en": "Bound quality is reported alongside schedule quality", "es": "La calidad de la cota se informa junto con la calidad del plan" }, "kind": "technological", "direction": "rising", "horizon": "now", "signal": { "statement": { "en": "The scheduling literature distinguishes feasible plans from upper bounds and measures gaps against a stated relaxation.", "es": "La literatura de programación distingue planes factibles de cotas superiores y mide brechas contra una relajación declarada." }, "source": "chicoisne-2012" }, "effect": { "en": "A reader can separate algorithm loss from looseness in the bound when both are measured for the same model.", "es": "Un lector puede separar la pérdida del algoritmo de la holgura de la cota cuando ambas se miden para el mismo modelo." }, "confidence": "medium" }
-      ,{ "trend": { "en": "Computational studies span increasingly explicit size ranges", "es": "Los estudios computacionales informan rangos de tamaño cada vez más explícitos" }, "kind": "practice", "direction": "rising", "horizon": "now", "signal": { "statement": { "en": "Published evaluations state their tested block counts and periods, including instances with millions of blocks.", "es": "Las evaluaciones publicadas declaran cantidades de bloques y períodos probados, incluidas instancias con millones de bloques." }, "source": "rivera-2020" }, "effect": { "en": "Readers can distinguish evidence at a tested scale from an unsupported claim about a larger case.", "es": "Los lectores pueden distinguir evidencia a una escala probada de una afirmación no sustentada sobre un caso mayor." }, "confidence": "medium" }
+      {
+        "trend": {
+          "en": "Benchmark suites expose instance-specific behaviour",
+          "es": "Las suites de benchmark exponen el comportamiento específico de cada instancia"
+        },
+        "kind": "practice",
+        "direction": "rising",
+        "horizon": "now",
+        "signal": {
+          "statement": {
+            "en": "Published computational studies report results across multiple instance sizes and periods rather than one case alone.",
+            "es": "Los estudios computacionales publicados informan resultados en varios tamaños de instancia y períodos, no solo un caso."
+          },
+          "source": "rivera-2020"
+        },
+        "effect": {
+          "en": "Researchers can test whether a method's measured gap and runtime persist across its stated benchmark range.",
+          "es": "Los investigadores pueden comprobar si la brecha y el tiempo medidos persisten en el rango de benchmark declarado."
+        },
+        "confidence": "medium"
+      },
+      {
+        "trend": {
+          "en": "Bound quality is reported alongside schedule quality",
+          "es": "La calidad de la cota se informa junto con la calidad del plan"
+        },
+        "kind": "technological",
+        "direction": "rising",
+        "horizon": "now",
+        "signal": {
+          "statement": {
+            "en": "The scheduling literature distinguishes feasible plans from upper bounds and measures gaps against a stated relaxation.",
+            "es": "La literatura de programación distingue planes factibles de cotas superiores y mide brechas contra una relajación declarada."
+          },
+          "source": "chicoisne-2012"
+        },
+        "effect": {
+          "en": "A reader can separate algorithm loss from looseness in the bound when both are measured for the same model.",
+          "es": "Un lector puede separar la pérdida del algoritmo de la holgura de la cota cuando ambas se miden para el mismo modelo."
+        },
+        "confidence": "medium"
+      },
+      {
+        "trend": {
+          "en": "Computational studies span increasingly explicit size ranges",
+          "es": "Los estudios computacionales informan rangos de tamaño cada vez más explícitos"
+        },
+        "kind": "practice",
+        "direction": "rising",
+        "horizon": "now",
+        "signal": {
+          "statement": {
+            "en": "Published evaluations state their tested block counts and periods, including instances with millions of blocks.",
+            "es": "Las evaluaciones publicadas declaran cantidades de bloques y períodos probados, incluidas instancias con millones de bloques."
+          },
+          "source": "rivera-2020"
+        },
+        "effect": {
+          "en": "Readers can distinguish evidence at a tested scale from an unsupported claim about a larger case.",
+          "es": "Los lectores pueden distinguir evidencia a una escala probada de una afirmación no sustentada sobre un caso mayor."
+        },
+        "confidence": "medium"
+      }
     ]
   },
   "proposal": {
-    "key_message": { "en": "Make each result inspectable: identify the formulation, show feasibility checks, name the bound, and state what the evidence does not establish.", "es": "Hacer inspeccionable cada resultado: identificar la formulación, mostrar comprobaciones de factibilidad, nombrar la cota y declarar qué no establece la evidencia." },
+    "key_message": {
+      "en": "Make each result inspectable: identify the formulation, show feasibility checks, name the bound, and state what the evidence does not establish.",
+      "es": "Hacer inspeccionable cada resultado: identificar la formulación, mostrar comprobaciones de factibilidad, nombrar la cota y declarar qué no establece la evidencia."
+    },
     "paragraphs": [
-      { "en": "A research workbench can place the case, controls, feasible schedules, bounds, and diagnostics together. Each result should retain its source, model definition, solver or method, runtime, and checks so readers can reproduce the comparison without treating a plotted value as self-explanatory.", "es": "Un banco de investigación puede reunir el caso, controles, planes factibles, cotas y diagnósticos. Cada resultado debe conservar su fuente, definición del modelo, solver o método, tiempo y comprobaciones, para que el lector reproduzca la comparación sin tratar una cifra dibujada como autoexplicativa." },
-      { "en": "Comparisons must keep CPIT, destination, and operability questions distinct. An infeasible schedule has no valid gap to a feasible-schedule bound. A published result is evidence about its own instances, not a performance guarantee for another mine.", "es": "Las comparaciones deben separar preguntas CPIT, de destinos y operabilidad. Un plan infactible no tiene brecha válida frente a una cota de planes factibles. Un resultado publicado solo aporta evidencia sobre sus instancias, no garantiza el desempeño en otra mina." }
+      {
+        "en": "A research workbench can place the case, controls, feasible schedules, bounds, and diagnostics together. Each result should retain its source, model definition, solver or method, runtime, and checks so readers can reproduce the comparison without treating a plotted value as self-explanatory.",
+        "es": "Un banco de investigación puede reunir el caso, controles, planes factibles, cotas y diagnósticos. Cada resultado debe conservar su fuente, definición del modelo, solver o método, tiempo y comprobaciones, para que el lector reproduzca la comparación sin tratar una cifra dibujada como autoexplicativa."
+      },
+      {
+        "en": "Comparisons must keep CPIT, destination, and operability questions distinct. An infeasible schedule has no valid gap to a feasible-schedule bound. A published result is evidence about its own instances, not a performance guarantee for another mine.",
+        "es": "Las comparaciones deben separar preguntas CPIT, de destinos y operabilidad. Un plan infactible no tiene brecha válida frente a una cota de planes factibles. Un resultado publicado solo aporta evidencia sobre sus instancias, no garantiza el desempeño en otra mina."
+      }
     ],
     "four_cs": [
-      { "c": { "en": "Choice", "es": "Elección" }, "applies": { "en": "Show alternative methods and allow the reader to select the case and schedule being examined.", "es": "Mostrar métodos alternativos y permitir que el lector elija el caso y plan que examina." } },
-      { "c": { "en": "Context", "es": "Contexto" }, "applies": { "en": "Keep the formulation, capacities, provenance, and limits beside each result.", "es": "Mantener la formulación, capacidades, procedencia y límites junto a cada resultado." } },
-      { "c": { "en": "Cost", "es": "Costo" }, "applies": { "en": "Report runtime and instance size as measurements, without inventing operational savings.", "es": "Informar tiempo e instancia como mediciones, sin inventar ahorros operativos." } },
-      { "c": { "en": "Control", "es": "Control" }, "applies": { "en": "Check precedence, capacity, data contracts, and bound consistency before presenting results.", "es": "Comprobar precedencia, capacidad, contratos de datos y consistencia de cotas antes de presentar resultados." } }
+      {
+        "c": {
+          "en": "Choice",
+          "es": "Elección"
+        },
+        "applies": {
+          "en": "Show alternative methods and allow the reader to select the case and schedule being examined.",
+          "es": "Mostrar métodos alternativos y permitir que el lector elija el caso y plan que examina."
+        }
+      },
+      {
+        "c": {
+          "en": "Context",
+          "es": "Contexto"
+        },
+        "applies": {
+          "en": "Keep the formulation, capacities, provenance, and limits beside each result.",
+          "es": "Mantener la formulación, capacidades, procedencia y límites junto a cada resultado."
+        }
+      },
+      {
+        "c": {
+          "en": "Cost",
+          "es": "Costo"
+        },
+        "applies": {
+          "en": "Report runtime and instance size as measurements, without inventing operational savings.",
+          "es": "Informar tiempo e instancia como mediciones, sin inventar ahorros operativos."
+        }
+      },
+      {
+        "c": {
+          "en": "Control",
+          "es": "Control"
+        },
+        "applies": {
+          "en": "Check precedence, capacity, data contracts, and bound consistency before presenting results.",
+          "es": "Comprobar precedencia, capacidad, contratos de datos y consistencia de cotas antes de presentar resultados."
+        }
+      }
     ],
     "actions": [
-      { "action": { "en": "Record the mathematical problem and assumptions for every comparison.", "es": "Registrar el problema matemático y los supuestos de cada comparación." }, "owner": { "en": "Operations researcher", "es": "Investigador de operaciones" }, "horizon": { "en": "Before running the comparison", "es": "Antes de ejecutar la comparación" }, "check": { "en": "Every method and bound names the same declared objective and constraints.", "es": "Cada método y cota identifica el mismo objetivo y restricciones declarados." } },
-      { "action": { "en": "Verify precedence and capacity for each candidate schedule.", "es": "Verificar precedencia y capacidad para cada plan candidato." }, "owner": { "en": "Mine-planning engineer", "es": "Ingeniero de planificación minera" }, "horizon": { "en": "For every result", "es": "Para cada resultado" }, "check": { "en": "The independent feasibility checks pass or the schedule is labelled infeasible.", "es": "Las comprobaciones independientes pasan o el plan se etiqueta infactible." } },
-      { "action": { "en": "Publish case provenance, bound source, and computational limits with the result.", "es": "Publicar procedencia del caso, fuente de la cota y límites computacionales junto al resultado." }, "owner": { "en": "Technical reviewer", "es": "Revisor técnico" }, "horizon": { "en": "At review and release", "es": "En la revisión y publicación" }, "check": { "en": "A reader can reproduce the reported comparison from the committed inputs and artifacts.", "es": "Un lector puede reproducir la comparación informada desde las entradas y artefactos comprometidos." } }
+      {
+        "action": {
+          "en": "Record the mathematical problem and assumptions for every comparison.",
+          "es": "Registrar el problema matemático y los supuestos de cada comparación."
+        },
+        "owner": {
+          "en": "Operations researcher",
+          "es": "Investigador de operaciones"
+        },
+        "horizon": {
+          "en": "Before running the comparison",
+          "es": "Antes de ejecutar la comparación"
+        },
+        "check": {
+          "en": "Every method and bound names the same declared objective and constraints.",
+          "es": "Cada método y cota identifica el mismo objetivo y restricciones declarados."
+        }
+      },
+      {
+        "action": {
+          "en": "Verify precedence and capacity for each candidate schedule.",
+          "es": "Verificar precedencia y capacidad para cada plan candidato."
+        },
+        "owner": {
+          "en": "Mine-planning engineer",
+          "es": "Ingeniero de planificación minera"
+        },
+        "horizon": {
+          "en": "For every result",
+          "es": "Para cada resultado"
+        },
+        "check": {
+          "en": "The independent feasibility checks pass or the schedule is labelled infeasible.",
+          "es": "Las comprobaciones independientes pasan o el plan se etiqueta infactible."
+        }
+      },
+      {
+        "action": {
+          "en": "Publish case provenance, bound source, and computational limits with the result.",
+          "es": "Publicar procedencia del caso, fuente de la cota y límites computacionales junto al resultado."
+        },
+        "owner": {
+          "en": "Technical reviewer",
+          "es": "Revisor técnico"
+        },
+        "horizon": {
+          "en": "At review and release",
+          "es": "En la revisión y publicación"
+        },
+        "check": {
+          "en": "A reader can reproduce the reported comparison from the committed inputs and artifacts.",
+          "es": "Un lector puede reproducir la comparación informada desde las entradas y artefactos comprometidos."
+        }
+      }
     ],
     "risks": [
-      { "en": "A visually clear comparison can still mislead if two methods solve different mathematical problems.", "es": "Una comparación visualmente clara aún puede inducir a error si dos métodos resuelven problemas matemáticos distintos." },
-      { "en": "Synthetic cases and published aggregates do not establish performance on a mine's private block model.", "es": "Los casos sintéticos y agregados publicados no establecen el desempeño en el modelo de bloques privado de una mina." }
+      {
+        "en": "A visually clear comparison can still mislead if two methods solve different mathematical problems.",
+        "es": "Una comparación visualmente clara aún puede inducir a error si dos métodos resuelven problemas matemáticos distintos."
+      },
+      {
+        "en": "Synthetic cases and published aggregates do not establish performance on a mine's private block model.",
+        "es": "Los casos sintéticos y agregados publicados no establecen el desempeño en el modelo de bloques privado de una mina."
+      }
     ],
     "unknowns": [
-      { "en": "The methods' performance on an untested deposit and its operational constraints is unknown until measured there.", "es": "El desempeño de los métodos en un depósito no probado y sus restricciones operativas se desconoce hasta medirlo allí." },
-      { "en": "A benchmark gap does not quantify the economic value of a schedule in a particular mine plan.", "es": "Una brecha de benchmark no cuantifica el valor económico de un plan en una mina particular." }
-      ,{ "en": "The cause weights shown in this framing organise the discussion; the cited papers do not measure their share of industry-wide planning effort.", "es": "Los pesos de causas de este encuadre organizan la discusión; los artículos citados no miden su proporción del esfuerzo de planificación en toda la industria." }
+      {
+        "en": "The methods' performance on an untested deposit and its operational constraints is unknown until measured there.",
+        "es": "El desempeño de los métodos en un depósito no probado y sus restricciones operativas se desconoce hasta medirlo allí."
+      },
+      {
+        "en": "A benchmark gap does not quantify the economic value of a schedule in a particular mine plan.",
+        "es": "Una brecha de benchmark no cuantifica el valor económico de un plan en una mina particular."
+      },
+      {
+        "en": "The cause weights shown in this framing organise the discussion; the cited papers do not measure their share of industry-wide planning effort.",
+        "es": "Los pesos de causas de este encuadre organizan la discusión; los artículos citados no miden su proporción del esfuerzo de planificación en toda la industria."
+      }
     ],
-    "handoff": { "en": "The technical view examines block precedence, period capacities, feasible schedules, and the limits of the committed experiments.", "es": "La vista técnica examina precedencia de bloques, capacidades por período, planes factibles y límites de los experimentos comprometidos." }
+    "handoff": {
+      "en": "The technical view examines block precedence, period capacities, feasible schedules, and the limits of the committed experiments.",
+      "es": "La vista técnica examina precedencia de bloques, capacidades por período, planes factibles y límites de los experimentos comprometidos."
+    }
   },
   "illustrations": {
-    "pain": { "file": "executive/pain.svg", "caption": { "en": "Precedence and capacity couple block choices across periods; a schedule must satisfy both.", "es": "La precedencia y la capacidad acoplan elecciones de bloques entre períodos; un plan debe cumplir ambas." } },
-    "situation": { "file": "executive/situation.svg", "caption": { "en": "The plan and its bound answer one question only when they refer to the same formulation.", "es": "El plan y su cota responden una pregunta solo si corresponden a la misma formulación." } },
-    "proposal": { "file": "executive/proposal.svg", "caption": { "en": "A traceable result connects inputs, checks, schedule, bound, and stated limits.", "es": "Un resultado trazable conecta entradas, comprobaciones, plan, cota y límites declarados." } }
+    "pain": {
+      "file": "executive/pain.svg",
+      "caption": {
+        "en": "Precedence and capacity couple block choices across periods; a schedule must satisfy both.",
+        "es": "La precedencia y la capacidad acoplan elecciones de bloques entre períodos; un plan debe cumplir ambas."
+      }
+    },
+    "situation": {
+      "file": "executive/situation.svg",
+      "caption": {
+        "en": "The plan and its bound answer one question only when they refer to the same formulation.",
+        "es": "El plan y su cota responden una pregunta solo si corresponden a la misma formulación."
+      }
+    },
+    "proposal": {
+      "file": "executive/proposal.svg",
+      "caption": {
+        "en": "A traceable result connects inputs, checks, schedule, bound, and stated limits.",
+        "es": "Un resultado trazable conecta entradas, comprobaciones, plan, cota y límites declarados."
+      }
+    }
   },
   "sources": [
-    { "id": "chicoisne-2012", "title": { "en": "Chicoisne et al., A New Algorithm for the Open-Pit Mine Production Scheduling Problem, Operations Research, 2012", "es": "Chicoisne et al., Un nuevo algoritmo para el problema de programación de producción en minas a rajo abierto, Operations Research, 2012" }, "url": "https://pubsonline.informs.org/doi/10.1287/opre.1120.1050", "note": { "en": "Problem formulation and reported real-case scale.", "es": "Formulación del problema y escala informada de casos reales." } },
-    { "id": "rivera-2020", "title": { "en": "Rivera Letelier et al., Production Scheduling for Strategic Open Pit Mine Planning: A Mixed-Integer Programming Approach, Operations Research, 2020", "es": "Rivera Letelier et al., Programación de producción para planificación estratégica de minas a rajo abierto: un enfoque de programación lineal entera mixta, Operations Research, 2020" }, "url": "https://pubsonline.informs.org/doi/10.1287/opre.2019.1965", "note": { "en": "Computational instance range and reported heuristic gaps.", "es": "Rango de instancias computacionales y brechas heurísticas informadas." } }
+    {
+      "id": "chicoisne-2012",
+      "title": {
+        "en": "Chicoisne et al., A New Algorithm for the Open-Pit Mine Production Scheduling Problem, Operations Research, 2012",
+        "es": "Chicoisne et al., Un nuevo algoritmo para el problema de programación de producción en minas a rajo abierto, Operations Research, 2012"
+      },
+      "url": "https://pubsonline.informs.org/doi/10.1287/opre.1120.1050",
+      "note": {
+        "en": "Problem formulation and reported real-case scale.",
+        "es": "Formulación del problema y escala informada de casos reales."
+      }
+    },
+    {
+      "id": "rivera-2020",
+      "title": {
+        "en": "Rivera Letelier et al., Production Scheduling for Strategic Open Pit Mine Planning: A Mixed-Integer Programming Approach, Operations Research, 2020",
+        "es": "Rivera Letelier et al., Programación de producción para planificación estratégica de minas a rajo abierto: un enfoque de programación lineal entera mixta, Operations Research, 2020"
+      },
+      "url": "https://pubsonline.informs.org/doi/10.1287/opre.2019.1965",
+      "note": {
+        "en": "Computational instance range and reported heuristic gaps.",
+        "es": "Rango de instancias computacionales y brechas heurísticas informadas."
+      }
+    },
+    {
+      "id": "cullenbine-2011",
+      "title": {
+        "en": "Cullenbine, Wood and Newman, A sliding time window heuristic for open pit mine block sequencing, Optimization Letters, 2011",
+        "es": "Cullenbine, Wood y Newman, Una heurística de ventana temporal deslizante para secuenciar bloques de minas a rajo abierto, Optimization Letters, 2011"
+      },
+      "url": "https://doi.org/10.1007/s11590-011-0306-2",
+      "note": {
+        "en": "A published window-based heuristic for block sequencing; its results depend on the chosen window and instance.",
+        "es": "Una heurística publicada de ventana para secuenciación de bloques; sus resultados dependen de la ventana y la instancia."
+      }
+    },
+    {
+      "id": "bienstock-zuckerberg-2010",
+      "title": {
+        "en": "Bienstock and Zuckerberg, Solving LP relaxations of large-scale precedence constrained problems, IPCO, 2010",
+        "es": "Bienstock y Zuckerberg, Resolución de relajaciones LP de problemas grandes con precedencia, IPCO, 2010"
+      },
+      "url": "https://doi.org/10.1007/978-3-642-13036-6_1",
+      "note": {
+        "en": "A relaxation method for large precedence-constrained scheduling models; a bound belongs to its stated formulation.",
+        "es": "Un método de relajación para modelos grandes de programación con precedencia; una cota pertenece a su formulación declarada."
+      }
+    },
+    {
+      "id": "newman-2010",
+      "title": {
+        "en": "Newman et al., A review of operations research in mine planning, Interfaces, 2010",
+        "es": "Newman et al., Revisión de investigación de operaciones en planificación minera, Interfaces, 2010"
+      },
+      "url": "https://doi.org/10.1287/inte.1090.0492",
+      "note": {
+        "en": "Review of operations-research methods and problem classes in mine planning.",
+        "es": "Revisión de métodos de investigación de operaciones y clases de problemas en planificación minera."
+      }
+    },
+    {
+      "id": "lamghari-2012",
+      "title": {
+        "en": "Lamghari and Dimitrakopoulos, A diversified Tabu search approach for open-pit scheduling with metal uncertainty, EJOR, 2012",
+        "es": "Lamghari y Dimitrakopoulos, Búsqueda Tabú diversificada para programación de rajo con incertidumbre metálica, EJOR, 2012"
+      },
+      "url": "https://doi.org/10.1016/j.ejor.2012.05.029",
+      "note": {
+        "en": "A heuristic study that treats metal uncertainty explicitly; it does not make deterministic schedules stochastic.",
+        "es": "Un estudio heurístico que trata explícitamente la incertidumbre metálica; no convierte planes deterministas en estocásticos."
+      }
+    },
+    {
+      "id": "minelib-2013",
+      "title": {
+        "en": "Espinoza et al., MineLib: a library of open pit mining problems, Annals of Operations Research, 2013",
+        "es": "Espinoza et al., MineLib: una biblioteca de problemas de minería a rajo abierto, Annals of Operations Research, 2013"
+      },
+      "url": "https://doi.org/10.1007/s10479-012-1258-3",
+      "note": {
+        "en": "Defines a public library spanning three classical open-pit problem classes.",
+        "es": "Define una biblioteca pública que abarca tres clases clásicas de problemas de rajo abierto."
+      }
+    },
+    {
+      "id": "morales-2015",
+      "title": {
+        "en": "Morales et al., A comparison of conventional and direct block scheduling methods, APCOM, 2015",
+        "es": "Morales et al., Comparación de métodos convencionales y directos de programación de bloques, APCOM, 2015"
+      },
+      "url": "https://delphoslab.cl/Publicaciones/2015/MJNMG_A2015.pdf",
+      "note": {
+        "en": "Published comparison of block-scheduling methods and period-level production measures.",
+        "es": "Comparación publicada de métodos de programación de bloques y medidas de producción por período."
+      }
+    }
   ]
 }

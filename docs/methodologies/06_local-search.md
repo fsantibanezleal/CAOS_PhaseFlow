@@ -81,19 +81,19 @@ window, the remaining distance is the look-ahead neither neighbourhood has ([05]
 <!-- generated:methods:exts-two-resource,shift-local-search,cpitD-local-search -->
 | case | bound | `exts-two-resource` | `shift-local-search` | `cpitD-local-search` | best plan of the case |
 | --- | --- | ---: | ---: | ---: | --- |
-| [`newman1-published`](../use-cases/01_newman1-published.md) | joint LP | 2.54% | 2.50% | 2.49% | `sliding-window` 1.40% |
-| [`zuck-small-declared`](../use-cases/02_zuck-small-declared.md) | joint LP | 21.23% | 17.28% | 16.91% | `sliding-window` 1.98% |
-| [`kd-declared`](../use-cases/03_kd-declared.md) | Algorithm 4 | 16.89% | 15.29% | 15.02% | `sliding-window` 6.46% |
-| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | joint LP | 4.62% | 4.26% | 4.22% | `sliding-window` 1.11% |
-| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | joint LP | 4.16% | 3.76% | 3.75% | `sliding-window` 1.58% |
-| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | Algorithm 4 | 10.29% | 8.52% | 8.41% | `sliding-window` 3.05% |
-| [`twin-layered`](../use-cases/07_twin-layered.md) | Algorithm 4 | 3.55% | 3.55% | 3.55% | `cpitD-local-search` 3.55% |
-| [`twin-vein`](../use-cases/08_twin-vein.md) | Algorithm 4 | 1.54% | 0.64% | 0.62% | `sliding-window` 0.10% |
-| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | joint LP | 8.73% | 8.07% | 8.04% | `sliding-window` 1.92% |
-| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | joint LP | 14.94% | 13.79% | 13.63% | `sliding-window` 3.80% |
-| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | Algorithm 4 | 7.48% | 7.48% | 7.46% | `sliding-window` 2.68% |
-| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | Algorithm 4 | 0.33% | 0.26% | 0.26% | `cpitD-local-search` 0.26% |
-| [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | Algorithm 4 | not run | 0.00% | 0.00% | `toposort-greedy` 0.00% |
+| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 2.54% | 2.50% | 2.49% | `sliding-window` 1.40% |
+| [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | joint LP | 21.23% | 17.28% | 16.91% | `sliding-window` 1.98% |
+| [`kd-declared`](../cases/03_kd-declared.md) | Algorithm 4 | 16.89% | 15.29% | 15.02% | `sliding-window` 6.46% |
+| [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | joint LP | 4.62% | 4.26% | 4.22% | `sliding-window` 1.11% |
+| [`twin-porphyry-l`](../cases/05_twin-porphyry-l.md) | joint LP | 4.16% | 3.76% | 3.75% | `sliding-window` 1.58% |
+| [`twin-core-halo`](../cases/06_twin-core-halo.md) | Algorithm 4 | 10.29% | 8.52% | 8.41% | `sliding-window` 3.05% |
+| [`twin-layered`](../cases/07_twin-layered.md) | Algorithm 4 | 3.55% | 3.55% | 3.55% | `cpitD-local-search` 3.55% |
+| [`twin-vein`](../cases/08_twin-vein.md) | Algorithm 4 | 1.54% | 0.64% | 0.62% | `sliding-window` 0.10% |
+| [`regime-high-discount`](../cases/09_regime-high-discount.md) | joint LP | 8.73% | 8.07% | 8.04% | `sliding-window` 1.92% |
+| [`regime-mill-bound`](../cases/10_regime-mill-bound.md) | joint LP | 14.94% | 13.79% | 13.63% | `sliding-window` 3.80% |
+| [`regime-mining-bound`](../cases/11_regime-mining-bound.md) | Algorithm 4 | 7.48% | 7.48% | 7.46% | `sliding-window` 2.68% |
+| [`ctrl-abundant`](../cases/12_ctrl-abundant.md) | Algorithm 4 | 0.33% | 0.26% | 0.26% | `cpitD-local-search` 0.26% |
+| [`ctrl-degenerate`](../cases/13_ctrl-degenerate.md) | Algorithm 4 | not run | 0.00% | 0.00% | `toposort-greedy` 0.00% |
 | **median** |  | **6.05%** | **4.26%** | **4.22%** |  |
 <!-- /generated -->
 

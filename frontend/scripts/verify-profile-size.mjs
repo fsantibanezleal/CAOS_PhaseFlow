@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
 
-const sizes = [[1600, 900], [1280, 800], [768, 900], [390, 844], [320, 700]];
+const sizes = [[1600, 900], [1280, 800], [1280, 720], [768, 900], [390, 844], [320, 700]];
 const baseOverride = process.env.PHASEFLOW_BASE;
 let server;
 let browser;
@@ -23,9 +23,11 @@ async function measure(page) {
   }));
 }
 
-function check(rows, viewportHeight, label) {
+function check(rows, viewportWidth, viewportHeight, label) {
   assert.equal(rows.length, 2, `${label}: both section drawings must exist`);
-  const ceiling = Math.max(340, Math.min(viewportHeight * 0.825, 900)) + 2;
+  const ceiling = Math.max(260, viewportWidth <= 900
+    ? Math.min(viewportHeight * 0.5, 440)
+    : Math.min(viewportHeight * 0.75, 900)) + 2;
   for (const [i, row] of rows.entries()) {
     assert.ok(row.host >= 200 && row.host <= ceiling,
       `${label}: section ${i} host grew to ${row.host}px (ceiling ${ceiling}px)`);
@@ -33,6 +35,8 @@ function check(rows, viewportHeight, label) {
       `${label}: section ${i} canvas ${row.canvas}px differs from host ${row.host}px`);
     assert.ok(row.backing <= row.host * 2 + 3,
       `${label}: section ${i} backing bitmap grew to ${row.backing}px`);
+    assert.ok(row.panel <= row.host + 360,
+      `${label}: section ${i} controls and caption add ${row.panel - row.host}px around the figure`);
   }
 }
 
@@ -55,11 +59,11 @@ try {
     const tab = page.getByRole('tab', { name: 'Profile and plan' });
     await tab.click();
     const initial = await measure(page);
-    check(initial, height, `${width}x${height} initial`);
+    check(initial, width, height, `${width}x${height} initial`);
     for (let i = 0; i < 6; i++) {
       await page.waitForTimeout(200);
       const now = await measure(page);
-      check(now, height, `${width}x${height} t=${i}`);
+      check(now, width, height, `${width}x${height} t=${i}`);
       for (let j = 0; j < 2; j++) {
         assert.ok(now[j].host <= initial[j].host + 2,
           `${width}x${height}: section ${j} drifts taller over time`);
@@ -73,14 +77,14 @@ try {
       await controls.nth(i).press('ArrowRight');
     }
     await page.waitForTimeout(350);
-    check(await measure(page), height, `${width}x${height} sliders`);
+    check(await measure(page), width, height, `${width}x${height} sliders`);
     await page.setViewportSize({ width: width - 20, height: height - 40 });
     await page.waitForTimeout(350);
-    check(await measure(page), height - 40, `${width}x${height} resized`);
+    check(await measure(page), width - 20, height - 40, `${width}x${height} resized`);
     await page.setViewportSize({ width, height });
     await page.waitForTimeout(350);
     const restored = await measure(page);
-    check(restored, height, `${width}x${height} restored`);
+    check(restored, width, height, `${width}x${height} restored`);
     for (let j = 0; j < 2; j++) {
       assert.ok(Math.abs(restored[j].canvas - initial[j].canvas) <= 2,
         `${width}x${height}: section ${j} did not redraw at restored viewport size`);
@@ -88,7 +92,7 @@ try {
     if (width === 390) {
       await page.locator('button').filter({ hasText: /^en$/ }).click();
       await page.getByRole('tab', { name: 'Perfil y planta' }).click();
-      check(await measure(page), height, '390x844 Spanish profile');
+      check(await measure(page), width, height, '390x844 Spanish profile');
     }
     assert.deepEqual(errors, [], `${width}x${height}: browser errors`);
     console.log(`PASS Profile and plan ${width}x${height}: bounded after time, controls and resize`);

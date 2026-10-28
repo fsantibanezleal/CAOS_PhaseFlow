@@ -32,6 +32,8 @@ The product model and claims are bounded to these primary sources and independen
 - Chicoisne et al. (2012), multi-period open-pit planning and parametric maximum closures, https://doi.org/10.1287/opre.1120.1050
 - Jelvez et al. (2018), destination-aware open-pit scheduling, https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf
 - Rivera Letelier et al. (2020), production scheduling formulation and evaluated methods, https://doi.org/10.1287/opre.2019.1965
+- Cullenbine, Wood and Newman (2011), sliding time-window heuristic for open-pit block sequencing, https://doi.org/10.1007/s11590-011-0306-2
+- PhaseFlow source repository, deterministic synthetic twins and derived case manifests (MIT project code): https://github.com/fsantibanezleal/CAOS_PhaseFlow
 - MineLib Newman1 CPIT benchmark, https://minelib.org/v1/Results.xhtml
 - Morales et al. (2015), production schedules and pit-profile visualisation, https://www.delphoslab.cl/Publicaciones/2015/Morales_et_al_APCOM2015.pdf
 
@@ -63,6 +65,10 @@ The table records every pinned direct dependency of the scientific, development,
 | pipeline | `onnx` | `1.22.0` | portable learned-model interchange (`requirements-precompute.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | pipeline | `onnxruntime` | `1.28.0` | CPU learned-model inference and export parity (`requirements-precompute.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | tests | `pytest` | `9.1.1` | Python contract and scientific tests (`requirements-dev.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| tests | `jsonschema` | `4.26.0` | validate catalogued JSON data contracts (`requirements-dev.txt`) | Handwritten shape checks drift from the consumer schema. |
+| tests | `openapi-spec-validator` | `0.9.0` | validate API descriptions when the dormant API lane is activated (`requirements-dev.txt`) | Schema-only checks miss OpenAPI structure and path errors. |
+| tests | `fastapi` | `0.143.0` | run the reserved ASGI API boundary in isolated contract tests (`requirements-dev.txt`) | The API remains separate from the static Pages release lane. |
+| tests | `httpx` | `0.28.1` | in-process ASGI client for endpoint contract tests (`requirements-dev.txt`) | Network-backed tests would be nondeterministic for the local API contract. |
 | tests | `ruff` | `0.15.18` | Python lint and formatting checks (`requirements-dev.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | pipeline | `numpy` | `2.5.1` | numerical arrays and model features (`requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | pipeline | `oreblocks` | `0.6.3` | scheduling engine and MILP rungs (`requirements.txt`) | A product-local solver would duplicate tested scheduling and solver integration. |
@@ -70,7 +76,7 @@ The table records every pinned direct dependency of the scientific, development,
 | notebooks | `nbclient` | `0.11.0` | fresh-kernel notebook execution (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `nbformat` | `5.11.1` | notebook structure and deterministic serialization (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `ipykernel` | `7.4.0` | Python notebook kernel (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
-| frontend | `@fasl-work/caos-app-shell` | `0.19.2` | shared navigation, documentation, shell gate and workbench primitives (`frontend/package-lock.json`); release tag `v0.19.002` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
+| frontend | `@fasl-work/caos-app-shell` | `0.19.5` | shared navigation, documentation, shell gate and workbench primitives (`frontend/package-lock.json`); release tag `v0.19.005` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
 | frontend | `katex` | `0.19.1` | math rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `lucide-react` | `1.61.0` | interface icons (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `react` | `19.3.1` | component rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
@@ -91,6 +97,14 @@ The table records every pinned direct dependency of the scientific, development,
 ## Beyond the state of the art
 
 None claimed. PhaseFlow implements and evaluates published methods and engineering integrations on bounded cases. No universal algorithmic novelty or general performance improvement is asserted.
+
+## Research basis used by the notebook curriculum
+
+- Blom, Pearce and Cote, stochastic mine-planning practice: https://arxiv.org/abs/2403.18213.
+- Ramazan and Dimitrakopoulos, stochastic integer programming: https://doi.org/10.1007/s11081-012-9186-2.
+- Meagher, Dimitrakopoulos and Avis, geological uncertainty and NPV: https://doi.org/10.1134/S1062739114030132.
+- Kingma and Ba, Adam optimization: https://arxiv.org/abs/1412.6980.
+- Bai et al. (2018), minimum mining width and pushback design: https://doi.org/10.17159/2411-9717/2018/v118n5a8.
 
 ## Resources
 
@@ -147,7 +161,7 @@ The 2018 [Jelvez et al. paper](https://www.delphoslab.cl/Publicaciones/2018/Jelv
 reports a **PCPSP** bound and feasible result in its Tables 3 and 4; those
 numbers are cross-problem context. An [external AMPL/Gurobi CPIT run](https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html)
 reports an integer optimum for Newman1. It is attributed, not a PhaseFlow
-certificate. See [the source comparison](../use-cases/01_newman1-published.md).
+certificate. See [the source comparison](../cases/01_newman1-published.md).
 
 ## Oracles
 

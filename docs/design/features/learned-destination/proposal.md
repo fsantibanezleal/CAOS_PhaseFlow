@@ -7,13 +7,13 @@ its NPV cannot be ranked against CPIT schedules or divided by a CPIT LP bound.
 
 | ID | EARS requirement | Named verification gate |
 |---|---|---|
-| LD-001 | THE data producer SHALL use a genuine feasible PCPSP/OPBSP MILP result with solver status, incumbent and MIP bound recorded as the teacher, and SHALL refuse a teacher beyond its variable or time budget. | `tests/test_destination_teacher.py::test_status_and_budget`; `scripts/pilot_destination_teacher.py` receipt |
-| LD-002 | THE train, model-selection and final test partitions SHALL be disjoint by deposit seed, including all scenarios and blocks for a seed. | `tests/test_destination_policy.py::test_deposit_split` |
-| LD-003 | THE learned policy SHALL emit a block priority from features available at inference and produce a schedule through a capacity and precedence enforcing decoder. | `tests/test_destination_policy.py::test_decoder_feasible`; `scripts/check_artifacts.py` resource rows |
-| LD-004 | WHEN a learned destination result is shown, THE app SHALL label it PCPSP, identify its teacher status and held-out baseline comparison, and exclude it from CPIT best/gap selection. | `scripts/check_artifacts.py` comparable-method gate; EN/ES Methods browser gate |
-| LD-005 | THE model export SHALL reproduce its Python predictions within `1e-6` on a frozen held-out input before it is committed. | `tests/test_destination_policy.py::test_onnx_parity` |
-| LD-006 | THE final test SHALL report feasible NPV relative to destination-TopoSort and the teacher incumbent, plus worst case, latency and the count where the teacher did not certify an optimum. | `scripts/evaluate_destination_policy.py --frozen`; `models/destination-policy-evaluation.json` |
-| LD-007 | IF the teacher pilot exceeds the declared local budget or the learned policy does not improve the predeclared held-out objective without a feasibility regression, THEN THE product SHALL report the negative result and shall not promote a second learned rung. | `scripts/pilot_destination_teacher.py --enforce`; `scripts/evaluate_destination_policy.py --enforce` |
+| LD-001 | THE data producer SHALL use a genuine feasible PCPSP/OPBSP MILP result with solver status, incumbent and MIP bound recorded as the teacher, and SHALL refuse a teacher beyond its variable or time budget. | `test_destination_teacher.py::test_status_and_budget`; `pilot_destination_teacher.py` receipt |
+| LD-002 | THE train, model-selection and final test partitions SHALL be disjoint by deposit seed, including all scenarios and blocks for a seed. | `test_destination_policy.py::test_deposit_split` |
+| LD-003 | THE learned policy SHALL emit a block priority from features available at inference and produce a schedule through a capacity and precedence enforcing decoder. | `test_destination_policy.py::test_decoder_feasible`; `check_artifacts.py` resource rows |
+| LD-004 | WHEN a learned destination result is shown, THE app SHALL label it PCPSP, identify its teacher status and held-out baseline comparison, and exclude it from CPIT best/gap selection. | `check_artifacts.py` comparable-method gate; EN/ES Methods browser gate |
+| LD-005 | THE model export SHALL reproduce its Python predictions within `1e-6` on a frozen held-out input before it is committed. | `test_destination_policy.py::test_onnx_parity` |
+| LD-006 | THE final test SHALL report feasible NPV relative to destination-TopoSort and the teacher incumbent, plus worst case, latency and the count where the teacher did not certify an optimum. | `evaluate_destination_policy.py --frozen`; `destination-policy-evaluation.json` |
+| LD-007 | IF the teacher pilot exceeds the declared local budget or the learned policy does not improve the predeclared held-out objective without a feasibility regression, THEN THE product SHALL report the negative result and shall not promote a second learned rung. | `pilot_destination_teacher.py --enforce`; `evaluate_destination_policy.py --enforce` |
 
 The pilot budget is 40,000 binary variables and 60 seconds per small case,
 matching the present `oreblocks.solve_opbsp_exact` API. Its `exact` boolean
