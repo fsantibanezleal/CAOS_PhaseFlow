@@ -5,7 +5,7 @@ Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry th
 
 ## [0.10.000] - 2026-10-28
 
-PhaseFlow now targets CAOS App Shell 0.19.5 and CAOS Product Template 0.12.000. Documentation, contract catalog, readiness snapshot, bilingual worked notebooks, frontend content, and responsive layout have been refreshed. The committed scientific outputs are carried forward from 0.09.000 with only the product-version metadata advanced; no fresh numerical bake was performed. See `docs/validation/release-0.10.000.md` for the comparison and release evidence.
+PhaseFlow targets CAOS App Shell 0.19.6 and CAOS Product Template 0.12.000. The release refreshes documentation, contracts, readiness, 26 bilingual worked notebooks, frontend content, and responsive layout; all 13 cases were rebaked with learned methods enabled and field-compared against 0.09.000 with no scientific drift. After the initial 0.10.000 deployment, the app was aligned to App Shell 0.19.6 and redeployed under the same release version before its release tag was created. See `docs/validation/release-0.10.000.md` for evidence.
 
 ## [0.09.000] - 2026-10-26
 
