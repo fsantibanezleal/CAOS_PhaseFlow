@@ -14,5 +14,23 @@
     "oreblocks"
   ],
   "app": "workbench",
-  "focus": true
+  "focus": true,
+  "method_entrypoints": [
+    "oreblocks.solve_cpit",
+    "oreblocks.toposort_schedule",
+    "oreblocks.sliding_window_schedule",
+    "oreblocks.destination_toposort",
+    "oreblocks.exact_destination_local_search",
+    "oreblocks.solve_opbsp_exact",
+    "oreblocks.cpit_lp_relaxation",
+    "oreblocks.pcpsp_lp_bound",
+    "oreblocks.enforce_min_width",
+    "oreblocks.improve_schedule",
+    "oreblocks.evaluate_across",
+    "oreblocks.perturb_values",
+    "oreblocks.run_controls",
+    "pipeline.model.learned.LearnedBundle",
+    "oreblocks.pcpsp_schedule_value",
+    "oreblocks.schedule_coherence"
+  ]
 }

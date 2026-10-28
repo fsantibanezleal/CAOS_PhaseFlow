@@ -1,3 +1,5 @@
-# PhaseFlow research notebooks
+# PhaseFlow notebooks
 
-This bilingual set teaches published open-pit scheduling evidence and checks case manifests with product code. Run from the repository root with `python scripts/run_notebooks.py --check` after building `.venv-notebooks`.
+The English and Spanish notebook trees teach CPIT formulation and provenance, certified bounds, scheduling comparisons and the sliding-window state of the art; joint period-and-destination choice; geological uncertainty, including deterministic scenario re-planning; learned schedule surrogates; and operational coherence and width trade-offs. Each lesson runs the PhaseFlow instance pipeline and pinned OreBlocks methods. Seeded synthetic experiments are labeled separately from published MineLib aggregates, learned bounds are not presented as certificates, and scenario re-solves are not called stochastic programs or EVPI. Read the level-by-level indices at notebooks/en/README.md and notebooks/es/README.md.
+
+Prepare the pinned environment from the repository root with python -m pip install -r notebooks/requirements.txt. Run all notebooks with python scripts/run_notebooks.py; use python scripts/run_notebooks.py --check --tmp <external-temp-root> as the release execution gate and python scripts/check_notebooks.py for the static layout and metadata check.

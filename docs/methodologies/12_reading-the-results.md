@@ -57,7 +57,7 @@ $$
 The two recorded bounds measure the first term wherever the joint LP ran. The second is the instance's
 integrality gap, which no method can close; the third is the method's own loss. Neither is known without
 an integer optimum, which exists for one case, `newman1`, through an external exact solve
-([use case 01](../use-cases/01_newman1-published.md)). Percent gaps have different denominators and are not
+([use case 01](../cases/01_newman1-published.md)). Percent gaps have different denominators and are not
 added.
 
 **What a large gap can mean, and how the matrix separates it:**
@@ -88,19 +88,19 @@ green, because the gates read schemas and never `resourceUse` against `resourceL
 <!-- generated:controls -->
 | case | duality (pit set) | duality error | bound >= plans | order invariance | order error | best comparable gap | worst comparable gap |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| [`newman1-published`](../use-cases/01_newman1-published.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.40% | 6.41% |
-| [`zuck-small-declared`](../use-cases/02_zuck-small-declared.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.98% | 51.78% |
-| [`kd-declared`](../use-cases/03_kd-declared.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 6.46% | 65.68% |
-| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.11% | 54.09% |
-| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.58% | 60.05% |
-| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 3.05% | 103.85% |
-| [`twin-layered`](../use-cases/07_twin-layered.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 3.55% | 19.36% |
-| [`twin-vein`](../use-cases/08_twin-vein.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 0.10% | 92.14% |
-| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.92% | 61.18% |
-| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 3.80% | 78.84% |
-| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 2.68% | 75.38% |
-| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 0.26% | 7.02% |
-| [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 0.00% | 0.00% |
+| [`newman1-published`](../cases/01_newman1-published.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.40% | 6.41% |
+| [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.98% | 51.78% |
+| [`kd-declared`](../cases/03_kd-declared.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 6.46% | 65.68% |
+| [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.11% | 54.09% |
+| [`twin-porphyry-l`](../cases/05_twin-porphyry-l.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.58% | 60.05% |
+| [`twin-core-halo`](../cases/06_twin-core-halo.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 3.05% | 103.85% |
+| [`twin-layered`](../cases/07_twin-layered.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 3.55% | 19.36% |
+| [`twin-vein`](../cases/08_twin-vein.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 0.10% | 92.14% |
+| [`regime-high-discount`](../cases/09_regime-high-discount.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.92% | 61.18% |
+| [`regime-mill-bound`](../cases/10_regime-mill-bound.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 3.80% | 78.84% |
+| [`regime-mining-bound`](../cases/11_regime-mining-bound.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 2.68% | 75.38% |
+| [`ctrl-abundant`](../cases/12_ctrl-abundant.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 0.26% | 7.02% |
+| [`ctrl-degenerate`](../cases/13_ctrl-degenerate.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 0.00% | 0.00% |
 <!-- /generated -->
 
 **The controls prove the machinery is consistent; they do not prove any plan is good.**
