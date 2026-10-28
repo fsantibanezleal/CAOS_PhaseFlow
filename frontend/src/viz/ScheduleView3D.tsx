@@ -30,9 +30,10 @@
 // mutates instance colours and counts in place; the theme is an explicit dependency; and the
 // animation starts paused and halts on a hidden tab.
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { usePausedViz } from '@fasl-work/caos-app-shell';
 import { voidBoundaryPeriods } from '../engine/coherence.ts';
 import { periodColor, viridis } from './colormap.ts';
 
@@ -69,6 +70,11 @@ export function ScheduleView3D({
     mesh: THREE.InstancedMesh; render: () => void; dispose: () => void;
     scene: THREE.Scene; n: number;
   } | null>(null);
+  const drawFrame = useRef<(() => boolean) | null>(null);
+  const frame = useCallback(() => drawFrame.current?.() ?? false, []);
+  const viz = usePausedViz(frame);
+  const vizRef = useRef(viz);
+  vizRef.current = viz;
 
   const gradeMax = useMemo(() => Math.max(1e-9, ...grade), [grade]);
   // Shown through ::after until the first frame lands, so a slow machine gets a sentence rather than
@@ -182,7 +188,6 @@ export function ScheduleView3D({
     };
     el.addEventListener('wheel', onWheel, { capture: true, passive: true });
 
-    let raf = 0;
     let until = 0;
     // The host advertises that a frame has actually reached the canvas. A stage that is present,
     // correctly sized and scroll-free is all of those things while still blank, so both the CSS
@@ -203,23 +208,20 @@ export function ScheduleView3D({
         ...camera.position.toArray(),
         ...camera.quaternion.toArray(),
         ...camera.projectionMatrix.elements,
-      ].map((value) => value.toFixed(7)).join(',');
+      ].map((value) => value.toPrecision(8)).join(',');
     };
-    const loop = () => {
-      raf = requestAnimationFrame(loop);
+    drawFrame.current = () => {
       controls.update();
       renderer.render(scene, camera);
       markDrawn();
-      if (performance.now() > until) { cancelAnimationFrame(raf); raf = 0; }
+      return performance.now() <= until;
     };
     const kick = (ms: number) => {
       until = performance.now() + ms;
-      if (!raf && !document.hidden) raf = requestAnimationFrame(loop);
+      if (!document.hidden) vizRef.current.play();
     };
     controls.addEventListener('start', () => kick(4000));
     controls.addEventListener('change', () => kick(1200));
-    const onVis = () => { if (document.hidden && raf) { cancelAnimationFrame(raf); raf = 0; } };
-    document.addEventListener('visibilitychange', onVis);
     // A browser may drop the GPU context at any time (driver reset, memory pressure, sleep) and hand
     // it back. three.js rebuilds its GL state on the restore event, but this stage renders on demand,
     // so nothing redraws: the pit stayed blank after a restore that headless Chromium performs on
@@ -256,10 +258,10 @@ export function ScheduleView3D({
       render: () => { renderer.render(scene, camera); markDrawn(); kick(200); },
       dispose: () => {
         ro.disconnect();
-        document.removeEventListener('visibilitychange', onVis);
         renderer.domElement.removeEventListener('webglcontextrestored', onRestored);
         el.removeEventListener('wheel', onWheel, true);
-        if (raf) cancelAnimationFrame(raf);
+        vizRef.current.pause();
+        drawFrame.current = null;
         controls.dispose();
         geo.dispose();
         mat.dispose();

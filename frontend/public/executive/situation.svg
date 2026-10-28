@@ -8,6 +8,6 @@
   <g fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round"><path d="M54 165h100M229 165h100M404 165h100"/><path d="m184 118 16 16m0-16-16 16m175-16 16 16m0-16-16 16"/></g>
   <g fill="var(--color-accent)"><circle cx="105" cy="165" r="7"/><circle cx="280" cy="165" r="7"/><circle cx="455" cy="165" r="7"/></g>
   <path d="M80 220h400" fill="none" stroke="var(--color-accent)" stroke-width="3" stroke-dasharray="7 8"/>
-  <text class="pf-exec-label pf-exec-en" lang="en" x="280" y="248" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Plan and bound, same model</text>
-  <text class="pf-exec-label pf-exec-es" lang="es" x="280" y="248" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Plan y cota, mismo modelo</text>
+  <text class="pf-exec-label pf-exec-en" lang="en" x="280" y="232" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="16" font-weight="600">Plan and bound, same model</text>
+  <text class="pf-exec-label pf-exec-es" lang="es" x="280" y="232" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="16" font-weight="600">Plan y cota, mismo modelo</text>
 </svg>

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phaseflow.manifest/v1",
+  "title": "PhaseFlow case manifest",
+  "description": "Per-case provenance and measured result summary. Cross-file semantics are checked by scripts/check_artifacts.py.",
+  "type": "object",
+  "required": ["schema", "case_id", "category", "real_or_synthetic", "engine", "scenario", "instance", "artifact", "lane", "gate", "flags", "controls", "best", "scoreboard"],
+  "properties": {
+    "schema": {"const": "phaseflow.manifest/v1"},
+    "case_id": {"type": "string", "minLength": 1},
+    "category": {"type": "string", "minLength": 1},
+    "real_or_synthetic": {"enum": ["real", "synthetic"]},
+    "engine": {"type": "object", "required": ["version"], "properties": {"version": {"type": "string"}}, "additionalProperties": true},
+    "scenario": {"type": "object", "required": ["periods", "discount_rate", "resource_names", "limit_per_period"], "properties": {"periods": {"type": "integer", "minimum": 1}, "discount_rate": {"type": "number"}, "resource_names": {"type": "array", "minItems": 1, "items": {"type": "string"}}, "limit_per_period": {"type": "array", "minItems": 1}}, "additionalProperties": true},
+    "instance": {"type": "object", "required": ["n_blocks", "n_precedence_arcs"], "properties": {"n_blocks": {"type": "integer", "minimum": 1}, "n_precedence_arcs": {"type": "integer", "minimum": 0}}, "additionalProperties": true},
+    "artifact": {"type": "object", "required": ["path", "format", "trace_schema", "bytes"], "properties": {"path": {"type": "string", "pattern": "^[^/].*trace\\.json$"}, "format": {"const": "json"}, "trace_schema": {"const": "phaseflow.schedule-trace/v1"}, "bytes": {"type": "integer", "minimum": 1}}, "additionalProperties": false},
+    "lane": {"enum": ["live", "replay"]},
+    "gate": {"type": "object", "required": ["lane"], "properties": {"lane": {"enum": ["live", "replay"]}}, "additionalProperties": true},
+    "flags": {"type": "array"},
+    "controls": {"type": "object"},
+    "best": {"type": "object"},
+    "scoreboard": {"type": "array", "minItems": 1, "items": {"type": "object"}}
+  },
+  "additionalProperties": true
+}
