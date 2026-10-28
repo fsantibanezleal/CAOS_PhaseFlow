@@ -1,8 +1,10 @@
 # PhaseFlow 0.10.000 release record
 
-Date: 2026-10-28. Shell: CAOS App Shell 0.19.5. Product template: 0.12.000. Baseline: released 0.09.000.
+Date: 2026-10-28. Shell: CAOS App Shell 0.19.6 (the initial 0.19.5 build was superseded before release tagging). Product template: 0.12.000. Baseline: released 0.09.000.
 
 ## Scope
+
+The app was aligned to the current published shell 0.19.6 before the release tag. This shell update preserves the existing layout behavior and marks SPDX licence identifiers as non-translatable. The pinned product template remains the current 0.12.000 release.
 
 This release refreshes the product-template integration, contract catalog and JSON schemas, readiness record, documentation case studies, bilingual worked notebooks, and frontend content and layout. The Profile and plan visualisation has a bounded responsive height. The workbench layout and reading routes passed the phone, tablet, desktop, light/dark, and English/Spanish browser matrix.
 
