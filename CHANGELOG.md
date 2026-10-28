@@ -3,6 +3,10 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.10.000] - 2026-10-28
+
+PhaseFlow now targets CAOS App Shell 0.19.5 and CAOS Product Template 0.12.000. Documentation, contract catalog, readiness snapshot, bilingual worked notebooks, frontend content, and responsive layout have been refreshed. The committed scientific outputs are carried forward from 0.09.000 with only the product-version metadata advanced; no fresh numerical bake was performed. See `docs/validation/release-0.10.000.md` for the comparison and release evidence.
+
 ## [0.09.000] - 2026-10-26
 
 Rebuilt on CAOS App Shell 0.19.2 and CAOS Product Template 0.11.002. Full release evidence:

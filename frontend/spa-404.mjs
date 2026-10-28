@@ -26,7 +26,7 @@ const indexHtml = join(dist, 'index.html');
 
 if (!existsSync(indexHtml)) {
   console.error('[spa-404] dist/index.html missing; nothing to do');
-  process.exit(0);
+  process.exit(1);
 }
 
 // 1. the fallback, for anything not pre-rendered below (an old link, a typo, a future route)

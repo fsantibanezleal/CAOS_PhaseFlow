@@ -99,11 +99,11 @@ export function UPlotChart({ data, build, height = 400, testId, onCursor }: Plot
 }
 
 const baseAxes = () => {
-  const fg = cssVar('--color-fg-subtle', '#8b949e');
+  const fg = cssVar('--color-fg', '#c9d1d9');
   const grid = cssVar('--color-border', '#30363d');
   // Tick numbers follow the app's language too: uPlot writes 1.4, a Spanish page must read 1,4.
   const values = (_u: uPlot, splits: number[]) =>
-    splits.map((v) => (v == null ? '' : LANG === 'es' ? String(+v.toFixed(6)).replace('.', ',') : String(+v.toFixed(6))));
+    splits.map((v) => (v == null ? '' : dec(v, 6)));
   return { stroke: fg, grid: { stroke: grid, width: 1 }, ticks: { stroke: grid }, values };
 };
 

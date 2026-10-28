@@ -1,0 +1,224 @@
+{
+  "schema": "phaseflow.rebake-comparison/v1",
+  "case_count": 13,
+  "scientific_outputs_unchanged": true,
+  "files": [
+    {
+      "path": "manifests/index.json",
+      "baseline_sha256": "e38a39e1e7d77e18c91eb6e543a9820074b05382ce02db303d5c5d59503a5111",
+      "candidate_sha256": "5e50db6f9d03b9bf8aa695ded7769ab2eb4755aafe1c862d91fb0a3e5dbe9f6c",
+      "allowed_changes": [
+        "/engine_version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/ctrl-abundant.json",
+      "baseline_sha256": "3983726cd42a8aa392168a402a9e59a6b8a680123515405204fdacca043ee920",
+      "candidate_sha256": "f3f0a2aa73a1b66270de97d3cad4fe0578ed291969b89e1fc566277bcd9fccf4",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "ctrl-abundant/trace.json",
+      "baseline_sha256": "93deecc01bce18bd2163445062251851e26f34040cc48417f9b087d57becd806",
+      "candidate_sha256": "93deecc01bce18bd2163445062251851e26f34040cc48417f9b087d57becd806",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/ctrl-degenerate.json",
+      "baseline_sha256": "52fa88766665e8b53eda4b0bb7343595a716479039f36e982ef8b49a8fd465a0",
+      "candidate_sha256": "53f181b0df639170ffa3759094e7a7a8695813a40f5a7d58e307f13b347b0407",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "ctrl-degenerate/trace.json",
+      "baseline_sha256": "3b32f6daef5a1cad03820f2674f81812e9af180816fbabdfc2574372a711c616",
+      "candidate_sha256": "3b32f6daef5a1cad03820f2674f81812e9af180816fbabdfc2574372a711c616",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/kd-declared.json",
+      "baseline_sha256": "cbf0e20ab7df2f8aa04a6e21aa15e0ad5df095ce0bc3a604ce3eacf5168e8166",
+      "candidate_sha256": "b47072a0e922f82e3f8e0d50722e13c4e53bf980b7ae74b84c518312b5b12be7",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "kd-declared/trace.json",
+      "baseline_sha256": "d3bdb5fdb772d1b19e436cc40d640bc28b339c19c55171ab7dcdb152b86c94b8",
+      "candidate_sha256": "d3bdb5fdb772d1b19e436cc40d640bc28b339c19c55171ab7dcdb152b86c94b8",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/newman1-published.json",
+      "baseline_sha256": "cece9b90a9d50c4bbea018adeb4919be8602bd28721bb3dfd050197e7143f3b1",
+      "candidate_sha256": "cd837600e5a0565a868620a7151f3c8b810fb1dd465e9c96b89cc2eaec67f9da",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "newman1-published/trace.json",
+      "baseline_sha256": "66334e6e3746bfc75ee9a00d1f5b9e63e00653d881f47bd5a9da580337dc3f27",
+      "candidate_sha256": "66334e6e3746bfc75ee9a00d1f5b9e63e00653d881f47bd5a9da580337dc3f27",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/regime-high-discount.json",
+      "baseline_sha256": "8ffa3c9fd242e6138e2e04ec6a2970e4f0608bcd506dec1bb2e61a41e3f66397",
+      "candidate_sha256": "368bbeac5848a52c6833d24b89f9e3f89c196398d99a4de2d05556b730f4f0ff",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "regime-high-discount/trace.json",
+      "baseline_sha256": "b33db198661b17320ae943cbb2f02d4670226b057be09fa21c8fdbe890105e76",
+      "candidate_sha256": "b33db198661b17320ae943cbb2f02d4670226b057be09fa21c8fdbe890105e76",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/regime-mill-bound.json",
+      "baseline_sha256": "0a8809aa2bec840bdda536ee3573ff80b0b3e14f9cfc7fd3e879086b66e66e74",
+      "candidate_sha256": "3d421845ce968fc05be930b3b82338259cb45ef3e7577e5ae4bddaf0c3b0603f",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "regime-mill-bound/trace.json",
+      "baseline_sha256": "77eade67c6d13e31e1fe5d8241febf22f9e40f64f10bdc5b94a1de7d8b3b2025",
+      "candidate_sha256": "77eade67c6d13e31e1fe5d8241febf22f9e40f64f10bdc5b94a1de7d8b3b2025",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/regime-mining-bound.json",
+      "baseline_sha256": "a1eb1981359cfbcfaa3e9e7c8bd9ee1191ddd6a4a258f94e76f7cb4e224b802a",
+      "candidate_sha256": "96965c785d46bf915087deb41bd3f18e2bf9274b403ee3a65acd88f5a127a598",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "regime-mining-bound/trace.json",
+      "baseline_sha256": "edf6bcbbe85188775a2f97c98321d89945b54b21ee25cfe1de4a2f9a149d93ca",
+      "candidate_sha256": "edf6bcbbe85188775a2f97c98321d89945b54b21ee25cfe1de4a2f9a149d93ca",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/twin-core-halo.json",
+      "baseline_sha256": "b5159385bdfcde84b3a09753e415eafbdc3e92d7f4ca224a7a8cd612dc6ddee7",
+      "candidate_sha256": "feaabcf7cac474f1e3ab3671e014fe9aa1b9085c47d83616cffc2afe7989e7df",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "twin-core-halo/trace.json",
+      "baseline_sha256": "f75a624f4ad64ca8ef77871813e3d08921a1883759fb8ca8c8ff08d3287d3d76",
+      "candidate_sha256": "f75a624f4ad64ca8ef77871813e3d08921a1883759fb8ca8c8ff08d3287d3d76",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/twin-layered.json",
+      "baseline_sha256": "ba6b0457f56b962efee5acb7445e700a80d5c21f86c601a56dd2f3dc8848c790",
+      "candidate_sha256": "8b7bbf495c0f30e1b1debb6cb8ff155751dc5eddcf9e26518f01527ab4c9c0ca",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "twin-layered/trace.json",
+      "baseline_sha256": "2402757d8cffc4ac4523b02cccfab89fbe3501de8cb178880e65ec8a832b0862",
+      "candidate_sha256": "2402757d8cffc4ac4523b02cccfab89fbe3501de8cb178880e65ec8a832b0862",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/twin-porphyry-l.json",
+      "baseline_sha256": "d586da5d75a63f361b7f3e3fd5bb6b61516fd87a51e07e0630e4c96addf02840",
+      "candidate_sha256": "4764ff31ed9a4568833c477d88456836a9dae06dc1ba8323883cca472a500fe3",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "twin-porphyry-l/trace.json",
+      "baseline_sha256": "1d3d2d4011d56b8bcb94d1105506547e677885c053932c3986f748aa170bcea8",
+      "candidate_sha256": "1d3d2d4011d56b8bcb94d1105506547e677885c053932c3986f748aa170bcea8",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/twin-porphyry-s.json",
+      "baseline_sha256": "d20d0c289faaa22f1fe147a313c1694207948a8b566134e9fbbe99eca54d53a1",
+      "candidate_sha256": "ebc575c067d178a4cab067e86193ef04b0846640945c02e8167fc137ea0cec66",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "twin-porphyry-s/trace.json",
+      "baseline_sha256": "41f36809a3c973fb5246b78b9ecabab05c6fc791c9caaca9c8c12d6516ac3fa2",
+      "candidate_sha256": "41f36809a3c973fb5246b78b9ecabab05c6fc791c9caaca9c8c12d6516ac3fa2",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/twin-vein.json",
+      "baseline_sha256": "0fde5fa72a4ce2126dabf1e5e6fb157eaf9cf46b9ba66315f077fe59b7ff4722",
+      "candidate_sha256": "4a45c11bd770e4e3ac6bb0deece83098b1f0bda37e4ef27788411d9ea7d7eb65",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "twin-vein/trace.json",
+      "baseline_sha256": "168ab233e5b0ee775feb9b61a04e2c39a91f7505ec54bf1d6655b0e25747bbcb",
+      "candidate_sha256": "168ab233e5b0ee775feb9b61a04e2c39a91f7505ec54bf1d6655b0e25747bbcb",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    },
+    {
+      "path": "manifests/zuck-small-declared.json",
+      "baseline_sha256": "1f7917ea228de4e38b4366f97dba52af0c1948a8e901303b1670c6989646beac",
+      "candidate_sha256": "8b42e915d99b38382344ab1cc1d68973e4e7acad54521d9b27469dc19fc13c92",
+      "allowed_changes": [
+        "/engine/version"
+      ],
+      "unexpected_changes": []
+    },
+    {
+      "path": "zuck-small-declared/trace.json",
+      "baseline_sha256": "87fafd5a6bc3a5aae66f2df1f2fd60d414e608a5420693d45dbc75dd68b7bf1e",
+      "candidate_sha256": "87fafd5a6bc3a5aae66f2df1f2fd60d414e608a5420693d45dbc75dd68b7bf1e",
+      "allowed_changes": [],
+      "unexpected_changes": []
+    }
+  ]
+}

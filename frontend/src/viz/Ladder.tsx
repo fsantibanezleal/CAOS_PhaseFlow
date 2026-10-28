@@ -140,19 +140,10 @@ export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: bool
       <svg viewBox={`0 0 ${VBW} ${H}`} role="img" className="pf-riskplot"
            aria-label={es ? 'Intervalo P10 a P90 por método' : 'P10 to P90 interval per method'}
            style={{ width: '100%', height: 'auto', display: 'block' }}>
-        <style>{`
-          .rk-n  { fill: currentColor; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace }
-          .rk-t  { fill: currentColor; font: 10px system-ui, sans-serif; opacity: .7 }
-          .rk-g  { stroke: currentColor; opacity: .16; stroke-width: 1 }
-          .rk-bar{ stroke: var(--color-fg-subtle, currentColor); stroke-width: 5; opacity: .45; stroke-linecap: round }
-          .rk-row:hover .rk-bar { opacity: .8 }
-          .rk-row:hover .rk-n { font-weight: 700 }
-        `}</style>
-
         {ticks.map((v, i) => (
           <g key={i}>
-            <line className="rk-g" x1={xOf(v)} y1={16} x2={xOf(v)} y2={H - 28} />
-            <text className="rk-t" x={xOf(v)} y={H - 16} textAnchor={i === 0 ? 'start' : i === 2 ? 'end' : 'middle'}>
+            <line className="pf-rk-g" x1={xOf(v)} y1={16} x2={xOf(v)} y2={H - 28} />
+            <text className="pf-rk-t" x={xOf(v)} y={H - 16} textAnchor={i === 0 ? 'start' : i === 2 ? 'end' : 'middle'}>
               {dec(v, 0)} M
             </text>
           </g>
@@ -163,16 +154,16 @@ export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: bool
           const isExp = r.method === ensemble.bestByExpected;
           const isP10 = r.method === ensemble.bestByP10;
           return (
-            <g className="rk-row" key={r.method}>
+            <g className="pf-rk-row" key={r.method}>
               <title>
                 {`${r.method}  P10 ${dec(r.p10, 1)} M  ${es ? 'esperado' : 'expected'} ${dec(r.exp, 1)} M  P90 ${dec(r.p90, 1)} M`}
               </title>
               <rect x={0} y={y - 10} width={VBW} height={ROWH - 2} fill="transparent" />
-              <text className="rk-n" x={4} y={y + 4}>
+              <text className="pf-rk-n" x={4} y={y + 4}>
                 {r.method.length > 22 ? `${r.method.slice(0, 21)}…` : r.method}
               </text>
               {/* the P10..P90 interval */}
-              <line className="rk-bar" x1={xOf(r.p10)} y1={y} x2={xOf(r.p90)} y2={y} />
+              <line className="pf-rk-bar" x1={xOf(r.p10)} y1={y} x2={xOf(r.p90)} y2={y} />
               {/* the mean-model value: what you would have believed with no ensemble at all */}
               <line x1={xOf(r.mean)} y1={y - 6} x2={xOf(r.mean)} y2={y + 6}
                     stroke="var(--color-warn, #d29922)" strokeWidth={1.6} />

@@ -148,19 +148,19 @@ baked case also contains the exact plan it approximates, the measured ratio to i
 <!-- generated:learned-ladder -->
 | case | learned plan gap | exact ExTS gap | learned / exact ExTS | note |
 | --- | ---: | ---: | ---: | --- |
-| [`newman1-published`](../use-cases/01_newman1-published.md) | 2.42% | 2.54% | 1.001 |  |
-| [`zuck-small-declared`](../use-cases/02_zuck-small-declared.md) | not run | - | - | no source grade field for the learned input features |
-| [`kd-declared`](../use-cases/03_kd-declared.md) | 65.68% | 16.89% | 0.413 |  |
-| [`twin-porphyry-s`](../use-cases/04_twin-porphyry-s.md) | 7.91% | 4.62% | 0.965 |  |
-| [`twin-porphyry-l`](../use-cases/05_twin-porphyry-l.md) | 11.11% | 7.31% | 0.959 |  |
-| [`twin-core-halo`](../use-cases/06_twin-core-halo.md) | 27.55% | 10.29% | 0.808 |  |
-| [`twin-layered`](../use-cases/07_twin-layered.md) | 16.00% | 3.55% | 0.871 |  |
-| [`twin-vein`](../use-cases/08_twin-vein.md) | 18.26% | 1.54% | 0.830 |  |
-| [`regime-high-discount`](../use-cases/09_regime-high-discount.md) | 10.77% | 8.73% | 0.978 |  |
-| [`regime-mill-bound`](../use-cases/10_regime-mill-bound.md) | 12.76% | 14.94% | 1.026 |  |
-| [`regime-mining-bound`](../use-cases/11_regime-mining-bound.md) | 17.16% | 7.53% | 0.896 |  |
-| [`ctrl-abundant`](../use-cases/12_ctrl-abundant.md) | 1.07% | 0.33% | 0.993 |  |
-| [`ctrl-degenerate`](../use-cases/13_ctrl-degenerate.md) | 0.00% | 0.00% | 1.000 |  |
+| [`newman1-published`](../cases/01_newman1-published.md) | 2.42% | 2.54% | 1.001 |  |
+| [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | not run | - | - | no source grade field for the learned input features |
+| [`kd-declared`](../cases/03_kd-declared.md) | 65.68% | 16.89% | 0.413 |  |
+| [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | 7.91% | 4.62% | 0.965 |  |
+| [`twin-porphyry-l`](../cases/05_twin-porphyry-l.md) | 11.11% | 7.31% | 0.959 |  |
+| [`twin-core-halo`](../cases/06_twin-core-halo.md) | 27.55% | 10.29% | 0.808 |  |
+| [`twin-layered`](../cases/07_twin-layered.md) | 16.00% | 3.55% | 0.871 |  |
+| [`twin-vein`](../cases/08_twin-vein.md) | 18.26% | 1.54% | 0.830 |  |
+| [`regime-high-discount`](../cases/09_regime-high-discount.md) | 10.77% | 8.73% | 0.978 |  |
+| [`regime-mill-bound`](../cases/10_regime-mill-bound.md) | 12.76% | 14.94% | 1.026 |  |
+| [`regime-mining-bound`](../cases/11_regime-mining-bound.md) | 17.16% | 7.53% | 0.896 |  |
+| [`ctrl-abundant`](../cases/12_ctrl-abundant.md) | 1.07% | 0.33% | 0.993 |  |
+| [`ctrl-degenerate`](../cases/13_ctrl-degenerate.md) | 0.00% | 0.00% | 1.000 |  |
 <!-- /generated -->
 
 ## 5. ONNX: exported and verified, not used by the browser

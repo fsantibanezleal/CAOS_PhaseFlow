@@ -10,7 +10,7 @@ import './content/content.css';
 import { CITATIONS } from './data/citations.ts';
 import product from '../../product.json';
 import { architecture } from './architecture.ts';
-import { APP_VERSION } from './lib/artifacts.ts';
+import { APP_VERSION, loadIndex, loadManifest } from './lib/artifacts.ts';
 const Tool = lazy(() => import('./pages/Tool.tsx'));
 const Focus = lazy(() => import('./pages/Focus.tsx'));
 const Introduction = lazy(() => import('./pages/Introduction.tsx'));
@@ -48,6 +48,11 @@ const config: ShellConfig = {
 function DocumentLanguage() {
   const lang = useShellLang();
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  useEffect(() => {
+    // Warm the small, public manifest catalog once per page context. Case views and research pages
+    // then share completed responses instead of racing route changes against cold JSON requests.
+    void loadIndex().then((index) => Promise.all(index.cases.map((item) => loadManifest(item.case_id))).catch(() => undefined));
+  }, []);
   return null;
 }
 

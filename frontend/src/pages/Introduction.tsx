@@ -18,6 +18,7 @@ export default function Introduction() {
   return (
     <DocPage title={T.title[lang]} lede={`${product.tagline[lang]} ${T.lede[lang]}`}>
       <Tabs
+        initial="executive"
         ariaLabel={lang === 'es' ? 'Vistas de la introducción' : 'Introduction views'}
         tabs={[
           { id: 'executive', label: lang === 'es' ? 'Ejecutiva' : 'Executive', content: <ExecutiveView data={executive} base={import.meta.env.BASE_URL} /> },
