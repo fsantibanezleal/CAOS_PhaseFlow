@@ -4,80 +4,110 @@ on:
   push:
     branches: [main, develop]
   workflow_dispatch:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+defaults:
+  run:
+    shell: bash -eo pipefail {0}
+
 jobs:
-  test:
+  checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
-      - name: Install (offline lane + dev + editable pkg)
-        run: pip install -r requirements.txt -r requirements-dev.txt
-      - name: Lint
-        run: ruff check data-pipeline tests
-      - name: CONTRACT 2, manifests and artifacts consistent (no drift)
-        run: python scripts/check_artifacts.py
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Frontend build, engine tests, parity and the product gates
-        run: cd frontend && npm ci && npm run build && npm test
+      - name: Install the frontend and schema validator
+        run: cd frontend && npm ci && cd .. && pip install jsonschema==4.26.0
+      - name: Lint the offline pipeline, tests, and repository scripts
+        run: pip install ruff==0.15.18 && ruff check data-pipeline tests scripts
+      - name: The workflows parse
+        run: |
+          pip install pyyaml==6.0.3
+          python -c "import pathlib, yaml; [yaml.safe_load(p.read_text()) for p in pathlib.Path('.github/workflows').glob('*.yml')]; print('workflows: OK')"
+      - name: CONTRACT 2, manifests and artifacts consistent
+        run: python scripts/check_artifacts.py
+      - name: Version is coherent with the latest release tag
+        run: python scripts/check_version_coherence.py
+      - name: SDD requirements have real gates
+        run: python scripts/check_sdd.py
+      - name: Static notebook structure and measured quality bar
+        run: python scripts/check_notebooks.py
+      - name: README areas, notebook mirror and documentation links
+        run: python scripts/check_readme_areas.py && python scripts/check_doc_paths.py
+      - name: Theme-aware SVGs and accessible animation limits
+        run: python scripts/check_svg_animation.py
+      - name: Deployment target and dependency matrix
+        run: python scripts/check_deploy_place.py && python scripts/check_tech_matrix.py
+      - name: Versioned data contracts match their schemas and history
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          base="$BEFORE"
+          if [ -z "${base//0/}" ]; then base=origin/develop; fi
+          python scripts/check_contract_versions.py --base "$base"
+      - name: Adversarial guard tests
+        run: pip install pytest==9.1.1 && python -m pytest tests/adversarial -q
+      - name: Contract catalog, schema documents and release readiness
+        run: python scripts/check_contracts.py docs/contracts/catalog.md --repo-root . && python scripts/check_documents.py && python scripts/check_readiness.py
+      - name: No provider-backed contracts on a release
+        run: |
+          set +e
+          python scripts/check_skeleton.py docs/contracts/catalog.md
+          code=$?
+          set -e
+          if [ "$code" -eq 2 ] && [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            echo "::error::main is a release: every catalog row must be real"; exit 1; fi
+          [ "$code" -eq 0 ] || [ "$code" -eq 2 ]
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: cd frontend && npm ci
+      - name: Build the six-route app and materialise the Pages routes
+        run: cd frontend && npm run build
+      - name: Frontend unit, contract, and engine parity tests
+        run: cd frontend && npm test
+      - name: Shared shell baseline and product overrides
+        run: python scripts/check_web_baseline.py
 
   guards:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Base-integrity guards (the regressions this archetype forbids)
-        run: |
-          fail=0
-          # a real .env must never be tracked (only .env.example)
-          envs="$(git ls-files | grep -E '(^|/)\.env(\..+)?$' | grep -vE '(^|/)\.env(\..+)?\.example$' || true)"
-          if [ -n "$envs" ]; then
-            echo "::error::a real .env is tracked (only .env.example may be)"; fail=1; fi
-          # venvs / native binaries / heavy model blobs must never be tracked
-          if git ls-files | grep -qiE '(^|/)\.?venv|\.(dll|so|dylib|pt|pth)$'; then
-            echo "::error::a venv or native/heavy binary is tracked (recreate from requirements; keep models small/LFS)"; fail=1; fi
-          # raw/heavy data must never be tracked, commit only compact derived artifacts under data/derived/
-          if git ls-files | grep -qiE '\.(parquet|h5|hdf5|nc|mat|npy)$'; then
-            echo "::error::raw/heavy data tracked, commit only compact derived artifacts (data/derived/)"; fail=1; fi
-          # no leaked local machine paths in tracked sources
-          if git grep -nE 'D:\\_Repos|C:\\Users|/e/_Temp|_CAOS_MANAGE' -- . ':!.github' >/dev/null 2>&1; then
-            echo "::error::leaked local machine path (D:\\_Repos) in a tracked file"; fail=1; fi
-          if [ "$fail" -eq 0 ]; then echo "guards: OK"; fi
-          exit $fail
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: No template residue (instantiated products must replace the example pipeline)
-        run: python scripts/check_template_residue.py
-      - name: Bilingual product notebooks (static anatomy, mirror and provenance)
-        run: python scripts/check_notebooks.py
-      - name: README describes every product area
-        run: python scripts/check_readme_areas.py
-      - name: No em-dash or emoji in product content (ADR-0067)
-        run: python scripts/check_content_standards.py
-      - name: Every tracked .sh is executable (a 100644 .sh is Permission denied on a Linux clone)
+      - name: Base integrity, template residue, and document paths
+        run: python scripts/check_base_integrity.py && python scripts/check_template_residue.py && python scripts/check_doc_paths.py
+      - name: Bilingual content standards and tracked shell scripts
         run: |
+          python scripts/check_content_standards.py
           bad=$(git ls-files -s -- '*.sh' | grep '^100644' || true)
-          if [ -n "$bad" ]; then
-            echo "::error::these tracked .sh files are not executable:"; echo "$bad"
-            echo "fix with: git update-index --chmod=+x <file>"
-            exit 1
-          fi
-          echo "all tracked .sh files are mode 100755"
-      - name: The README's trust anchor matches the artifact (and carries no control bytes)
-        run: python scripts/check_readme_numbers.py
-      - name: Every measured table in docs/ matches the committed artifacts
-        run: python scripts/docs_tables.py --check
-      - name: CI budget, trunk-only triggers, no training (ADR-0074)
-        run: python scripts/check_ci_budget.py
+          if [ -n "$bad" ]; then echo "::error::tracked shell scripts must be executable"; echo "$bad"; exit 1; fi
+      - name: Generated documentation, README facts, and CI budget
+        run: python scripts/docs_tables.py --check && python scripts/check_readme_numbers.py && python scripts/check_ci_budget.py

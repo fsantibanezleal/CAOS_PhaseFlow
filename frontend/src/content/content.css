@@ -2,13 +2,14 @@
  * The five reading pages: the shell's wide page body, a row of groups, a vertical rail of topics per
  * group, and each topic filled across the width (prose beside its figure, symbols and notes) rather
  * than one narrow column. Long text keeps a reading measure. Colours are shell tokens; figures use the
- * shell's dg-* diagram classes, so everything follows light and dark.
+ * shell's pf-dg-* diagram classes, so everything follows light and dark.
  */
 
 /* The shell is locked to the viewport on every route (phaseflow.css, UI floor rule 1) and a reading
  * page scrolls inside `main`, so these pages need no document-scroll override. */
 
 .pfd-page { min-width: 0; }
+.page-body.caos-doc > .page-head > p:first-of-type { max-width: none; }
 .pfd-head { margin: 0 0 1.1rem; max-width: 1180px; }
 .pfd-head h1 { margin: 0 0 0.45rem; font-size: clamp(1.5rem, 2.3vw, 2.05rem); letter-spacing: -0.01em; }
 .pfd-lede { margin: 0; color: var(--color-fg-subtle); line-height: 1.6; font-size: 1.03rem; max-width: 110ch; }
@@ -16,6 +17,7 @@
 .page-body:not(.pf-layout) .pfd-lede { max-width: none; }
 
 .pfd-topic { min-width: 0; }
+.pfd-topic-list { display: flex; flex-direction: column; gap: 1.1rem; min-width: 0; }
 .pfd-topic h2 { margin-top: 0; }
 .pfd-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.4rem; align-items: start; }
 .pfd-body.with-side,
@@ -25,10 +27,7 @@
 .pfd-text .katex-display { overflow-x: auto; overflow-y: hidden; }
 .pfd-side { min-width: 0; display: grid; gap: 1rem; align-content: start; }
 .pfd-side:empty { display: none; }
-.pfd-figure .figure { margin: 0; }
 .pfd-figure.wide { margin: 0.2rem auto 1.2rem; max-width: 1040px; }
-.pfd-figure.wide .fig-svg { max-width: 100%; }
-.pfd-side .fig-svg { max-width: 100%; }
 @media (max-width: 1060px) {
   .pfd-body.with-side,
   .pfd-body:has(.pfd-side > *) { grid-template-columns: minmax(0, 1fr); }
@@ -56,25 +55,11 @@
 
 .pfd-data { margin: 1.2rem 0 0.4rem; min-width: 0; }
 .pfd-scroll { overflow-x: auto; min-width: 0; max-width: 100%; width: 100%; }
-.pfd-page .subtabpanels, .pfd-page .subtabpanel { min-width: 0; max-width: 100%; }
 @media (max-width: 1000px) {
-  .pfd-page .subtabpanel { overflow-x: clip; }
   .pfd-page .subtabpanel > * { min-width: 0; max-width: 100%; }
 }
-/* At tablet widths the document scrolls as a whole and a vertical topic rail would consume the
-   reading column without staying alongside the section. Use the shell's single horizontal SubTabs
-   row from 900px down, preserving the full reading width and keeping the topic controls together. */
-@media (max-width: 900px) {
-  .pfd-page .subtabs-vertical { grid-template-columns: minmax(0, 1fr); }
-  .pfd-page .subtabs-vertical > .subtablist {
-    flex-direction: row; overflow-x: auto; overflow-y: hidden; position: static;
-  }
-  .pfd-page .subtabs-vertical .subtab { white-space: nowrap; }
-}
-@media (max-width: 600px) {
-  .pfd-page .subtabs-vertical > .subtablist { flex-wrap: wrap; overflow: visible; }
-  .pfd-page .subtabs-vertical .subtab { flex: 1 1 140px; white-space: normal; }
-}
+/* TopicGroups use the shell's vertical SubTabs layout; the shell keeps the rail beside its section
+   on tablets and stacks it into a horizontal row on phones. */
 .pfd-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin: 0.8rem 0; font-variant-numeric: tabular-nums; }
 .pfd-table th, .pfd-table td { padding: 6px 10px; border-bottom: 1px solid var(--color-border); text-align: left; vertical-align: top; }
 .pfd-table thead th { color: var(--color-fg-subtle); font-weight: 600; white-space: nowrap; }
@@ -103,7 +88,7 @@
 .pfd-rung.learned { border-color: var(--color-magenta); color: var(--color-magenta); }
 .pfd-rung.beyond { border-style: dashed; }
 
-/* figure helpers that the shared dg-* set does not carry */
+/* figure helpers that the shared pf-dg-* set does not carry */
 .pfd-dg-band { stroke: var(--color-border); stroke-width: 1; }
 .pfd-dg-strike { stroke: var(--color-bad); stroke-width: 2.2; }
 .pfd-dg-bad { fill: var(--color-bad); font: 600 11px var(--font-sans); }
@@ -113,6 +98,78 @@
 .pfd-dg-mono { fill: var(--color-fg-subtle); font: 10.5px var(--font-mono); }
 .pfd-dg-title { fill: var(--color-fg); font: 650 12.5px var(--font-sans); }
 
+/* Theme-aware SVG vocabulary shared by the original method figures and the data-led diagrams.
+   Kept in the application stylesheet so SVGs inherit the active shell theme and static audits see
+   the exact styles the browser receives. */
+.pf-dg-b { fill: none; stroke: var(--color-fg-subtle); stroke-width: 1.4; opacity: .85; }
+.pf-dg-f { fill: var(--color-fg); opacity: .07; }
+.pf-dg-t { fill: var(--color-fg); font: 12px var(--font-sans); }
+.pf-dg-tb { fill: var(--color-fg); font: 600 12.5px var(--font-sans); }
+.pf-dg-ts { fill: var(--color-fg-subtle); font: 10.5px var(--font-sans); }
+.pf-dg-a, .pf-dg-edge { fill: none; stroke: var(--color-fg-subtle); stroke-width: 1.3; opacity: .85; }
+.pf-dg-a { marker-end: url(#dgA); }
+.pf-dg-d { stroke-dasharray: 4 3; }
+.pf-dg-ok, .pf-dg-fill-accent { fill: var(--color-accent); opacity: .13; }
+.pf-dg-hl, .pf-dg-marker { stroke: var(--color-accent); stroke-width: 2.2; fill: none; }
+.pf-dg-box { fill: var(--color-surface-2); stroke: var(--color-border); stroke-width: 1.2; }
+.pf-dg-box.accent { stroke: var(--color-accent); }
+.pf-dg-box.good { stroke: var(--color-good); }
+.pf-dg-box-title, .pf-dg-box-sub, .pf-dg-node-label, .pf-dg-edge-label, .pf-dg-marker-label,
+.pf-dg-note, .pf-dg-axis-label, .pf-dg-tick { fill: var(--color-fg-subtle); font-family: var(--font-sans); }
+.pf-dg-box-title { fill: var(--color-fg); font-size: 12px; font-weight: 650; }
+.pf-dg-box-title.accent { fill: var(--color-accent); }
+.pf-dg-box-sub, .pf-dg-edge-label, .pf-dg-tick { font-size: 10px; }
+.pf-dg-node { fill: var(--color-surface-2); stroke: var(--color-border); stroke-width: 1.2; }
+.pf-dg-node.accent { stroke: var(--color-accent); }
+.pf-dg-node.good { stroke: var(--color-good); }
+.pf-dg-axis { stroke: var(--color-border); stroke-width: 1; }
+.pf-dg-axis-label, .pf-dg-note { font-size: 10px; }
+.pf-dg-bar { fill: var(--color-accent); }
+.pf-dg-bar-2 { fill: var(--color-magenta); }
+.pf-dg-curve { fill: none; stroke: var(--color-accent); stroke-width: 2; }
+.pf-dg-curve-faint { fill: none; stroke: var(--color-fg-faint); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.pf-dg-fill-warn { fill: var(--color-warn); opacity: .22; }
+.pf-dg-bad { fill: var(--color-bad); }
+.pf-dg-good { fill: var(--color-good); }
+.pf-dg-band { stroke: var(--color-border); stroke-width: 1; }
+.pf-dg-strike { stroke: var(--color-bad); stroke-width: 2.2; }
+.pf-dg-text { fill: var(--color-fg); font: 12px var(--font-sans); }
+.pf-dg-small { fill: var(--color-fg-subtle); font: 10.5px var(--font-sans); }
+.pf-dg-mono { fill: var(--color-fg-subtle); font: 10.5px var(--font-mono); }
+.pf-dg-title { fill: var(--color-fg); font: 650 12.5px var(--font-sans); }
+.pf-dg-arrowhead { fill: var(--color-fg-subtle); }
+.pf-rk-n { fill: var(--color-fg); font: 11px var(--font-mono); }
+.pf-rk-t { fill: var(--color-fg-subtle); font: 10px var(--font-sans); opacity: .85; }
+.pf-rk-g { stroke: var(--color-border); opacity: .8; stroke-width: 1; }
+.pf-rk-bar { stroke: var(--color-fg-subtle); stroke-width: 5; opacity: .55; stroke-linecap: round; }
+.pf-rk-row:hover .pf-rk-bar { opacity: .95; }
+.pf-rk-row:hover .pf-rk-n { font-weight: 700; }
+
 @media (max-width: 860px) {
   .pfd-table { display: block; max-width: 100%; overflow-x: auto; }
 }
+
+/* SVG labels use AA-safe foreground contrast in both themes. */
+.pfd-dg-small, .pfd-dg-mono, .pf-dg-ts, .pf-dg-note, .pf-dg-axis-label, .pf-dg-tick, .pf-dg-small, .pf-dg-mono { fill: var(--color-fg); }
+.pfd-lede { color: var(--color-fg); }
+
+
+/* SVG labels and lead text must retain AA contrast in both themes. */
+.pfd-dg-small,.pfd-dg-mono,.pf-dg-ts,.pf-dg-note,.pf-dg-axis-label,.pf-dg-tick,.pf-dg-small,.pf-dg-mono,.pfd-lede { fill:var(--color-fg); color:var(--color-fg); }
+/* The chart's labelled values must meet AA contrast, including uPlot and custom SVG axes. */
+.pf-mc-axis,.pf-mc-value,.pf-mc-legend,.pf-mc-tick { fill:var(--color-fg); }
+.pfd-page b,.pfd-page strong { color:var(--color-fg)!important; }
+.pf-mc-axis,.pf-mc-value,.pf-mc-legend,.pf-mc-tick { fill:var(--color-fg)!important; }
+/* Final shell alignment: override lazy chart chunk labels and measure constraints. */
+.page-body svg text.pf-mc-axis,
+.page-body svg text.pf-mc-value,
+.page-body svg text.pf-mc-legend,
+.page-body svg text.pf-mc-tick,
+.page-body svg text.pf-dg-marker-label { fill:var(--color-fg)!important; }
+/* Release-gate corrections: chart chunks load after the app stylesheet, so use global SVG selectors. */
+svg text.pf-mc-axis,
+svg text.pf-mc-value,
+svg text.pf-mc-legend,
+svg text.pf-mc-tick,
+svg text.pf-dg-marker-label { fill:var(--color-fg)!important; }
+svg text.pf-rk-t { fill:var(--color-fg)!important; }

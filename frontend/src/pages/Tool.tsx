@@ -94,7 +94,7 @@ export default function Tool() {
     ? compactChartHeight
     : viewportWidth <= 900
       ? tabletChartHeight
-    : Math.min(900, Math.max(600, Math.round(viewportHeight * 0.6)));
+    : Math.min(900, Math.max(610, Math.round(viewportHeight * 0.6)));
   const productionChartHeight = viewportWidth <= 760
     ? compactChartHeight
     : viewportWidth <= 900
@@ -347,6 +347,9 @@ export default function Tool() {
       label: es ? 'Análisis' : 'Analysis',
       content: (
         <div className="pf-split pf-split--wide">
+          <PanelBoundary title={es ? 'Superficie de sensibilidad' : 'Sensitivity surface'}>
+            <SensitivitySurface trace={trace} theme={st.theme} es={es} />
+          </PanelBoundary>
           {!hasBlocks && (
             <PanelBoundary title={es ? 'Capacidad por período' : 'Capacity by period'}>
               <CapacityChart
@@ -371,9 +374,6 @@ export default function Tool() {
             {trace.learned
               ? <LearnedPanel learned={trace.learned} methods={trace.methods} es={es} />
               : <Absent title={es ? 'El carril aprendido' : 'The learned lane'} what={es ? 'el carril aprendido' : 'the learned lane'} es={es} />}
-          </PanelBoundary>
-          <PanelBoundary title={es ? 'Superficie de sensibilidad' : 'Sensitivity surface'}>
-            <SensitivitySurface trace={trace} theme={st.theme} es={es} />
           </PanelBoundary>
           <PanelBoundary title={es ? 'Riesgo' : 'Risk'}>
             {trace.ensemble
@@ -562,14 +562,24 @@ export default function Tool() {
   const evidenceTab = tabs.find((tab) => tab.id === 'evidence')!;
   const workbenchGroups = [
     ...tabs.filter((tab) => tab.id !== 'analysis' && tab.id !== 'evidence')
-      .map((tab) => ({ id: tab.id, label: labels[tab.id], content: tab.content })),
+      .map((tab) => ({
+        id: tab.id,
+        label: labels[tab.id],
+        content: <div className="pf-workbench-view">{tab.content}</div>,
+      })),
     {
       id: 'diagnostics',
       label: { en: 'Diagnostics', es: 'Diagnóstico' },
-      content: <Tabs ariaLabel={es ? 'Análisis y controles' : 'Analysis and controls'} tabs={[
-        { id: analysisTab.id, label: labels.analysis[st.lang], content: analysisTab.content },
-        { id: evidenceTab.id, label: labels.evidence[st.lang], content: evidenceTab.content },
-      ]} />,
+      content: (
+        <div className="pf-workbench-view">
+          <div className="pf-diagnostics-tabs">
+            <Tabs ariaLabel={es ? 'Análisis y controles' : 'Analysis and controls'} tabs={[
+              { id: analysisTab.id, label: labels.analysis[st.lang], content: analysisTab.content },
+              { id: evidenceTab.id, label: labels.evidence[st.lang], content: evidenceTab.content },
+            ]} />
+          </div>
+        </div>
+      ),
     },
   ];
   const rail = (
@@ -693,6 +703,7 @@ export default function Tool() {
         label: { en: 'Case context', es: 'Contexto del caso' },
         content: <div className="pf-panel"><h3>{es ? trace.title.es : trace.title.en}</h3><p>{es ? trace.role.es : trace.role.en}</p><p>{es ? 'Fuente:' : 'Source:'} {manifest.real_or_synthetic}; {fmtInt(manifest.instance.n_blocks, st.lang)} {es ? 'bloques' : 'blocks'}; {fmtInt(manifest.instance.n_precedence_arcs, st.lang)} {es ? 'arcos de precedencia' : 'precedence arcs'}.</p><p>{es ? 'Los resultados son los artefactos de este caso y sus controles declarados; los métodos que resuelven otro problema se informan por separado.' : 'Results are this case’s committed artifacts and declared controls; methods that solve a different problem are reported separately.'}</p></div>,
       }}
+      noteFit
       focus
     />
   );

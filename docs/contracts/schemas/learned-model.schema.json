@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phaseflow.learned-model/v1",
+  "title": "PhaseFlow learned model",
+  "description": "Layered feed-forward surrogate and its measured metrics. This document never certifies a bound or a schedule.",
+  "type": "object",
+  "required": ["schema", "target", "features", "layers", "mu", "sigma", "metrics"],
+  "properties": {
+    "schema": {"type": "string", "minLength": 1},
+    "target": {"enum": ["expected_time_fraction", "bound_over_upit"]},
+    "features": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+    "layers": {"type": "array", "minItems": 1, "items": {"type": "object"}},
+    "mu": {"type": "array", "items": {"type": "number"}},
+    "sigma": {"type": "array", "items": {"type": "number", "minimum": 0}},
+    "metrics": {"type": "object"}
+  },
+  "additionalProperties": true
+}

@@ -107,9 +107,9 @@ export default function Focus() {
       periods, discountRate: rate, capacityFraction: [capMine, capMill], slopeDeg: slope, periodOneUndiscounted: true,
     };
     setBusy(true);
-    if (frame.current) cancelAnimationFrame(frame.current);
+    if (frame.current) window.clearTimeout(frame.current);
     if (etModel) {
-      frame.current = requestAnimationFrame(() => {
+      frame.current = window.setTimeout(() => {
         const t0 = performance.now();
         const prec = buildPrecedence(dims[0], dims[1], dims[2], slope);
         const upl = solveUltimatePit(model.value, prec.pstart, prec.plist);

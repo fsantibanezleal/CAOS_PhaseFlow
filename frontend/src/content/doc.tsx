@@ -226,38 +226,46 @@ export function TopicView({ topic, lang, area, kind }: { topic: Topic; lang: Lan
   );
 }
 
-/** Top-level groups, each a vertical rail of topics (ADR-0071 rule 5: a few peers, then group). */
+/** Top-level groups reveal their ordered topics through the shell's vertical second-level navigation. */
 export function TopicGroups({ groups, lang, label, page }: { groups: TopicGroup[]; lang: Lang; label: Bi; page: DocKind }) {
+  const renderTopic = (group: TopicGroup, topic: Topic) => (
+    <TopicView
+      topic={topic}
+      lang={lang}
+      area={areaFor(page, group, topic)}
+      kind={page === 'methodology' ? (group.id === 'learned' ? 'learned' : 'classical') : undefined}
+    />
+  );
   return (
     <Tabs
       ariaLabel={label[lang]}
-      tabs={groups.map((group) => ({
-        id: group.id,
-        label: group.label[lang],
-        content: group.topics.length === 1
-          ? <TopicView topic={group.topics[0]} lang={lang} area={areaFor(page, group, group.topics[0])} kind={page === 'methodology' ? (group.id === 'learned' ? 'learned' : 'classical') : undefined} />
-          : (
-            <SubTabs
-              orientation="vertical"
-              ariaLabel={group.label[lang]}
-              tabs={group.topics.map((topic) => ({
-                id: topic.id,
-                label: topic.title[lang],
-                content: <TopicView topic={topic} lang={lang} area={areaFor(page, group, topic)} kind={page === 'methodology' ? (group.id === 'learned' ? 'learned' : 'classical') : undefined} />,
-              }))}
-            />
-          ),
-      }))}
+      tabs={groups.flatMap((group) => {
+        // These two questions are sibling destinations, not a single view with hidden content.
+        // Keeping them at the main row makes browser parity directly reachable on phones.
+        if (page === 'benchmark' && group.id === 'lanes') {
+          return group.topics.map((topic) => ({ id: topic.id, label: topic.title[lang], content: renderTopic(group, topic) }));
+        }
+        const topics = group.topics.map((topic) => ({
+          id: topic.id,
+          label: topic.title[lang],
+          content: renderTopic(group, topic),
+        }));
+        return [{
+          id: group.id,
+          label: group.label[lang],
+          content: topics.length === 1
+            ? topics[0].content
+            : <SubTabs ariaLabel={group.label[lang]} orientation="vertical" tabs={topics} />,
+        }];
+      })}
     />
   );
 }
 
 export function DocPage({ title, lede, children }: { title: string; lede: ReactNode; children: ReactNode }) {
   return (
-    <div className="pfd-page">
-      <ShellDocPage title={title} lede={lede}>
-      {children}
-      </ShellDocPage>
-    </div>
+    <ShellDocPage title={title} lede={lede}>
+      <div className="pfd-page">{children}</div>
+    </ShellDocPage>
   );
 }

@@ -22,9 +22,9 @@ export function GapLadderFigure({ lang, levels, planMethod }: { lang: Lang; leve
   const fmt = (v: number) => Math.round(v).toLocaleString(lang === 'es' ? 'es-CL' : 'en-US');
   const pct = (v: number) => (100 * v).toLocaleString(lang === 'es' ? 'es-CL' : 'en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 });
   const bands = [
-    { a: 0, b: 1, en: 'bound slack', es: 'holgura de la cota', cls: 'dg-fill-warn' },
-    { a: 1, b: 2, en: 'integrality', es: 'integralidad', cls: 'dg-fill-accent' },
-    { a: 2, b: 3, en: 'method loss', es: 'pérdida del método', cls: 'dg-fill-warn' },
+    { a: 0, b: 1, en: 'bound slack', es: 'holgura de la cota', cls: 'pf-dg-fill-warn' },
+    { a: 1, b: 2, en: 'integrality', es: 'integralidad', cls: 'pf-dg-fill-accent' },
+    { a: 2, b: 3, en: 'method loss', es: 'pérdida del método', cls: 'pf-dg-fill-warn' },
   ];
   // the two top levels are close on newman1; spread their labels so they never overlap
   const labelY = levels.map((v) => y(v) + 4);
@@ -33,7 +33,7 @@ export function GapLadderFigure({ lang, levels, planMethod }: { lang: Lang; leve
   const loss = (levels[2] - levels[3]) / levels[2];
   return (
     <Svg vb={vb} label={label}>
-      <line x1={80} y1={30} x2={80} y2={270} className="dg-axis" />
+      <line x1={80} y1={30} x2={80} y2={270} className="pf-dg-axis" />
       {bands.map((bd, i) => (
         <g key={i}>
           <rect x={84} y={y(levels[bd.a])} width={46} height={Math.max(2, y(levels[bd.b]) - y(levels[bd.a]))} className={bd.cls} />
@@ -44,12 +44,12 @@ export function GapLadderFigure({ lang, levels, planMethod }: { lang: Lang; leve
       ))}
       {levels.map((v, i) => (
         <g key={i}>
-          <line x1={74} x2={318} y1={y(v)} y2={y(v)} className={i === 2 ? 'dg-marker' : 'dg-curve-faint'} />
+          <line x1={74} x2={318} y1={y(v)} y2={y(v)} className={i === 2 ? 'pf-dg-marker' : 'pf-dg-curve-faint'} />
           <text x={324} y={labelY[i]} className="pfd-dg-text">{i === 3 ? `${tr(lang, NAMES[i].en, NAMES[i].es)} (${planMethod})` : tr(lang, NAMES[i].en, NAMES[i].es)}</text>
-          <text x={70} y={labelY[i]} textAnchor="end" className="dg-tick">{fmt(v)}</text>
+          <text x={70} y={labelY[i]} textAnchor="end" className="pf-dg-tick">{fmt(v)}</text>
         </g>
       ))}
-      <text x={280} y={292} textAnchor="middle" className="dg-note">
+      <text x={280} y={292} textAnchor="middle" className="pf-dg-note">
         {tr(lang,
           `gap to the joint LP ${pct(gapLp)} percent; the plan is ${pct(loss)} percent below the integer optimum`,
           `brecha a la LP conjunta ${pct(gapLp)} por ciento; el plan queda ${pct(loss)} por ciento bajo el óptimo entero`)}

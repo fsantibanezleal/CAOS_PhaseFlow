@@ -1,0 +1,32 @@
+{
+  "case-index": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/index.schema.json",
+    "sha256": "1e1f13db535973375af685880b7afeff390497edaaf9aa32dc27eb97094bc744"
+  },
+  "case-manifest": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/manifest.schema.json",
+    "sha256": "22459d9b223691ad9f1763519a70a4b09f1ba167a361adeea693ac3959ec54c9"
+  },
+  "schedule-trace": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/trace.schema.json",
+    "sha256": "7fb14702e7433d2aa9eea0cc0e5c1eef9f08edcad1b5fd194afe0ebdcdea761d"
+  },
+  "learned-model": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/learned-model.schema.json",
+    "sha256": "4ea79e85706381829cabd9f79c543de172b97a96c52af6ec87cecc7700335ca2"
+  },
+  "learned-study": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/learned-study.schema.json",
+    "sha256": "dd204807978f86c37186894c68cb7f2108fa4068c66bad5af37d05d35b9199d5"
+  },
+  "readiness": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/readiness.schema.json",
+    "sha256": "55691ffd7fd938ad178eafe020b0b38d4d0642182de6caac80eab908796548ca"
+  }
+}
