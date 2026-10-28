@@ -4,9 +4,9 @@
 (light/dark) toggles, the one-line footer, the architecture modal, citations, and the document components
 (`Equation`, `InlineMath`, `Figure`, `Callout`, `Refs`, `Tabs`, `SubTabs`) the reading pages are built from.
 
-**Pin.** `@fasl-work/caos-app-shell@0.19.5` in `frontend/package.json`, resolved from npm and locked in `frontend/package-lock.json`. The corresponding shell repository release tag is `v0.19.005`.
+**Pin.** `@fasl-work/caos-app-shell@0.19.6` in `frontend/package.json`, resolved from npm and locked in `frontend/package-lock.json`. The corresponding shell repository release tag is `v0.19.006`.
 
-**Current release note.** Shell 0.19.5 localizes its own Spanish labels, keeps long replay badges inside the rail, measures drawings only when enough of them are visible, and lets meaningful case notes use their full height while preserving the workbench stage floor. PhaseFlow opts into `CaseWorkbench`'s `noteFit` because the published-case anchor is part of its case context. The package pin and lockfile are checked by `scripts/check_tech_matrix.py`.
+**Current release note.** Shell 0.19.6 marks the product licence identifier `translate="no"`, preventing a browser translator from changing SPDX identifiers and keeping them out of numeric formatting checks. PhaseFlow uses the MIT licence, and the current pin also keeps the product aligned with the shared shell release. PhaseFlow continues to opt into `CaseWorkbench`'s `noteFit` because the published-case anchor is part of its case context. The package pin and lockfile are checked by `scripts/check_tech_matrix.py`.
 
 **Why a shared shell.** Products in this line must read as one system and keep one standard of structure
 (ADR-0016: the six pages, the header, the footer) and quality (ADR-0071: sized containers, one navigation

@@ -76,7 +76,7 @@ The table records every pinned direct dependency of the scientific, development,
 | notebooks | `nbclient` | `0.11.0` | fresh-kernel notebook execution (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `nbformat` | `5.11.1` | notebook structure and deterministic serialization (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `ipykernel` | `7.4.0` | Python notebook kernel (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
-| frontend | `@fasl-work/caos-app-shell` | `0.19.5` | shared navigation, documentation, shell gate and workbench primitives (`frontend/package-lock.json`); release tag `v0.19.005` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
+| frontend | `@fasl-work/caos-app-shell` | `0.19.6` | shared navigation, documentation, shell gate and workbench primitives (`frontend/package-lock.json`); release tag `v0.19.006` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
 | frontend | `katex` | `0.19.1` | math rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `lucide-react` | `1.61.0` | interface icons (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `react` | `19.3.1` | component rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
