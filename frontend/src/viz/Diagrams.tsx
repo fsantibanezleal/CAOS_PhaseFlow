@@ -19,17 +19,6 @@ import { useShellLang } from '@fasl-work/caos-app-shell';
 
 const SHARED = (
   <>
-    <style>{`
-      .dg-b  { fill: none; stroke: currentColor; stroke-width: 1.4; opacity: .85 }
-      .dg-f  { fill: currentColor; opacity: .07 }
-      .dg-t  { fill: currentColor; font: 12px system-ui, sans-serif }
-      .dg-tb { fill: currentColor; font: 600 12.5px system-ui, sans-serif }
-      .dg-ts { fill: currentColor; font: 10.5px system-ui, sans-serif; opacity: .72 }
-      .dg-a  { fill: none; stroke: currentColor; stroke-width: 1.3; opacity: .8; marker-end: url(#dgA) }
-      .dg-d  { stroke-dasharray: 4 3 }
-      .dg-ok { fill: currentColor; opacity: .13 }
-      .dg-hl { stroke: var(--color-accent, currentColor); stroke-width: 2.2; fill: none }
-    `}</style>
     <defs>
       <marker id="dgA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
         <path d="M0 0 L10 5 L0 10 z" fill="currentColor" />
@@ -66,9 +55,9 @@ export function PrecedenceCone() {
       const target = lvl === 0;
       cells.push(
         <g key={lvl + '-' + i}>
-          <rect className={target ? 'dg-f' : 'dg-ok'} x={x - cell / 2 + 2} y={y + 2}
+          <rect className={target ? 'pf-dg-f' : 'pf-dg-ok'} x={x - cell / 2 + 2} y={y + 2}
                 width={cell - 4} height={cell - 4} rx={3} />
-          <rect className={target ? 'dg-hl' : 'dg-b'} x={x - cell / 2 + 2} y={y + 2}
+          <rect className={target ? 'pf-dg-hl' : 'pf-dg-b'} x={x - cell / 2 + 2} y={y + 2}
                 width={cell - 4} height={cell - 4} rx={3} />
         </g>,
       );
@@ -85,15 +74,15 @@ export function PrecedenceCone() {
           4 cells either side of centre, the bottom level is a single cell, so the edge runs from
           (cx - 4.5*cell) at the top to (cx - 0.5*cell) at the base. Drawing it any shorter puts the
           "slope angle" annotation on a line that is not the slope. */}
-      <path className="dg-b dg-d"
+      <path className="pf-dg-b pf-dg-d"
             d={'M' + (cx - 4.5 * cell + 2) + ' ' + (top + 2) + ' L' + (cx - cell / 2 + 2) + ' ' + (baseY + cell - 2)} />
-      <path className="dg-b dg-d"
+      <path className="pf-dg-b pf-dg-d"
             d={'M' + (cx + 4.5 * cell - 2) + ' ' + (top + 2) + ' L' + (cx + cell / 2 - 2) + ' ' + (baseY + cell - 2)} />
-      <text className="dg-tb" x="18" y="30">{es ? 'superficie' : 'surface'}</text>
-      <text className="dg-ts" x="18" y="48">{es ? 'se mina primero' : 'mined first'}</text>
-      <text className="dg-ts" x="404" y="46">{es ? 'ángulo de talud' : 'slope angle'}</text>
-      <text className="dg-tb" x="404" y={baseY + 16}>{es ? 'bloque objetivo' : 'target block'}</text>
-      <text className="dg-ts" x="404" y={baseY + 34}>{es ? 'último del cono' : 'last of the cone'}</text>
+      <text className="pf-dg-tb" x="18" y="30">{es ? 'superficie' : 'surface'}</text>
+      <text className="pf-dg-ts" x="18" y="48">{es ? 'se mina primero' : 'mined first'}</text>
+      <text className="pf-dg-ts" x="404" y="46">{es ? 'ángulo de talud' : 'slope angle'}</text>
+      <text className="pf-dg-tb" x="404" y={baseY + 16}>{es ? 'bloque objetivo' : 'target block'}</text>
+      <text className="pf-dg-ts" x="404" y={baseY + 34}>{es ? 'último del cono' : 'last of the cone'}</text>
     </Fig>
   );
 }
@@ -115,20 +104,20 @@ export function CumulativeStep() {
          caption={es
            ? 'Variables acumuladas: x(b,t)=1 significa extraído AL FINAL del período t. La monotonía es una restricción de verdad. Sin ella el modelo puede des-extraer un bloque, y el plan que sale no es físico.'
            : 'Cumulative variables: x(b,t)=1 means mined BY THE END of period t. Monotonicity is a real constraint. Without it the model can un-mine a block, and the schedule that comes out is not physical.'}>
-      <path className="dg-b" d={'M' + bx + ' ' + by + ' L' + (bx + w) + ' ' + by} />
-      <path className="dg-b" d={'M' + bx + ' ' + by + ' L' + bx + ' ' + (by - h - 22)} />
+      <path className="pf-dg-b" d={'M' + bx + ' ' + by + ' L' + (bx + w) + ' ' + by} />
+      <path className="pf-dg-b" d={'M' + bx + ' ' + by + ' L' + bx + ' ' + (by - h - 22)} />
       {Array.from({ length: T + 1 }, (_, i) => (
-        <text key={i} className="dg-ts" x={bx + i * step - 3} y={by + 18}>{i}</text>
+        <text key={i} className="pf-dg-ts" x={bx + i * step - 3} y={by + 18}>{i}</text>
       ))}
-      <text className="dg-ts" x={bx + w / 2 - 26} y={by + 38}>{es ? 'período t' : 'period t'}</text>
-      <text className="dg-ts" x={bx - 22} y={by - h + 4}>1</text>
-      <text className="dg-ts" x={bx - 22} y={by + 4}>0</text>
-      <path className="dg-hl" d={path(ok)} />
-      <path className="dg-b dg-d" d={path(bad)} />
-      <text className="dg-tb" x={bx + w + 14} y={by - h - 2}>{es ? 'válido' : 'valid'}</text>
-      <text className="dg-ts" x={bx + w + 14} y={by - h + 16}>{es ? 'sube una vez' : 'rises once'}</text>
-      <text className="dg-tb" x={bx + w + 14} y={by - 18}>{es ? 'prohibido' : 'forbidden'}</text>
-      <text className="dg-ts" x={bx + w + 14} y={by}>{es ? 'baja: des-extrae' : 'falls: un-mines'}</text>
+      <text className="pf-dg-ts" x={bx + w / 2 - 26} y={by + 38}>{es ? 'período t' : 'period t'}</text>
+      <text className="pf-dg-ts" x={bx - 22} y={by - h + 4}>1</text>
+      <text className="pf-dg-ts" x={bx - 22} y={by + 4}>0</text>
+      <path className="pf-dg-hl" d={path(ok)} />
+      <path className="pf-dg-b pf-dg-d" d={path(bad)} />
+      <text className="pf-dg-tb" x={bx + w + 14} y={by - h - 2}>{es ? 'válido' : 'valid'}</text>
+      <text className="pf-dg-ts" x={bx + w + 14} y={by - h + 16}>{es ? 'sube una vez' : 'rises once'}</text>
+      <text className="pf-dg-tb" x={bx + w + 14} y={by - 18}>{es ? 'prohibido' : 'forbidden'}</text>
+      <text className="pf-dg-ts" x={bx + w + 14} y={by}>{es ? 'baja: des-extrae' : 'falls: un-mines'}</text>
     </Fig>
   );
 }
@@ -141,22 +130,22 @@ export function BoundGap() {
          caption={es
            ? 'La cota certificada está sobre el óptimo entero y un plan factible está bajo él. La brecha cota-plan acota la pérdida del método, pero también puede contener flojedad de la relajación e integralidad. Newman1 tiene una referencia entera externa; el control degenerado tiene óptimo exacto por construcción.'
            : 'The certified bound sits above the integer optimum, and a feasible schedule sits below it. The bound-to-schedule gap bounds method loss but can also contain relaxation looseness and integrality. Newman1 has an external integer reference; the degenerate control has an exact optimum by construction.'}>
-      <path className="dg-b" d="M92 32 L92 196" />
-      <text className="dg-ts" x="30" y="30">NPV</text>
-      <rect className="dg-f" x="196" y="56" width="118" height="106" />
-      <path className="dg-hl" d="M110 56 L500 56" />
-      <text className="dg-tb" x="510" y="54">{es ? 'cota' : 'bound'}</text>
-      <text className="dg-ts" x="510" y="70">{es ? 'certificada' : 'certified'}</text>
-      <path className="dg-b dg-d" d="M110 104 L500 104" />
-      <text className="dg-tb" x="510" y="102">{es ? 'óptimo real' : 'true optimum'}</text>
-      <text className="dg-ts" x="510" y="118">{es ? 'según caso' : 'case dependent'}</text>
-      <path className="dg-b" d="M110 162 L500 162" />
-      <text className="dg-tb" x="510" y="160">{es ? 'plan factible' : 'feasible plan'}</text>
-      <text className="dg-ts" x="510" y="176">{es ? 'lo que se entrega' : 'what ships'}</text>
-      <path className="dg-a" d="M255 160 L255 62" />
-      <path className="dg-a" d="M255 58 L255 156" />
-      <text className="dg-tb" x="268" y="104">{es ? 'brecha reportada' : 'reported gap'}</text>
-      <text className="dg-ts" x="268" y="122">{es ? 'cota superior del arrepentimiento' : 'an upper bound on regret'}</text>
+      <path className="pf-dg-b" d="M92 32 L92 196" />
+      <text className="pf-dg-ts" x="30" y="30">NPV</text>
+      <rect className="pf-dg-f" x="196" y="56" width="118" height="106" />
+      <path className="pf-dg-hl" d="M110 56 L500 56" />
+      <text className="pf-dg-tb" x="510" y="54">{es ? 'cota' : 'bound'}</text>
+      <text className="pf-dg-ts" x="510" y="70">{es ? 'certificada' : 'certified'}</text>
+      <path className="pf-dg-b pf-dg-d" d="M110 104 L500 104" />
+      <text className="pf-dg-tb" x="510" y="102">{es ? 'óptimo real' : 'true optimum'}</text>
+      <text className="pf-dg-ts" x="510" y="118">{es ? 'según caso' : 'case dependent'}</text>
+      <path className="pf-dg-b" d="M110 162 L500 162" />
+      <text className="pf-dg-tb" x="510" y="160">{es ? 'plan factible' : 'feasible plan'}</text>
+      <text className="pf-dg-ts" x="510" y="176">{es ? 'lo que se entrega' : 'what ships'}</text>
+      <path className="pf-dg-a" d="M255 160 L255 62" />
+      <path className="pf-dg-a" d="M255 58 L255 156" />
+      <text className="pf-dg-tb" x="268" y="104">{es ? 'brecha reportada' : 'reported gap'}</text>
+      <text className="pf-dg-ts" x="268" y="122">{es ? 'cota superior del arrepentimiento' : 'an upper bound on regret'}</text>
     </Fig>
   );
 }
@@ -166,10 +155,10 @@ export function TwoLanes() {
   const es = useShellLang() === 'es';
   const B = (x: number, y: number, w: number, h: number, t: string, s: string) => (
     <>
-      <rect className="dg-f" x={x} y={y} width={w} height={h} rx={7} />
-      <rect className="dg-b" x={x} y={y} width={w} height={h} rx={7} />
-      <text className="dg-tb" x={x + 11} y={y + 21}>{t}</text>
-      <text className="dg-ts" x={x + 11} y={y + 38}>{s}</text>
+      <rect className="pf-dg-f" x={x} y={y} width={w} height={h} rx={7} />
+      <rect className="pf-dg-b" x={x} y={y} width={w} height={h} rx={7} />
+      <text className="pf-dg-tb" x={x + 11} y={y + 21}>{t}</text>
+      <text className="pf-dg-ts" x={x + 11} y={y + 38}>{s}</text>
     </>
   );
   return (
@@ -179,15 +168,15 @@ export function TwoLanes() {
            : 'Two lanes. Offline in Python: builds the instance, runs the whole ladder and the controls, writes a committed trace with its manifest. Live in TypeScript: re-solves when a control moves, on the same engine. The browser never re-runs the ladder.'}>
       {B(18, 26, 178, 60, 'oreblocks (PyPI)', es ? 'motor, dependencia fijada' : 'engine, pinned dependency')}
       {B(18, 112, 178, 60, es ? 'Instancia' : 'Instance', es ? 'MineLib o sintética' : 'MineLib or synthetic')}
-      <path className="dg-a" d="M200 56 L276 70" />
-      <path className="dg-a" d="M200 142 L276 104" />
+      <path className="pf-dg-a" d="M200 56 L276 70" />
+      <path className="pf-dg-a" d="M200 142 L276 104" />
       {B(281, 50, 176, 74, es ? 'Pipeline offline' : 'Offline pipeline', es ? 'escalera + controles' : 'ladder + controls')}
-      <path className="dg-a" d="M462 87 L536 87" />
+      <path className="pf-dg-a" d="M462 87 L536 87" />
       {B(541, 56, 190, 60, es ? 'Traza + manifiesto' : 'Trace + manifest', es ? 'commiteados, verificables' : 'committed, checkable')}
-      <path className="dg-a dg-d" d="M636 120 L636 160" />
+      <path className="pf-dg-a pf-dg-d" d="M636 120 L636 160" />
       {B(541, 164, 190, 60, es ? 'App en vivo (TS)' : 'Live app (TS)', es ? 're-resuelve al mover' : 're-solves on change')}
-      <text className="dg-ts" x="281" y="196">{es ? 'el navegador nunca re-corre la escalera' : 'the browser never re-runs the ladder'}</text>
-      <text className="dg-ts" x="281" y="214">{es ? 'lee la traza y re-resuelve el caso' : 'it reads the trace and re-solves the case'}</text>
+      <text className="pf-dg-ts" x="281" y="196">{es ? 'el navegador nunca re-corre la escalera' : 'the browser never re-runs the ladder'}</text>
+      <text className="pf-dg-ts" x="281" y="214">{es ? 'lee la traza y re-resuelve el caso' : 'it reads the trace and re-solves the case'}</text>
     </Fig>
   );
 }
@@ -197,7 +186,7 @@ export function TwoLanes() {
 export function DegeneracyCollapse({ setMatches, relativeError }: { setMatches: boolean; relativeError: string }) {
   const es = useShellLang() === 'es';
   const cell = 40;
-  // The two shared diagram classes are dg-ok at 13 percent and dg-f at 7 percent opacity, which on a
+  // The two shared diagram classes are pf-dg-ok at 13 percent and pf-dg-f at 7 percent opacity, which on a
   // 40px cell is no contrast at all: the first version drew both grids as a uniform grey rectangle and
   // the cone that IS the point of the figure was invisible. In-set cells are drawn in the accent with a
   // real border; out-of-set cells stay faint. The distinction has to survive a glance.
@@ -226,29 +215,29 @@ export function DegeneracyCollapse({ setMatches, relativeError }: { setMatches: 
          caption={es
            ? 'El control de degeneración: con tasa cero y capacidad ilimitada, el descuento y las capacidades desaparecen del objetivo y CPIT se reduce al pit final. Los dos conjuntos deben coincidir bloque a bloque y los dos valores a precisión de máquina. Es la única parte del producto con una respuesta conocida de antemano, y por eso fallar aquí es un error y no un resultado.'
            : 'The degeneracy control: at rate zero with unlimited capacity, the discounting and the capacities drop out of the objective and CPIT reduces to the ultimate pit. The two sets must agree block for block and the two values to machine precision. It is the only part of the product with a known answer in advance, which is why a failure here is a bug and not a result.'}>
-      <text className="dg-tb" x="45" y="30">CPIT</text>
-      <text className="dg-ts" x="45" y="50">{es ? 'tasa 0, capacidad infinita' : 'rate 0, unlimited capacity'}</text>
+      <text className="pf-dg-tb" x="45" y="30">CPIT</text>
+      <text className="pf-dg-ts" x="45" y="50">{es ? 'tasa 0, capacidad infinita' : 'rate 0, unlimited capacity'}</text>
       {grid(45, 67, pit)}
 
-      <text className="dg-tb" x="480" y="30">{es ? 'Pit final' : 'Ultimate pit'}</text>
-      <text className="dg-ts" x="480" y="50">{es ? 'Lerchs-Grossmann exacto' : 'exact Lerchs-Grossmann'}</text>
+      <text className="pf-dg-tb" x="480" y="30">{es ? 'Pit final' : 'Ultimate pit'}</text>
+      <text className="pf-dg-ts" x="480" y="50">{es ? 'Lerchs-Grossmann exacto' : 'exact Lerchs-Grossmann'}</text>
       {grid(480, 67, pit)}
 
-      <text className="dg-tb" x="440" y="155" textAnchor="middle" style={{ fontSize: 22 }}>=</text>
-      <text className="dg-ts" x="440" y="177" textAnchor="middle">{es ? 'bloque' : 'block'}</text>
-      <text className="dg-ts" x="440" y="191" textAnchor="middle">{es ? 'a bloque' : 'for block'}</text>
+      <text className="pf-dg-tb" x="440" y="155" textAnchor="middle" style={{ fontSize: 22 }}>=</text>
+      <text className="pf-dg-ts" x="440" y="177" textAnchor="middle">{es ? 'bloque' : 'block'}</text>
+      <text className="pf-dg-ts" x="440" y="191" textAnchor="middle">{es ? 'a bloque' : 'for block'}</text>
 
       <rect x="15" y="330" width="820" height="155" rx="10"
             fill="var(--color-accent, currentColor)" fillOpacity="0.08"
             stroke="var(--color-accent, currentColor)" strokeOpacity="0.35" />
-      <text className="dg-ts" x="38" y="360">{es ? 'MEDIDO EN ESTA INSTANCIA' : 'MEASURED ON THIS INSTANCE'}</text>
-      <path className="dg-b" d="M425 374 V465" />
-      <text className="dg-tb" x="40" y="402">{es ? 'Diferencia simétrica' : 'Symmetric set difference'}</text>
-      <text className="dg-ts" x="40" y="424">{es ? 'bloques que difieren entre CPIT y el pit final' : 'blocks that differ between CPIT and the ultimate pit'}</text>
-      <text className="dg-tb" x="385" y="414" textAnchor="end">{setMatches ? '0' : '≠ 0'}</text>
-      <text className="dg-tb" x="455" y="402">{es ? 'Error relativo de cota' : 'Relative bound error'}</text>
-      <text className="dg-ts" x="455" y="424">{es ? 'tasa cero, capacidad ilimitada' : 'zero rate, unlimited capacity'}</text>
-      <text className="dg-tb" x="812" y="414" textAnchor="end">{relativeError}</text>
+      <text className="pf-dg-ts" x="38" y="360">{es ? 'MEDIDO EN ESTA INSTANCIA' : 'MEASURED ON THIS INSTANCE'}</text>
+      <path className="pf-dg-b" d="M425 374 V465" />
+      <text className="pf-dg-tb" x="40" y="402">{es ? 'Diferencia simétrica' : 'Symmetric set difference'}</text>
+      <text className="pf-dg-ts" x="40" y="424">{es ? 'bloques que difieren entre CPIT y el pit final' : 'blocks that differ between CPIT and the ultimate pit'}</text>
+      <text className="pf-dg-tb" x="385" y="414" textAnchor="end">{setMatches ? '0' : '≠ 0'}</text>
+      <text className="pf-dg-tb" x="455" y="402">{es ? 'Error relativo de cota' : 'Relative bound error'}</text>
+      <text className="pf-dg-ts" x="455" y="424">{es ? 'tasa cero, capacidad ilimitada' : 'zero rate, unlimited capacity'}</text>
+      <text className="pf-dg-tb" x="812" y="414" textAnchor="end">{relativeError}</text>
     </Fig>
   );
 }
@@ -271,35 +260,35 @@ export function TwoBounds() {
          caption={es
            ? 'La misma programación medida contra dos techos. El Algoritmo 4 relaja un recurso a la vez; Bienstock-Zuckerberg aproxima la cota conjunta. Cuando BZ queda más abajo, la brecha reportada se achica sin que el plan mejore. En controles casi degenerados ambas pueden coincidir dentro de la tolerancia y se usa la menor. Esquema sin escala numérica.'
            : 'The same schedule measured against two ceilings. Algorithm 4 relaxes one resource at a time; Bienstock-Zuckerberg approximates the joint bound. When BZ sits lower, the reported gap shrinks without the schedule improving. On near-degenerate controls the two may coincide within tolerance and the smaller is used. Schematic, not to numeric scale.'}>
-      <path className="dg-b" d="M96 28 L96 200" />
-      <text className="dg-ts" x="34" y="26">NPV</text>
+      <path className="pf-dg-b" d="M96 28 L96 200" />
+      <text className="pf-dg-ts" x="34" y="26">NPV</text>
       <rect x={L - 8} y={yA4} width={R - L + 8} height={yBZ - yA4}
             fill="var(--color-accent, currentColor)" fillOpacity="0.13" />
 
-      <path className="dg-b dg-d" d={`M${L - 8} ${yA4} L${R} ${yA4}`} />
-      <text className="dg-tb" x={R + 12} y={yA4 - 2}>{es ? 'cota Algoritmo 4' : 'Algorithm 4 bound'}</text>
-      <text className="dg-ts" x={R + 12} y={yA4 + 14}>{es ? 'un recurso a la vez' : 'one resource at a time'}</text>
+      <path className="pf-dg-b pf-dg-d" d={`M${L - 8} ${yA4} L${R} ${yA4}`} />
+      <text className="pf-dg-tb" x={R + 12} y={yA4 - 2}>{es ? 'cota Algoritmo 4' : 'Algorithm 4 bound'}</text>
+      <text className="pf-dg-ts" x={R + 12} y={yA4 + 14}>{es ? 'un recurso a la vez' : 'one resource at a time'}</text>
 
-      <path className="dg-hl" d={`M${L - 8} ${yBZ} L${R} ${yBZ}`} />
-      <text className="dg-tb" x={R + 12} y={yBZ - 2}>{es ? 'cota conjunta BZ' : 'joint BZ bound'}</text>
-      <text className="dg-ts" x={R + 12} y={yBZ + 14}>{es ? 'conjunta, con tolerancia' : 'joint, within tolerance'}</text>
+      <path className="pf-dg-hl" d={`M${L - 8} ${yBZ} L${R} ${yBZ}`} />
+      <text className="pf-dg-tb" x={R + 12} y={yBZ - 2}>{es ? 'cota conjunta BZ' : 'joint BZ bound'}</text>
+      <text className="pf-dg-ts" x={R + 12} y={yBZ + 14}>{es ? 'conjunta, con tolerancia' : 'joint, within tolerance'}</text>
 
-      <path className="dg-b dg-d" d={`M${L - 8} ${yOpt} L${R} ${yOpt}`} />
-      <text className="dg-tb" x={R + 12} y={yOpt + 4}>{es ? 'óptimo entero' : 'integer optimum'}</text>
-      <text className="dg-ts" x={R + 12} y={yOpt + 20}>{es ? 'Newman1: externo' : 'Newman1: external'}</text>
+      <path className="pf-dg-b pf-dg-d" d={`M${L - 8} ${yOpt} L${R} ${yOpt}`} />
+      <text className="pf-dg-tb" x={R + 12} y={yOpt + 4}>{es ? 'óptimo entero' : 'integer optimum'}</text>
+      <text className="pf-dg-ts" x={R + 12} y={yOpt + 20}>{es ? 'Newman1: externo' : 'Newman1: external'}</text>
 
-      <path className="dg-b" d={`M${L - 8} ${yPlan} L${R} ${yPlan}`} />
-      <text className="dg-tb" x={R + 12} y={yPlan + 4}>{es ? 'el MISMO plan' : 'the SAME schedule'}</text>
+      <path className="pf-dg-b" d={`M${L - 8} ${yPlan} L${R} ${yPlan}`} />
+      <text className="pf-dg-tb" x={R + 12} y={yPlan + 4}>{es ? 'el MISMO plan' : 'the SAME schedule'}</text>
 
       {/* the two reported gaps, drawn against the same fixed plan line */}
-      <path className="dg-a" d={`M${L + 34} ${yPlan - 4} L${L + 34} ${yA4 + 4}`} />
-      <text className="dg-ts" x={L + 42} y={yA4 + 32}>{es ? 'brecha contra Alg 4' : 'gap vs Alg 4'}</text>
+      <path className="pf-dg-a" d={`M${L + 34} ${yPlan - 4} L${L + 34} ${yA4 + 4}`} />
+      <text className="pf-dg-ts" x={L + 42} y={yA4 + 32}>{es ? 'brecha contra Alg 4' : 'gap vs Alg 4'}</text>
 
-      <path className="dg-a" d={`M${L + 176} ${yPlan - 4} L${L + 176} ${yBZ + 4}`} />
-      <text className="dg-ts" x={L + 184} y={yBZ + 30}>{es ? 'brecha contra BZ' : 'gap vs BZ'}</text>
+      <path className="pf-dg-a" d={`M${L + 176} ${yPlan - 4} L${L + 176} ${yBZ + 4}`} />
+      <text className="pf-dg-ts" x={L + 184} y={yBZ + 30}>{es ? 'brecha contra BZ' : 'gap vs BZ'}</text>
 
       {/* The band between the ceilings measures Algorithm 4's extra relaxation. */}
-      <text className="dg-ts" x={L + 6} y={yA4 - 8}>
+      <text className="pf-dg-ts" x={L + 6} y={yA4 - 8}>
         {es ? 'esta banda es flojedad de la cota, no del plan' : 'this band is looseness in the bound, not in the plan'}
       </text>
     </Fig>
@@ -320,21 +309,21 @@ export function ThreePressures() {
            : 'A schedule is the point where three pressures pulling in different directions balance. Moving a control moves one of the three, the balance shifts and the shape of the hole moves with it: the geometry IS the computed result, not an illustration of it.'}>
       <circle cx={cx} cy={cy} r={62} fill="var(--color-accent, #58a6ff)" fillOpacity={0.12}
               stroke="var(--color-accent, #58a6ff)" strokeWidth={1.8} />
-      <text className="dg-tb" x={cx} y={cy - 4} textAnchor="middle">{es ? 'el plan' : 'the schedule'}</text>
-      <text className="dg-ts" x={cx} y={cy + 14} textAnchor="middle">{es ? 'donde se equilibran' : 'where they balance'}</text>
+      <text className="pf-dg-tb" x={cx} y={cy - 4} textAnchor="middle">{es ? 'el plan' : 'the schedule'}</text>
+      <text className="pf-dg-ts" x={cx} y={cy + 14} textAnchor="middle">{es ? 'donde se equilibran' : 'where they balance'}</text>
 
-      <text className="dg-tb" x="24" y="46">{es ? 'Descuento' : 'Discounting'}</text>
-      <text className="dg-ts" x="24" y="63">{es ? 'lo quiere todo ahora' : 'wants everything now'}</text>
-      <path className="dg-a" d={`M134 78 L${cx - 52} ${cy - 34}`} />
+      <text className="pf-dg-tb" x="24" y="46">{es ? 'Descuento' : 'Discounting'}</text>
+      <text className="pf-dg-ts" x="24" y="63">{es ? 'lo quiere todo ahora' : 'wants everything now'}</text>
+      <path className="pf-dg-a" d={`M134 78 L${cx - 52} ${cy - 34}`} />
 
-      <text className="dg-tb" x="452" y="46">{es ? 'Precedencia' : 'Precedence'}</text>
-      <text className="dg-ts" x="452" y="63">{es ? 'primero lo de encima' : 'the rock on top first'}</text>
+      <text className="pf-dg-tb" x="452" y="46">{es ? 'Precedencia' : 'Precedence'}</text>
+      <text className="pf-dg-ts" x="452" y="63">{es ? 'primero lo de encima' : 'the rock on top first'}</text>
       {/* starts BELOW the label block: at y=60 it ran straight through the words it belongs to */}
-      <path className="dg-a" d={`M486 78 L${cx + 52} ${cy - 34}`} />
+      <path className="pf-dg-a" d={`M486 78 L${cx + 52} ${cy - 34}`} />
 
-      <text className="dg-tb" x={cx} y="238" textAnchor="middle">{es ? 'Capacidad' : 'Capacity'}</text>
-      <text className="dg-ts" x={cx} y="222" textAnchor="middle">{es ? 'cuánto cabe por año' : 'how much fits in a year'}</text>
-      <path className="dg-a" d={`M${cx} 208 L${cx} ${cy + 68}`} />
+      <text className="pf-dg-tb" x={cx} y="238" textAnchor="middle">{es ? 'Capacidad' : 'Capacity'}</text>
+      <text className="pf-dg-ts" x={cx} y="222" textAnchor="middle">{es ? 'cuánto cabe por año' : 'how much fits in a year'}</text>
+      <path className="pf-dg-a" d={`M${cx} 208 L${cx} ${cy + 68}`} />
     </Fig>
   );
 }
@@ -374,9 +363,9 @@ export function CaseRoles() {
                   stroke={isCtrl || isPub ? 'var(--color-accent, #58a6ff)' : 'currentColor'}
                   strokeWidth={isCtrl || isPub ? 1.2 : 0.6}
                   strokeOpacity={isCtrl || isPub ? 0.8 : 0.2} />
-            <text className="dg-tb" x={22} y={y + 27}>{id}</text>
-            <text className="dg-ts" x={126} y={y + 19}>{what}</text>
-            <text className="dg-ts" x={126} y={y + 36} fillOpacity={0.7}>{proves}</text>
+            <text className="pf-dg-tb" x={22} y={y + 27}>{id}</text>
+            <text className="pf-dg-ts" x={126} y={y + 19}>{what}</text>
+            <text className="pf-dg-ts" x={126} y={y + 36} fillOpacity={0.7}>{proves}</text>
           </g>
         );
       })}

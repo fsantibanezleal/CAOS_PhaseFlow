@@ -7,6 +7,6 @@
   <g fill="var(--color-surface-2)"><rect x="47" y="122" width="28" height="36" rx="4"/><rect x="80" y="122" width="33" height="36" rx="4"/><path d="M184 149l15 14 34-39 9 8-42 48-24-22z"/><path d="M325 149h62M325 135h45M325 163h54" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round"/><path d="M457 147h54M457 133h42M457 161h32" stroke="var(--color-border)" stroke-width="4" stroke-linecap="round"/></g>
   <g fill="none" stroke="var(--color-border)" stroke-width="3" stroke-linecap="round"><path d="M134 128h24m-9-9 9 9-9 9M270 128h24m-9-9 9 9-9 9M406 128h24m-9-9 9 9-9 9"/></g>
   <path d="M80 211h400" stroke="var(--color-accent)" stroke-width="3" stroke-dasharray="7 8"/>
-  <text class="pf-exec-label pf-exec-en" lang="en" x="280" y="248" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Inputs to evidence</text>
-  <text class="pf-exec-label pf-exec-es" lang="es" x="280" y="248" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="13" font-weight="600">Entradas hasta evidencia</text>
+  <text class="pf-exec-label pf-exec-en" lang="en" x="280" y="232" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="16" font-weight="600">Inputs to evidence</text>
+  <text class="pf-exec-label pf-exec-es" lang="es" x="280" y="232" text-anchor="middle" fill="var(--color-fg)" font-family="system-ui, sans-serif" font-size="16" font-weight="600">Entradas hasta evidencia</text>
 </svg>
