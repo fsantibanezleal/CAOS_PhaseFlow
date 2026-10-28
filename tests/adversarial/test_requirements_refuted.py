@@ -61,15 +61,20 @@ def test_a_build_without_route_source_fails_and_valid_routes_are_materialized(re
     frontend = repo / "frontend"
     dist = frontend / "dist"
     script = frontend / "spa-404.mjs"
-    r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=frontend)
+    env = {**os.environ, "GITHUB_SHA": "0123456789abcdef0123456789abcdef01234567"}
+    r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=frontend, env=env)
     assert r.returncode == 1 and "dist/index.html missing" in r.stderr, r.stderr
     dist.mkdir()
     (dist / "index.html").write_text('<html><body>built app</body></html>', encoding="utf-8")
     (dist / "data" / "manifests").mkdir(parents=True)
     (dist / "data" / "manifests" / "index.json").write_text('{"cases":[{"case_id":"case-a"}]}', encoding="utf-8")
-    r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=frontend)
+    r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=frontend, env=env)
     assert r.returncode == 0 and "7 routes" in r.stdout, r.stderr
     assert (dist / "404.html").is_file() and (dist / "focus" / "case-a" / "index.html").is_file()
+    assert json.loads((dist / "build.json").read_text(encoding="utf-8")) == {
+        "sha": "0123456789abcdef0123456789abcdef01234567",
+        "version": (repo / "VERSION").read_text(encoding="utf-8").strip(),
+    }
 
 
 def test_a_schema_change_that_breaks_committed_documents_fails_contract_gate(repo: Path) -> None:
