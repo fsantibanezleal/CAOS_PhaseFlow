@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phaseflow.learned-study/v1",
+  "title": "PhaseFlow learned-model study",
+  "description": "Persisted evaluation evidence for training, parity, failure analysis, guard validation, and preview timing.",
+  "type": "object",
+  "minProperties": 1
+}

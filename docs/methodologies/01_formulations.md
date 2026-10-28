@@ -164,5 +164,5 @@ fails it is broken in a way no visual inspection would catch.
 
 It does not claim an optimum for any CPIT or PCPSP instance in this product: the only integer optimum
 quoted for a product case is an external one for `newman1`
-([use case 01](../use-cases/01_newman1-published.md)). Stockpiles, blending rows and minimum-production
+([use case 01](../cases/01_newman1-published.md)). Stockpiles, blending rows and minimum-production
 rows are part of the wider family and are not solved here ([09](09_destinations.md)).
