@@ -24,6 +24,6 @@ The release includes 26 English and Spanish notebooks (13 mirrored pairs), worke
 - Generated documentation tables: match committed artifacts.
 - Notebook check: 26 notebooks execute in fresh kernels with committed outputs matching.
 - Frontend build and tests: pass; Profile and plan sizing verifier covers six viewport sizes.
-- Full browser matrix: 632 states per viewport passed at 390x844, 768x1024, 1280x800, 1600x900, and 2560x1440; the focused content-width run also passed 368 states.
+- Full shell gate on the final 0.19.6 package: 1,976 measured states and 157 captures, zero failures, across 390x844, 768x1024, 1280x800, 1600x900, and 2560x1440; both themes and languages; wide-font passes at 390x844 and 1280x800.
 - Full Python suite, Ruff, architecture bounds, shell baseline, content and contract checks: pass.
 - CI on promotion, merge to `develop`, merge to `main`, Pages deployment, and live SHA/route/Profile checks: pending.
