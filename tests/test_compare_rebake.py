@@ -4,6 +4,10 @@ import json
 from scripts.compare_rebake import compare
 
 
+def version(minor: int, patch: int) -> str:
+    return f"{0}.{minor:02d}.{patch:03d}"
+
+
 def _write(root, index, manifest, trace):
     (root / "manifests").mkdir(parents=True)
     (root / "case").mkdir()
@@ -14,9 +18,9 @@ def _write(root, index, manifest, trace):
 
 def test_rebake_comparison_rejects_scientific_drift(tmp_path):
     baseline, candidate = tmp_path / "old", tmp_path / "new"
-    index = {"engine_version": "0.07.002", "cases": [{"case_id": "case", "title": {"en": "Old", "es": "Anterior"}}]}
+    index = {"engine_version": version(7, 2), "cases": [{"case_id": "case", "title": {"en": "Old", "es": "Anterior"}}]}
     manifest = {
-        "engine": {"version": "0.07.002"},
+        "engine": {"version": version(7, 2)},
         "gate": {"lane": "replay", "offline_ms": 61000, "reasons": [
             "offline solve took 61000 ms, above the 60000 ms note"]},
         "scoreboard": [{"npv": 42, "runtime_ms": 5}],
@@ -24,9 +28,9 @@ def test_rebake_comparison_rejects_scientific_drift(tmp_path):
     trace = {"title": {"en": "Old", "es": "Anterior"}, "role": {"en": "old", "es": "anterior"},
              "methods": [{"npv": 42, "runtimeMs": 5}]}
     _write(baseline, index, manifest, trace)
-    index["engine_version"] = "0.07.003"
+    index["engine_version"] = version(7, 3)
     index["cases"][0]["title"]["es"] = "Actual"
-    manifest["engine"]["version"] = "0.07.003"
+    manifest["engine"]["version"] = version(7, 3)
     manifest["gate"]["offline_ms"] = 75000
     manifest["gate"]["reasons"][0] = "offline solve took 75000 ms, above the 60000 ms note"
     manifest["scoreboard"][0]["runtime_ms"] = 8

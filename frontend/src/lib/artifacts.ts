@@ -7,7 +7,7 @@ import type { CapacityOverrun } from './feasibility.ts';
 import { INDEX_SCHEMA, MANIFEST_SCHEMA, TRACE_SCHEMA } from './contract.types.ts';
 import { useLangStore } from '@fasl-work/caos-app-shell';
 
-export const APP_VERSION = (import.meta.env?.VITE_APP_VERSION as string) ?? '0.01.000';
+export const APP_VERSION = import.meta.env.VITE_APP_VERSION as string;
 
 // ROOT-relative. A bare `data/...` resolves against the CURRENT path, so every fetch from
 // `/focus/<case>` went to `/focus/data/...`, hit the SPA fallback, and parsed index.html as JSON:

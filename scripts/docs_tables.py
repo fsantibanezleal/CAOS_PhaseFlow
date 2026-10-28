@@ -104,7 +104,7 @@ def used_bound(m: dict) -> str:
 
 
 def case_link(cid: str, from_dir: Path) -> str:
-    target = DOCS / "use-cases" / use_case_file(cid)
+    target = DOCS / "cases" / use_case_file(cid)
     return f"[`{cid}`]({Path(os.path.relpath(target, from_dir)).as_posix()})"
 
 
@@ -462,7 +462,7 @@ def main() -> int:
             raise SystemExit("--check always reads the committed manifests")
         MANIFESTS = args.manifests
     ms = load_manifests()
-    for p in (DOCS / "use-cases").glob("*.md"):
+    for p in (DOCS / "cases").glob("*.md"):
         cid = p.stem.split("_", 1)[-1]
         _USE_CASE_FILES[cid] = p.name
 

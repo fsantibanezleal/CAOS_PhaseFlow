@@ -1,6 +1,7 @@
 /** Figures for Methodology: one schematic per method family, drawn from the definitions in the sources. */
 import { periodCss, periodTextColor } from '../../viz/colormap.ts';
 import { Arrow, Box, Svg, arrowId, tr, type Lang } from './kit.tsx';
+import { dec } from '../../lib/artifacts.ts';
 
 /** The slope cone and the cumulative variable: the two facts the formulation rests on. */
 export function ConeAndStep({ lang }: { lang: Lang }) {
@@ -14,7 +15,7 @@ export function ConeAndStep({ lang }: { lang: Lang }) {
       const x = cx - ((n - 1) / 2) * s + i * s - s / 2;
       const y = top + (3 - lvl) * s;
       cells.push(<rect key={`${lvl}-${i}`} x={x + 1} y={y + 1} width={s - 2} height={s - 2} rx={2}
-                       className={lvl === 0 ? 'dg-fill-warn' : 'dg-fill-accent'} />);
+                       className={lvl === 0 ? 'pf-dg-fill-warn' : 'pf-dg-fill-accent'} />);
     }
   }
   const ys = [0, 0, 0, 1, 1, 1];
@@ -22,21 +23,21 @@ export function ConeAndStep({ lang }: { lang: Lang }) {
     <Svg vb={vb} label={label}>
       <text x={cx} y={24} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'the cone above block b', 'el cono sobre el bloque b')}</text>
       {cells}
-      <text x={cx} y={top + 3 * s + 16} textAnchor="middle" className="dg-marker-label">b</text>
+      <text x={cx} y={top + 3 * s + 16} textAnchor="middle" className="pf-dg-marker-label">b</text>
       <text x={cx} y={top + 4 * s + 22} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'cone blocks are mined no later than b', 'bloques del cono: período no posterior a b')}</text>
       <text x={cx} y={top + 4 * s + 38} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'in EVERY period, not only at the end', 'en CADA período, no solo al final')}</text>
       <text x={420} y={24} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'x_bt is cumulative', 'x_bt es acumulada')}</text>
-      <line x1={310} y1={190} x2={540} y2={190} className="dg-axis" />
-      <line x1={310} y1={190} x2={310} y2={60} className="dg-axis" />
+      <line x1={310} y1={190} x2={540} y2={190} className="pf-dg-axis" />
+      <line x1={310} y1={190} x2={310} y2={60} className="pf-dg-axis" />
       {ys.map((v, t) => (
         <g key={t}>
-          <rect x={318 + t * 36} y={v ? 90 : 186} width={28} height={v ? 100 : 4} className="dg-bar" style={{ opacity: v ? 0.85 : 0.35 }} />
-          <text x={332 + t * 36} y={206} textAnchor="middle" className="dg-tick">{t + 1}</text>
+          <rect x={318 + t * 36} y={v ? 90 : 186} width={28} height={v ? 100 : 4} className="pf-dg-bar" style={{ opacity: v ? 0.85 : 0.35 }} />
+          <text x={332 + t * 36} y={206} textAnchor="middle" className="pf-dg-tick">{t + 1}</text>
         </g>
       ))}
-      <text x={304} y={94} textAnchor="end" className="dg-tick">1</text>
-      <text x={304} y={192} textAnchor="end" className="dg-tick">0</text>
-      <text x={425} y={226} textAnchor="middle" className="dg-axis-label">{tr(lang, 'period t', 'período t')}</text>
+      <text x={304} y={94} textAnchor="end" className="pf-dg-tick">1</text>
+      <text x={304} y={192} textAnchor="end" className="pf-dg-tick">0</text>
+      <text x={425} y={226} textAnchor="middle" className="pf-dg-axis-label">{tr(lang, 'period t', 'período t')}</text>
       <text x={425} y={252} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'mined in period 4: x_b3 = 0, x_b4 = 1', 'extraído en el período 4: x_b3 = 0, x_b4 = 1')}</text>
       <text x={425} y={270} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'monotone: once mined, it stays mined', 'monótona: una vez extraído, sigue extraído')}</text>
     </Svg>
@@ -49,25 +50,25 @@ export function ProblemInclusion({ lang }: { lang: Lang }) {
   const label = tr(lang, 'Feasible sets and bound ordering', 'Conjuntos factibles y orden de cotas');
   return (
     <Svg vb={vb} label={label}>
-      <ellipse cx={170} cy={130} rx={150} ry={100} className="dg-fill-accent" />
-      <ellipse cx={130} cy={140} rx={80} ry={56} className="dg-fill-warn" />
+      <ellipse cx={170} cy={130} rx={150} ry={100} className="pf-dg-fill-accent" />
+      <ellipse cx={130} cy={140} rx={80} ry={56} className="pf-dg-fill-warn" />
       <text x={230} y={70} textAnchor="middle" className="pfd-dg-title">PCPSP</text>
       <text x={230} y={86} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'period and destination', 'período y destino')}</text>
       <text x={130} y={138} textAnchor="middle" className="pfd-dg-title">CPIT</text>
       <text x={130} y={154} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'destination fixed', 'destino fijo')}</text>
-      <line x1={360} y1={250} x2={360} y2={40} className="dg-axis" />
+      <line x1={360} y1={250} x2={360} y2={40} className="pf-dg-axis" />
       {[
         [230, tr(lang, 'CPIT LP bound', 'cota LP CPIT')],
         [180, tr(lang, 'PCPSP LP bound', 'cota LP PCPSP')],
         [90, tr(lang, 'ultimate pit (no discounting)', 'pit final (sin descuento)')],
       ].map(([y, t], i) => (
         <g key={i}>
-          <line x1={352} x2={368} y1={y as number} y2={y as number} className="dg-axis" />
+          <line x1={352} x2={368} y1={y as number} y2={y as number} className="pf-dg-axis" />
           <text x={378} y={(y as number) + 4} className="pfd-dg-text">{t as string}</text>
         </g>
       ))}
-      <text x={360} y={30} textAnchor="middle" className="dg-axis-label">{tr(lang, 'value', 'valor')}</text>
-      <text x={280} y={278} textAnchor="middle" className="dg-note">{tr(lang, 'a larger feasible set can only raise its relaxation', 'un conjunto factible mayor solo puede subir su relajación')}</text>
+      <text x={360} y={30} textAnchor="middle" className="pf-dg-axis-label">{tr(lang, 'value', 'valor')}</text>
+      <text x={280} y={278} textAnchor="middle" className="pf-dg-note">{tr(lang, 'a larger feasible set can only raise its relaxation', 'un conjunto factible mayor solo puede subir su relajación')}</text>
     </Svg>
   );
 }
@@ -81,19 +82,19 @@ export function AbelSplit({ lang }: { lang: Lang }) {
   return (
     <Svg vb={vb} label={label}>
       <text x={130} y={22} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'discount d_t and weight γ_t', 'descuento d_t y peso γ_t')}</text>
-      <line x1={20} y1={200} x2={250} y2={200} className="dg-axis" />
+      <line x1={20} y1={200} x2={250} y2={200} className="pf-dg-axis" />
       {d.map((v, i) => (
         <g key={i}>
-          <rect x={28 + i * 37} y={200 - v * 150} width={14} height={v * 150} className="dg-bar" style={{ opacity: 0.45 }} />
-          <rect x={43 + i * 37} y={200 - g[i] * 150} width={14} height={g[i] * 150} className="dg-bar-2" />
-          <text x={43 + i * 37} y={216} textAnchor="middle" className="dg-tick">{i + 1}</text>
+          <rect x={28 + i * 37} y={200 - v * 150} width={14} height={v * 150} className="pf-dg-bar" style={{ opacity: 0.45 }} />
+          <rect x={43 + i * 37} y={200 - g[i] * 150} width={14} height={g[i] * 150} className="pf-dg-bar-2" />
+          <text x={43 + i * 37} y={216} textAnchor="middle" className="pf-dg-tick">{i + 1}</text>
         </g>
       ))}
       <text x={135} y={240} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'pale: d_t (8%); solid: γ_t = d_t - d_t+1 > 0', 'claro: d_t (8%); sólido: γ_t = d_t - d_t+1 > 0')}</text>
       <text x={410} y={22} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'T separate problems', 'T problemas separados')}</text>
       {[0, 1, 2, 3].map((t) => (
         <g key={t}>
-          <rect x={300} y={40 + t * 46} width={220} height={36} rx={6} className="dg-box" />
+          <rect x={300} y={40 + t * 46} width={220} height={36} rx={6} className="pf-dg-box" />
           <text x={410} y={63 + t * 46} textAnchor="middle" className="pfd-dg-mono">{`CP(U_${t + 1}),  U_${t + 1} = c_1 + ... + c_${t + 1}`}</text>
         </g>
       ))}
@@ -111,19 +112,19 @@ export function ParametricPits({ lang }: { lang: Lang }) {
   const path = steps.map((p, i) => `${i ? 'L' : 'M'}${p[0]} ${p[1]}`).join(' ');
   return (
     <Svg vb={vb} label={label}>
-      <line x1={40} y1={250} x2={480} y2={250} className="dg-axis" />
-      <line x1={40} y1={250} x2={40} y2={50} className="dg-axis" />
-      <path d={path} className="dg-curve" />
-      <line x1={40} y1={162} x2={480} y2={162} className="dg-marker" />
-      <text x={478} y={156} textAnchor="end" className="dg-marker-label">{tr(lang, 'target U_t', 'objetivo U_t')}</text>
-      <circle cx={200} cy={140} r={4} className="dg-node" />
-      <circle cx={200} cy={190} r={4} className="dg-node" />
+      <line x1={40} y1={250} x2={480} y2={250} className="pf-dg-axis" />
+      <line x1={40} y1={250} x2={40} y2={50} className="pf-dg-axis" />
+      <path d={path} className="pf-dg-curve" />
+      <line x1={40} y1={162} x2={480} y2={162} className="pf-dg-marker" />
+      <text x={478} y={156} textAnchor="end" className="pf-dg-marker-label">{tr(lang, 'target U_t', 'objetivo U_t')}</text>
+      <circle cx={200} cy={140} r={4} className="pf-dg-node" />
+      <circle cx={200} cy={190} r={4} className="pf-dg-node" />
       <text x={192} y={124} textAnchor="end" className="pfd-dg-small">{tr(lang, 'pit x^u: uses b^u > U', 'pit x^u: usa b^u > U')}</text>
       <text x={192} y={208} textAnchor="end" className="pfd-dg-small">{tr(lang, 'pit x^l: uses b^l < U', 'pit x^l: usa b^l < U')}</text>
-      <text x={200} y={268} textAnchor="middle" className="dg-tick">λ*</text>
-      <line x1={200} y1={250} x2={200} y2={140} className="dg-curve-faint" />
-      <text x={260} y={290} textAnchor="middle" className="dg-axis-label">{tr(lang, 'multiplier λ (decreasing to the right)', 'multiplicador λ (decrece hacia la derecha)')}</text>
-      <text x={24} y={150} textAnchor="middle" className="dg-axis-label" transform="rotate(-90 24 150)">{tr(lang, 'capacity used by pit(λ)', 'capacidad usada por pit(λ)')}</text>
+      <text x={200} y={268} textAnchor="middle" className="pf-dg-tick">λ*</text>
+      <line x1={200} y1={250} x2={200} y2={140} className="pf-dg-curve-faint" />
+      <text x={260} y={290} textAnchor="middle" className="pf-dg-axis-label">{tr(lang, 'multiplier λ (decreasing to the right)', 'multiplicador λ (decrece hacia la derecha)')}</text>
+      <text x={24} y={150} textAnchor="middle" className="pf-dg-axis-label" transform="rotate(-90 24 150)">{tr(lang, 'capacity used by pit(λ)', 'capacidad usada por pit(λ)')}</text>
       <text x={300} y={225} className="pfd-dg-small">{tr(lang, 'each step: one maximum closure', 'cada escalón: un cierre máximo')}</text>
       <text x={300} y={240} className="pfd-dg-small">x = α x^l + (1 - α) x^u</text>
     </Svg>
@@ -163,7 +164,7 @@ export function BzLoop({ lang }: { lang: Lang }) {
       <Box x={150} y={150} w={260} h={64} title={tr(lang, 'Refine the partition', 'Refinar la partición')} sub={[tr(lang, 'parts AND v, parts MINUS v, v MINUS all', 'partes Y v, partes MENOS v, v MENOS todo')]} />
       <Arrow x1={425} y1={110} x2={380} y2={150} markerId={m} />
       <Arrow x1={180} y1={150} x2={130} y2={110} markerId={m} />
-      <text x={280} y={244} textAnchor="middle" className="dg-note">{tr(lang, 'stop: no positive reduced value; Z_BZ = Z_LP', 'parada: valor reducido no positivo; Z_BZ = Z_LP')}</text>
+      <text x={280} y={244} textAnchor="middle" className="pf-dg-note">{tr(lang, 'stop: no positive reduced value; Z_BZ = Z_LP', 'parada: valor reducido no positivo; Z_BZ = Z_LP')}</text>
     </Svg>
   );
 }
@@ -179,14 +180,14 @@ export function TopoSortWalk({ lang }: { lang: Lang }) {
       <text x={280} y={20} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'order by weight w (high first), never before a predecessor', 'orden por peso w (alto primero), nunca antes que un predecesor')}</text>
       {order.map((b, i) => (
         <g key={b}>
-          <rect x={30 + i * 72} y={40} width={56} height={40} rx={6} className="dg-box" />
-          <text x={58 + i * 72} y={65} textAnchor="middle" className="dg-node-label">{b}</text>
-          {i < order.length - 1 && <text x={94 + i * 72} y={65} textAnchor="middle" className="dg-tick">,</text>}
+          <rect x={30 + i * 72} y={40} width={56} height={40} rx={6} className="pf-dg-box" />
+          <text x={58 + i * 72} y={65} textAnchor="middle" className="pf-dg-node-label">{b}</text>
+          {i < order.length - 1 && <text x={94 + i * 72} y={65} textAnchor="middle" className="pf-dg-tick">,</text>}
         </g>
       ))}
       {[0, 1, 2].map((t) => (
         <g key={t}>
-          <rect x={60 + t * 160} y={120} width={140} height={110} rx={8} className="dg-box" />
+          <rect x={60 + t * 160} y={120} width={140} height={110} rx={8} className="pf-dg-box" />
           <text x={130 + t * 160} y={140} textAnchor="middle" className="pfd-dg-small">{tr(lang, `period ${t + 1}`, `período ${t + 1}`)}</text>
           {order.filter((_, i) => periods[i] === t).map((b, k) => (
             <rect key={b} x={74 + t * 160 + k * 40} y={160} width={34} height={34} rx={4} style={{ fill: periodCss(t, 3) }} />
@@ -194,11 +195,11 @@ export function TopoSortWalk({ lang }: { lang: Lang }) {
           {order.filter((_, i) => periods[i] === t).map((b, k) => (
           <text key={`t${b}`} x={91 + t * 160 + k * 40} y={182} textAnchor="middle" style={{ fill: periodTextColor(t, 3), font: '600 12px var(--font-mono)' }}>{b}</text>
           ))}
-          <text x={130 + t * 160} y={218} textAnchor="middle" className="dg-tick">{tr(lang, 'capacity used up', 'capacidad agotada')}</text>
+          <text x={130 + t * 160} y={218} textAnchor="middle" className="pf-dg-tick">{tr(lang, 'capacity used up', 'capacidad agotada')}</text>
         </g>
       ))}
-      <text x={280} y={262} textAnchor="middle" className="dg-note">{tr(lang, 'feasible by construction; the weight is the whole algorithm', 'factible por construcción; el peso es todo el algoritmo')}</text>
-      <text x={280} y={280} textAnchor="middle" className="dg-note">{tr(lang, 'greedy w = p_b; Gershon w = value of the successor set; ExTS w = -E_b', 'codicioso w = p_b; Gershon w = valor del conjunto sucesor; ExTS w = -E_b')}</text>
+      <text x={280} y={262} textAnchor="middle" className="pf-dg-note">{tr(lang, 'feasible by construction; the weight is the whole algorithm', 'factible por construcción; el peso es todo el algoritmo')}</text>
+      <text x={280} y={280} textAnchor="middle" className="pf-dg-note">{tr(lang, 'greedy w = p_b; Gershon w = value of the successor set; ExTS w = -E_b', 'codicioso w = p_b; Gershon w = valor del conjunto sucesor; ExTS w = -E_b')}</text>
     </Svg>
   );
 }
@@ -213,8 +214,8 @@ export function GershonCone({ lang }: { lang: Lang }) {
       <text x={140} y={22} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'a diamond below b', 'un diamante bajo b')}</text>
       {[[140, 50, 'b'], [90, 120, 'c'], [190, 120, 'd'], [140, 190, 'e']].map(([x, y, t]) => (
         <g key={t as string}>
-          <circle cx={x as number} cy={y as number} r={18} className="dg-node" />
-          <text x={x as number} y={(y as number) + 4} textAnchor="middle" className="dg-node-label">{t as string}</text>
+          <circle cx={x as number} cy={y as number} r={18} className="pf-dg-node" />
+          <text x={x as number} y={(y as number) + 4} textAnchor="middle" className="pf-dg-node-label">{t as string}</text>
         </g>
       ))}
       <Arrow x1={128} y1={64} x2={102} y2={104} markerId={m} />
@@ -248,10 +249,10 @@ export function SlidingWindow({ lang }: { lang: Lang }) {
             const fix = t === slide;
             const inWin = t >= slide && t < slide + 3;
             const tail = t >= slide + 3;
-            const cls = frozen ? undefined : fix ? 'dg-fill-warn' : inWin ? 'dg-fill-accent' : undefined;
+            const cls = frozen ? undefined : fix ? 'pf-dg-fill-warn' : inWin ? 'pf-dg-fill-accent' : undefined;
             return (
               <g key={t}>
-                <rect x={x} y={26 + slide * 56} width={96} height={34} rx={5} className={cls ?? 'dg-box'}
+                <rect x={x} y={26 + slide * 56} width={96} height={34} rx={5} className={cls ?? 'pf-dg-box'}
                       style={frozen ? { fill: periodCss(t, T), stroke: 'none', opacity: 0.85 } : tail ? { fill: 'var(--color-surface-2)', stroke: 'var(--color-border)', strokeDasharray: '4 3' } : undefined} />
                 <text x={x + 48} y={47 + slide * 56} textAnchor="middle" className="pfd-dg-mono"
                       style={frozen ? { fill: t >= 5 ? '#1f2328' : '#fff' } : undefined}>
@@ -262,9 +263,9 @@ export function SlidingWindow({ lang }: { lang: Lang }) {
           })}
         </g>
       ))}
-      <text x={540} y={206} textAnchor="middle" className="dg-note">{tr(lang, 'the window (3 periods) is one MILP with the rest of the horizon aggregated into an optimistic tail; only its first period is kept',
+      <text x={540} y={206} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the window (3 periods) is one MILP with the rest of the horizon aggregated into an optimistic tail; only its first period is kept',
         'la ventana (3 períodos) es un MILP con el resto del horizonte agregado en una cola optimista; solo se conserva su primer período')}</text>
-      <text x={540} y={224} textAnchor="middle" className="dg-note">{tr(lang, 'candidates: the blocks the LP expects to mine soonest, sized by the window capacity',
+      <text x={540} y={224} textAnchor="middle" className="pf-dg-note">{tr(lang, 'candidates: the blocks the LP expects to mine soonest, sized by the window capacity',
         'candidatos: los bloques que la LP espera extraer primero, dimensionados por la capacidad de la ventana')}</text>
     </Svg>
   );
@@ -282,7 +283,7 @@ export function LocalSearch({ lang }: { lang: Lang }) {
   for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
     if (!inPit(c, r)) continue;
     cells.push(<rect key={`${r}-${c}`} x={36 + c * s} y={40 + r * s} width={s - 2} height={s - 2} rx={2} style={{ fill: periodCss(per(c, r), 5), opacity: inD(c, r) ? 1 : 0.55 }} />);
-    if (inD(c, r)) cells.push(<rect key={`d${r}-${c}`} x={36 + c * s - 1} y={40 + r * s - 1} width={s} height={s} rx={2} fill="none" className="dg-marker" style={{ strokeDasharray: 'none', strokeWidth: 2 }} />);
+    if (inD(c, r)) cells.push(<rect key={`d${r}-${c}`} x={36 + c * s - 1} y={40 + r * s - 1} width={s} height={s} rx={2} fill="none" className="pf-dg-marker" style={{ strokeDasharray: 'none', strokeWidth: 2 }} />);
   }
   return (
     <Svg vb={vb} label={label}>
@@ -294,8 +295,8 @@ export function LocalSearch({ lang }: { lang: Lang }) {
       <Box x={330} y={44} w={200} h={52} title={tr(lang, 'pull forward', 'adelantar')} sub={[tr(lang, 'value > 0, predecessors earlier', 'valor > 0, predecesores antes')]} />
       <Box x={330} y={110} w={200} h={52} title={tr(lang, 'push back', 'atrasar')} sub={[tr(lang, 'value < 0, successors later', 'valor < 0, sucesores después')]} />
       <text x={430} y={186} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'one block at a time: cannot move a cone', 'un bloque a la vez: no mueve un cono')}</text>
-      <text x={280} y={240} textAnchor="middle" className="dg-note">{tr(lang, 'both never lose value: every accepted move is an improvement', 'ninguno pierde valor: todo movimiento aceptado es una mejora')}</text>
-      <text x={280} y={258} textAnchor="middle" className="dg-note">{tr(lang, 'the exact re-solve moves a block together with what it needs', 'la re-resolución exacta mueve un bloque junto con lo que necesita')}</text>
+      <text x={280} y={240} textAnchor="middle" className="pf-dg-note">{tr(lang, 'both never lose value: every accepted move is an improvement', 'ninguno pierde valor: todo movimiento aceptado es una mejora')}</text>
+      <text x={280} y={258} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the exact re-solve moves a block together with what it needs', 'la re-resolución exacta mueve un bloque junto con lo que necesita')}</text>
     </Svg>
   );
 }
@@ -314,13 +315,13 @@ export function ShellsAsWeights({ lang }: { lang: Lang }) {
           <g key={i}>
             <path d={`M${280 - w / 2} 40 L${280 + w / 2} 40 L${280 + w / 2 - h * 0.55} ${40 + h} L${280 - w / 2 + h * 0.55} ${40 + h} Z`}
                   style={{ fill: `color-mix(in oklab, var(--color-accent) ${12 + i * 12}%, transparent)`, stroke: 'var(--color-accent)', strokeWidth: 1 }} />
-            <text x={280 + w / 2 - 6} y={56} textAnchor="end" className="pfd-dg-mono">{`RF ${lang === 'es' ? f.toFixed(2).replace('.', ',') : f.toFixed(2)}`}</text>
+            <text x={280 + w / 2 - 6} y={56} textAnchor="end" className="pfd-dg-mono">{`RF ${dec(f, 2)}`}</text>
           </g>
         );
       })}
-      <text x={280} y={230} textAnchor="middle" className="dg-note">{tr(lang, 'lower price shrinks the pit; shell k enters at factor k',
+      <text x={280} y={230} textAnchor="middle" className="pf-dg-note">{tr(lang, 'lower price shrinks the pit; shell k enters at factor k',
         'precio menor achica el pit; la cáscara k entra al factor k')}</text>
-      <text x={280} y={248} textAnchor="middle" className="dg-note">{tr(lang, 'PhaseFlow takes 12 factors from 1.0 to 0.35 and mines inner shells first', 'PhaseFlow toma 12 factores de 1,0 a 0,35 y extrae primero las cáscaras internas')}</text>
+      <text x={280} y={248} textAnchor="middle" className="pf-dg-note">{tr(lang, 'PhaseFlow takes 12 factors from 1.0 to 0.35 and mines inner shells first', 'PhaseFlow toma 12 factores de 1,0 a 0,35 y extrae primero las cáscaras internas')}</text>
     </Svg>
   );
 }
@@ -342,7 +343,7 @@ export function SurrogatePath({ lang }: { lang: Lang }) {
       <Arrow x1={370} y1={118} x2={408} y2={92} markerId={m} label={tr(lang, 'Ê_b', 'Ê_b')} ly={124} />
       <text x={280} y={190} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'same walk, same feasibility: only the weight differs', 'mismo recorrido, misma factibilidad: solo cambia el peso')}</text>
       <text x={280} y={210} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'scored by the ratio of its plan to the exact ExTS plan', 'se juzga por la razón entre su plan y el plan ExTS exacto')}</text>
-      <text x={280} y={244} textAnchor="middle" className="dg-note">{tr(lang, 'the bound still comes from the exact path; the surrogate certifies nothing', 'la cota sigue viniendo del camino exacto; el sustituto no certifica nada')}</text>
+      <text x={280} y={244} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the bound still comes from the exact path; the surrogate certifies nothing', 'la cota sigue viniendo del camino exacto; el sustituto no certifica nada')}</text>
     </Svg>
   );
 }
@@ -360,15 +361,15 @@ export function DepositSplit({ lang }: { lang: Lang }) {
   return (
     <Svg vb={vb} label={label}>
       <text x={280} y={22} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'deposits are the unit of the split', 'los depósitos son la unidad de la partición')}</text>
-      {seeds(40, 12, 'dg-fill-accent', tr(lang, 'training seeds', 'semillas de entrenamiento'))}
-      {seeds(76, 6, 'dg-fill-warn', tr(lang, 'held-out seeds', 'semillas retenidas'))}
-      {seeds(112, 6, 'dg-box', tr(lang, 'third split', 'tercera partición'))}
+      {seeds(40, 12, 'pf-dg-fill-accent', tr(lang, 'training seeds', 'semillas de entrenamiento'))}
+      {seeds(76, 6, 'pf-dg-fill-warn', tr(lang, 'held-out seeds', 'semillas retenidas'))}
+      {seeds(112, 6, 'pf-dg-box', tr(lang, 'third split', 'tercera partición'))}
       <text x={280} y={160} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'every scenario of a deposit stays with its deposit; the sets are asserted disjoint', 'todo escenario de un depósito queda con su depósito; los conjuntos se verifican disjuntos')}</text>
-      <rect x={60} y={186} width={440} height={64} rx={8} className="dg-box" style={{ stroke: 'var(--color-bad)' }} />
+      <rect x={60} y={186} width={440} height={64} rx={8} className="pf-dg-box" style={{ stroke: 'var(--color-bad)' }} />
       <text x={280} y={210} textAnchor="middle" className="pfd-dg-bad">{tr(lang, 'random split of block rows', 'partición aleatoria por filas de bloque')}</text>
       <text x={280} y={230} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'two scenarios of one deposit share almost every feature', 'dos escenarios de un depósito comparten casi todos los rasgos')}</text>
       <line x1={70} y1={244} x2={490} y2={192} className="pfd-dg-strike" />
-      <text x={280} y={278} textAnchor="middle" className="dg-note">{tr(lang, 'the struck-out design scores the model on a copy of what it memorised', 'el diseño tachado juzga al modelo sobre una copia de lo que memorizó')}</text>
+      <text x={280} y={278} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the struck-out design scores the model on a copy of what it memorised', 'el diseño tachado juzga al modelo sobre una copia de lo que memorizó')}</text>
     </Svg>
   );
 }
@@ -384,7 +385,7 @@ export function DestinationRecut({ lang }: { lang: Lang }) {
     <g>
       {[0, 1, 2].flatMap((r) => [0, 1, 2, 3, 4].map((c) => (
         <rect key={`${ox}-${r}-${c}`} x={ox + c * s} y={70 + r * s} width={s - 3} height={s - 3} rx={3}
-              className={r === 0 ? undefined : r === 1 ? 'dg-fill-warn' : 'dg-fill-accent'}
+              className={r === 0 ? undefined : r === 1 ? 'pf-dg-fill-warn' : 'pf-dg-fill-accent'}
               style={r === 0 ? { fill: 'var(--color-surface-2)' } : undefined} />
       )))}
       {[0, 1, 2, 3, 4].map((c) => (
@@ -409,10 +410,10 @@ export function DestinationRecut({ lang }: { lang: Lang }) {
       <text x={435} y={56} textAnchor="middle" className="pfd-dg-small">{tr(lang, 're-cut on the relaxation', 're-corte sobre la relajación')}</text>
       {section(42, 'P', '3')}
       {section(352, 'D', '1')}
-      <text x={125} y={192} textAnchor="middle" className="dg-note">{tr(lang, 'marginal ore takes plant tonnage;', 'el mineral marginal toma tonelaje de planta;')}</text>
-      <text x={125} y={207} textAnchor="middle" className="dg-note">{tr(lang, 'the rich ore below waits (period 3)', 'el mineral rico de abajo espera (período 3)')}</text>
-      <text x={435} y={192} textAnchor="middle" className="dg-note">{tr(lang, 'the LP dumps the marginal ore;', 'la LP bota el mineral marginal;')}</text>
-      <text x={435} y={207} textAnchor="middle" className="dg-note">{tr(lang, 'the plant goes to the rich ore now', 'la planta va al mineral rico ahora')}</text>
+      <text x={125} y={192} textAnchor="middle" className="pf-dg-note">{tr(lang, 'marginal ore takes plant tonnage;', 'el mineral marginal toma tonelaje de planta;')}</text>
+      <text x={125} y={207} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the rich ore below waits (period 3)', 'el mineral rico de abajo espera (período 3)')}</text>
+      <text x={435} y={192} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the LP dumps the marginal ore;', 'la LP bota el mineral marginal;')}</text>
+      <text x={435} y={207} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the plant goes to the rich ore now', 'la planta va al mineral rico ahora')}</text>
       <text x={280} y={232} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'rows: waste / marginal / rich; P plant; D dump; number = period', 'filas: estéril / marginal / rico; P planta; D botadero; número = período')}</text>
       {flow.map(([t, sub], i) => (
         <g key={t}>
@@ -420,8 +421,8 @@ export function DestinationRecut({ lang }: { lang: Lang }) {
           {i < flow.length - 1 && <Arrow x1={110 + i * 108} y1={272} x2={122 + i * 108} y2={272} markerId={mk} />}
         </g>
       ))}
-      <text x={280} y={314} textAnchor="middle" className="dg-note">{tr(lang, 'Every re-cut CPIT plan is a PCPSP plan of equal value;', 'Cada plan del CPIT re-cortado es un plan PCPSP de igual valor;')}</text>
-      <text x={280} y={328} textAnchor="middle" className="dg-note">{tr(lang, 'the search frees each destination again.', 'la búsqueda vuelve a liberar cada destino.')}</text>
+      <text x={280} y={314} textAnchor="middle" className="pf-dg-note">{tr(lang, 'Every re-cut CPIT plan is a PCPSP plan of equal value;', 'Cada plan del CPIT re-cortado es un plan PCPSP de igual valor;')}</text>
+      <text x={280} y={328} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the search frees each destination again.', 'la búsqueda vuelve a liberar cada destino.')}</text>
     </Svg>
   );
 }
@@ -444,9 +445,9 @@ export function Operability({ lang }: { lang: Lang }) {
       {grid(320, after)}
       <text x={120} y={170} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'slivers one block wide; a stray block', 'astillas de un bloque; un bloque suelto')}</text>
       <text x={420} y={170} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'absorbed into the majority neighbour', 'absorbidas por el vecino mayoritario')}</text>
-      <text x={280} y={210} textAnchor="middle" className="dg-note">{tr(lang, 'a move must preserve precedence both ways', 'el movimiento debe conservar la precedencia en ambos sentidos')}</text>
-      <text x={280} y={226} textAnchor="middle" className="dg-note">{tr(lang, 'and fit within the receiving period capacity', 'y caber en la capacidad del período receptor')}</text>
-      <text x={280} y={245} textAnchor="middle" className="dg-note">{tr(lang, 'measure: components, largest share, narrowest run', 'medir: componentes, fracción mayor, tramo más estrecho')}</text>
+      <text x={280} y={210} textAnchor="middle" className="pf-dg-note">{tr(lang, 'a move must preserve precedence both ways', 'el movimiento debe conservar la precedencia en ambos sentidos')}</text>
+      <text x={280} y={226} textAnchor="middle" className="pf-dg-note">{tr(lang, 'and fit within the receiving period capacity', 'y caber en la capacidad del período receptor')}</text>
+      <text x={280} y={245} textAnchor="middle" className="pf-dg-note">{tr(lang, 'measure: components, largest share, narrowest run', 'medir: componentes, fracción mayor, tramo más estrecho')}</text>
     </Svg>
   );
 }
@@ -461,8 +462,8 @@ export function EnsembleFan({ lang }: { lang: Lang }) {
   ] as const;
   return (
     <Svg vb={vb} label={label}>
-      <line x1={40} y1={200} x2={520} y2={200} className="dg-axis" />
-      <text x={280} y={226} textAnchor="middle" className="dg-axis-label">{tr(lang, 'NPV of a fixed plan across realisations', 'VAN de un plan fijo a través de realizaciones')}</text>
+      <line x1={40} y1={200} x2={520} y2={200} className="pf-dg-axis" />
+      <text x={280} y={226} textAnchor="middle" className="pf-dg-axis-label">{tr(lang, 'NPV of a fixed plan across realisations', 'VAN de un plan fijo a través de realizaciones')}</text>
       {plans.map(([name, mean, spread, color], i) => {
         const cx = 120 + mean * 1.6;
         return (
@@ -475,8 +476,8 @@ export function EnsembleFan({ lang }: { lang: Lang }) {
           </g>
         );
       })}
-      <text x={280} y={244} textAnchor="middle" className="dg-note">{tr(lang, 'B has the higher mean, A the higher P10: the robust choice is not the best on average', 'B tiene la media mayor, A el P10 mayor: la elección robusta no es la mejor en promedio')}</text>
-      <text x={280} y={262} textAnchor="middle" className="dg-note">{tr(lang, 'a spatially correlated, mean-preserving perturbation; synthetic, and labelled so', 'una perturbación espacialmente correlacionada que preserva la media; sintética, y rotulada así')}</text>
+      <text x={280} y={244} textAnchor="middle" className="pf-dg-note">{tr(lang, 'B has the higher mean, A the higher P10: the robust choice is not the best on average', 'B tiene la media mayor, A el P10 mayor: la elección robusta no es la mejor en promedio')}</text>
+      <text x={280} y={262} textAnchor="middle" className="pf-dg-note">{tr(lang, 'a spatially correlated, mean-preserving perturbation; synthetic, and labelled so', 'una perturbación espacialmente correlacionada que preserva la media; sintética, y rotulada así')}</text>
     </Svg>
   );
 }
@@ -487,13 +488,13 @@ export function StockpileBilinear({ lang }: { lang: Lang }) {
   const label = tr(lang, 'A stockpile makes the model bilinear', 'Un acopio vuelve bilineal el modelo');
   return (
     <Svg vb={vb} label={label}>
-      <path d="M120 170 L200 80 L280 170 Z" className="dg-fill-warn" />
+      <path d="M120 170 L200 80 L280 170 Z" className="pf-dg-fill-warn" />
       <text x={200} y={196} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'pile: tonnes S_t, metal M_t', 'pila: toneladas S_t, metal M_t')}</text>
       <text x={400} y={90} textAnchor="middle" className="pfd-dg-mono">{tr(lang, 'reclaimed metal =', 'metal recuperado =')}</text>
       <text x={400} y={112} textAnchor="middle" className="pfd-dg-mono">R_t × (M_t / S_t)</text>
       <text x={400} y={140} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'a product of decision variables', 'un producto de variables de decisión')}</text>
-      <text x={280} y={226} textAnchor="middle" className="dg-note">{tr(lang, 'published linear models fix the pile grade as a parameter and search over it', 'los modelos lineales publicados fijan la ley de la pila como parámetro y buscan sobre ella')}</text>
-      <text x={280} y={244} textAnchor="middle" className="dg-note">{tr(lang, 'at 10 percent yearly degradation a stockpile loses 69 percent of its value', 'con 10 por ciento de degradación anual un acopio pierde 69 por ciento de su valor')}</text>
+      <text x={280} y={226} textAnchor="middle" className="pf-dg-note">{tr(lang, 'published linear models fix the pile grade as a parameter and search over it', 'los modelos lineales publicados fijan la ley de la pila como parámetro y buscan sobre ella')}</text>
+      <text x={280} y={244} textAnchor="middle" className="pf-dg-note">{tr(lang, 'at 10 percent yearly degradation a stockpile loses 69 percent of its value', 'con 10 por ciento de degradación anual un acopio pierde 69 por ciento de su valor')}</text>
     </Svg>
   );
 }

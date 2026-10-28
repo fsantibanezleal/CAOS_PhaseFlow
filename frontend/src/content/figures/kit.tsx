@@ -1,6 +1,6 @@
 /**
  * Primitives for the hand-authored figures on the reading pages. Every colour is a shell token through
- * the dg-* classes (or currentColor), so a figure repaints with the theme; every label is passed in
+ * the pf-dg-* classes (or currentColor), so a figure repaints with the theme; every label is passed in
  * already translated. Sizes come from the viewBox, so a figure scales with its column and never pushes
  * it wider.
  */
@@ -18,7 +18,7 @@ export function Svg({ vb, label, children, wide }: { vb: string; label: string; 
          xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 'auto' }}>
       <defs>
         <marker id={id} viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0 0 L10 5 L0 10 z" className="dg-arrowhead" />
+          <path d="M0 0 L10 5 L0 10 z" className="pf-dg-arrowhead" />
         </marker>
       </defs>
       <g data-arrow={id}>{children}</g>
@@ -33,9 +33,9 @@ export function Arrow({ x1, y1, x2, y2, dashed, label, lx, ly, markerId }: {
 }) {
   return (
     <g>
-      <line x1={x1} y1={y1} x2={x2} y2={y2} className="dg-edge" strokeDasharray={dashed ? '4 3' : undefined}
+      <line x1={x1} y1={y1} x2={x2} y2={y2} className="pf-dg-edge" strokeDasharray={dashed ? '4 3' : undefined}
             markerEnd={`url(#${markerId})`} />
-      {label && <text x={lx ?? (x1 + x2) / 2} y={ly ?? (y1 + y2) / 2 - 5} textAnchor="middle" className="dg-edge-label">{label}</text>}
+      {label && <text x={lx ?? (x1 + x2) / 2} y={ly ?? (y1 + y2) / 2 - 5} textAnchor="middle" className="pf-dg-edge-label">{label}</text>}
     </g>
   );
 }
@@ -49,11 +49,11 @@ export function Box({ x, y, w, h, title, sub, accent, good, titleSize }: {
   const top = y + h / 2 - (lines.length * 13) / 2 + (lines.length ? -1 : 4);
   return (
     <g>
-      <rect x={x} y={y} width={w} height={h} rx={8} className={`dg-box${accent ? ' accent' : ''}${good ? ' good' : ''}`} />
-      <text x={x + w / 2} y={top} textAnchor="middle" className={`dg-box-title${accent ? ' accent' : ''}`}
+      <rect x={x} y={y} width={w} height={h} rx={8} className={`pf-dg-box${accent ? ' accent' : ''}${good ? ' good' : ''}`} />
+      <text x={x + w / 2} y={top} textAnchor="middle" className={`pf-dg-box-title${accent ? ' accent' : ''}`}
             style={titleSize ? { fontSize: titleSize } : undefined}>{title}</text>
       {lines.map((l, i) => (
-        <text key={i} x={x + w / 2} y={top + 15 + i * 13} textAnchor="middle" className="dg-box-sub">{l}</text>
+        <text key={i} x={x + w / 2} y={top + 15 + i * 13} textAnchor="middle" className="pf-dg-box-sub">{l}</text>
       ))}
     </g>
   );
