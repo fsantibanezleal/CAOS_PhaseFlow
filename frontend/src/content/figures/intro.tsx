@@ -26,13 +26,13 @@ export function PlanningChain({ lang }: { lang: Lang }) {
           </g>
         );
       })}
-      <text x={10 + 3 * (w + gap) + w / 2} y={y - 14} textAnchor="middle" className="dg-marker-label">PhaseFlow</text>
-      <text x={490} y={170} textAnchor="middle" className="dg-note">
+      <text x={10 + 3 * (w + gap) + w / 2} y={y - 14} textAnchor="middle" className="pf-dg-marker-label">PhaseFlow</text>
+      <text x={490} y={170} textAnchor="middle" className="pf-dg-note">
         {tr(lang,
           'Each step fixes the input of the next. The schedule decides the cash profile: the same pit mined in a different order is worth a different NPV.',
           'Cada paso fija la entrada del siguiente. El plan decide el perfil de caja: el mismo pit extraído en otro orden vale otro VAN.')}
       </text>
-      <text x={490} y={190} textAnchor="middle" className="dg-note">
+      <text x={490} y={190} textAnchor="middle" className="pf-dg-note">
         {tr(lang, 'Pushback design and bench-phases sit between the pit and the schedule in industrial practice.',
           'En la práctica industrial, el diseño de expansiones y fases-banco se ubica entre el pit y el plan.')}
       </text>
@@ -58,7 +58,7 @@ export function WhichWhen({ lang }: { lang: Lang }) {
         const pit = inPit(c, r);
         cells.push(
           <rect key={`${r}-${c}`} x={x} y={y} width={s - 1.5} height={s - 1.5} rx={2}
-                className={pit ? (scheduled ? undefined : 'dg-fill-accent') : 'pfd-dg-band'}
+                className={pit ? (scheduled ? undefined : 'pf-dg-fill-accent') : 'pfd-dg-band'}
                 style={pit && scheduled ? { fill: periodCss(period(c, r), 6), stroke: 'none' }
                   : pit ? undefined : { fill: 'var(--color-surface-2)' }} />,
         );
@@ -78,7 +78,7 @@ export function WhichWhen({ lang }: { lang: Lang }) {
       {draw(400, true)}
       <text x={20 + (cols * s) / 2} y={208} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'one set, maximum undiscounted value, polynomial', 'un conjunto, máximo valor sin descontar, polinomial')}</text>
       <text x={400 + (cols * s) / 2} y={208} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'a period per block, discounted, capacity per period, NP-hard', 'un período por bloque, descontado, capacidad por período, NP-duro')}</text>
-      <text x={400 + (cols * s) / 2} y={228} textAnchor="middle" className="dg-note">{tr(lang, 'numbers: extraction period; never before overlying rock', 'número: período de extracción; respeta la roca superior')}</text>
+      <text x={400 + (cols * s) / 2} y={228} textAnchor="middle" className="pf-dg-note">{tr(lang, 'numbers: extraction period; never before overlying rock', 'número: período de extracción; respeta la roca superior')}</text>
     </Svg>
   );
 }
@@ -97,7 +97,7 @@ export function ThreePressures({ lang }: { lang: Lang }) {
       <Arrow x1={210} y1={70} x2={262} y2={118} markerId={m} label={tr(lang, 'mine ore early', 'extraer mineral temprano')} lx={175} ly={112} />
       <Arrow x1={430} y1={70} x2={378} y2={118} markerId={m} label={tr(lang, 'strip waste first', 'remover estéril antes')} lx={470} ly={112} />
       <Arrow x1={320} y1={214} x2={320} y2={184} markerId={m} />
-      <text x={320} y={296} textAnchor="middle" className="dg-note">{tr(lang, 'the plan is where the three balance; move one and the pit changes shape', 'el plan es donde las tres se equilibran; mueve una y el rajo cambia de forma')}</text>
+      <text x={320} y={296} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the plan is where the three balance; move one and the pit changes shape', 'el plan es donde las tres se equilibran; mueve una y el rajo cambia de forma')}</text>
     </Svg>
   );
 }
@@ -141,7 +141,7 @@ export function FourStepChain({ lang }: { lang: Lang }) {
             cells.push(<rect key={`${r}-${c}`} x={x} y={y} width={s - 1} height={s - 1} style={{ fill }} />);
             if (p === 3) cells.push(<text key={`t${r}-${c}`} x={x + s / 2 - 0.5} y={y + s / 2 + 3} textAnchor="middle" style={{ fill: periodTextColor(per, 6), font: '600 8px var(--font-mono)' }}>{per + 1}</text>);
           }
-          if (p === 2) cells.push(<line key={`b${r}`} x1={ox} x2={ox + cols * s} y1={46 + r * s - 0.5} y2={46 + r * s - 0.5} className="dg-axis" />);
+          if (p === 2) cells.push(<line key={`b${r}`} x1={ox} x2={ox + cols * s} y1={46 + r * s - 0.5} y2={46 + r * s - 0.5} className="pf-dg-axis" />);
         }
         return (
           <g key={p}>
@@ -150,11 +150,11 @@ export function FourStepChain({ lang }: { lang: Lang }) {
           </g>
         );
       })}
-      <text x={490} y={160} textAnchor="middle" className="dg-note">
+      <text x={490} y={160} textAnchor="middle" className="pf-dg-note">
         {tr(lang, 'Only steps 1 and 3 are algorithms; the pushback choice is a planner\'s, and so is meeting the capacities (Morales et al. 2015).',
           'Solo los pasos 1 y 3 son algoritmos; la elección de expansiones es del planificador, y también cumplir las capacidades (Morales et al. 2015).')}
       </text>
-      <text x={490} y={180} textAnchor="middle" className="dg-note">
+      <text x={490} y={180} textAnchor="middle" className="pf-dg-note">
         {tr(lang, 'Direct block scheduling replaces the chain with one model whose constraints hold by construction.',
           'La programación directa por bloques reemplaza la cadena por un modelo cuyas restricciones se cumplen por construcción.')}
       </text>
@@ -186,7 +186,7 @@ export function PipelineOverview({ lang }: { lang: Lang }) {
       <Arrow x1={500} y1={104} x2={390} y2={150} markerId={m} dashed />
       <Arrow x1={390} y1={187} x2={608} y2={187} markerId={m} dashed label={tr(lang, 'own bound, own gap', 'cota propia, brecha propia')} />
       <Arrow x1={900} y1={104} x2={790} y2={170} markerId={m} />
-      <text x={500} y={244} textAnchor="middle" className="dg-note">{tr(lang, 'no number reaches the screen without the bound it is judged against', 'ningún número llega a la pantalla sin la cota contra la que se juzga')}</text>
+      <text x={500} y={244} textAnchor="middle" className="pf-dg-note">{tr(lang, 'no number reaches the screen without the bound it is judged against', 'ningún número llega a la pantalla sin la cota contra la que se juzga')}</text>
     </Svg>
   );
 }
@@ -205,16 +205,17 @@ export function ScopeMap({ lang }: { lang: Lang }) {
     <Svg vb={vb} label={label}>
       {cols.map(([t, items, tone], i) => {
         const x = 10 + i * 157;
+        const token = ({ good: '--color-good', accent: '--color-accent', warn: '--color-warn', bad: '--color-bad' } as const)[tone];
         return (
           <g key={i}>
-            <rect x={x} y={20} width={147} height={220} rx={8} className="dg-box"
-                  style={{ stroke: `var(--color-${tone})` }} />
-            <text x={x + 73} y={44} textAnchor="middle" className="dg-box-title" style={{ fill: `var(--color-${tone})` }}>{t}</text>
+            <rect x={x} y={20} width={147} height={220} rx={8} className="pf-dg-box"
+                  style={{ stroke: `var(${token})` }} />
+            <text x={x + 73} y={44} textAnchor="middle" className="pf-dg-box-title" style={{ fill: `var(${token})` }}>{t}</text>
             {items.map((it, k) => <text key={k} x={x + 73} y={74 + k * 26} textAnchor="middle" className="pfd-dg-small">{it}</text>)}
           </g>
         );
       })}
-      <text x={320} y={262} textAnchor="middle" className="dg-note">{tr(lang, 'the label travels with the number on every surface', 'la etiqueta acompaña al número en toda superficie')}</text>
+      <text x={320} y={262} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the label travels with the number on every surface', 'la etiqueta acompaña al número en toda superficie')}</text>
     </Svg>
   );
 }

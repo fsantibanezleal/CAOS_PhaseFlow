@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phaseflow.readiness/v1",
+  "title": "PhaseFlow evidence readiness",
+  "description": "Derived snapshot of the catalogued documents and the repository version; the checker recomputes it before release.",
+  "type": "object",
+  "required": ["schema", "product_version", "catalog_sha256", "contracts"],
+  "properties": {
+    "schema": {"const": "phaseflow.readiness/v1"},
+    "product_version": {"type": "string", "pattern": "^\\d+\\.\\d{2}\\.\\d{3}$"},
+    "catalog_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "contracts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "version", "state", "provenance", "reason", "missing"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+          "state": {"enum": ["available", "partial", "missing", "stale"]},
+          "provenance": {"type": ["string", "null"]},
+          "reason": {"type": ["object", "null"]},
+          "missing": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

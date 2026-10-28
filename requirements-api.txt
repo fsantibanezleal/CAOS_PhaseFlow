@@ -1,5 +1,8 @@
 # API / BACKEND lane (OPTIONAL), install ONLY when app/ is activated (an ADR-0002 trigger: server-side processing
 # of uploaded data, auth-gated private data, paid heavy compute). Most products are static deterministic-replay and
 # never need this; the app/ module ships dormant. Pin to the versions you install+verify when you activate it.
-# fastapi==X.Y.Z
-# uvicorn[standard]==X.Y.Z
+# Activate only with an ADR-0002 trigger; these exact pins match the optional API test/tooling lane.
+fastapi==0.143.0
+httpx==0.28.1
+openapi-spec-validator==0.9.0
+# Add and verify uvicorn only when a server deployment is approved.

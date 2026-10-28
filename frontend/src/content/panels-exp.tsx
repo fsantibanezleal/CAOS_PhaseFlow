@@ -32,8 +32,8 @@ const pctTxt = (v: number | null | undefined, d = 2) => (v == null || !Number.is
 /** A change with its sign; a value that rounds to zero prints as zero, never as "-0.000%". */
 const signedPctTxt = (v: number | null | undefined, d = 2) => {
   if (v == null || !Number.isFinite(v)) return '-';
-  const r = Number(v.toFixed(d));
-  return r === 0 ? `${dec(0, d)}%` : `${r > 0 ? '+' : ''}${dec(r, d)}%`;
+  const r = Math.round(v * (10 ** d));
+  return r === 0 ? `${dec(0, d)}%` : `${r > 0 ? '+' : ''}${dec(v, d)}%`;
 };
 const nontrivial = (m: CaseManifest) => m.scenario.periods > 1 && m.scenario.discount_rate > 0;
 

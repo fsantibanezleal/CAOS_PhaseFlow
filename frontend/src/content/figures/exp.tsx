@@ -40,17 +40,17 @@ export function MetricsFigure({ lang }: { lang: Lang }) {
   return (
     <Svg vb={vb} label={label}>
       <text x={20} y={26} className="pfd-dg-title">{tr(lang, 'value against its bound', 'valor contra su cota')}</text>
-      <rect x={20} y={40} width={500} height={26} rx={4} className="dg-box" />
-      <rect x={20} y={40} width={430} height={26} rx={4} className="dg-fill-accent" />
+      <rect x={20} y={40} width={500} height={26} rx={4} className="pf-dg-box" />
+      <rect x={20} y={40} width={430} height={26} rx={4} className="pf-dg-fill-accent" />
       <text x={235} y={58} textAnchor="middle" className="pfd-dg-text">{tr(lang, 'NPV of the plan', 'VAN del plan')}</text>
       <text x={485} y={58} textAnchor="middle" className="pfd-dg-bad">{tr(lang, 'gap', 'brecha')}</text>
-      <text x={520} y={84} textAnchor="end" className="dg-tick">{tr(lang, 'bound of its own problem', 'cota de su propio problema')}</text>
+      <text x={520} y={84} textAnchor="end" className="pf-dg-tick">{tr(lang, 'bound of its own problem', 'cota de su propio problema')}</text>
       <text x={20} y={124} className="pfd-dg-title">{tr(lang, 'coherence of one period', 'coherencia de un período')}</text>
       {[[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1], [5, 0], [6, 0], [8, 1]].map(([x, y], i) => (
         <rect key={i} x={20 + x * 26} y={136 + y * 26} width={24} height={24} rx={3} style={{ fill: periodCss(1, 4) }} />
       ))}
       <text x={20} y={210} className="pfd-dg-small">{tr(lang, '3 components; the largest holds 6 of 9 blocks (67 percent); narrowest run 1', '3 componentes; la mayor tiene 6 de 9 bloques (67 por ciento); tramo más estrecho 1')}</text>
-      <text x={280} y={250} textAnchor="middle" className="dg-note">{tr(lang, 'every number is read from a committed trace or manifest', 'todo número se lee de una traza o manifiesto versionado')}</text>
+      <text x={280} y={250} textAnchor="middle" className="pf-dg-note">{tr(lang, 'every number is read from a committed trace or manifest', 'todo número se lee de una traza o manifiesto versionado')}</text>
     </Svg>
   );
 }

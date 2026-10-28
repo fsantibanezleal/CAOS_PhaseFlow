@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phaseflow.schedule-trace/v1",
+  "title": "PhaseFlow schedule trace",
+  "description": "Replay payload for one case. Synthetic cases may include block-level arrays; MineLib traces contain aggregate data only.",
+  "type": "object",
+  "required": ["schema", "caseId", "category", "title", "role", "instance", "scenario", "bound", "controls", "methods", "contract"],
+  "properties": {
+    "schema": {"const": "phaseflow.schedule-trace/v1"},
+    "caseId": {"type": "string", "minLength": 1},
+    "category": {"type": "string", "minLength": 1},
+    "title": {"$ref": "#/$defs/bilingual"},
+    "role": {"$ref": "#/$defs/bilingual"},
+    "instance": {"type": "object", "required": ["source", "synthetic", "nBlocks", "nPrecedenceArcs", "dims", "licence"], "properties": {"source": {"enum": ["twin", "minelib"]}, "synthetic": {"type": "boolean"}, "nBlocks": {"type": "integer", "minimum": 1}, "nPrecedenceArcs": {"type": "integer", "minimum": 0}, "dims": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "integer", "minimum": 1}}, "licence": {"type": "string"}}, "additionalProperties": true},
+    "scenario": {"type": "object", "required": ["periods", "discountRate", "resources"], "properties": {"periods": {"type": "integer", "minimum": 1}, "discountRate": {"type": "number"}, "resources": {"type": "array", "minItems": 1}}, "additionalProperties": true},
+    "bound": {"type": "object"},
+    "controls": {"type": "object", "required": ["allPass"], "properties": {"allPass": {"type": "boolean"}}, "additionalProperties": true},
+    "methods": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["method", "rung", "npv", "bound", "periods"], "properties": {"method": {"type": "string"}, "rung": {"enum": ["classical", "sota", "learned", "beyond"]}, "npv": {"type": "number"}, "bound": {"type": "number"}, "periods": {"type": "array"}}, "additionalProperties": true}},
+    "contract": {"type": "object", "required": ["accepted", "flags", "facts"], "properties": {"accepted": {"type": "boolean"}, "flags": {"type": "array"}, "facts": {"type": "object"}}, "additionalProperties": true}
+  },
+  "$defs": {
+    "bilingual": {"type": "object", "required": ["en", "es"], "properties": {"en": {"type": "string", "minLength": 1}, "es": {"type": "string", "minLength": 1}}, "additionalProperties": false}
+  },
+  "additionalProperties": true
+}
