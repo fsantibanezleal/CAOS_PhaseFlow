@@ -53,7 +53,10 @@ try {
     const page = await browser.newPage({ viewport: { width, height } });
     const errors = [];
     page.on('pageerror', (error) => errors.push(String(error)));
-    const response = await page.goto(new URL('/app', base).toString(), { waitUntil: 'networkidle', timeout: 60000 });
+    // Resolve against the base directory instead of the origin root so GitHub Pages
+    // project sites keep their repository path (for example /CAOS_PhaseFlow/app).
+    const response = await page.goto(new URL('app', base.endsWith('/') ? base : `${base}/`).toString(),
+      { waitUntil: 'networkidle', timeout: 60000 });
     assert.equal(response?.status(), 200, `${width}x${height}: PhaseFlow must load`);
     assert.match(await page.title(), /^PhaseFlow\b/, `${width}x${height}: wrong app at ${base}`);
     const tab = page.getByRole('tab', { name: 'Profile and plan' });
