@@ -458,6 +458,35 @@ def test_the_runner_fails_a_missing_artifact_naming_its_path(tmp_path: Path) -> 
     assert r.returncode == 1 and "absent-artifact.json" in r.stdout, r.stdout
 
 
+@needs_env
+def test_adversarial_runner_copies_released_models_into_the_check_worktree(tmp_path: Path) -> None:
+    base, path = runner_repo(
+        tmp_path,
+        "from pathlib import Path\nprint(Path('../../../models/slot.onnx').read_text())",
+    )
+    models = base / "models"
+    models.mkdir()
+    model = models / "slot.onnx"
+    model.write_text("released model", encoding="utf-8")
+    first_run = run_runner(base, "--only", "notebooks/en/01-basics/01-note.ipynb")
+    assert first_run.returncode == 0, first_run.stdout + first_run.stderr
+
+    temp_root = tmp_path / "temp-root"
+    temp_root.mkdir()
+    before = path.read_bytes()
+    checked = run_runner(
+        base,
+        "--check",
+        "--tmp",
+        str(temp_root),
+        "--only",
+        "notebooks/en/01-basics/01-note.ipynb",
+    )
+    assert checked.returncode == 0, checked.stdout + checked.stderr
+    assert path.read_bytes() == before and model.read_text(encoding="utf-8") == "released model"
+    assert list(temp_root.iterdir()) == [], "the runner removes its isolated model copy after checking"
+
+
 def test_the_committed_set_passes_the_static_check() -> None:
     assert CHECK.findings_of(ROOT) == []
 
