@@ -1,11 +1,12 @@
 # Deposit-statistics live guard: tasks
 
-Status: pending design review.
+Status: label-rule candidate rejected by SG-004; statistical guard design and implementation remain open.
 
 | Order | Task | Requirements | Completion evidence |
 |---|---|---|---|
-| 1 | Freeze the feature schema and compute it on every training, held-out, third-split and committed real input. | G-01, G-02, G-05 | `test_stats_guard.py` and feature audit table |
-| 2 | Discover one interpretable rule on train seeds only; freeze its JSON before the two evaluations. | G-02, G-03 | versioned rule, split hashes, script log |
-| 3 | Run held-out and untouched third-split validation once; apply G-04 without tuning to the latter. | G-03, G-04 | `stats-guard-validation.json`, enforce exit code |
-| 4 | If G-04 passes, wire warning/abstention into the live lane and preserve measured-ratio precedence. | G-05, G-06, G-07 | artifact, unit and EN/ES browser gates |
-| 5 | Rebuild the complete artifact set, update the wiki with successes and failures, then record convergence. | G-01 to G-07 | full bake, guards, source-bound browser QA |
+| 0 | Enforce the negative path for the evaluated label candidate: fail closed when any third-split threshold is missed. | SG-004, SG-008 | `LearnedBundle.live_guard_status`; `tests/test_live_guard_eligibility.py`; bilingual unavailable state |
+| 1 | Complete the statistical feature design, freeze the input schema, and compute it on every training, held-out, third-split and committed real input. | SG-001, SG-002, SG-005 | reviewed design, `test_stats_guard.py`, feature audit table |
+| 2 | Discover one interpretable rule on train seeds only; freeze its JSON before the two evaluations. | SG-002, SG-003 | versioned rule, split hashes, script log |
+| 3 | Run held-out and untouched third-split validation once; apply SG-004 without tuning to the latter. | SG-003, SG-004 | `stats-guard-validation.json`, enforce exit code |
+| 4 | If SG-004 passes, wire the warning into the live lane and preserve measured-ratio precedence; otherwise retain the unavailable state. | SG-005 to SG-008 | artifact, unit and EN/ES browser gates |
+| 5 | Rebuild the complete artifact set, update the wiki with successes and failures, then record convergence. | SG-001 to SG-008 | full bake, guards, source-bound browser QA |

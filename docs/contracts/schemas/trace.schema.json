@@ -4,22 +4,365 @@
   "title": "PhaseFlow schedule trace",
   "description": "Replay payload for one case. Synthetic cases may include block-level arrays; MineLib traces contain aggregate data only.",
   "type": "object",
-  "required": ["schema", "caseId", "category", "title", "role", "instance", "scenario", "bound", "controls", "methods", "contract"],
+  "required": [
+    "schema",
+    "caseId",
+    "category",
+    "title",
+    "role",
+    "instance",
+    "scenario",
+    "bound",
+    "controls",
+    "methods",
+    "contract"
+  ],
   "properties": {
-    "schema": {"const": "phaseflow.schedule-trace/v1"},
-    "caseId": {"type": "string", "minLength": 1},
-    "category": {"type": "string", "minLength": 1},
-    "title": {"$ref": "#/$defs/bilingual"},
-    "role": {"$ref": "#/$defs/bilingual"},
-    "instance": {"type": "object", "required": ["source", "synthetic", "nBlocks", "nPrecedenceArcs", "dims", "licence"], "properties": {"source": {"enum": ["twin", "minelib"]}, "synthetic": {"type": "boolean"}, "nBlocks": {"type": "integer", "minimum": 1}, "nPrecedenceArcs": {"type": "integer", "minimum": 0}, "dims": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "integer", "minimum": 1}}, "licence": {"type": "string"}}, "additionalProperties": true},
-    "scenario": {"type": "object", "required": ["periods", "discountRate", "resources"], "properties": {"periods": {"type": "integer", "minimum": 1}, "discountRate": {"type": "number"}, "resources": {"type": "array", "minItems": 1}}, "additionalProperties": true},
-    "bound": {"type": "object"},
-    "controls": {"type": "object", "required": ["allPass"], "properties": {"allPass": {"type": "boolean"}}, "additionalProperties": true},
-    "methods": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["method", "rung", "npv", "bound", "periods"], "properties": {"method": {"type": "string"}, "rung": {"enum": ["classical", "sota", "learned", "beyond"]}, "npv": {"type": "number"}, "bound": {"type": "number"}, "periods": {"type": "array"}}, "additionalProperties": true}},
-    "contract": {"type": "object", "required": ["accepted", "flags", "facts"], "properties": {"accepted": {"type": "boolean"}, "flags": {"type": "array"}, "facts": {"type": "object"}}, "additionalProperties": true}
+    "schema": {
+      "const": "phaseflow.schedule-trace/v1"
+    },
+    "caseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "$ref": "#/$defs/bilingual"
+    },
+    "role": {
+      "$ref": "#/$defs/bilingual"
+    },
+    "instance": {
+      "type": "object",
+      "required": [
+        "source",
+        "synthetic",
+        "nBlocks",
+        "nPrecedenceArcs",
+        "dims",
+        "licence"
+      ],
+      "properties": {
+        "source": {
+          "enum": [
+            "twin",
+            "minelib"
+          ]
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "nBlocks": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "nPrecedenceArcs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "dims": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "licence": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "scenario": {
+      "type": "object",
+      "required": [
+        "periods",
+        "discountRate",
+        "resources"
+      ],
+      "properties": {
+        "periods": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "discountRate": {
+          "type": "number"
+        },
+        "resources": {
+          "type": "array",
+          "minItems": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "bound": {
+      "type": "object"
+    },
+    "controls": {
+      "type": "object",
+      "required": [
+        "allPass"
+      ],
+      "properties": {
+        "allPass": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "methods": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "method",
+          "rung",
+          "npv",
+          "bound",
+          "periods"
+        ],
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "rung": {
+            "enum": [
+              "classical",
+              "sota",
+              "learned",
+              "beyond"
+            ]
+          },
+          "npv": {
+            "type": "number"
+          },
+          "bound": {
+            "type": "number"
+          },
+          "periods": {
+            "type": "array"
+          },
+          "extra": {
+            "type": "object",
+            "properties": {
+              "localSearchReceipt": {
+                "$ref": "#/$defs/localSearchReceipt"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "contract": {
+      "type": "object",
+      "required": [
+        "accepted",
+        "flags",
+        "facts"
+      ],
+      "properties": {
+        "accepted": {
+          "type": "boolean"
+        },
+        "flags": {
+          "type": "array"
+        },
+        "facts": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ensemble": {
+      "type": "object",
+      "properties": {
+        "replanningReceipts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "realisation",
+              "certifiedOptimal",
+              "requestedRounds",
+              "attemptedRounds",
+              "skippedRounds",
+              "neighborhoods"
+            ],
+            "properties": {
+              "realisation": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "certifiedOptimal": {
+                "type": "boolean"
+              },
+              "requestedRounds": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "attemptedRounds": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "skippedRounds": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "neighborhoods": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/neighborhoodReceipt"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": true
+    }
   },
   "$defs": {
-    "bilingual": {"type": "object", "required": ["en", "es"], "properties": {"en": {"type": "string", "minLength": 1}, "es": {"type": "string", "minLength": 1}}, "additionalProperties": false}
+    "bilingual": {
+      "type": "object",
+      "required": [
+        "en",
+        "es"
+      ],
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "es": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "localSearchReceipt": {
+      "type": "object",
+      "required": [
+        "requestedRounds",
+        "attemptedRounds",
+        "skippedRounds",
+        "mipGapTarget",
+        "nodeLimit",
+        "certifiedOptimal",
+        "neighborhoods"
+      ],
+      "properties": {
+        "requestedRounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attemptedRounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skippedRounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mipGapTarget": {
+          "type": "number",
+          "minimum": 0
+        },
+        "timeLimitSeconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "nodeLimit": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "certifiedOptimal": {
+          "type": "boolean"
+        },
+        "neighborhoods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/neighborhoodReceipt"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "neighborhoodReceipt": {
+      "type": "object",
+      "required": [
+        "round",
+        "backend",
+        "status",
+        "seconds",
+        "nodes",
+        "usedStart",
+        "improved",
+        "certifiedOptimal"
+      ],
+      "properties": {
+        "round": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "backend": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "nodes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mipGap": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "incumbentNpv": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "upperBoundNpv": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "usedStart": {
+          "type": "boolean"
+        },
+        "improved": {
+          "type": "boolean"
+        },
+        "certifiedOptimal": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": true
 }

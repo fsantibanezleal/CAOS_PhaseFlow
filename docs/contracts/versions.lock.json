@@ -10,9 +10,9 @@
     "sha256": "22459d9b223691ad9f1763519a70a4b09f1ba167a361adeea693ac3959ec54c9"
   },
   "schedule-trace": {
-    "version": "1.0.0",
+    "version": "1.2.0",
     "schema": "docs/contracts/schemas/trace.schema.json",
-    "sha256": "7fb14702e7433d2aa9eea0cc0e5c1eef9f08edcad1b5fd194afe0ebdcdea761d"
+    "sha256": "ccf5648be90cd62b408d9b0777a671cbbcd42205e2a016b2e616fa66a05a3f21"
   },
   "learned-model": {
     "version": "1.0.0",
