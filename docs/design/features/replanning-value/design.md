@@ -10,15 +10,9 @@ different policy after observing each realisation. The replacement uses one fixe
 its expected value across the frozen realisation set, then improves that policy separately for each
 realisation using OreBlocks' node-bounded C-PIT[D] neighbourhood MILPs with proof receipts.
 
-```mermaid
-flowchart LR
-  A[Candidate schedules] --> B[Score all schedules on frozen realisations]
-  B --> C[Select one highest-mean fixed schedule]
-  C --> D[Start each re-solve from that same schedule]
-  D --> E[Node-bounded C-PIT[D] restricted MILPs]
-  E --> F[Check feasible and not below incumbent]
-  F --> G[Mean re-planned value minus best fixed expected value]
-```
+![The same ex-ante policy anchors every paired re-planning comparison](../../../assets/replanning-value.svg)
+
+*Figure: choose one fixed policy before observing value draws; for each draw, start local search from that policy and compare both schedules on the same values. The average feasible gain is a lower bound on EVPI.*
 
 Each MILP re-solve may stop at its deterministic node budget; a feasible incumbent remains useful,
 and its receipt records whether the restricted neighbourhood was proven optimal. The outer randomized
