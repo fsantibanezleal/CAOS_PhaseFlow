@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -15,7 +16,7 @@ from pipeline import registry  # noqa: E402
 from pipeline.io.contract import validate_instance  # noqa: E402
 from pipeline.io.schema import Case, DepositSpec, Scenario  # noqa: E402
 from pipeline.model.instances import build_instance  # noqa: E402
-from pipeline.pipeline import _validate, precompute  # noqa: E402
+from pipeline.pipeline import _validate, precompute, rebuild_index  # noqa: E402
 from pipeline.stages.solve import _as_pcpsp, _period_rows  # noqa: E402
 
 
@@ -36,6 +37,54 @@ def test_every_case_declares_a_role_and_exactly_one_is_default():
     for c in cases:
         assert c.role_en and c.role_es, f"{c.id} has no role; a case with no role is a case nobody needs"
         assert c.category in {"published", "declared", "deposit", "regime", "control"}
+
+
+def test_reader_facing_case_roles_use_method_names_not_internal_tier_labels():
+    forbidden = re.compile(
+        r"\b(?:classical|state[ -]of[ -]the[ -]art|SOTA|beyond[ -]SOTA|tiers?|rungs?|BS-\d+)\b"
+        r"|clásic[oa]s?|peldañ(?:o|os)|estado del arte|más allá del estado del arte",
+        re.IGNORECASE,
+    )
+    for case in registry.list_cases():
+        for language, role in (("en", case.role_en), ("es", case.role_es)):
+            assert not forbidden.search(role), f"{case.id} {language} reader-facing role uses an internal tier label"
+
+
+def test_rebuild_index_refreshes_reader_copy_without_rebaking_science(tmp_path):
+    from pipeline.io.formats import write_json
+
+    paths = tmp_path / "manifests"
+    paths.mkdir()
+    for case in registry.list_cases():
+        trace_rel = f"{case.id}/trace.json"
+        write_json(tmp_path / trace_rel, {"caseId": case.id, "role": {"en": "old", "es": "old"}})
+        write_json(
+            paths / f"{case.id}.json",
+            {
+                "case_id": case.id,
+                "engine": {"version": "0.10.000"},
+                "artifact": {"path": trace_rel, "bytes": 1},
+                "instance": {"n_blocks": 100, "n_precedence_arcs": 100},
+                "real_or_synthetic": "synthetic",
+                "gate": {"offline_ms": 1.0},
+                "lane": "live",
+            },
+        )
+
+    index = rebuild_index(output_root=tmp_path)
+    case = next(item for item in registry.list_cases() if item.role_en != "old")
+    trace_path = tmp_path / case.id / "trace.json"
+    manifest = json.loads((paths / f"{case.id}.json").read_text(encoding="utf-8"))
+    assert index["engine_version"] == "0.10.000"
+    assert next(item for item in index["cases"] if item["case_id"] == case.id)["role"] == {
+        "en": case.role_en,
+        "es": case.role_es,
+    }
+    assert json.loads(trace_path.read_text(encoding="utf-8"))["role"] == {
+        "en": case.role_en,
+        "es": case.role_es,
+    }
+    assert manifest["artifact"]["bytes"] == trace_path.stat().st_size == manifest["gate"]["trace_bytes"]
 
 
 def test_contract_rejects_downward_precedence():
@@ -99,6 +148,22 @@ def test_destination_rungs_never_end_below_cpit_and_stay_under_the_pcpsp_lp():
         assert name in by, f"{name} did not run: {rep['skipped_methods'].get(name)}"
         assert by[name].npv <= rep["pcpsp_lp"] * (1 + 1e-7)
         assert by[name].bound == pytest.approx(rep["pcpsp_lp"])
+    for name in ("cpitD-local-search", "destination-local-search"):
+        receipt = by[name].extra["localSearchReceipt"]
+        assert receipt["nodeLimit"] == 2_000
+        assert receipt["attemptedRounds"] + receipt["skippedRounds"] == receipt["requestedRounds"]
+        assert all("certifiedOptimal" in neighborhood for neighborhood in receipt["neighborhoods"])
+    from pipeline.core.trace import build_trace
+
+    trace_case = _tiny_case(role_en="Tiny test case", role_es="Caso de prueba pequeño")
+    trace = build_trace(case=trace_case, instance=inst, results=results, controls={"allPass": True},
+                        published={}, bound_report=rep)
+    from jsonschema import Draft202012Validator
+
+    schema = json.loads((ROOT / "docs/contracts/schemas/trace.schema.json").read_text(encoding="utf-8"))
+    Draft202012Validator(schema).validate(trace)
+    trace_methods = {row["method"]: row for row in trace["methods"]}
+    assert trace_methods["cpitD-local-search"]["extra"]["localSearchReceipt"]["nodeLimit"] == 2_000
     best_cpit = max(r.npv for r in results if r.rung in ("classical", "sota", "learned"))
     assert by["destination-local-search"].npv >= best_cpit - 1e-6 * abs(best_cpit)
     assert by["destination-local-search"].npv >= max(by["destination-toposort"].npv,
@@ -282,6 +347,7 @@ def test_onnx_parity_refuses_a_sample_that_saturates_the_output(tmp_path):
     from pipeline.model.learned import Mlp, export_onnx
 
     model = Mlp.from_json(json.loads((ROOT / "models" / "expected-time.json").read_text(encoding="utf-8")))
+    # The ensemble mean can hide individually saturated members, so the exporter checks every member.
     raw = np.random.default_rng(0).normal(size=(64, model.w[0].shape[0]))
     with pytest.raises(AssertionError, match="saturated"):
         export_onnx(model, tmp_path / "raw.onnx", sample=raw)

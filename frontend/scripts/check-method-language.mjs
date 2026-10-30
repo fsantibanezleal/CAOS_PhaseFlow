@@ -14,6 +14,17 @@ function checkText(file, text) {
   if (match) findings.push(`${relative(root, file)}: user-facing method label ${JSON.stringify(match[0])}`);
 }
 
+function checkPublicJson(file, value, key = '') {
+  if (['method', 'rung', 'schema', 'caseId', 'case_id'].includes(key)) return;
+  if (Array.isArray(value)) {
+    for (const item of value) checkPublicJson(file, item, key);
+  } else if (value && typeof value === 'object') {
+    for (const [childKey, child] of Object.entries(value)) checkPublicJson(file, child, childKey);
+  } else if (typeof value === 'string') {
+    checkText(file, value);
+  }
+}
+
 function checkMarkdown(file, text) {
   let fenced = false;
   for (const line of text.split(/\r?\n/)) {
@@ -74,6 +85,28 @@ checkText(join(root, 'CHANGELOG.md'), readFileSync(join(root, 'CHANGELOG.md'), '
 for (const file of contentFiles(join(root, 'content'), new Set(['.json']))) {
   checkText(file, readFileSync(file, 'utf8'));
 }
+for (const file of ['data/derived/manifests/index.json', 'frontend/public/data/manifests/index.json']) {
+  const path = join(root, file);
+  try {
+    const index = JSON.parse(readFileSync(path, 'utf8'));
+    checkPublicJson(path, index);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+}
+for (const directory of ['data/derived', 'frontend/public/data']) {
+  for (const path of contentFiles(join(root, directory), new Set(['.json']))) {
+    if (/[/\\]manifests[/\\]index\.json$/u.test(path)) continue;
+    checkPublicJson(path, JSON.parse(readFileSync(path, 'utf8')));
+  }
+}
+for (const file of ['models/expected-time.json', 'models/training-report.json']) {
+  const path = join(root, file);
+  checkPublicJson(path, JSON.parse(readFileSync(path, 'utf8')));
+}
+const trainingSource = readFileSync(join(root, 'scripts/train_learned.py'), 'utf8');
+const generatedLabel = trainingSource.match(/"target_relaxation"\s*:\s*"([^"]+)"/u);
+if (generatedLabel) checkText(join(root, 'scripts/train_learned.py'), generatedLabel[1]);
 const internalDocs = /[\\/]docs[\\/](?:design|contracts|data-contract)(?:[\\/]|$)/;
 for (const file of contentFiles(join(root, 'docs'), new Set(['.md', '.svg']), (path) => internalDocs.test(path))) {
   const text = readFileSync(file, 'utf8');

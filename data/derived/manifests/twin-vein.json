@@ -40,14 +40,14 @@
     "path": "twin-vein/trace.json",
     "format": "json",
     "trace_schema": "phaseflow.schedule-trace/v1",
-    "bytes": 1145671
+    "bytes": 1145747
   },
   "lane": "live",
   "gate": {
     "lane": "live",
     "n_blocks": 14400,
     "n_arcs": 116160,
-    "trace_bytes": 1145671,
+    "trace_bytes": 1145747,
     "offline_ms": 6472612.2,
     "budgets": {
       "blocks": 30000,
