@@ -88,8 +88,21 @@ for (const language of ['en', 'es']) {
     for (const name of readdirSync(directory).filter((item) => item.endsWith('.ipynb'))) {
       const file = join(directory, name);
       const notebook = JSON.parse(readFileSync(file, 'utf8'));
+      checkText(file, name);
+      checkText(file, notebook.metadata?.caos?.title ?? '');
       for (const [index, cell] of (notebook.cells ?? []).entries()) {
         if (cell.cell_type === 'markdown') checkText(file, Array.isArray(cell.source) ? cell.source.join('') : cell.source ?? '');
+        if (cell.cell_type === 'code') {
+          const source = Array.isArray(cell.source) ? cell.source.join('') : cell.source ?? '';
+          // Python comments and chart/print labels are reader-facing even though they live in code cells.
+          for (const line of source.split(/\r?\n/)) {
+            const comment = line.match(/^\s*#\s?(.*)$/);
+            if (comment) checkText(file, comment[1]);
+            for (const match of line.matchAll(/(?:title|label|xlabel|ylabel|set_title|set_xlabel|set_ylabel|legend|print)\s*(?:=\s*|\(\s*)(["'])(.*?)\1/giu)) {
+              checkText(file, match[2]);
+            }
+          }
+        }
         for (const output of cell.outputs ?? []) {
           checkText(file, Array.isArray(output.text) ? output.text.join('') : output.text ?? '');
           for (const value of Object.values(output.data ?? {})) {
@@ -103,8 +116,13 @@ for (const language of ['en', 'es']) {
 }
 
 for (const directory of ['manuscripts/technical-report', 'manuscripts/bs1-expected-time-policy']) {
-  const file = join(root, directory, 'main.tex');
-  if (readFileSync(file, 'utf8')) checkText(file, readFileSync(file, 'utf8').split('\\begin{document}').at(-1));
+  const manuscriptRoot = join(root, directory);
+  for (const file of contentFiles(manuscriptRoot, new Set(['.tex', '.svg', '.md']))) {
+    let text = readFileSync(file, 'utf8');
+    // Bibliography entries may retain the wording in a cited publication's own title.
+    text = text.replace(/\\begin\{thebibliography\}[\s\S]*?\\end\{thebibliography\}/giu, '');
+    checkText(file, text);
+  }
 }
 
 if (findings.length) {
