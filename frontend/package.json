@@ -1,7 +1,7 @@
 {
   "name": "phaseflow-frontend",
   "private": true,
-  "version": "0.10.0",
+  "version": "0.11.0",
   "type": "module",
   "scripts": {
     "predev": "node copy-data.mjs",
@@ -11,6 +11,7 @@
     "postbuild": "node spa-404.mjs",
     "preview": "vite preview",
     "test": "node --import tsx --test && node --import tsx scripts/check-arch-bounds.mjs",
+    "check:method-language": "node scripts/check-method-language.mjs",
     "gate": "node scripts/gate.mjs",
     "check:arch": "node --import tsx scripts/check-arch-bounds.mjs",
     "verify:profile": "node scripts/verify-profile-size.mjs",
@@ -21,7 +22,7 @@
     "verify:stage": "node scripts/verify-stage.mjs"
   },
   "dependencies": {
-    "@fasl-work/caos-app-shell": "0.19.6",
+    "@fasl-work/caos-app-shell": "0.19.9",
     "katex": "0.19.1",
     "lucide-react": "^1.52.0",
     "react": "^19.3.0",
