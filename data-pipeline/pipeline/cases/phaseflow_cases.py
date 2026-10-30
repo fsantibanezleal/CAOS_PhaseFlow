@@ -143,13 +143,13 @@ CASES: list[Case] = [
             "A narrow high-grade body. The stress test for spatial coherence (the optimiser wants the "
             "vein and the vein is not a workable shape) and for Gershon's weight, which opens the whole "
             "strike length at once because every block above the vein unlocks it. With the core-halo it is "
-            "one of the two archetypes on which the learned rung fails most."
+            "one of the two archetypes where the expected-time ensemble loses the most schedule value."
         ),
         role_es=(
             "Un cuerpo angosto de alta ley. La prueba de coherencia espacial (el optimizador quiere la "
             "veta y la veta no es una forma operable) y del peso de Gershon, que abre todo el largo del "
             "rumbo de una vez porque todo bloque sobre la veta la libera. Junto con el núcleo-halo es uno "
-            "de los dos arquetipos en que el peldaño aprendido falla más."
+            "de los dos arquetipos donde el conjunto de tiempos esperados pierde más valor de planificación."
         ),
     ),
     Case(
@@ -176,13 +176,13 @@ CASES: list[Case] = [
         role_en=(
             "Concentric grade. Nested pits look sensible on this deposit and the schedule still does "
             "something different, which is the point of solving rather than nesting. With the vein it is "
-            "one of the two archetypes on which the learned rung is measured to fail most: a thin rich "
+            "one of the two archetypes where the expected-time ensemble loses the most schedule value: a thin rich "
             "core makes the order of extraction delicate."
         ),
         role_es=(
             "Ley concéntrica. Los pits anidados se ven razonables en este depósito y el plan igual hace "
             "algo distinto, que es el punto de resolver en vez de anidar. Junto con la veta es uno de los "
-            "dos arquetipos en que el peldaño aprendido falla más: un núcleo rico y delgado vuelve "
+            "dos arquetipos donde el conjunto de tiempos esperados pierde más valor: un núcleo rico y delgado vuelve "
             "delicado el orden de extracción."
         ),
     ),
@@ -265,13 +265,13 @@ CASES: list[Case] = [
         ),
         role_en=(
             "Loose-capacity diagnostic. The best CPIT schedule approaches the certified bound, but "
-            "classical schedules still lose value because period timing and slope precedence matter "
+            "reference schedules still lose value because period timing and slope precedence matter "
             "at a positive discount rate. The zero-rate, single-period ctrl-degenerate case is the "
             "exact collapse control; this one is not."
         ),
         role_es=(
             "Diagnóstico con capacidad holgada. El mejor plan CPIT se acerca a la cota certificada, "
-            "pero los planes clásicos pierden valor porque el período de extracción y la precedencia "
+            "pero los planes de referencia pierden valor porque el período de extracción y la precedencia "
             "importan con descuento positivo. ctrl-degenerate, con tasa cero y un período, es el "
             "control de colapso exacto; este no lo es."
         ),

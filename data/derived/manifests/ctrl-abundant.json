@@ -40,14 +40,14 @@
     "path": "ctrl-abundant/trace.json",
     "format": "json",
     "trace_schema": "phaseflow.schedule-trace/v1",
-    "bytes": 538184
+    "bytes": 538203
   },
   "lane": "live",
   "gate": {
     "lane": "live",
     "n_blocks": 6912,
     "n_arcs": 53900,
-    "trace_bytes": 538184,
+    "trace_bytes": 538203,
     "offline_ms": 1110512.6,
     "budgets": {
       "blocks": 30000,

@@ -40,14 +40,14 @@
     "path": "twin-core-halo/trace.json",
     "format": "json",
     "trace_schema": "phaseflow.schedule-trace/v1",
-    "bytes": 1141110
+    "bytes": 1141154
   },
   "lane": "live",
   "gate": {
     "lane": "live",
     "n_blocks": 14400,
     "n_arcs": 116160,
-    "trace_bytes": 1141110,
+    "trace_bytes": 1141154,
     "offline_ms": 75824824.6,
     "budgets": {
       "blocks": 30000,
