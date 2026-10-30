@@ -349,8 +349,8 @@ export function CaseRoles() {
   return (
     <Fig vb={`0 0 620 ${top + rows.length * RH + 44}`}
          caption={es
-           ? 'Cada categoría compra una clase distinta de confianza, y solo una se mide contra el estado del arte publicado. La última fila es la que puede fallar: un producto cuyos controles no pueden fallar no está siendo revisado, solo está siendo mostrado.'
-           : 'Each category buys a different kind of confidence, and only one is measured against the published state of the art. The last row is the one that can fail: a product whose controls cannot fail is not being checked, it is only being shown.'}>
+           ? 'Cada evaluación aporta un tipo distinto de evidencia; una de ellas compara los resultados con métodos publicados. La última fila puede fallar: un producto cuyos controles no pueden fallar no está siendo revisado, solo está siendo mostrado.'
+           : 'Each evaluation adds a different kind of evidence; one compares results with published methods. The last row can fail: a product whose controls cannot fail is not being checked, only shown.'}>
       {rows.map(([id, what, proves], i) => {
         const y = top + i * RH;
         const isCtrl = id === 'control';

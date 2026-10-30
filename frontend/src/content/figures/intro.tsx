@@ -170,7 +170,7 @@ export function PipelineOverview({ lang }: { lang: Lang }) {
   const boxes: Array<[number, number, string, string[], boolean?]> = [
     [10, 30, tr(lang, 'Instance', 'Instancia'), [tr(lang, 'MineLib file or seeded twin', 'archivo MineLib o gemelo'), tr(lang, 'contract-checked', 'validada por contrato')]],
     [210, 30, tr(lang, 'Certified bounds', 'Cotas certificadas'), [tr(lang, 'critical multiplier, Alg. 4', 'multiplicador crítico, Alg. 4'), tr(lang, 'joint BZ, PCPSP LP', 'BZ conjunta, LP PCPSP')], true],
-    [410, 30, tr(lang, 'Method ladder', 'Escalera de métodos'), [tr(lang, 'classical, SOTA, learned', 'clásicos, SOTA, aprendido'), tr(lang, 'feasible by construction', 'factibles por construcción')]],
+    [410, 30, tr(lang, 'Scheduling methods', 'Métodos de planificación'), [tr(lang, 'published, learned, and proposed', 'publicados, aprendidos y propuestos'), tr(lang, 'feasible by construction', 'factibles por construcción')]],
     [610, 30, tr(lang, 'Judgement', 'Juicio'), [tr(lang, 'gap to its own bound', 'brecha a su propia cota'), tr(lang, 'controls, coherence', 'controles, coherencia')]],
     [810, 30, tr(lang, 'Evidence', 'Evidencia'), [tr(lang, 'trace + manifest', 'traza + manifiesto'), tr(lang, 'committed, checked', 'versionada, verificada')]],
     [210, 150, tr(lang, 'Beyond CPIT', 'Más allá de CPIT'), [tr(lang, 'destinations, operability', 'destinos, operabilidad'), tr(lang, 'uncertainty', 'incertidumbre')]],
@@ -197,7 +197,7 @@ export function ScopeMap({ lang }: { lang: Lang }) {
   const label = tr(lang, 'What each number is', 'Qué es cada número');
   const cols: Array<[string, string[], string]> = [
     [tr(lang, 'Exact', 'Exacto'), [tr(lang, 'ultimate pit', 'pit final'), tr(lang, 'CPIT LP bound', 'cota LP CPIT'), tr(lang, 'PCPSP LP bound', 'cota LP PCPSP'), tr(lang, 'controls', 'controles')], 'good'],
-    [tr(lang, 'Heuristic', 'Heurístico'), [tr(lang, 'every schedule', 'todo plan'), tr(lang, 'with its gap', 'con su brecha'), tr(lang, 'learned rung', 'peldaño aprendido')], 'accent'],
+    [tr(lang, 'Heuristic', 'Heurístico'), [tr(lang, 'every schedule', 'todo plan'), tr(lang, 'with its gap', 'con su brecha'), tr(lang, 'learned method', 'método aprendido')], 'accent'],
     [tr(lang, 'Illustrative', 'Ilustrativo'), [tr(lang, 'seeded twins', 'gemelos sembrados'), tr(lang, 'synthetic ensemble', 'ensamble sintético'), tr(lang, 'declared scenarios', 'escenarios declarados')], 'warn'],
     [tr(lang, 'Out of scope', 'Fuera de alcance'), [tr(lang, 'stockpiles', 'acopios'), tr(lang, 'blending', 'mezcla'), tr(lang, 'stochastic SIP', 'SIP estocástico'), tr(lang, 'haulage', 'transporte')], 'bad'],
   ];
