@@ -18,11 +18,11 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const src = readFileSync(join(here, '..', 'src', 'architecture.ts'), 'utf8');
+const src = readFileSync(join(here, '..', 'src', 'architecture', 'index.ts'), 'utf8');
 
 // The generated SVG strings are what we want, not the source that generates them, so evaluate the
 // module rather than pattern-matching the code that builds it.
-const { architecture } = await import('../src/architecture.ts');
+const { architecture } = await import('../src/architecture/index.ts');
 
 // Pessimistic advance widths: comfortably above the real system-ui metrics, so this gate trips first.
 const CLASS_W = { tb: 7.6, ts: 6.1, t: 7.0 };

@@ -9,8 +9,8 @@ import './phaseflow.css';
 import './content/content.css';
 import { CITATIONS } from './data/citations.ts';
 import product from '../../product.json';
-import { architecture } from './architecture.ts';
-import { APP_VERSION, loadIndex, loadManifest } from './lib/artifacts.ts';
+import { architecture } from './architecture/index.ts';
+import { APP_VERSION, loadIndex, loadManifest, loadPublicJSON } from './lib/artifacts.ts';
 const Tool = lazy(() => import('./pages/Tool.tsx'));
 const Focus = lazy(() => import('./pages/Focus.tsx'));
 const Introduction = lazy(() => import('./pages/Introduction.tsx'));
@@ -56,13 +56,14 @@ function DocumentLanguage() {
   return null;
 }
 
-createRoot(document.getElementById('root')!).render(
+function renderApp() {
+  createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <CitationsProvider items={CITATIONS}>
         <DocumentLanguage />
         <Routes>
-          {/* ADR-0070: the focus view renders OUTSIDE the shell. The header and footer are exactly the
+          {/* The Focus view renders OUTSIDE the shell. The header and footer are exactly the
               chrome a focus view exists to escape, so it cannot be a child of AppShell. */}
           <Route path="/focus/:caseId" element={<Suspense fallback={<p data-state="loading" role="status">Loading PhaseFlow…</p>}><Focus /></Suspense>} />
           <Route
@@ -88,4 +89,12 @@ createRoot(document.getElementById('root')!).render(
       </CitationsProvider>
     </BrowserRouter>
   </StrictMode>,
-);
+  );
+}
+
+// Both model records affect the learned preview. Read their bodies before mounting routes so a fast
+// route/tab change cannot cancel the first requests while consumers are still sharing them.
+void Promise.allSettled([
+  loadPublicJSON('/models/expected-time.json'),
+  loadPublicJSON('/models/guard-validation.json'),
+]).finally(renderApp);

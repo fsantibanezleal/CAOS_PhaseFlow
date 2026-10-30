@@ -134,7 +134,7 @@ export function LadderGridPanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** Q2: what seeding the plan with the bound buys over the reference methods, case by case. */
+/** Q2: what seeding a plan with the bound changes, case by case. */
 export function SeedingPanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
   const data = useManifests();
@@ -153,7 +153,7 @@ export function SeedingPanel({ lang }: { lang: Lang }) {
       <p className="pfd-claim">
         {es
           ? <>El TopoSort de tiempo esperado supera al mejor método de referencia en <b>{wins} de {rows.length}</b> casos no triviales; la ventaja mediana es de <b>{pctTxt(median, 1)}</b> puntos de brecha (de {pctTxt(margins[0], 1)} a {pctTxt(margins[margins.length - 1], 1)}).</>
-          : <>Expected-time TopoSort beats the best reference method on <b>{wins} of {rows.length}</b> non-trivial cases; the median advantage is <b>{pctTxt(median, 1)}</b> points of gap (from {pctTxt(margins[0], 1)} to {pctTxt(margins[margins.length - 1], 1)}).</>}
+          : <>Expected-time TopoSort beats the best of the four named comparison methods on <b>{wins} of {rows.length}</b> non-trivial cases; the median advantage is <b>{pctTxt(median, 1)}</b> points of gap (from {pctTxt(margins[0], 1)} to {pctTxt(margins[margins.length - 1], 1)}).</>}
       </p>
       <div className="pfd-scroll">
         <table className="pfd-table">
@@ -289,7 +289,7 @@ export function DepositPanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** Beyond CPIT: what choosing destinations is worth, case by case, against the best CPIT plan and the PCPSP bound. */
+/** Destination selection: what choosing destinations is worth, case by case, against the best CPIT plan and the PCPSP bound. */
 export function DestinationPanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
   const data = useManifests();
@@ -415,7 +415,7 @@ export function EnsemblePanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** The learned method inside the ladder: its measured share of the exact plan on each case. */
+/** The expected-time ensemble: its measured share of the exact plan on each case. */
 export function LearnedLadderPanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
   const data = useManifests();
@@ -424,7 +424,7 @@ export function LearnedLadderPanel({ lang }: { lang: Lang }) {
   return (
     <div className="pfd-scroll">
       <table className="pfd-table">
-        <caption>{es ? 'El método aprendido en la escalera: su plan sobre el plan ExTS exacto del mismo caso, medido, y las dos brechas.' : 'The learned method in the ladder: its plan over the exact ExTS plan of the same case, measured, and the two gaps.'}</caption>
+        <caption>{es ? 'Conjunto de tiempos esperados: valor medido respecto del plan ExTS exacto del mismo caso y ambas brechas.' : 'Expected-time ensemble: its measured plan value relative to the exact ExTS plan for the same case, with both gaps.'}</caption>
         <thead><tr><th>{es ? 'caso' : 'case'}</th><th className="num">{es ? 'bloques' : 'blocks'}</th><th className="num">{es ? 'aprendido / ExTS' : 'learned / ExTS'}</th><th className="num">{es ? 'brecha aprendido' : 'learned gap'}</th><th className="num">{es ? 'brecha ExTS' : 'ExTS gap'}</th><th className="num">{es ? 'tiempo aprendido' : 'learned time'}</th><th className="num">{es ? 'tiempo ExTS' : 'ExTS time'}</th></tr></thead>
         <tbody>
           {rows.map(({ m, r, e }) => (

@@ -10,7 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "postbuild": "node spa-404.mjs",
     "preview": "vite preview",
-    "test": "node --import tsx --test && node --import tsx scripts/check-arch-bounds.mjs",
+    "test": "node --import tsx --test && node --import tsx scripts/check-arch-bounds.mjs && node scripts/check-method-language.mjs",
     "check:method-language": "node scripts/check-method-language.mjs",
     "gate": "node scripts/gate.mjs",
     "check:arch": "node --import tsx scripts/check-arch-bounds.mjs",

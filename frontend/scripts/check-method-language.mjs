@@ -107,7 +107,9 @@ for (const file of ['models/expected-time.json', 'models/training-report.json'])
 const trainingSource = readFileSync(join(root, 'scripts/train_learned.py'), 'utf8');
 const generatedLabel = trainingSource.match(/"target_relaxation"\s*:\s*"([^"]+)"/u);
 if (generatedLabel) checkText(join(root, 'scripts/train_learned.py'), generatedLabel[1]);
-const internalDocs = /[\\/]docs[\\/](?:design|contracts|data-contract)(?:[\\/]|$)/;
+// The data-contract is a reader-facing explanation of the product's records. Keep
+// machine identifiers in inline code/fenced examples, but scan its explanatory prose.
+const internalDocs = /[\\/]docs[\\/](?:design|validation)(?:[\\/]|$)/;
 for (const file of contentFiles(join(root, 'docs'), new Set(['.md', '.svg']), (path) => internalDocs.test(path))) {
   const text = readFileSync(file, 'utf8');
   if (extname(file).toLowerCase() === '.md') checkMarkdown(file, text);
@@ -148,14 +150,11 @@ for (const language of ['en', 'es']) {
   }
 }
 
-for (const directory of ['manuscripts/technical-report', 'manuscripts/bs1-expected-time-policy']) {
-  const manuscriptRoot = join(root, directory);
-  for (const file of contentFiles(manuscriptRoot, new Set(['.tex', '.svg', '.md']))) {
-    let text = readFileSync(file, 'utf8');
-    // Bibliography entries may retain the wording in a cited publication's own title.
-    text = text.replace(/\\begin\{thebibliography\}[\s\S]*?\\end\{thebibliography\}/giu, '');
-    checkText(file, text);
-  }
+for (const file of contentFiles(join(root, 'manuscripts'), new Set(['.tex', '.svg', '.md']))) {
+  let text = readFileSync(file, 'utf8');
+  // Bibliography entries may retain the wording in a cited publication's own title.
+  text = text.replace(/\\begin\{thebibliography\}[\s\S]*?\\end\{thebibliography\}/giu, '');
+  checkText(file, text);
 }
 
 if (findings.length) {

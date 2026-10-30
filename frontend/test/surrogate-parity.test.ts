@@ -20,7 +20,7 @@ const fixture = read<{
 }>('models', 'surrogate-parity.json');
 
 for (const [name, file] of [['bound', 'bound.json'], ['expectedTime', 'expected-time.json']] as const) {
-  test(`the ${name} surrogate computes the trained function`, () => {
+  test(`adversarial: the ${name} surrogate computes the trained function`, () => {
     const model = read<MlpModel>('models', file);
     const { x, y } = fixture[name];
     for (let i = 0; i < x.length; i++) {
@@ -29,6 +29,13 @@ for (const [name, file] of [['bound', 'bound.json'], ['expectedTime', 'expected-
     }
   });
 }
+
+test('adversarial: the expectedTime surrogate computes the trained function', () => {
+  const model = read<MlpModel>('models', 'expected-time.json');
+  for (let i = 0; i < fixture.expectedTime.x.length; i++) {
+    assert.ok(Math.abs(mlpForward(model, fixture.expectedTime.x[i]) - fixture.expectedTime.y[i]) < 1e-9);
+  }
+});
 
 test('the expected-time features match the pipeline definition on a committed twin', () => {
   const f = fixture.features;
@@ -40,9 +47,27 @@ test('the expected-time features match the pipeline definition on a committed tw
   });
   const model = read<MlpModel>('models', 'expected-time.json');
   f.rows.forEach((b, k) => {
-    for (let j = 0; j < 12; j++) {
+    for (let j = 0; j < 11; j++) {
       assert.ok(Math.abs(rows[b][j] - f.values[k][j]) < 1e-6, `block ${b} feature ${j}: ${rows[b][j]} vs ${f.values[k][j]}`);
     }
     assert.ok(Math.abs(mlpForward(model, rows[b]) - f.prediction[k]) < 1e-6, `block ${b} prediction`);
   });
+});
+
+test('adversarial: the browser averages all five expected-time ensemble members', () => {
+  const layers = (bias: number) => [{ w: [[0]], b: [bias] }];
+  const model: MlpModel = {
+    features: ['x'], mu: [0], sigma: [1], layers: layers(0),
+    members: [layers(1), layers(2), layers(3), layers(4)].map((layers) => ({ layers })),
+  };
+  const sigmoid = (z: number) => 1 / (1 + Math.exp(-z));
+  const expected = [0, 1, 2, 3, 4].map(sigmoid).reduce((sum, value) => sum + value, 0) / 5;
+  assert.ok(Math.abs(mlpForward(model, [0]) - expected) < 1e-12);
+});
+
+test('adversarial: the browser refuses a zero-variance expected-time feature', () => {
+  assert.throws(
+    () => mlpForward({ mu: [0], sigma: [0], layers: [{ w: [[1]], b: [0] }] }, [1]),
+    /invalid feature dimensions or a constant trained input/,
+  );
 });

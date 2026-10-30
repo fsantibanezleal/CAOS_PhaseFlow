@@ -1,36 +1,32 @@
-/** Figures for Methodology: one schematic per method family, drawn from the definitions in the sources. */
+/** Figures for Methodology: one schematic per method, drawn from the definitions in the sources. */
 import { periodCss, periodTextColor } from '../../viz/colormap.ts';
 import { Arrow, Box, Svg, arrowId, tr, type Lang } from './kit.tsx';
 import { dec } from '../../lib/artifacts.ts';
 
-/** Scheduling methods and the shared feasibility gate they must cross. */
-export function MethodLadder({ lang }: { lang: Lang }) {
+/** The common path from a method's decisions to a checked schedule. */
+export function SchedulingWorkflow({ lang }: { lang: Lang }) {
   const vb = '0 0 560 300';
-  const label = tr(lang, 'Scheduling methods and shared feasibility gate', 'Métodos de planificación y control de factibilidad compartido');
-  const rows = [
-    { y: 52, title: tr(lang, 'REFERENCE METHODS', 'MÉTODOS DE REFERENCIA'), detail: tr(lang, 'constructive orders · same CPIT case', 'órdenes constructivos · mismo caso CPIT'), fill: 'pf-dg-fill-accent' },
-    { y: 122, title: tr(lang, 'PUBLISHED METHODS', 'MÉTODOS PUBLICADOS'), detail: tr(lang, 'published MILP · ExTS · restricted re-planning', 'MILP publicado · ExTS · replanteo restringido'), fill: 'pf-dg-fill-warn' },
-    { y: 192, title: tr(lang, 'PROPOSED METHOD', 'MÉTODO PROPUESTO'), detail: tr(lang, 'expected-time ensemble · held-out evidence', 'conjunto de tiempos esperados · evidencia de prueba'), fill: 'pf-dg-fill-accent' },
-  ];
+  const label = tr(lang, 'From method decisions to a checked schedule', 'De las decisiones del método a un plan verificado');
   return (
     <Svg vb={vb} label={label}>
-      <text x={150} y={25} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'SOURCE OF THE ORDER', 'ORIGEN DEL ORDEN')}</text>
-      {rows.map((row) => (
-        <g key={row.title}>
-          <rect x={20} y={row.y} width={260} height={52} rx={7} className={row.fill} />
-          <text x={150} y={row.y + 20} textAnchor="middle" className="pfd-dg-title">{row.title}</text>
-          <text x={150} y={row.y + 39} textAnchor="middle" className="pfd-dg-small">{row.detail}</text>
-          <path d={`M282 ${row.y + 26} H340`} className="pf-dg-curve" markerEnd="url(#method-arrow)" />
-        </g>
-      ))}
+      <rect x={18} y={83} width={150} height={116} rx={8} className="pf-dg-fill-accent" />
+      <text x={93} y={112} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'Method decision', 'Decisión del método')}</text>
+      <text x={93} y={139} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'priority, choice,', 'prioridad, elección,')}</text>
+      <text x={93} y={158} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'or solver result', 'o resultado del solver')}</text>
+      <path d="M170 141 H206" className="pf-dg-curve" markerEnd="url(#method-arrow)" />
+      <rect x={214} y={83} width={150} height={116} rx={8} className="pf-dg-box" />
+      <text x={289} y={112} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'Schedule', 'Plan')}</text>
+      <text x={289} y={139} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'assign blocks to', 'asignar bloques a')}</text>
+      <text x={289} y={158} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'periods and destinations', 'períodos y destinos')}</text>
+      <path d="M366 141 H402" className="pf-dg-curve" markerEnd="url(#method-arrow)" />
       <defs><marker id="method-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" className="pf-dg-fill-accent" /></marker></defs>
-      <rect x={352} y={67} width={188} height={166} rx={10} className="pf-dg-box" />
-      <text x={446} y={96} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'FEASIBILITY GATE', 'CONTROL DE FACTIBILIDAD')}</text>
-      <text x={446} y={129} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'precedence', 'precedencias')}</text>
-      <text x={446} y={155} textAnchor="middle" className="pfd-dg-mono">{String.raw`\tau_a \le \tau_b`}</text>
-      <text x={446} y={184} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'period capacity', 'capacidad por período')}</text>
-      <text x={446} y={210} textAnchor="middle" className="pfd-dg-mono">{String.raw`\sum_b a_{rb}\le c_{rt}`}</text>
-      <text x={280} y={278} textAnchor="middle" className="pf-dg-note">{tr(lang, 'same case · same scenario · every schedule checked', 'mismo caso · mismo escenario · cada plan se verifica')}</text>
+      <rect x={410} y={70} width={132} height={142} rx={10} className="pf-dg-box" />
+      <text x={476} y={96} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'Checks', 'Verificaciones')}</text>
+      <text x={476} y={124} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'precedence', 'precedencias')}</text>
+      <text x={476} y={147} textAnchor="middle" className="pfd-dg-mono">{String.raw`\tau_a \le \tau_b`}</text>
+      <text x={476} y={174} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'resource capacity', 'capacidad de recursos')}</text>
+      <text x={476} y={195} textAnchor="middle" className="pfd-dg-mono">{String.raw`\sum_b a_{rb}\le c_{rt}`}</text>
+      <text x={280} y={260} textAnchor="middle" className="pf-dg-note">{tr(lang, 'same case · same scenario · same evaluation', 'mismo caso · mismo escenario · misma evaluación')}</text>
     </Svg>
   );
 }

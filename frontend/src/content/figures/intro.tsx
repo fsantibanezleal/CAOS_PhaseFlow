@@ -173,7 +173,7 @@ export function PipelineOverview({ lang }: { lang: Lang }) {
     [410, 30, tr(lang, 'Scheduling methods', 'Métodos de planificación'), [tr(lang, 'published, learned, and proposed', 'publicados, aprendidos y propuestos'), tr(lang, 'feasible by construction', 'factibles por construcción')]],
     [610, 30, tr(lang, 'Judgement', 'Juicio'), [tr(lang, 'gap to its own bound', 'brecha a su propia cota'), tr(lang, 'controls, coherence', 'controles, coherencia')]],
     [810, 30, tr(lang, 'Evidence', 'Evidencia'), [tr(lang, 'trace + manifest', 'traza + manifiesto'), tr(lang, 'committed, checked', 'versionada, verificada')]],
-    [210, 150, tr(lang, 'Beyond CPIT', 'Más allá de CPIT'), [tr(lang, 'destinations, operability', 'destinos, operabilidad'), tr(lang, 'uncertainty', 'incertidumbre')]],
+    [210, 150, tr(lang, 'Destination selection', 'Selección de destinos'), [tr(lang, 'operability and uncertainty', 'operabilidad e incertidumbre'), tr(lang, 'destination-choice methods', 'métodos de elección de destino')]],
     [610, 150, tr(lang, 'This app', 'Esta app'), [tr(lang, 'replays the evidence', 'reproduce la evidencia'), tr(lang, 're-solves twins live', 're-resuelve gemelos en vivo')], true],
   ];
   return (

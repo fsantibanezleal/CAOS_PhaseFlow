@@ -116,7 +116,7 @@ function svgWhat(): string {
 /* ---------------------------------------------------------------- diagram 2: the lanes */
 function svgLanes(): string {
   const orb = node('oreblocks (PyPI)', 'the engine, pinned');
-  const pipe = node('data-pipeline/', 'ladder + controls, Python');
+  const pipe = node('data-pipeline/', 'methods + controls, Python');
   const der = node('data/derived/', 'trace + manifest, committed');
   const eng = node('src/engine/', 'the same algorithms, TypeScript');
   const stg = node('the stage', 'redraws per period cursor');
@@ -139,7 +139,7 @@ function svgLanes(): string {
     handoff +
     lbl('the block model, not the answer', (BT(der).x + TP(eng).x) / 2, band - 7) +
     ar(R(eng), L(stg)) +
-    cap('the browser never re-runs the ladder: it reads the trace and re-solves the case', 224),
+    cap('the browser reads the trace and re-solves the case; it does not re-run every method', 224),
     238,
   );
 }
@@ -209,7 +209,7 @@ function svgRender(): string {
 function svgContracts(): string {
   const raw = node('raw instance', '.blocks .prec .upit .cpit');
   const c1 = node('CONTRACT 1', 'accept / flag / reject');
-  const lad = node('ladder + controls', 'bound, plans, gaps');
+  const lad = node('methods + controls', 'bound, plans, gaps');
   const c2 = node('CONTRACT 2', 'trace + manifest, TS-mirrored');
   const val = node('validate', 're-read, assert, licence check');
 
@@ -254,7 +254,7 @@ export const architecture: ArchitectureConfig = {
         'LIVE (TypeScript): the same algorithms, ported, running in the browser on the block model the trace carries. This is what makes the focus view honest: moving the discount rate re-solves the problem rather than fetching a different baked answer, and the HUD shows the measured solve time. Every control change first draws the learned plan on the next animation frame: the expected-time model predicts the TopoSort weights from eleven block features. Once the control has been still for 220 ms a worker computes the bounds and the exact plans; the exact answer replaces the learned one, and the HUD shows the learned plan\'s share of the exact expected-time plan and how much sooner it came. The bound and the reported plan always come from the exact path.\n\n' +
         'A case is LIVE only when the browser can genuinely re-solve it inside an interaction budget, and REPLAY otherwise. A MineLib case is always replay, because its per-block data may not be redistributed and therefore never reaches the browser at all.',
       body_es:
-        'OFFLINE (Python): el pipeline construye cada instancia, corre toda la escalera de métodos, corre los tres controles y escribe una traza comprometida más un manifiesto. El solver es oreblocks, un paquete publicado en PyPI, consumido como dependencia fijada; PhaseFlow no declara paquete propio.\n\n' +
+        'OFFLINE (Python): el pipeline construye cada instancia, corre todos los métodos implementados, corre los tres controles y escribe una traza comprometida más un manifiesto. El solver es oreblocks, un paquete publicado en PyPI, consumido como dependencia fijada; PhaseFlow no declara paquete propio.\n\n' +
         'EN VIVO (TypeScript): los mismos algoritmos, portados, corriendo en el navegador sobre el modelo de bloques que trae la traza. Eso es lo que hace honesta la vista enfocada: mover la tasa vuelve a resolver el problema en vez de traer otra respuesta horneada, y el HUD muestra el tiempo medido. Cada cambio de control dibuja primero el plan aprendido en el siguiente cuadro de animación: el modelo de tiempo esperado predice los pesos de TopoSort a partir de once rasgos por bloque. Cuando el control lleva 220 ms quieto, un worker calcula las cotas y los planes exactos; la respuesta exacta reemplaza a la aprendida, y el HUD muestra la fracción del plan exacto de tiempo esperado que alcanza el plan aprendido y cuánto antes llegó. La cota y el plan reportado siempre vienen del camino exacto.\n\n' +
         'Un caso es EN VIVO solo cuando el navegador puede resolverlo de verdad dentro de un presupuesto de interacción, y REPLAY en caso contrario. Un caso MineLib es siempre replay, porque sus datos por bloque no pueden redistribuirse y nunca llegan al navegador.',
       svg: svgLanes(),

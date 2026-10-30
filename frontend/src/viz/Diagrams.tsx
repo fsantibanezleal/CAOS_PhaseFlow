@@ -164,18 +164,18 @@ export function TwoLanes() {
   return (
     <Fig vb="0 0 760 250"
          caption={es
-           ? 'Dos carriles. Offline en Python: construye la instancia, corre la escalera completa y los controles, y escribe una traza commiteada con su manifiesto. En vivo en TypeScript: re-resuelve cuando se mueve un control, sobre el mismo motor. El navegador nunca re-corre la escalera.'
-           : 'Two lanes. Offline in Python: builds the instance, runs the whole ladder and the controls, writes a committed trace with its manifest. Live in TypeScript: re-solves when a control moves, on the same engine. The browser never re-runs the ladder.'}>
+           ? 'Dos carriles. Offline en Python: construye la instancia, ejecuta todos los métodos implementados y los controles, y escribe una traza commiteada con su manifiesto. En vivo en TypeScript: re-resuelve cuando se mueve un control, sobre el mismo motor. El navegador no vuelve a ejecutar todos los métodos.'
+           : 'Two lanes. Offline in Python: builds the instance, runs every implemented method and the controls, writes a committed trace with its manifest. Live in TypeScript: re-solves when a control moves, on the same engine. The browser does not re-run every method.'}>
       {B(18, 26, 178, 60, 'oreblocks (PyPI)', es ? 'motor, dependencia fijada' : 'engine, pinned dependency')}
       {B(18, 112, 178, 60, es ? 'Instancia' : 'Instance', es ? 'MineLib o sintética' : 'MineLib or synthetic')}
       <path className="pf-dg-a" d="M200 56 L276 70" />
       <path className="pf-dg-a" d="M200 142 L276 104" />
-      {B(281, 50, 176, 74, es ? 'Pipeline offline' : 'Offline pipeline', es ? 'escalera + controles' : 'ladder + controls')}
+      {B(281, 50, 176, 74, es ? 'Pipeline offline' : 'Offline pipeline', es ? 'métodos + controles' : 'methods + controls')}
       <path className="pf-dg-a" d="M462 87 L536 87" />
       {B(541, 56, 190, 60, es ? 'Traza + manifiesto' : 'Trace + manifest', es ? 'commiteados, verificables' : 'committed, checkable')}
       <path className="pf-dg-a pf-dg-d" d="M636 120 L636 160" />
       {B(541, 164, 190, 60, es ? 'App en vivo (TS)' : 'Live app (TS)', es ? 're-resuelve al mover' : 're-solves on change')}
-      <text className="pf-dg-ts" x="281" y="196">{es ? 'el navegador nunca re-corre la escalera' : 'the browser never re-runs the ladder'}</text>
+      <text className="pf-dg-ts" x="281" y="196">{es ? 'el navegador no vuelve a ejecutar todos los métodos' : 'the browser does not re-run every method'}</text>
       <text className="pf-dg-ts" x="281" y="214">{es ? 'lee la traza y re-resuelve el caso' : 'it reads the trace and re-solves the case'}</text>
     </Fig>
   );

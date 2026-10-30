@@ -2,11 +2,14 @@
 // local Vite app by default; set PHASEFLOW_BASE to verify a deployed release.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { mkdir } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
 
 const sizes = [[1600, 900], [1280, 800], [1280, 720], [768, 900], [390, 844], [320, 700]];
 const baseOverride = process.env.PHASEFLOW_BASE;
+const captureRoot = process.env.PHASEFLOW_PROFILE_CAPTURE_DIR ? resolve(process.env.PHASEFLOW_PROFILE_CAPTURE_DIR) : null;
 let server;
 let browser;
 
@@ -48,6 +51,7 @@ try {
     await server.listen();
     base = server.resolvedUrls.local[0];
   }
+  if (captureRoot) await mkdir(captureRoot, { recursive: true });
   browser = await chromium.launch();
   for (const [width, height] of sizes) {
     const page = await browser.newPage({ viewport: { width, height } });
@@ -63,6 +67,7 @@ try {
     await tab.click();
     const initial = await measure(page);
     check(initial, width, height, `${width}x${height} initial`);
+    if (captureRoot) await page.screenshot({ path: join(captureRoot, `profile-${width}x${height}.png`) });
     for (let i = 0; i < 6; i++) {
       await page.waitForTimeout(200);
       const now = await measure(page);
@@ -96,6 +101,13 @@ try {
       await page.locator('button').filter({ hasText: /^en$/ }).click();
       await page.getByRole('tab', { name: 'Perfil y planta' }).click();
       check(await measure(page), width, height, '390x844 Spanish profile');
+      const scenario = page.locator('.pf-scenario');
+      const resourceLabels = (await scenario.locator('dt').allTextContents()).map((label) => label.trim());
+      assert.ok(resourceLabels.includes('mina') && resourceLabels.includes('planta'),
+        'Spanish scenario uses translated resource names');
+      assert.ok(!resourceLabels.includes('mining') && !resourceLabels.includes('processing'),
+        'raw resource keys never leak into the Spanish scenario');
+      assert.match(await scenario.innerText(), /período/, 'Spanish scenario localises the resource unit');
     }
     assert.deepEqual(errors, [], `${width}x${height}: browser errors`);
     console.log(`PASS Profile and plan ${width}x${height}: bounded after time, controls and resize`);

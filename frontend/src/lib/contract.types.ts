@@ -48,6 +48,33 @@ export interface TraceMethod {
   periods: TracePeriod[];
   /** present only for redistributable (synthetic) cases; MineLib cases commit aggregates only */
   periodOfBlock?: number[];
+  /** Per-neighborhood budgets and solver proof status for bounded local-search methods. */
+  extra?: { localSearchReceipt?: LocalSearchReceipt; [key: string]: unknown };
+}
+
+export interface NeighborhoodReceipt {
+  round: number;
+  backend: string;
+  status: string;
+  seconds: number;
+  nodes: number;
+  mipGap?: number | null;
+  incumbentNpv?: number | null;
+  upperBoundNpv?: number | null;
+  usedStart: boolean;
+  improved: boolean;
+  certifiedOptimal: boolean;
+}
+
+export interface LocalSearchReceipt {
+  requestedRounds: number;
+  attemptedRounds: number;
+  skippedRounds: number;
+  mipGapTarget: number;
+  timeLimitSeconds?: number | null;
+  nodeLimit: number | null;
+  certifiedOptimal: boolean;
+  neighborhoods: NeighborhoodReceipt[];
 }
 
 export interface TraceBlocks {
@@ -99,7 +126,7 @@ export interface BoundReport {
   joint_edges?: number;
   joint_skipped?: string;
   joint_error?: string;
-  /** rungs that could not run on this case, mapped to the reason. A shorter table is
+  /** methods that could not run on this case, mapped to the reason. A shorter table is
    *  explained here rather than left to look like a shorter ladder. */
   skipped_methods?: Record<string, string>;
   /** why the joint bound was not adopted, when it ran and was not tighter */
@@ -111,7 +138,7 @@ export interface BoundReport {
   /** how much tighter the joint bound is, in percent. The part of a gap that belongs to the BOUND. */
   tightening_pct?: number | null;
   used?: 'algorithm4' | 'bienstock-zuckerberg';
-  /** the PCPSP bound for the destination rungs: value, wall time, the LP's rows and the solver status */
+  /** the PCPSP bound for the destination methods: value, wall time, the LP's rows and the solver status */
   pcpsp_lp?: number | null;
   pcpsp_lp_ms?: number;
   pcpsp_lp_rows?: number;
@@ -127,8 +154,7 @@ export interface BoundReport {
 
 /** The risk readout: every candidate plan scored on every realisation. */
 export interface EnsembleReport {
-  /** which weight the per-realisation re-solve used. Written since the ensemble stopped
-   *  computing the certified bound it never read; the mirror did not know it existed. */
+  /** Restricted C-PIT[D] local-search method used to re-plan every realisation. */
   resolveMethod?: string;
   ran: boolean;
   reason?: string;
@@ -146,13 +172,43 @@ export interface EnsembleReport {
   valueOfPlanSelection?: number;
   valueOfReplanning?: number;
   valueOfReplanningPct?: number;
+  fixedPolicy?: string;
+  fixedPolicyExpectedNpv?: number;
+  replannedExpectedNpv?: number;
+  replanningElapsedSeconds?: number;
+  replanningSettings?: {
+    dMax: number;
+    rounds: number;
+    mipGap: number;
+    timeLimitSecondsPerNeighborhood: number | null;
+    nodeLimitPerNeighborhood?: number;
+    seedBase: number;
+  };
   replanningNote?: string;
+  replanningReceipts?: Array<{
+    realisation: number;
+    certifiedOptimal: boolean;
+    requestedRounds: number;
+    attemptedRounds: number;
+    skippedRounds: number;
+    neighborhoods: NeighborhoodReceipt[];
+  }>;
   note?: string;
 }
 
 export interface LearnedReport {
   expectedTime?: Record<string, number | string | number[]>;
   bound?: Record<string, number | string | number[]>;
+  guard?: {
+    rule?: string;
+    failure_below?: number;
+    validation_n?: number;
+    validation_recall?: number;
+    validation_precision?: number;
+    validation_worst_unflagged?: number;
+    live_available?: boolean;
+    live_unavailable_reason?: string;
+  };
   honesty?: string;
 }
 
@@ -281,6 +337,12 @@ export interface EnsembleSummary {
   bestByExpected: string | null;
   bestByP10: string | null;
   valueOfReplanningPct: number | null;
+  resolveMethod?: string | null;
+  fixedPolicy?: string | null;
+  fixedPolicyExpectedNpv?: number | null;
+  replannedExpectedNpv?: number | null;
+  replanningElapsedSeconds?: number | null;
+  replanningSettings?: EnsembleReport['replanningSettings'] | null;
 }
 
 export interface CaseIndexEntry {
