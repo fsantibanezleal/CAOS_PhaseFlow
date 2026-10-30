@@ -27,6 +27,7 @@ from pathlib import Path
 from . import __version__, registry
 from .core.gate import classify_lane
 from .core.manifest import build_case_manifest, build_index
+from .core.readiness import compute as compute_readiness, write as write_readiness
 from .core.trace import build_trace
 from .io.formats import write_json
 from .model.instances import build_instance
@@ -305,7 +306,7 @@ def rebuild_index(*, output_root: str | Path | None = None) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser(prog="phaseflow-pipeline")
-    ap.add_argument("case", nargs="?", default="all", help="a case id, 'all', or 'index'")
+    ap.add_argument("case", nargs="?", default="all", help="a case id, 'all', 'index', or 'readiness'")
     ap.add_argument("--output", type=Path, help="sandbox output root; omit only for a release bake")
     ap.add_argument("--skip-minelib", action="store_true",
                     help="skip cases that need a MineLib cache that is not present")
@@ -321,7 +322,11 @@ def main() -> None:
 
         learned = LearnedBundle.load(paths.models)
 
-    if args.case == "index":
+    if args.case == "readiness":
+        document = compute_readiness(repo_root=REPO_ROOT, derived_root=paths.root, models_dir=paths.models)
+        size = write_readiness(paths.root, document)
+        print(f"phaseflow {__version__}: wrote readiness ({size} bytes) -> {paths.root / 'readiness.json'}")
+    elif args.case == "index":
         index = rebuild_index(output_root=args.output)
         print(f"phaseflow {__version__}: rebuilt index for {index['n_cases']} complete manifests -> {paths.manifests / 'index.json'}")
     elif args.case == "all":
