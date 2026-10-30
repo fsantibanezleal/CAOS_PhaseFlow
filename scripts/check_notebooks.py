@@ -16,7 +16,7 @@ as a local release gate (ADR-0074). It fails, naming the file and the rule, on
   index does not list;
 - **beyond the state of the art**: a ``BS-`` identifier of the SDD section ``## Beyond the state of the art`` that no level 4
   notebook covers in each language, or a notebook claiming one the SDD does not list;
-- **the method tiers** (template 0.13.001; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): a method of tier ``sota`` in
+- **the method tiers** (template 0.14.000; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): a method of tier ``sota`` in
   the SDD's ``## Method ladder`` table (``| id | tier | method | acceptance criterion | gate |``) that no level 3 notebook names in
   ``caos.methods``, in each language; a level 3 notebook that names none, or a method that is no ``sota`` row; ``caos.methods`` on
   another level. A tree whose SDD has no readable ladder is left to ``scripts/check_sdd.py``, which owns that table;
