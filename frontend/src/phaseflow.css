@@ -1,6 +1,6 @@
 /* PhaseFlow layout.
  *
- * ADR-0071, the UI floor, is the minimum and it is measured rather than judged: the page IS the
+ * the measured UI floor, is the minimum and it is measured rather than judged: the page IS the
  * viewport, the workbench uses the full width, every ancestor of a scrollable row carries
  * min-width: 0, navigation chrome gets ONE row, and the instrument owns at least half the App route
  * and at least 80 percent of the focus route. The prose routes are legitimately taller than the
@@ -29,7 +29,7 @@
   .caos-wb-main > .caos-cw > .tabs > .tabs-slot .pf-focus-enter { margin: 0; }
 }
 
-/* ADR-0071 rule 8: the instrument gets at least half an App route.
+/* Layout rule: the instrument gets at least half an App route.
  *
  * MEASURED, because guessing at this is how it stayed broken through two attempts. The chain above
  * the stage is  pf-main (flex column, 804px)  >  .tabs (the SHELL's wrapper)  >  .tabpanel  >
@@ -321,7 +321,7 @@
 .pf-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 12px; min-width: 0; }
 /* Four charts across a 1220px stage leaves each one 290px wide and 130px of plot, with 250px of
  * empty page underneath. Two columns give each chart 600x300 and use the height the tab already
- * has. ADR-0071 rule 8 is about the INSTRUMENT filling its route, and a row of postage stamps above
+ * has. the sizing target is the instrument filling its route, and a row of postage stamps above
  * an empty half-page satisfies the letter of it and none of the point. */
 .pf-split--wide { grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
 @media (max-width: 1200px) { .pf-split--wide { grid-template-columns: minmax(0, 1fr); } }
@@ -366,7 +366,7 @@
 .pf-warn strong { color: inherit; }
 
 /* =============================================================================================
-   ADR-0071 UI FLOOR v2 (applied by tools/ui-floor/apply_ui_floor.py). Measured minimum, not styling.
+   Measured UI floor v2. Measured minimum, not styling.
    Every rule is here because its absence was a shipped defect somewhere in this line.
    ============================================================================================= */
 
@@ -394,7 +394,7 @@ html, body { overflow-x: clip; }
       PitForge /experiments hid 1055px of 1955px (54% of the page), /benchmark hid the MineLib
       reproduction table that is the product's headline evidence, and ChancaDEM /benchmark hid 3700px.
       No inner scroller existed on any of those routes, and no user gesture could reach the content.
-      ADR-0071 rule 1 says scrolling belongs INSIDE the container that owns long content: v1
+      The layout rule says scrolling belongs INSIDE the container that owns long content: v1
       implemented the "not on the document" half and skipped the "inside the container" half.
       A prose route is any page-body that is NOT the app layout, so it gets the inner scroll. */
 
@@ -406,14 +406,20 @@ html, body { overflow-x: clip; }
       1600px viewport). Every ancestor of a scrollable row must be allowed to shrink. */
 .page-body.caos-wb > * { min-width: 0; max-width: 100%; }
 
+/* Documentation tabs often overflow on a phone. The shell makes their horizontal scroll smooth,
+   which can leave a newly revealed tab in motion while an automated or keyboard activation lands.
+   Keep document navigation immediate so the selected tab is reliably visible and operable. */
+.page-body.caos-wb .tablist,
+.page-body.caos-wb .subtablist { scroll-behavior: auto; }
+
 /* 4. Navigation chrome gets ONE row. `flex-wrap: wrap` let 12-to-18 tabs occupy two and three rows,
       and every extra row is vertical space taken from the instrument on every render, forever.
       NOTE: the row must NOT carry `overflow-x` if it hosts dropdown menus. In CSS a box cannot keep
       `overflow-y: visible` when the other axis is anything else, so the declared value computes to
-      `auto` and the row clips its own menu. Group the tabs instead (ADR-0071 rule 5). */
+      `auto` and the row clips its own menu. Group the tabs instead.  */
 .tablist button { flex: 0 0 auto; white-space: nowrap; }
 
-/* ADR-0071 rules 4+5: ONE row of tabs; a tab combining several views reveals its list on hover and
+/* Navigation rules 4+5: ONE row of tabs; a tab combining several views reveals its list on hover and
    you choose from the same tab. Two rows of chrome is the thing this replaces. */
 .pf-tabrow { display: flex; flex-wrap: nowrap; gap: 0.3rem; align-items: center; min-width: 0;
   max-width: 100%; overflow: visible; flex: 0 0 auto;
@@ -437,7 +443,7 @@ html, body { overflow-x: clip; }
   .caos-wb-main .tabpanel .pf-tabpanel:not([hidden]) { flex: 0 0 auto; min-height: 0; overflow: visible; }
 }
 
-/* ADR-0070 entry control. Without a visible control in the App the focus route is an orphan: it
+/* Focus entry control. Without a visible control in the App the focus route is an orphan: it
    passes route tests, ships in the CHANGELOG, and no user ever reaches it. */
 .pf-focus-enter { display: block; text-decoration: none; border: 1px solid var(--color-accent);
   border-radius: 10px; padding: 0.55rem 0.75rem; margin-bottom: 0.9rem;
@@ -446,14 +452,14 @@ html, body { overflow-x: clip; }
 .pf-focus-enter-t { display: block; font-size: 0.86rem; font-weight: 700; color: var(--color-accent); }
 .pf-focus-enter-d { display: block; font-size: 0.72rem; color: var(--color-fg-subtle); margin-top: 0.15rem; line-height: 1.4; }
 
-/* The footer carried a full paragraph of ADR-0016 provenance and measured 263px against a 900px
+/* The footer carried a full paragraph of provenance requirement and measured 263px against a 900px
    viewport: 29% of the screen, permanently, on every route. The provenance is required and must not be
    deleted, so the footer is CAPPED and scrolls its own overflow. Nothing is lost, everything stays
    reachable, and the instrument gets the screen back. */
 /* The footer no longer needs a height cap. The cap was treating the symptom: a 174-word footer was
  * squeezed into 96px with an inner scrollbar, so the provenance was present in the DOM and unreadable on
  * the screen, cut mid-citation. The text is now the one-line provenance and one-line disclaimer that
- * ADR-0016 asks for, and it fits. A max-height here would only hide the next overrun the same way. */
+ * the footer requirement asks for, and it fits. A max-height here would only hide the next overrun the same way. */
 
 /* Figures on the content pages. Measured before these existed: every content page carried text,
    equations and DOIs and NOT ONE diagram, on a product whose subject is geometry. A figure is bounded
@@ -595,7 +601,7 @@ html, body { overflow-x: clip; }
 /* The case blurb is orientation, not reading matter: it should not out-weigh the control under it. */
 .caos-wb-rail .pf-group > .pf-cap { line-height: 1.4; }
 
-/* The footer content is now the one-line provenance and one-line disclaimer ADR-0016 asks for, and it
+/* The footer content is now the one-line provenance and one-line disclaimer the footer requirement asks for, and it
  * is fully readable with nothing hidden. What was left was pure chrome: 24px of padding on every side
  * and a 21px line box for four short rows, which spent 178px of a 900px viewport on the footer and
  * took that height straight out of the rail beside the stage. Tightened to the same content in about
@@ -605,7 +611,7 @@ html, body { overflow-x: clip; }
 /* .footer-meta is a wrapping flex row of spans. Two things were spending rows: a 1.5 line-height on
  * seven line-boxes, and `margin-left: auto` on the version chip, which opened a 271px gap and pushed
  * everything after it onto a fresh row. The version keeps its own line here instead of stealing one. */
-/* One line at desktop widths: the items are already the minimum ADR-0016 asks for (name, line,
+/* One line at desktop widths: the items are already the minimum the footer requirement asks for (name, line,
  * version, attribution, provenance, source, licence, disclaimer); a slightly smaller face fits them in
  * the 1200px band instead of wrapping the last one onto a second row. */
 
@@ -757,8 +763,8 @@ html, body { overflow-x: clip; }
 
 /* NATIVE CONTROLS FOLLOW THE THEME
  *
- * The shell (0.5.0) declares no `color-scheme` (CAOS_MANAGE conventions/shell-known-defects.md entry 13;
- * upstream CAOS_APP_SHELL #29), so the browser draws native controls with their light face in both
+ * The shared shell leaves native control colors to browser defaults, so the browser draws controls with
+ * a light face in both
  * themes. In the dark theme the Case and Method selectors rendered as white boxes. Declaring the scheme
  * per theme fixes the popup list and the scrollbars; the explicit tokens fix the closed control, which
  * some engines still paint light. Gate: `npm run verify:theme` measures text against background on
