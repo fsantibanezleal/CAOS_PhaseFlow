@@ -8,15 +8,13 @@ This English path moves from CPIT decisions and data provenance through certifie
 - 01-problem/02-bound-and-feasible-plan.ipynb : level 2: compute per-resource certificates, compare four package methods against one bound, plot resource use and gaps, and run independent controls.
 - 01-problem/03-sliding-window-and-expected-ordering.ipynb : level 3: run the literature-backed sliding-window heuristic on the same input as Expected, compare measured values and gaps, and explain candidate-prefix and optimistic-tail limits.
 
-The topic has a level-3 lesson because PhaseFlow's persisted research includes published CPIT sequencing methods. It makes no level-4 claim; the SDD says none is claimed.
-
 ## Topic 02: destination choice
 
 - 02-destination-choice/01-first-destination-schedule.ipynb : level 1: construct a destination-aware case, run a first joint period-and-destination plan, and reconcile plant, waste, value and resource use.
 - 02-destination-choice/02-destination-strategies-and-cutoffs.ipynb : level 2: compare fixed and adaptive destination decisions, then measure how cutoffs change the feasible plan and its economic interpretation.
 - 02-destination-choice/03-published-binary-formulation.ipynb : level 3: run the published binary formulation on the same instance and compare its exact result with package heuristics and the LP relaxation.
 
-The topic has a level-3 lesson because the persisted destination-choice dossier and SDD identify the published binary formulation as the comparison baseline. The SDD makes no level-4 claim.
+The topic has a level-3 lesson because the persisted destination-choice dossier and SDD identify the published binary formulation as the comparison baseline. The destination-choice study makes no level-4 method claim.
 
 ## Topic 03: geological uncertainty
 
