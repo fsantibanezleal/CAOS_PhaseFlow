@@ -54,11 +54,21 @@ def _entry(row: dict[str, str], state: str, missing: list[str] | None = None,
     }
 
 
-def _document_state(row: dict[str, str], root: Path, expected: list[str] | None = None) -> dict[str, Any]:
+def _document_path(root: Path, derived_root: Path, models_dir: Path, rel: str) -> Path:
+    """Resolve catalog paths against explicit roots while keeping their public repo-relative names."""
+    if rel == "data/derived" or rel.startswith("data/derived/"):
+        return derived_root / rel.removeprefix("data/derived/")
+    if rel == "models" or rel.startswith("models/"):
+        return models_dir / rel.removeprefix("models/")
+    return root / rel
+
+
+def _document_state(row: dict[str, str], root: Path, derived_root: Path, models_dir: Path,
+                    expected: list[str] | None = None) -> dict[str, Any]:
     docs = [part.strip().strip("`") for part in row["documents"].split(",")]
     if expected is not None:
         docs = expected
-    present = [rel for rel in docs if (root / rel).is_file()]
+    present = [rel for rel in docs if _document_path(root, derived_root, models_dir, rel).is_file()]
     absent = sorted(set(docs) - set(present))
     if not absent:
         return _entry(row, "available")
@@ -71,14 +81,18 @@ def _document_state(row: dict[str, str], root: Path, expected: list[str] | None 
     return _entry(row, "partial", absent, why)
 
 
-def compute(repo_root: str | Path) -> dict[str, Any]:
-    """Return readiness for the current repository without mutating any input artifact."""
+def compute(repo_root: str | Path, *, derived_root: str | Path | None = None,
+            models_dir: str | Path | None = None, catalog_path: str | Path | None = None,
+            version: str | None = None) -> dict[str, Any]:
+    """Compute readiness without mutation; accept the current template's explicit-root API and the legacy positional root."""
     root = Path(repo_root)
-    catalog_path = root / CATALOG
-    raw = catalog_path.read_bytes().replace(b"\r\n", b"\n")
+    derived = Path(derived_root) if derived_root is not None else root / "data/derived"
+    models = Path(models_dir) if models_dir is not None else root / "models"
+    catalog = Path(catalog_path) if catalog_path is not None else root / CATALOG
+    raw = catalog.read_bytes().replace(b"\r\n", b"\n")
     rows = _catalog_rows(raw.decode("utf-8"))
-    version = (root / "VERSION").read_text(encoding="utf-8").strip()
-    index_path = root / INDEX
+    version = version if version is not None else (root / "VERSION").read_text(encoding="utf-8").strip()
+    index_path = derived / "manifests/index.json"
     index = _read_json(index_path)
     outputs: list[dict[str, Any]] = []
 
@@ -87,7 +101,7 @@ def compute(repo_root: str | Path) -> dict[str, Any]:
         if contract_id == "readiness":
             continue
         if contract_id == "case-index":
-            result = _document_state(row, root)
+            result = _document_state(row, root, derived, models)
             if index and index.get("engine_version") != version and result["state"] == "available":
                 result = _entry(row, "stale", reason={
                     "en": f"Baked by {index.get('engine_version')}; repository version is {version}.",
@@ -98,20 +112,20 @@ def compute(repo_root: str | Path) -> dict[str, Any]:
             if index is not None:
                 expected = ["data/derived/" + str(case["manifest_path"])
                             for case in index.get("cases", [])]
-            result = _document_state(row, root, expected)
+            result = _document_state(row, root, derived, models, expected)
         elif contract_id == "schedule-trace":
             expected = []
             if index is not None:
                 for case in index.get("cases", []):
-                    manifest = _read_json(root / "data/derived" / str(case["manifest_path"]))
+                    manifest = _read_json(derived / str(case["manifest_path"]))
                     if manifest is not None:
                         expected.append("data/derived/" + str(manifest["artifact"]["path"]))
             result = (_entry(row, "missing", [INDEX.as_posix()], reason={
                 "en": "The case index is absent, so the expected trace set is unknown.",
                 "es": "Falta el índice de casos, por lo que se desconoce el conjunto esperado de trazas.",
-            }) if index is None else _document_state(row, root, expected))
+            }) if index is None else _document_state(row, root, derived, models, expected))
         else:
-            result = _document_state(row, root)
+            result = _document_state(row, root, derived, models)
         outputs.append(result)
 
     return {
