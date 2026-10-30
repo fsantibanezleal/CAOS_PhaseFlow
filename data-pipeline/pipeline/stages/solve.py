@@ -13,11 +13,11 @@ method                      rung       claim
 ``exts-two-resource``       sota       Algorithm 4: one relaxation per resource, best feasible
 ``shift-local-search``      sota       pull value forward, push cost back
 ``sliding-window``          sota       Cullenbine et al. 2011: a MILP per window, LP-guided candidates
-``cpitD-local-search``      sota       the EXACT restricted re-solve of C-PIT[D] neighbourhoods
+``cpitD-local-search``      sota       bounded restricted MILPs over C-PIT[D] neighbourhoods
 ``learned-expected-time``   learned    the ExTS ordering from a surrogate, with no LP solve
 ``destination-toposort``    beyond     PCPSP: the LP's destinations fixed (the re-cut), then ExTS
 ``destination-sliding-window`` beyond  PCPSP: the re-cut scheduled by the sliding window
-``destination-local-search`` beyond    PCPSP: the exact OPBSP-[D] re-solve from the best of those
+``destination-local-search`` beyond    PCPSP: bounded OPBSP-[D] neighbourhood MILPs from the best of those
                                        and the best CPIT plan, so never below CPIT
 ``min-width``               beyond     operability: slivers absorbed, capacity and precedence kept
 ==========================  =========  ==========================================================
@@ -81,6 +81,11 @@ BZ_TIME_BUDGET_S = 240.0
 #: `zuck-small-declared`), so it only refuses on an instance this matrix does not contain.
 SW_CAND_MAX = 6000
 SW_COVER = 1.6
+
+# Deterministic per-neighborhood branch-and-bound budgets. These cap worst-case rebakes while
+# preserving a feasible incumbent; the serialized receipt states whether each neighborhood was
+# actually proven optimal.
+LOCAL_SEARCH_NODE_BUDGET = 2_000
 
 #: The PCPSP LP relaxation is solved by HiGHS over every block of the instance, up to this many rows
 #: (``n (T - 1) + arcs T + n T + R T``). MEASURED: 1.08 million rows (the 10,976-block twin) solved in
@@ -249,6 +254,38 @@ def _wrap(
         flagged_by_rule=flagged_by_rule,
         extra=dict(extra or {}),
     )
+
+
+def _local_search_receipt(result) -> dict | None:
+    """Return JSON-safe solver evidence without promoting an incumbent to a proof."""
+    receipt = getattr(result, "local_search_receipt", None)
+    if receipt is None:
+        return None
+    return {
+        "requestedRounds": receipt.requested_rounds,
+        "attemptedRounds": len(receipt.neighborhoods),
+        "skippedRounds": receipt.skipped_rounds,
+        "mipGapTarget": receipt.mip_gap_target,
+        "timeLimitSeconds": receipt.time_limit_seconds,
+        "nodeLimit": receipt.node_limit,
+        "certifiedOptimal": receipt.certified_optimal,
+        "neighborhoods": [
+            {
+                "round": item.round_index,
+                "backend": item.backend,
+                "status": item.status,
+                "seconds": item.seconds,
+                "nodes": item.nodes,
+                "mipGap": item.mip_gap,
+                "incumbentNpv": item.incumbent_npv,
+                "upperBoundNpv": item.upper_bound_npv,
+                "usedStart": item.used_start,
+                "improved": item.improved,
+                "certifiedOptimal": item.certified_optimal,
+            }
+            for item in receipt.neighborhoods
+        ],
+    }
 
 
 def _bench_weights(instance) -> np.ndarray:
@@ -536,24 +573,23 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
         # A rung that did not run says so; it does not vanish.
         skipped["sliding-window"] = str(exc)[:240]
 
-    # ---- the EXACT restricted re-solve: the rung the shift neighbourhood is not
+    # ---- the bounded restricted MILP re-solve: the rung the shift neighbourhood is not
     best_plan = improved
     try:
         t0 = time.perf_counter()
-        # scale the exact re-solve to the instance: a bigger model needs a bigger neighbourhood to
+        # scale the restricted search to the instance: a bigger model needs a bigger neighbourhood to
         # move anything, and a bigger neighbourhood needs a longer solve, so both track block count
         rounds = 16 if cpit.n_blocks <= 8_000 else 10
-        # NO WALL-CLOCK BUDGET. `time_limit` is seconds handed to the MILP solver, so how much of
-        # each restricted re-solve completes depends on the machine and its load, and this rung is
-        # the reported best on nine of thirteen cases: the product's headline gap was not
-        # reproducible from (params, seed), which is the one thing core/rng.py says a bake must be.
-        # A relative MIP gap is a property of the PROBLEM and stops in the same place everywhere.
+        # Bound work deterministically. Keep the MIP gap target, but expose per-neighborhood proof
+        # status because a node-limited solve may return a valid incumbent short of optimality.
         exact = ob.exact_local_search(
-            cpit, prec, improved, d_max=180, rounds=rounds, time_limit=None, mip_gap=1e-4, seed=11
+            cpit, prec, improved, d_max=180, rounds=rounds, time_limit=None,
+            node_limit=LOCAL_SEARCH_NODE_BUDGET, mip_gap=1e-4, seed=11
         )
         results.append(
             _wrap(instance, "cpitD-local-search", "sota", True, exact, bound,
-                  (time.perf_counter() - t0) * 1000.0, exact.notes)
+                  (time.perf_counter() - t0) * 1000.0, exact.notes,
+                  extra={"localSearchReceipt": _local_search_receipt(exact)})
         )
         best_plan = exact
     except Exception as exc:  # noqa: BLE001 - scipy absent or a solver hiccup must not lose the run
@@ -569,11 +605,10 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     # between them is therefore a fact about THIS case, and a predicted flag standing in front of an
     # available measurement is a worse answer dressed as a better one.
     #
-    # The scenario rule stays, and it is not redundant: it is what the LIVE lane has, where the whole
-    # point of the surrogate is that the exact plan has NOT been solved. Its clean numbers come from a
-    # third seed set that had no part in choosing it (models/guard-validation.json), and on that set
-    # it catches about half of the failures. A rule that misses half is a warning, not a verdict,
-    # which is exactly why the measurement is preferred wherever it exists.
+    # A label rule may only be applied when its frozen independent third-split receipt meets every
+    # predeclared live-guard threshold. A failed or missing receipt leaves the guard unavailable; it
+    # must not classify a preview as safe or unsafe. The exact plan, where present, remains the
+    # case-specific measurement and always takes precedence over a statistical warning.
     if learned is None and instance.grade_source is None:
         skipped["learned-expected-time"] = "no source grade field for the learned input features"
     if learned is not None:
@@ -607,7 +642,7 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
     # so that comparison always sends it to the plant, and the plant tonnage it takes is gone for the
     # richer ore below). So each block is fixed where the LP sends it, the resulting CPIT is scheduled
     # by the CPIT machinery, and every plan of it is a plan of the original PCPSP at the same value.
-    # Three rungs: ExTS on the re-cut, the sliding window on the re-cut, and the exact OPBSP-[D] search
+    # Three rungs: ExTS on the re-cut, the sliding window on the re-cut, and bounded OPBSP-[D] searches
     # on the original instance (every destination free again) from the best of those and the best CPIT
     # plan read as a PCPSP plan, so it can never end below CPIT. All three are scored against the PCPSP
     # LP bound; the CPIT bound does not bound them. Before oreblocks 0.6.1 the constructive rung compared
@@ -673,7 +708,8 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
         t0 = time.perf_counter()
         rounds = 16 if cpit.n_blocks <= 8_000 else 10
         dls = ob.exact_destination_local_search(
-            pcpsp, prec, start, d_max=160, rounds=rounds, seed=11, time_limit=None, mip_gap=1e-4,
+            pcpsp, prec, start, d_max=160, rounds=rounds, seed=11, time_limit=None,
+            node_limit=LOCAL_SEARCH_NODE_BUDGET, mip_gap=1e-4,
             grade=instance.grade,
         )
         ms = (time.perf_counter() - t0) * 1000.0
@@ -681,7 +717,8 @@ def run_ladder(instance, learned=None, *, joint_bound: bool = True):
             _wrap(instance, "destination-local-search", "beyond", True, _DestShim(dls, cpit.n_periods),
                   pcpsp_bound, ms,
                   f"from {start_name} ({start.npv:,.0f}). " + _destination_note(instance, dls, start_of),
-                  pcpsp=pcpsp, extra={**_destination_extra(dls, start_of), "start": start_name})
+                  pcpsp=pcpsp, extra={**_destination_extra(dls, start_of), "start": start_name,
+                                      "localSearchReceipt": _local_search_receipt(dls)})
         )
     except Exception as exc:  # noqa: BLE001
         for name in destination_rungs:

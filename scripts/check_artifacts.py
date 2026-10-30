@@ -123,6 +123,9 @@ def main(root: Path = DERIVED) -> int:
     product_version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     sys.path.insert(0, str(ROOT / "data-pipeline"))
     from pipeline import registry
+    from pipeline.model.learned import LearnedBundle
+
+    guard_status = LearnedBundle.load(ROOT / "models").live_guard_status()
 
     fail: list[str] = []
     index_path = manifests / "index.json"
@@ -208,6 +211,11 @@ def main(root: Path = DERIVED) -> int:
             fail.append(f"{cid}: PCPSP LP bound {pcpsp_lp:.2f} is below the joint CPIT LP {selected_bound:.2f}; "
                         "the richer problem cannot have the smaller relaxation")
         for meth in t["methods"]:
+            if meth.get("rung") == "learned" and meth.get("flaggedByRule") and not guard_status["available"]:
+                fail.append(
+                    f"{cid}/{meth['method']}: a live guard flag is present although the third-split rule is unavailable "
+                    f"({guard_status['reason']})"
+                )
             own = pcpsp_lp if meth["method"] in DESTINATION_METHODS else selected_bound
             if own is None:
                 fail.append(f"{cid}/{meth['method']}: destination plan shipped without a PCPSP LP bound")
