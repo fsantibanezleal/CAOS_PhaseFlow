@@ -111,7 +111,7 @@ def remove(rel: str) -> None:
 
 
 def areas(a: argparse.Namespace) -> list[str]:
-    """The README's `## Areas` section (conventions/product-notebooks.md section 8), as the template states it; the product
+    """The README's `## Areas` section, as required by the product template; the product
     rewrites each row as its areas become its own. scripts/check_readme_areas.py holds the section."""
     return [
         "## Areas",

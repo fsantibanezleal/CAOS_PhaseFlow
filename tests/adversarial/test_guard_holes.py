@@ -1,7 +1,7 @@
 """The holes an adversarial review found in the spec-area guards (0.05.000), one plant each: a defect planted in a copy of
 the repository's real files, the real guard run on it, exit 1 and the message that names the defect expected. The ids
 (S-1a, C-3, T-8, B-1 ...) are the rows of the review's refutation table
-(CAOS_MANAGE wip/product-template/review-0-05-000-guards-2026-10-11.md, D2).
+(the product-template guard review, case D2).
 
 Each plant copies only the inputs its guard reads (`make_tree`), so the suite stays cheap; every plant asserts the guard
 printed, so a guard that never ran cannot pass."""

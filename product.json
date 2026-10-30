@@ -26,6 +26,7 @@
     "oreblocks.pcpsp_lp_bound",
     "oreblocks.enforce_min_width",
     "oreblocks.improve_schedule",
+    "oreblocks.exact_local_search",
     "oreblocks.evaluate_across",
     "oreblocks.perturb_values",
     "oreblocks.run_controls",

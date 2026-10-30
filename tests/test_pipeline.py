@@ -50,19 +50,35 @@ def test_reader_facing_case_roles_use_method_names_not_internal_tier_labels():
             assert not forbidden.search(role), f"{case.id} {language} reader-facing role uses an internal tier label"
 
 
-def test_rebuild_index_refreshes_reader_copy_without_rebaking_science(tmp_path):
+def test_rebuild_index_refreshes_reader_copy_without_rebaking_science(tmp_path, monkeypatch):
+    from pipeline import pipeline
     from pipeline.io.formats import write_json
+
+    major, minor, patch = (int(part) for part in (ROOT / "VERSION").read_text(encoding="utf-8").strip().split("."))
+    stale_version = f"{major}.{minor - 1:02d}.999" if minor else f"{major - 1}.99.999"
+
+    model_root = tmp_path / "model-input"
+    model_root.mkdir()
+    write_json(model_root / "expected-time.json", {"metrics": {"target_relaxation": "tightest single-resource relaxation"}})
+    monkeypatch.setattr(pipeline, "MODELS", model_root)
 
     paths = tmp_path / "manifests"
     paths.mkdir()
     for case in registry.list_cases():
         trace_rel = f"{case.id}/trace.json"
-        write_json(tmp_path / trace_rel, {"caseId": case.id, "role": {"en": "old", "es": "old"}})
+        write_json(
+            tmp_path / trace_rel,
+            {
+                "caseId": case.id,
+                "role": {"en": "old", "es": "old"},
+                "learned": {"expectedTime": {"target_relaxation": "old"}},
+            },
+        )
         write_json(
             paths / f"{case.id}.json",
             {
                 "case_id": case.id,
-                "engine": {"version": "0.10.000"},
+                "engine": {"version": stale_version},
                 "artifact": {"path": trace_rel, "bytes": 1},
                 "instance": {"n_blocks": 100, "n_precedence_arcs": 100},
                 "real_or_synthetic": "synthetic",
@@ -75,7 +91,7 @@ def test_rebuild_index_refreshes_reader_copy_without_rebaking_science(tmp_path):
     case = next(item for item in registry.list_cases() if item.role_en != "old")
     trace_path = tmp_path / case.id / "trace.json"
     manifest = json.loads((paths / f"{case.id}.json").read_text(encoding="utf-8"))
-    assert index["engine_version"] == "0.10.000"
+    assert index["engine_version"] == stale_version
     assert next(item for item in index["cases"] if item["case_id"] == case.id)["role"] == {
         "en": case.role_en,
         "es": case.role_es,
@@ -84,6 +100,9 @@ def test_rebuild_index_refreshes_reader_copy_without_rebaking_science(tmp_path):
         "en": case.role_en,
         "es": case.role_es,
     }
+    assert json.loads(trace_path.read_text(encoding="utf-8"))["learned"]["expectedTime"]["target_relaxation"] == (
+        "tightest single-resource relaxation"
+    )
     assert manifest["artifact"]["bytes"] == trace_path.stat().st_size == manifest["gate"]["trace_bytes"]
 
 

@@ -80,5 +80,5 @@ screen, and its gaps are never compared with a published gap.
 The pipeline accepts any instance in the MineLib family, with your own scenario: see
 [guides/02](../guides/02_bring-your-own-data.md). The minimum is a `.blocks` with a strictly positive
 tonnage column, a `.prec` whose arcs point upward, and either a `.cpit` or a declared scenario plus a value
-per block. Add a `.pcpsp` (or per-destination economics) for the destination rungs and a grade column for
-the learned rung.
+per block. Add a `.pcpsp` (or per-destination economics) for destination-choice methods and a grade column for
+the learned method.

@@ -35,7 +35,6 @@ from ..io.schema import Scenario
 #: Names in order. The TypeScript live lane reads this exact order from the manifest.
 BLOCK_FEATURES: tuple[str, ...] = (
     "value_norm",
-    "tonnage_norm",
     "depth_frac",
     "cone_size_norm",
     "cone_value_norm",
@@ -64,20 +63,20 @@ DEPOSIT_FEATURES: tuple[str, ...] = (
 
 
 def _cone_stats(prec: ob.Precedence, values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Size and total value of the transitive cone ABOVE each block (its predecessor closure).
+    """Return deterministic predecessor-recurrence proxies in a topological sweep.
 
-    Computed by a level-ordered sweep over the precedence DAG. This is the quantity a planner reasons
-    about without naming it: how much rock sits on top of this block, and is any of it worth money.
+    For block ``b``, ``size[b] = |preds(b)| + max(size[p])`` and
+    ``value[b] = sum(value[p] for p in preds(b)) + max(0, max(value[p]))``.
+    These are linear-time features, not exact transitive-cone counts or sums: a shared ancestor is
+    counted more than once. They guide a learned preview only; precedence feasibility remains exact.
     """
     n = values.shape[0]
     size = np.zeros(n, dtype=np.float64)
     val = np.zeros(n, dtype=np.float64)
-    # process in an order where every predecessor is done first: a topological order of the DAG
+    # Process in an order where every predecessor is done first: a topological order of the DAG.
     order = ob.toposort_order(prec, np.zeros(n))
-    seen: list[set[int]] = [set() for _ in range(0)]
-    _ = seen
-    # exact transitive closure is quadratic; the immediate-predecessor recursion below is the
-    # standard linear approximation used as a FEATURE (not as a constraint), and it is monotone.
+    # Exact transitive closure is quadratic; this immediate-predecessor recurrence is a feature,
+    # not a constraint, and is intentionally not deduplicated across shared ancestors.
     for b in order:
         preds = prec.preds(int(b))
         if preds.size == 0:
@@ -90,7 +89,6 @@ def _cone_stats(prec: ob.Precedence, values: np.ndarray) -> tuple[np.ndarray, np
 def block_feature_matrix(
     *,
     values: np.ndarray,
-    tonnage: np.ndarray,
     grade: np.ndarray,
     level: np.ndarray,
     x: np.ndarray,
@@ -104,7 +102,6 @@ def block_feature_matrix(
     n = values.shape[0]
     nx, ny, nz = dims
     vscale = max(1.0, float(np.abs(values).max()))
-    tscale = max(1.0, float(tonnage.max()))
     gscale = max(1e-9, float(grade.max()))
     cone_size, cone_value = _cone_stats(prec, values)
 
@@ -114,17 +111,16 @@ def block_feature_matrix(
     caps = list(scenario.capacity_fraction) + [0.0]
     f = np.zeros((n, len(BLOCK_FEATURES)), dtype=np.float32)
     f[:, 0] = values / vscale
-    f[:, 1] = tonnage / tscale
-    f[:, 2] = 1.0 - (level / max(1, nz - 1))  # 0 at the surface, 1 at the deepest bench
-    f[:, 3] = cone_size / max(1.0, cone_size.max())
-    f[:, 4] = cone_value / vscale / max(1.0, cone_size.max())
-    f[:, 5] = grade / gscale
-    f[:, 6] = np.clip(radial, 0.0, 2.0) / 2.0
-    f[:, 7] = in_pit.astype(np.float32)
-    f[:, 8] = scenario.discount_rate
-    f[:, 9] = min(3.0, caps[0]) / 3.0
-    f[:, 10] = min(3.0, caps[1]) / 3.0
-    f[:, 11] = scenario.periods / 20.0
+    f[:, 1] = 1.0 - (level / max(1, nz - 1))  # 0 at the surface, 1 at the deepest bench
+    f[:, 2] = cone_size / max(1.0, cone_size.max())
+    f[:, 3] = cone_value / vscale / max(1.0, cone_size.max())
+    f[:, 4] = grade / gscale
+    f[:, 5] = np.clip(radial, 0.0, 2.0) / 2.0
+    f[:, 6] = in_pit.astype(np.float32)
+    f[:, 7] = scenario.discount_rate
+    f[:, 8] = min(3.0, caps[0]) / 3.0
+    f[:, 9] = min(3.0, caps[1]) / 3.0
+    f[:, 10] = scenario.periods / 20.0
     return f
 
 

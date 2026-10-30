@@ -11,11 +11,11 @@ carries the marker ``active`` (for example ``stub:path/x.py (active)``).
 Exit codes: 0 every boundary is real, 2 at least one boundary is still on a provider, 1 the catalog
 is malformed (no table, no rows, no ``id`` or ``provider`` column, a blank or unknown status).
 
-Usage (from the CAOS_MANAGE root, with the repo .venv)::
+Usage (from a product repository with its configured Python environment)::
 
     python tools/agents/skeleton_check.py <catalog.md>
 """
-# Vendored from fsantibanezleal/CAOS_MANAGE tools/agents/skeleton_check.py at bd0251f2; update from the source, never edit here.
+# Adopted from the product-template skeleton guard; maintain this copy with the product-template release.
 
 from __future__ import annotations
 

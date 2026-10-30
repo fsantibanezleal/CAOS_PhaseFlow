@@ -13,7 +13,7 @@ Every bake writes, per case, a compact **trace** (`phaseflow.schedule-trace/v1`)
 | `scenario` | `periods`, `discountRate`, `periodOneUndiscounted`, `declared`, `resources[{id, name, limitPerPeriod}]` |
 | `published` | the published reference values for a published case (problem, source, LP bound, best known, gap) |
 | `controls` | duality (set match, bound error), bound, order invariance (error), `allPass`, best and worst comparable gap |
-| `bound` | Algorithm 4 (value, time, closure solves), the joint LP (value, time, iterations, converged, graph size, or the reason it was skipped), the PCPSP bound (value, time, rows of the LP, status, and where the bound is the Lagrangian dual `pcpsp_lp_method: lagrangian` with its iterations, gap estimate, rounding slack and a note; an absent method key is the HiGHS LP), the bound used, and `skipped_methods` with a reason per missing rung |
+| `bound` | Algorithm 4 (value, time, closure solves), the joint LP (value, time, iterations, converged, graph size, or the reason it was skipped), the PCPSP bound (value, time, rows of the LP, status, and where the bound is the Lagrangian dual `pcpsp_lp_method: lagrangian` with its iterations, gap estimate, rounding slack and a note; an absent method key is the HiGHS LP), the bound used, and `skipped_methods` with a reason per unavailable method |
 | `ensemble` | realisations, sigma, per-method expected, P10, P90, mean-model value, optimism, best by expected and by P10, value of re-planning, `resolveMethod` |
 | `learned` | the learned lane's metadata for the case |
 | `contract` | `accepted`, `flags`, `facts` from CONTRACT 1 |
@@ -44,7 +44,7 @@ once made the chart disagree with the solver's objective and report overruns tha
 | `scoreboard[]` | per method: `method`, `rung`, `npv`, `bound`, `gap_pct`, `runtime_ms`, `notes`, `measured_vs_exact`, `components_mean`, `largest_share_mean`, `utilization`, `extra` (the destination and operability facts) |
 | `bound_summary` | as `bound` in the trace |
 | `ensemble_summary` | as `ensemble` in the trace |
-| `best` | the best comparable plan (classical, sota or learned; ties broken by name) and its gap |
+| `best` | the feasible CPIT plan with the highest NPV among methods sharing the CPIT objective; ties are resolved by method name, and its bound gap is recorded |
 
 The manifest is what the reading pages and this wiki's generated tables read; the trace is what the app's
 case view reads.
@@ -59,7 +59,7 @@ run; a single-case bake does not touch it, so a partial bake is never indexed be
 
 1. **The types.** `frontend/src/lib/contract.types.ts` mirrors the schemas, so a drift fails `tsc`.
 2. **The re-read at bake time.** `pipeline.py::_validate` re-reads what was written and checks: the
-   schema id, case id agreement, at least one method, every plan of every rung below its OWN bound, every
+   schema id, case id agreement, at least one method, every emitted schedule below its OWN bound, every
    period's resource use within its limit, period rows matching the horizon, and the licence clause.
 3. **The guard in CI and before deploy.** `scripts/check_artifacts.py` checks index to manifests to
    artifacts, byte sizes, `lane == gate`, the engine pin against the version the artifacts were baked with,

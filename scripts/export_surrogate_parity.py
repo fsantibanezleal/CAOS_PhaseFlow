@@ -68,7 +68,7 @@ def main() -> int:
     sc = Scenario(periods=int(trace["scenario"]["periods"]), discount_rate=float(trace["scenario"]["discountRate"]),
                   capacity_fraction=tuple(fracs), resource_names=tuple(r["name"] for r in res))
     feats = block_feature_matrix(
-        values=value, tonnage=tonnage, grade=np.asarray(blk["grade"], dtype=np.float64),
+        values=value, grade=np.asarray(blk["grade"], dtype=np.float64),
         level=np.asarray(blk["level"]), x=np.asarray(blk["x"]), y=np.asarray(blk["y"]),
         in_pit=in_pit, prec=prec, scenario=sc, dims=dims,
     ).astype(np.float64)

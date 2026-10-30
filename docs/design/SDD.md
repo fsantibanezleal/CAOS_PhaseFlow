@@ -1,8 +1,8 @@
 # PhaseFlow software design document
 
 Status: retrospective design record for the existing product; review pending.
-PhaseFlow predates [ADR-0075](https://github.com/fsantibanezleal/CAOS_MANAGE/blob/develop/conventions/architecture/0-archetype/ADR-0075-software-design-document-before-development.md).
-This document records what the shipped system does and the gates that can disprove its claims.
+PhaseFlow predates its current design record. This document records what the shipped system does and
+the gates that can disprove its claims.
 New units require their own reviewed feature design before implementation.
 
 ## Problem and non-goals
@@ -48,6 +48,7 @@ UNVERIFIED: no claim is made about a universal distribution of mine-block sizes 
 | Manifest | `phaseflow.manifest/v1`; one case record for engine pins, declared scenario, gate, controls, scoreboard and artifact byte count | `scripts/check_artifacts.py`, `scripts/check_readme_numbers.py` |
 | Index | `phaseflow.index/v1`; exactly one default and one entry per committed case | `scripts/check_artifacts.py` |
 | Live browser | Only synthetic traces carry block arrays; the live TypeScript engine re-solves selected controls from those arrays | frontend parity and browser gates |
+| Notebook model inputs | Fresh-kernel `--check` runs copy released `models/` inputs into their temporary worktree, preserve source artifacts, and clean up | `docs/design/features/notebook-runner-models/`; `tests/test_check_notebooks.py::test_adversarial_runner_copies_released_models_into_the_check_worktree` |
 
 The offline pipeline and pinned `oreblocks` engine are the scientific authority.
 The web app reads committed artifacts; it does not silently regenerate benchmark
@@ -71,12 +72,12 @@ The table records every pinned direct dependency of the scientific, development,
 | tests | `httpx` | `0.28.1` | in-process ASGI client for endpoint contract tests (`requirements-dev.txt`) | Network-backed tests would be nondeterministic for the local API contract. |
 | tests | `ruff` | `0.15.18` | Python lint and formatting checks (`requirements-dev.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | pipeline | `numpy` | `2.5.1` | numerical arrays and model features (`requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
-| pipeline | `oreblocks` | `0.6.3` | scheduling engine and MILP rungs (`requirements.txt`) | A product-local solver would duplicate tested scheduling and solver integration. |
+| pipeline | `oreblocks` | `0.6.5` | scheduling engine and MILP rungs (`requirements.txt`), including bounded OPBSP proof receipts | A product-local solver would duplicate tested scheduling and solver integration. |
 | notebooks | `matplotlib` | `3.11.2` | notebook plots (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `nbclient` | `0.11.0` | fresh-kernel notebook execution (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `nbformat` | `5.11.1` | notebook structure and deterministic serialization (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `ipykernel` | `7.4.0` | Python notebook kernel (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
-| frontend | `@fasl-work/caos-app-shell` | `0.19.6` | shared navigation, documentation, shell gate and workbench primitives (`frontend/package-lock.json`); release tag `v0.19.006` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
+| frontend | `@fasl-work/caos-app-shell` | `0.19.9` | shared navigation, documentation, shell gate and workbench primitives (`frontend/package-lock.json`); release tag `v0.19.009` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
 | frontend | `katex` | `0.19.1` | math rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `lucide-react` | `1.61.0` | interface icons (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `react` | `19.3.1` | component rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
@@ -94,14 +95,15 @@ The table records every pinned direct dependency of the scientific, development,
 | frontend | `tsx` | `4.23.11` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `typescript` | `5.9.3` | static type checking (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `vite` | `8.3.5` | development and production build (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
-## Beyond the state of the art
+## Method scope and boundaries
 
-None claimed. PhaseFlow implements and evaluates published methods and engineering integrations on bounded cases. No universal algorithmic novelty or general performance improvement is asserted.
+PhaseFlow evaluates published scheduling methods and the proposed BS-1 expected-time policy on bounded cases. No universal algorithmic novelty or field-wide performance claim is made.
 
 ## Research basis used by the notebook curriculum
 
 - Blom, Pearce and Cote, stochastic mine-planning practice: https://arxiv.org/abs/2403.18213.
 - Ramazan and Dimitrakopoulos, stochastic integer programming: https://doi.org/10.1007/s11081-012-9186-2.
+- Newman, Open-Pit Block-Sequencing Formulations: https://doi.org/10.1287/inte.2013.0731.
 - Meagher, Dimitrakopoulos and Avis, geological uncertainty and NPV: https://doi.org/10.1134/S1062739114030132.
 - Kingma and Ba, Adam optimization: https://arxiv.org/abs/1412.6980.
 - Bai et al. (2018), minimum mining width and pushback design: https://doi.org/10.17159/2411-9717/2018/v118n5a8.
@@ -111,7 +113,7 @@ None claimed. PhaseFlow implements and evaluates published methods and engineeri
 | stage | memory | disk | time | where it runs |
 |---|---|---|---|---|
 | bake | peak memory not yet instrumented; no fixed estimate claimed | clean candidate directory under the configured external data root | solver and case dependent; each manifest records method timings, while full-run elapsed time is recorded separately | isolated `.venv-pipeline`; MineLib source cache stays local |
-| tests | peak memory not yet instrumented | temporary solver files under the configured external temp root | 173.68 seconds for the current OreBlocks 0.6.3 scientific suite; one stale-artifact guard failed as expected before rebake | isolated `.venv-pipeline` and `frontend/` Node environment |
+| tests | peak memory not yet instrumented | temporary solver files under the configured external temp root | OreBlocks 0.6.5 candidate: 86 tests passed in 825.16 seconds; PhaseFlow artifact-drift checks remain blocked on a fresh full rebake | isolated `.venv-notebooks` and `frontend/` Node environment |
 | build | peak memory not yet instrumented | `frontend/dist/` including committed replay artifacts | Vite build completed in under one second in the current local run; route materialisation followed | Vite production build |
 | deploy | no deployment in this change set | GitHub Pages workflow artifact | remote duration is recorded by Actions after a release | GitHub Pages at `https://phaseflow.fasl-work.com` |
 
@@ -131,21 +133,27 @@ already deployed in 0.07.002; the gate protects it.
 
 ## Method ladder
 
-| Method family | Acceptance criterion | Gate |
-|---|---|---|
-| Bench, nested shells, greedy/TopoSort, Gershon | Returns a traced CPIT feasible schedule with period capacities and slope precedence | `scripts/check_artifacts.py` capacity and shape checks; `npm test` parity |
-| Critical multiplier Algorithm 4 | Certified upper bound; cannot be below a feasible CPIT objective | `scripts/check_artifacts.py`; Newman1 source comparison |
-| Joint Bienstock-Zuckerberg | Certified CPIT LP bound at convergence; no greater than Algorithm 4 within tolerance; budget/skip recorded | pipeline tests; manifest bound report |
-| Shift and exact C-PIT[D] search | Exact restricted solve is labelled separately; result never worse than seed | `npm test` local-search assertion and trace method notes |
-| Sliding window | A moving MILP window enforces capacity; refusal is explicit if candidate budget would starve a period | pipeline tests, `skipped_methods`, artifact guard |
-| Expected-time surrogate | Produces a feasible CPIT schedule without an LP solve; reports measured ratio to exact ExTS when both are baked | disjoint-deposit evaluation, ONNX parity, artifact guard |
-| Bound surrogate | Predicts a sensitivity surface only; an exact bound anchors the selected point and surrogate output never certifies | model export parity and browser sensitivity panel |
-| Destination and operability views | Marked `beyond`; never eligible for CPIT best or gap envelope | `best_comparable`, `run_controls`, `scripts/check_artifacts.py` |
+| id | tier | method | acceptance criterion | gate |
+|---|---|---|---|---|
+| M-1 | classical | Greedy/TopoSort constructive CPIT scheduling with the published pit precedence and period capacities | Returns a traced feasible schedule and preserves the declared resource, precedence and discount rules | `scripts/check_artifacts.py`; classical feasibility controls |
+| M-2 | sota | Sliding-window MILP look-ahead over the same CPIT candidates and capacities | Produces a feasible schedule; records the window, candidate budget, objective and explicit refusal conditions | pipeline tests; level-3 sliding-window notebook; artifact guard |
+| M-3 | sota | Published destination-choice binary formulation and node-bounded C-PIT[D] neighborhood search | Separates constructive, restricted solver results with proof status and full exact results; restricted search never degrades its seed | pipeline tests; level-3 destination-choice notebook |
+| M-4 | sota | Deterministic scenario re-planning from one fixed pre-draw policy using exact local neighborhood search | Reports the policy comparison as a lower bound on EVPI and preserves paired draw values | pipeline tests; level-3 re-planning notebook |
+| BS-1 | beyond | Expected-time ensemble policy: five seed-disjoint learned predictors rank blocks, then precedence-safe TopoSort constructs the schedule | On deposit-disjoint holdouts, compare feasibility and discounted NPV with M-1 through M-3 and exact ExTS; report transfer failures and per-case results | adversarial feature/training tests; ONNX and browser parity; level-4 bilingual learned-planning notebook; rebaked manifests |
+
+## Beyond the state of the art
+
+**BS-1, expected-time ensemble policy.** Hypothesis: a five-member ensemble trained on deposit-disjoint synthetic instances can rank blocks by expected extraction time and produce a feasible precedence-safe CPIT schedule whose discounted NPV is competitive with exact expected-time ordering, while avoiding an LP solve at inference. Method: train each member on the same train-only normalization with frozen, distinct seeds; average predictions; run the shared TopoSort constructor; compare against the classical constructor, sliding-window look-ahead, exact expected-time ordering and exact local-search results under identical deposits and constraints. Evaluation: use seed-disjoint holdout deposits, retain each case and seed, report NPV ratios, feasibility, timing and uncertainty, and test the ONNX and browser implementations against Python. The claim is limited to this benchmark and does not imply a field-wide performance improvement. A result that misses the hypothesis remains in the report and notebook.
 
 The product-quality backlog still has three open units: a deposit-statistics live
 guard, a second learned schedule rung, and a scalable sliding window on larger
 instances. Their requirements, design and tasks live under `docs/design/features/`.
 Until their gates pass, the UI must not claim they exist.
+
+The uncertainty re-planning estimate uses one fixed policy selected by expected
+NPV, then exact local search in restricted C-PIT[D] neighborhoods on each
+realisation. The outer neighborhood search remains heuristic and reports a
+lower bound on EVPI. It is distinct from the three open product-quality units.
 
 ## Cases
 
@@ -186,6 +194,10 @@ No single HTTP 200 or green build substitutes for this chain.
 | P-10 | WHEN the destination rung runs, ITS alternative values and resources SHALL come from a source PCPSP model or seeded synthetic economics, and each period's cash and capacity SHALL reconcile. | `tests/test_pipeline.py::test_destination_periods_use_chosen_destination_values_and_resources`; `scripts/check_artifacts.py` cash and capacity gates |
 | P-11 | WHEN a source block model lacks grade, THE trace SHALL name that absence, omit a measured grade curve and skip grade-dependent learned output. | `scripts/check_artifacts.py` grade-source gate; `npm run verify:grade`; EN/ES Zuck Small browser QA |
 | P-12 | WHEN a synthetic case enters the live lane, THE browser SHALL use the baked fixed-destination processing coefficient for every block; a positive net-value test is not equivalent. | `scripts/check_artifacts.py` processing-array gate; `frontend/test/parity.test.ts` bound and feasibility checks; `npm run verify:focus` |
+| P-13 | WHEN the uncertainty ensemble reports re-planning value, THE calculation SHALL compare one highest-expected-value fixed schedule with a feasible C-PIT[D] local search started from that same schedule for each realisation. | `tests/adversarial/test_replanning.py::test_adversarial_replan_starts_from_one_best_fixed_policy`; `tests/adversarial/test_replanning.py::test_adversarial_replanning_uses_the_fixed_policy_baseline` |
+| P-14 | WHEN a learned model is trained, THE trainer SHALL reject any non-finite or zero-variance input feature rather than silently assign it unit scale. | `tests/adversarial/test_training_features.py::test_adversarial_training_rejects_constant_features`; `::test_adversarial_training_names_non_finite_features` |
+| P-15 | WHEN the expected-time model is trained and loaded, THE offline and browser lanes SHALL average the same five members and reject schema or scale mismatches. | `tests/adversarial/test_training_features.py::test_expected_time_ensemble_averages_five_members_and_roundtrips`; `frontend/test/surrogate-parity.test.ts` |
+| P-16 | WHEN a notebook loads a released model under `--check`, THE isolated fresh-kernel worktree SHALL include the model while preserving committed files and cleaning up its temporary copy. | `tests/test_check_notebooks.py::test_adversarial_runner_copies_released_models_into_the_check_worktree` |
 
 ## Deploy driver
 
@@ -206,23 +218,20 @@ The product template's CI runs static and scientific contract checks on every ch
 
 ## ADR fit
 
-| ADR | Fit |
+| Requirement | PhaseFlow implementation |
 |---|---|
-| ADR-0011 | EN/ES content and shell language controls; both languages are checked on rendered pages. |
-| ADR-0012 | light/dark theme tokens for all product-owned drawings and charts. |
-| ADR-0016 | shared application shell and five substantive documentation pages. |
-| ADR-0017 | domain depth and page-area requirements verified by the shell gate. |
-| ADR-0057 | product repository architecture and template adoption. |
-| ADR-0058 | in-app architecture modal from `frontend/src/architecture.ts`. |
-| ADR-0069 | offline processing, evaluation, export, replay/live separation, and complete vertical implementations for shipped methods. |
-| ADR-0070 | Focus route for interactive simulation and state-preserving return to the workbench. |
-| ADR-0071 | measured route sizing, bounded charts and responsive navigation. |
-| ADR-0075 | retrospective SDD plus feature-level requirements and named adversarial gates before new feature work. |
-| ADR-0078 | base defects are fixed in the shared base before adopting releases; product pins are exact. |
+| Bilingual content | EN/ES page content follows the shell language control; both languages are checked on rendered pages. |
+| Theme | Light/dark tokens are used by product-owned drawings and charts. |
+| Shared application shell | The shell supplies the six routes, page structure, workbench, architecture modal and navigation. |
+| Full scientific workflow | Offline processing, evaluation, export and replay/live separation are documented and gated. |
+| Focus simulation | The Focus route preserves state when returning to the workbench and recomputes from its controls. |
+| Responsive behavior | Route sizes, charts and navigation are measured across supported viewports. |
+| Design before new work | New feature designs name requirements, implementation boundaries and adversarial verification gates. |
+| Shared base adoption | Shell behavior comes from an exact released package pin; defects are resolved in that shared package. |
 
 ## Convergence record
 
-This SDD backfills a shipped product and is awaiting review under ADR-0075.
+This SDD backfills a shipped product and is awaiting independent review.
 The existing requirements are checked by the named gates above.
 The three feature designs are proposals; their code and claimed outcomes remain pending
 until review and their own convergence evidence.

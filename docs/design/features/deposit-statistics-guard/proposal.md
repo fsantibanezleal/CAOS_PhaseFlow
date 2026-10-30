@@ -19,6 +19,7 @@ the **comparison baseline**, not scores for the proposed rule.
 | SG-005 | IF a live deposit lies outside the training support or a required statistic is absent, THEN THE app SHALL say `guard unavailable` with a reason rather than infer safety. | `test_stats_guard.py::test_out_of_support_abstains`; EN/ES live browser gate |
 | SG-006 | WHEN exact ExTS exists in the same bake, THE method row SHALL report its measured NPV ratio and shall not substitute a statistical flag. | `check_artifacts.py` learned-row check; frontend learned panel test |
 | SG-007 | THE published rule SHALL include its input schema, threshold, split IDs, confusion matrices and worst missed case; THE UI SHALL show the third-split score next to the warning. | `check_artifacts.py` guard provenance check; EN/ES learned panel browser gate |
+| SG-008 | IF SG-004 fails, THEN THE pipeline SHALL keep the candidate research-only, emit no rule flag, and show `guard unavailable` with the failed metrics; only an exact comparator may classify the case. | `tests/test_live_guard_eligibility.py`; `check_artifacts.py`; EN/ES learned panel gate |
 
 Convergence requires every named gate, a real-deposit feature extraction
 demonstration, and an explicit report of how often the rule abstains on each

@@ -80,6 +80,8 @@ def build_trace(
         }
         if synthetic:
             row["periodOfBlock"] = [int(v) for v in r.period_of_block]
+        if r.extra:
+            row["extra"] = r.extra
         methods.append(row)
 
     trace: dict[str, Any] = {
