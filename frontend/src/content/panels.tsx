@@ -3,23 +3,18 @@
  * studies and the case manifests and traces. A number on a reading page comes from here, never typed.
  */
 import { useEffect, useState } from 'react';
-import { APP_VERSION, boundSlackText, dec, fmtDuration, fmtInt, fmtMoney, jointAbsentText, pcpspBoundMethod } from '../lib/artifacts.ts';
+import { boundSlackText, dec, fmtDuration, fmtInt, fmtMoney, jointAbsentText, loadPublicJSON, pcpspBoundMethod } from '../lib/artifacts.ts';
 import { EngineText } from '../lib/EngineText.tsx';
 import type { CaseIndex, CaseManifest, ScoreboardRow } from '../lib/contract.types.ts';
 import type { Lang } from './doc.tsx';
-
-const cache = new Map<string, Promise<unknown>>();
 
 export function useJson<T>(path: string): T | null | 'error' {
   const [data, setData] = useState<T | null | 'error'>(null);
   useEffect(() => {
     let alive = true;
-    const p = cache.get(path) ?? fetch(`${path}?v=${APP_VERSION}`).then((r) => {
-      if (!r.ok) throw new Error(`${path}: HTTP ${r.status}`);
-      return r.json();
-    });
-    cache.set(path, p);
-    p.then((d) => { if (alive) setData(d as T); }).catch(() => { if (alive) setData('error'); });
+    loadPublicJSON<T>(path)
+      .then((d) => { if (alive) setData(d); })
+      .catch(() => { if (alive) setData('error'); });
     return () => { alive = false; };
   }, [path]);
   return data;
@@ -160,14 +155,7 @@ export function useManifests():{ index: CaseIndex; manifests: CaseManifest[] } |
   const [state, setState] = useState<{ index: CaseIndex; manifests: CaseManifest[] } | null | 'error'>(null);
   useEffect(() => {
     let alive = true;
-    const get = <T,>(p: string) => {
-      const hit = cache.get(p) ?? fetch(`${p}?v=${APP_VERSION}`).then((r) => {
-        if (!r.ok) throw new Error(`${p}: HTTP ${r.status}`);
-        return r.json();
-      });
-      cache.set(p, hit);
-      return hit as Promise<T>;
-    };
+    const get = <T,>(p: string) => loadPublicJSON<T>(p);
     get<CaseIndex>('/data/manifests/index.json')
       .then(async (index) => {
         const manifests = await Promise.all(index.cases.map((c) => get<CaseManifest>(`/data/manifests/${c.case_id}.json`)));

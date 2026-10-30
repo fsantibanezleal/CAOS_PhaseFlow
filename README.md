@@ -52,7 +52,7 @@ shows the inputs, calculations and limits.
 
 These four numbers are read out of `data/derived/manifests/newman1-published.json` by
 `scripts/check_readme_numbers.py`, which CI runs: the previous version of this table was two releases
-stale and said the exact local search was NOT implemented while it was rung 9 of the ladder and the
+stale and said the exact local search was NOT implemented while method 9 in the results list and the
 best method on this very case.
 
 **The walls carry the schedule.** Drawing the mined blocks gives a growing solid that is not a pit.
@@ -94,7 +94,7 @@ artifacts and checked in CI.
 | Web | [`frontend/`](frontend/) | active | Bilingual research workbench, Focus view, charts, and shell routes; build with `cd frontend && npm ci && npm run build`. |
 | API | [`app/`](app/) | dormant: no hosted service is in the product contract | PhaseFlow is a static research application and its reserved API boundary documents the current scope. |
 | Core pipelines | [`data-pipeline/`](data-pipeline/) | active | Case ingestion, scheduling methods, validation, and reproducible artifact baking. |
-| Packages | [oreblocks 0.6.3](https://pypi.org/project/oreblocks/0.6.3/) | active | Product methods remain in the local pipeline package; OreBlocks supplies the pinned optimization engine. |
+| Packages | [oreblocks 0.6.5 candidate](https://pypi.org/project/oreblocks/) | active | Product methods remain in the local pipeline package; OreBlocks supplies the pinned optimization engine and bounded neighborhood proof receipts. |
 | Notebooks | [`notebooks/`](notebooks/) | active | Bilingual, executed research notebooks teach the problem, methods, and evidence. |
 | Data | [`data/`](data/) | active | Compact derived traces, manifests, metrics, and source provenance; raw MineLib data stays external. |
 | Contracts | [`docs/contracts/`](docs/contracts/) | active | Versioned trace and manifest schemas with producer and consumer gates. |

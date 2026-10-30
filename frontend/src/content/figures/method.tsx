@@ -3,6 +3,38 @@ import { periodCss, periodTextColor } from '../../viz/colormap.ts';
 import { Arrow, Box, Svg, arrowId, tr, type Lang } from './kit.tsx';
 import { dec } from '../../lib/artifacts.ts';
 
+/** Scheduling methods and the shared feasibility gate they must cross. */
+export function MethodLadder({ lang }: { lang: Lang }) {
+  const vb = '0 0 560 300';
+  const label = tr(lang, 'Scheduling methods and shared feasibility gate', 'Métodos de planificación y control de factibilidad compartido');
+  const rows = [
+    { y: 52, title: tr(lang, 'REFERENCE METHODS', 'MÉTODOS DE REFERENCIA'), detail: tr(lang, 'constructive orders · same CPIT case', 'órdenes constructivos · mismo caso CPIT'), fill: 'pf-dg-fill-accent' },
+    { y: 122, title: tr(lang, 'PUBLISHED METHODS', 'MÉTODOS PUBLICADOS'), detail: tr(lang, 'published MILP · ExTS · restricted re-planning', 'MILP publicado · ExTS · replanteo restringido'), fill: 'pf-dg-fill-warn' },
+    { y: 192, title: tr(lang, 'PROPOSED METHOD', 'MÉTODO PROPUESTO'), detail: tr(lang, 'expected-time ensemble · held-out evidence', 'conjunto de tiempos esperados · evidencia de prueba'), fill: 'pf-dg-fill-accent' },
+  ];
+  return (
+    <Svg vb={vb} label={label}>
+      <text x={150} y={25} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'SOURCE OF THE ORDER', 'ORIGEN DEL ORDEN')}</text>
+      {rows.map((row) => (
+        <g key={row.title}>
+          <rect x={20} y={row.y} width={260} height={52} rx={7} className={row.fill} />
+          <text x={150} y={row.y + 20} textAnchor="middle" className="pfd-dg-title">{row.title}</text>
+          <text x={150} y={row.y + 39} textAnchor="middle" className="pfd-dg-small">{row.detail}</text>
+          <path d={`M282 ${row.y + 26} H340`} className="pf-dg-curve" markerEnd="url(#method-arrow)" />
+        </g>
+      ))}
+      <defs><marker id="method-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" className="pf-dg-fill-accent" /></marker></defs>
+      <rect x={352} y={67} width={188} height={166} rx={10} className="pf-dg-box" />
+      <text x={446} y={96} textAnchor="middle" className="pfd-dg-title">{tr(lang, 'FEASIBILITY GATE', 'CONTROL DE FACTIBILIDAD')}</text>
+      <text x={446} y={129} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'precedence', 'precedencias')}</text>
+      <text x={446} y={155} textAnchor="middle" className="pfd-dg-mono">{String.raw`\tau_a \le \tau_b`}</text>
+      <text x={446} y={184} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'period capacity', 'capacidad por período')}</text>
+      <text x={446} y={210} textAnchor="middle" className="pfd-dg-mono">{String.raw`\sum_b a_{rb}\le c_{rt}`}</text>
+      <text x={280} y={278} textAnchor="middle" className="pf-dg-note">{tr(lang, 'same case · same scenario · every schedule checked', 'mismo caso · mismo escenario · cada plan se verifica')}</text>
+    </Svg>
+  );
+}
+
 /** The slope cone and the cumulative variable: the two facts the formulation rests on. */
 export function ConeAndStep({ lang }: { lang: Lang }) {
   const vb = '0 0 560 300';
@@ -271,7 +303,7 @@ export function SlidingWindow({ lang }: { lang: Lang }) {
   );
 }
 
-/** Local search: shift moves and the exact C-PIT[D] re-solve of a neighbourhood. */
+/** Local search: shift moves and a bounded C-PIT[D] neighborhood MILP. */
 export function LocalSearch({ lang }: { lang: Lang }) {
   const vb = '0 0 560 290';
   const label = tr(lang, 'Shift moves and the exact neighbourhood re-solve', 'Movimientos de desplazamiento y re-resolución exacta de un vecindario');
@@ -296,12 +328,12 @@ export function LocalSearch({ lang }: { lang: Lang }) {
       <Box x={330} y={110} w={200} h={52} title={tr(lang, 'push back', 'atrasar')} sub={[tr(lang, 'value < 0, successors later', 'valor < 0, sucesores después')]} />
       <text x={430} y={186} textAnchor="middle" className="pfd-dg-small">{tr(lang, 'one block at a time: cannot move a cone', 'un bloque a la vez: no mueve un cono')}</text>
       <text x={280} y={240} textAnchor="middle" className="pf-dg-note">{tr(lang, 'both never lose value: every accepted move is an improvement', 'ninguno pierde valor: todo movimiento aceptado es una mejora')}</text>
-      <text x={280} y={258} textAnchor="middle" className="pf-dg-note">{tr(lang, 'the exact re-solve moves a block together with what it needs', 'la re-resolución exacta mueve un bloque junto con lo que necesita')}</text>
+      <text x={280} y={258} textAnchor="middle" className="pf-dg-note">{tr(lang, 'a bounded MILP moves a block together with its cone', 'un MILP acotado mueve un bloque junto con su cono')}</text>
     </Svg>
   );
 }
 
-/** Nested shells as the classical weight: inner shells first. */
+/** Nested shells as the reference weight: inner shells first. */
 export function ShellsAsWeights({ lang }: { lang: Lang }) {
   const vb = '0 0 560 260';
   const label = tr(lang, 'Revenue factors give nested shells', 'Factores de ingreso dan cáscaras anidadas');
@@ -326,7 +358,7 @@ export function ShellsAsWeights({ lang }: { lang: Lang }) {
   );
 }
 
-/** The learned rung: the same TopoSort walk, with the expensive weight predicted. */
+/** The learned method: the same TopoSort walk, with the expensive weight predicted. */
 export function SurrogatePath({ lang }: { lang: Lang }) {
   const vb = '0 0 560 270';
   const label = tr(lang, 'Exact and learned paths to an ordering', 'Caminos exacto y aprendido hacia un orden');
@@ -335,7 +367,7 @@ export function SurrogatePath({ lang }: { lang: Lang }) {
     <Svg vb={vb} label={label}>
       <Box x={10} y={30} w={150} h={56} title={tr(lang, 'Instance', 'Instancia')} sub={[tr(lang, 'blocks + scenario', 'bloques + escenario')]} />
       <Box x={200} y={10} w={170} h={56} title={tr(lang, 'Critical multiplier', 'Multiplicador crítico')} sub={[tr(lang, 'tens of closures', 'decenas de cierres')]} />
-      <Box x={200} y={90} w={170} h={56} title={tr(lang, 'Surrogate MLP', 'MLP sustituto')} sub={[tr(lang, '12 features, no LP', '12 rasgos, sin LP')]} accent />
+      <Box x={200} y={90} w={170} h={56} title={tr(lang, 'Surrogate MLP', 'MLP sustituto')} sub={[tr(lang, '11 features, no LP', '11 rasgos, sin LP')]} accent />
       <Box x={410} y={50} w={140} h={56} title="TopoSort" sub={[tr(lang, 'w = -E_b', 'w = -E_b')]} />
       <Arrow x1={160} y1={52} x2={198} y2={40} markerId={m} />
       <Arrow x1={160} y1={64} x2={198} y2={112} markerId={m} />

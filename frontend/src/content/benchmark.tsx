@@ -142,8 +142,8 @@ export const BENCHMARK: TopicGroup[] = [
             es: 'Con dos capacidades por período, la cota certificada barata es el Algoritmo 4: relajar todas las capacidades menos una, resolver cada problema de un recurso exactamente con el algoritmo del multiplicador crítico, y quedarse con el menor valor. Es válida y es más floja que la LP conjunta, porque cada relajación ignora las capacidades que soltó. El método de Bienstock y Zuckerberg resuelve la LP conjunta por generación de columnas sobre un grafo de clausura expandido en el tiempo; donde ese grafo cabe, da la cota más ajustada y cada brecha del caso se mide contra ella.',
           },
           {
-            en: 'The slack column is the part of any Algorithm 4 gap that belongs to the bound, not the plan. The PCPSP LP column is the bound the destination rungs are measured against; it is solved only where the destination economics exist.',
-            es: 'La columna de holgura es la parte de cualquier brecha del Algoritmo 4 que pertenece a la cota, no al plan. La columna LP PCPSP es la cota contra la que se miden los peldaños con destino; se resuelve solo donde existe la economía de destinos.',
+            en: 'The slack column is the part of any Algorithm 4 gap that belongs to the bound, not the plan. The PCPSP LP column is the bound the destination methods are measured against; it is solved only where the destination economics exist.',
+            es: 'La columna de holgura es la parte de cualquier brecha del Algoritmo 4 que pertenece a la cota, no al plan. La columna LP PCPSP es la cota contra la que se miden los métodos con destino; se resuelve solo donde existe la economía de destinos.',
           },
         ],
         data: (lang) => <BoundSummaryPanel lang={lang} />,
@@ -178,12 +178,12 @@ export const BENCHMARK: TopicGroup[] = [
         title: { en: 'The best plan of every case', es: 'El mejor plan de cada caso' },
         paragraphs: [
           {
-            en: 'For each case, the best plan among the comparable rungs (the classical, state-of-the-art and learned CPIT plans, all on the same fixed-destination problem), its gap to the bound of that problem and which bound that is. Three controls run on every case. Duality: at rate zero with unlimited capacity the problem collapses to the ultimate pit, so the relaxation must mine exactly the pit\'s blocks and its bound must equal the pit\'s value. Bound: the best plan may not exceed its certified bound. Order invariance: in the same collapsed problem the sequence cannot matter, so every TopoSort weighting must return the same value.',
-            es: 'Para cada caso, el mejor plan entre los peldaños comparables (los planes CPIT clásicos, del estado del arte y aprendido, todos sobre el mismo problema de destino fijo), su brecha a la cota de ese problema y qué cota es. Tres controles corren en cada caso. Dualidad: con tasa cero y capacidad ilimitada el problema colapsa al pit final, así que la relajación debe extraer exactamente los bloques del pit y su cota debe igualar el valor del pit. Cota: el mejor plan no puede superar su cota certificada. Invariancia al orden: en el mismo problema colapsado la secuencia no puede importar, así que todo peso TopoSort debe devolver el mismo valor.',
+            en: 'For each case, the best comparable CPIT schedule, its gap to the matching bound and the identity of that bound. The schedule comparison uses the same fixed-destination problem. Three controls run on every case. Duality: at rate zero with unlimited capacity the problem collapses to the ultimate pit, so the relaxation must mine exactly the pit\'s blocks and its bound must equal the pit\'s value. Bound: the best plan may not exceed its certified bound. Order invariance: in the same collapsed problem the sequence cannot matter, so every TopoSort weighting must return the same value.',
+            es: 'Para cada caso se muestra el mejor plan CPIT comparable, su brecha respecto de la cota correspondiente y la identidad de esa cota. La comparación usa el mismo problema con destino fijo. Tres controles se ejecutan en cada caso. Dualidad: con tasa cero y capacidad ilimitada el problema colapsa al pit final, así que la relajación debe extraer exactamente sus bloques y su cota debe igualar su valor. Cota: el mejor plan no puede superar su cota certificada. Invariancia al orden: en el mismo problema colapsado la secuencia no puede importar, así que todo peso TopoSort debe devolver el mismo valor.',
           },
         ],
         data: (lang) => <BestPerCasePanel lang={lang} />,
-        figure: { caption: { en: 'The walk every TopoSort rung shares.', es: 'El recorrido que comparten todos los peldaños TopoSort.' }, render: (lang) => <TopoSortWalk lang={lang} /> },
+        figure: { caption: { en: 'The walk every TopoSort method shares.', es: 'El recorrido que comparten todos los métodos TopoSort.' }, render: (lang) => <TopoSortWalk lang={lang} /> },
         refs: ['chicoisne2012', 'cullenbine2011'],
       },
       {
@@ -195,8 +195,8 @@ export const BENCHMARK: TopicGroup[] = [
             es: 'Cada cota y cada método se cronometra en el horneado, que no tiene límite de tiempo en ninguna parte, así que un método nunca se reporta como peor porque se lo cortó. El horneado corre un proceso por caso, ocho casos a la vez con dos hilos numéricos cada uno; los tiempos son tiempos de pared bajo esa carga y son comparables dentro de una fila, menos entre filas horneadas junto a vecinos distintos.',
           },
           {
-            en: 'The costs separate cleanly. The TopoSort rungs and the shift search cost almost nothing once the bound exists. The bound costs tens of maximum closures. The sliding window solves one MILP per period and dominates wherever it runs; the exact neighbourhood re-solves, the joint bound and the PCPSP LP grow with blocks times periods.',
-            es: 'Los costos se separan con claridad. Los peldaños TopoSort y la búsqueda de desplazamiento casi no cuestan una vez que existe la cota. La cota cuesta decenas de clausuras máximas. La ventana deslizante resuelve un MILP por período y domina donde corre; las re-resoluciones exactas de vecindario, la cota conjunta y la LP PCPSP crecen con bloques por períodos.',
+            en: 'The costs separate cleanly. The TopoSort methods and the shift search cost almost nothing once the bound exists. The bound costs tens of maximum closures. The sliding window solves one MILP per period and dominates wherever it runs; the exact neighbourhood re-solves, the joint bound and the PCPSP LP grow with blocks times periods.',
+            es: 'Los costos se separan con claridad. Los métodos TopoSort y la búsqueda de desplazamiento casi no cuestan una vez que existe la cota. La cota cuesta decenas de clausuras máximas. La ventana deslizante resuelve un MILP por período y domina donde corre; las re-resoluciones exactas de vecindario, la cota conjunta y la LP PCPSP crecen con bloques por períodos.',
           },
         ],
         data: (lang) => <RuntimePanel lang={lang} />,
@@ -213,8 +213,8 @@ export const BENCHMARK: TopicGroup[] = [
         title: { en: 'The learned plan: speed against quality', es: 'El plan aprendido: velocidad contra calidad' },
         paragraphs: [
           {
-            en: 'The learned rung exists for one reason: the exact live solve takes seconds in a browser, and a plan that appears while a control is still moving is worth having if it is close enough. The table measures both sides on the committed twins with the browser\'s own engine: the time to draw the learned plan, the time of the exact solve it stands in for, and the learned plan\'s value as a share of the exact ExTS plan at the same setting.',
-            es: 'El peldaño aprendido existe por una razón: la resolución exacta en vivo toma segundos en un navegador, y un plan que aparece mientras un control todavía se mueve vale la pena si es lo bastante cercano. La tabla mide ambos lados sobre los gemelos versionados con el propio motor del navegador: el tiempo para dibujar el plan aprendido, el tiempo de la resolución exacta que reemplaza, y el valor del plan aprendido como fracción del plan ExTS exacto en la misma configuración.',
+            en: 'The learned method exists for one reason: the exact live solve takes seconds in a browser, and a plan that appears while a control is still moving is worth having if it is close enough. The table measures both sides on the committed twins with the browser\'s own engine: the time to draw the learned plan, the time of the exact solve it stands in for, and the learned plan\'s value as a share of the exact ExTS plan at the same setting.',
+            es: 'El método aprendido existe por una razón: la resolución exacta en vivo toma segundos en un navegador, y un plan que aparece mientras un control todavía se mueve vale la pena si es lo bastante cercano. La tabla mide ambos lados sobre los gemelos versionados con el propio motor del navegador: el tiempo para dibujar el plan aprendido, el tiempo de la resolución exacta que reemplaza, y el valor del plan aprendido como fracción del plan ExTS exacto en la misma configuración.',
           },
           {
             en: 'The App never leaves the learned plan unscored: when the exact plan arrives it replaces the preview, and the preview\'s measured share at that setting is shown beside it.',
@@ -230,8 +230,8 @@ export const BENCHMARK: TopicGroup[] = [
         title: { en: 'The browser engine against the bake', es: 'El motor del navegador contra el horneado' },
         paragraphs: [
           {
-            en: 'The live lane is a TypeScript implementation of the ultimate pit, the critical multiplier bound, Algorithm 4 and the TopoSort rungs, written to the same equations as the Python pipeline. A live lane and a replay lane that disagree would be two sciences presented as one, so this panel lets the reader check it on their own machine: it loads a committed twin, rebuilds the baked scenario with its absolute capacities, solves it in a worker and sets every item beside the trace.',
-            es: 'El carril en vivo es una implementación TypeScript del pit final, la cota del multiplicador crítico, el Algoritmo 4 y los peldaños TopoSort, escrita con las mismas ecuaciones que el pipeline Python. Un carril en vivo y uno de reproducción que discrepan serían dos ciencias presentadas como una, así que este panel deja al lector verificarlo en su propia máquina: carga un gemelo versionado, reconstruye el escenario horneado con sus capacidades absolutas, lo resuelve en un worker y pone cada elemento junto a la traza.',
+            en: 'The live lane is a TypeScript implementation of the ultimate pit, the critical multiplier bound, Algorithm 4 and the TopoSort methods, written to the same equations as the Python pipeline. A live lane and a replay lane that disagree would be two sciences presented as one, so this panel lets the reader check it on their own machine: it loads a committed twin, rebuilds the baked scenario with its absolute capacities, solves it in a worker and sets every item beside the trace.',
+            es: 'El carril en vivo es una implementación TypeScript del pit final, la cota del multiplicador crítico, el Algoritmo 4 y los métodos TopoSort, escrita con las mismas ecuaciones que el pipeline Python. Un carril en vivo y uno de reproducción que discrepan serían dos ciencias presentadas como una, así que este panel deja al lector verificarlo en su propia máquina: carga un gemelo versionado, reconstruye el escenario horneado con sus capacidades absolutas, lo resuelve en un worker y pone cada elemento junto a la traza.',
           },
           {
             en: 'The pit and the bound are asserted equal in the test suite at every build; the panel extends the check to the plans and to every live case. Nothing runs until the button is pressed.',

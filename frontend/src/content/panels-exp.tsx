@@ -95,7 +95,7 @@ export function LadderGridPanel({ lang }: { lang: Lang }) {
     <div className="pfd-panel">
       <div className="pfd-scroll">
         <table className="pfd-table" data-testid="ladder-grid">
-          <caption>{es ? 'Brecha de cada método a la cota de su propio problema (CPIT para todos salvo los dos con destino, contra la LP PCPSP). Sombreado: brecha mayor; resaltado: el mejor plan comparable del caso.' : 'Each method\'s gap to the bound of its own problem (CPIT for all but the two destination rungs, which use the PCPSP LP). Shading: larger gap; highlighted: the case\'s best comparable plan.'}</caption>
+          <caption>{es ? 'Brecha de cada método a la cota de su propio problema (CPIT para todos salvo los dos con destino, contra la LP PCPSP). Sombreado: brecha mayor; resaltado: el mejor plan comparable del caso.' : 'Each method\'s gap to the bound of its own problem (CPIT for all but the two destination methods, which use the PCPSP LP). Shading: larger gap; highlighted: the case\'s best comparable plan.'}</caption>
           <thead>
             <tr><th>{es ? 'caso' : 'case'}</th>{methods.map((mt) => <th key={mt} className="num" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)', whiteSpace: 'nowrap', padding: '6px 4px' }}>{mt}</th>)}</tr>
           </thead>
@@ -134,7 +134,7 @@ export function LadderGridPanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** Q2: what seeding the plan with the bound buys over the classical rungs, case by case. */
+/** Q2: what seeding the plan with the bound buys over the reference methods, case by case. */
 export function SeedingPanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
   const data = useManifests();
@@ -152,12 +152,12 @@ export function SeedingPanel({ lang }: { lang: Lang }) {
     <div className="pfd-panel">
       <p className="pfd-claim">
         {es
-          ? <>El TopoSort de tiempo esperado supera al mejor peldaño clásico en <b>{wins} de {rows.length}</b> casos no triviales; la ventaja mediana es de <b>{pctTxt(median, 1)}</b> puntos de brecha (de {pctTxt(margins[0], 1)} a {pctTxt(margins[margins.length - 1], 1)}).</>
-          : <>Expected-time TopoSort beats the best classical rung on <b>{wins} of {rows.length}</b> non-trivial cases; the median advantage is <b>{pctTxt(median, 1)}</b> points of gap (from {pctTxt(margins[0], 1)} to {pctTxt(margins[margins.length - 1], 1)}).</>}
+          ? <>El TopoSort de tiempo esperado supera al mejor método de referencia en <b>{wins} de {rows.length}</b> casos no triviales; la ventaja mediana es de <b>{pctTxt(median, 1)}</b> puntos de brecha (de {pctTxt(margins[0], 1)} a {pctTxt(margins[margins.length - 1], 1)}).</>
+          : <>Expected-time TopoSort beats the best reference method on <b>{wins} of {rows.length}</b> non-trivial cases; the median advantage is <b>{pctTxt(median, 1)}</b> points of gap (from {pctTxt(margins[0], 1)} to {pctTxt(margins[margins.length - 1], 1)}).</>}
       </p>
       <div className="pfd-scroll">
         <table className="pfd-table">
-          <thead><tr><th>{es ? 'caso' : 'case'}</th><th>{es ? 'mejor clásico' : 'best classical'}</th><th className="num">{es ? 'su brecha' : 'its gap'}</th><th className="num">{es ? 'brecha ExTS' : 'ExTS gap'}</th><th className="num">{es ? 'ventaja' : 'advantage'}</th></tr></thead>
+          <thead><tr><th>{es ? 'caso' : 'case'}</th><th>{es ? 'mejor de referencia' : 'best reference'}</th><th className="num">{es ? 'su brecha' : 'its gap'}</th><th className="num">{es ? 'brecha ExTS' : 'ExTS gap'}</th><th className="num">{es ? 'ventaja' : 'advantage'}</th></tr></thead>
           <tbody>
             {rows.map(({ m, exts, bestCl, margin }) => (
               <tr key={m.case_id}>
@@ -295,7 +295,7 @@ export function DestinationPanel({ lang }: { lang: Lang }) {
   const data = useManifests();
   if (!data || data === 'error') return <Pending lang={lang} state={data as null | 'error'} />;
   const rows = data.manifests.filter((m) => get(m, 'destination-local-search'));
-  if (!rows.length) return <p className="pfd-muted">{es ? 'Los manifiestos versionados aún no traen los peldaños con destinos.' : 'The committed manifests do not carry the destination rungs yet.'}</p>;
+  if (!rows.length) return <p className="pfd-muted">{es ? 'Los manifiestos versionados aún no traen los métodos con destinos.' : 'The committed manifests do not carry the destination methods yet.'}</p>;
   const cell = (m: CaseManifest, method: string) => {
     const r = get(m, method);
     return r ? <td className="num">{fmtMoney(r.npv)}<br /><span className="pfd-muted">{pctTxt(r.gap_pct)}</span></td> : <td className="num">-</td>;
@@ -415,7 +415,7 @@ export function EnsemblePanel({ lang }: { lang: Lang }) {
   );
 }
 
-/** The learned rung inside the ladder: its measured share of the exact plan on each case. */
+/** The learned method inside the ladder: its measured share of the exact plan on each case. */
 export function LearnedLadderPanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
   const data = useManifests();
@@ -424,7 +424,7 @@ export function LearnedLadderPanel({ lang }: { lang: Lang }) {
   return (
     <div className="pfd-scroll">
       <table className="pfd-table">
-        <caption>{es ? 'El peldaño aprendido en la escalera: su plan sobre el plan ExTS exacto del mismo caso, medido, y las dos brechas.' : 'The learned rung in the ladder: its plan over the exact ExTS plan of the same case, measured, and the two gaps.'}</caption>
+        <caption>{es ? 'El método aprendido en la escalera: su plan sobre el plan ExTS exacto del mismo caso, medido, y las dos brechas.' : 'The learned method in the ladder: its plan over the exact ExTS plan of the same case, measured, and the two gaps.'}</caption>
         <thead><tr><th>{es ? 'caso' : 'case'}</th><th className="num">{es ? 'bloques' : 'blocks'}</th><th className="num">{es ? 'aprendido / ExTS' : 'learned / ExTS'}</th><th className="num">{es ? 'brecha aprendido' : 'learned gap'}</th><th className="num">{es ? 'brecha ExTS' : 'ExTS gap'}</th><th className="num">{es ? 'tiempo aprendido' : 'learned time'}</th><th className="num">{es ? 'tiempo ExTS' : 'ExTS time'}</th></tr></thead>
         <tbody>
           {rows.map(({ m, r, e }) => (
