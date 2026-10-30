@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import importlib.util
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -33,8 +34,8 @@ RUNNER = load("run_notebooks")
 
 
 HEADINGS = {
-    "en": ["Objectives", "Setup", "Data", "Method", "State of the art", "Beyond the state of the art", "Results", "Summary", "References"],
-    "es": ["Objetivos", "Preparación", "Datos", "Método", "Estado del arte", "Más allá del estado del arte", "Resultados", "Resumen", "Referencias"],
+    "en": ["Objectives", "Setup", "Data", "Method", "Comparison", "Evidence", "Results", "Summary", "References"],
+    "es": ["Objetivos", "Preparación", "Datos", "Método", "Comparación", "Evidencia", "Resultados", "Resumen", "Referencias"],
 }
 LOW = [1, 1, 1, 1, 3, 4, 1, 1, 1]
 NO_L3 = {"en": "No level 3:", "es": "Sin nivel 3:"}
@@ -49,46 +50,27 @@ def write_json(path: Path, doc: dict) -> None:
 
 
 def make_notebook(lang: str, topic: str, level: int, beyond: tuple[str, ...] = ()) -> dict:
-    cells: list[dict] = []
-    count = [0]
-
-    def md(text: str) -> None:
-        cells.append({"cell_type": "markdown", "id": f"c{len(cells):02d}", "metadata": {}, "source": text})
-
-    def code(text: str) -> None:
-        count[0] += 1
-        cells.append({"cell_type": "code", "id": f"c{len(cells):02d}", "metadata": {}, "source": text,
-                      "execution_count": count[0], "outputs": [{"output_type": "stream", "name": "stdout", "text": "ok\n"}]})
-
-    md(f"# Title\n\n- Level: {level}\n- Prerequisites: none\n- Reading time: 10 minutes")
-    for heading, low in zip(HEADINGS[lang], LOW):
-        if level < low or (low == 4 and level != 4):
-            continue
-        if heading in ("Setup", "Preparación"):
-            md(f"## {heading}\n\nWhat the next cell does, and why. Install with `pip install {PIN}`.")
-        elif heading in ("References", "Referencias"):
-            md(f"## {heading}\n\n- Doe and Roe (1927). {SOURCE}")
-        else:
-            md(f"## {heading}\n\nText.")
-        if heading in ("Setup", "Preparación", "Method", "Método"):
-            versions = "# print the version of a package\nimport importlib.metadata as md\nprint(md.version('numpy'))"
-            code(versions if heading in ("Setup", "Preparación") else "# print a number\nprint(1)")
-    return {"cells": cells, "nbformat": 4, "nbformat_minor": 5, "metadata": {
-        "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}, "language_info": {"name": "python"},
-        "caos": {"language": lang, "topic": topic, "level": level, "title": f"{topic} {level}", "packages": [PIN], "data": [DATA],
-                 "sources": [SOURCE], "beyond": list(beyond)}}}
+    doc = bar_doc(lang, level, salt=f"{topic}-{level}")
+    doc["metadata"]["caos"]["topic"] = topic
+    doc["metadata"]["caos"]["data"] = [DATA]
+    doc["metadata"]["caos"]["beyond"] = list(beyond)
+    return doc
 
 
 TOPICS = {"01-basics": [1, 2], "02-advanced": [1, 2, 3]}
 
 
-def make_repo(root: Path, claims: tuple[str, ...] = (), level4: tuple[str, ...] = ()) -> Path:
+def make_repo(root: Path, claims: tuple[str, ...] = (), level4: tuple[str, ...] = (), *, thin: bool = False) -> Path:
     """A small valid repository: two topics (the first has no level 3 and says why), the SDD section, the CI steps and the data."""
     (root / "notebooks").mkdir(parents=True)
     (root / "notebooks" / "README.md").write_text("# Notebooks\n", encoding="utf-8")
-    (root / "notebooks" / "requirements.txt").write_text(f"# pins\n{PIN}\n", encoding="utf-8")
+    (root / "notebooks" / "requirements.txt").write_text(f"# pins\n{PIN}\n{REFERENCE}\n", encoding="utf-8")
     (root / "data" / "derived").mkdir(parents=True)
     (root / DATA).write_text("{}", encoding="utf-8")
+    (root / "data-pipeline" / "pipeline").mkdir(parents=True)
+    (root / "data-pipeline" / "pipeline" / "__init__.py").write_text("", encoding="utf-8")
+    (root / "data-pipeline" / "pipeline" / "engine.py").write_text(ENGINE, encoding="utf-8")
+    (root / "product.json").write_text(json.dumps({"method_entrypoints": ["pipeline.engine.run"]}), encoding="utf-8")
     (root / "docs" / "design").mkdir(parents=True)
     section = "\n".join(f"- {c}: evidence, source" for c in claims) if claims else "None claimed."
     (root / "docs" / "design" / "SDD.md").write_text(f"# SDD\n\n## Research basis\n\nDoe and Roe 1927, https://doi.org/10.1098/rspa.1927.0118\n\n## Oracles\n\ntext\n\n## Beyond the state of the art\n\n{section}\n\n## Deploy driver\n\ntext\n", encoding="utf-8")
@@ -103,9 +85,23 @@ def make_repo(root: Path, claims: tuple[str, ...] = (), level4: tuple[str, ...] 
             for n, level in enumerate(levels, 1):
                 name = f"{n:02d}-note.ipynb"
                 index.append(f"- {topic}/{name}")
-                write_json(root / "notebooks" / lang / topic / name, make_notebook(lang, topic, level))
+                doc = make_notebook(lang, topic, level)
+                if thin:
+                    kept_setup = False
+                    cells = []
+                    for cell in doc["cells"]:
+                        if cell["cell_type"] == "code":
+                            if kept_setup:
+                                continue
+                            kept_setup = True
+                        cells.append(cell)
+                    doc["cells"] = cells
+                write_json(root / "notebooks" / lang / topic / name, doc)
         if level4:
-            write_json(root / "notebooks" / lang / "02-advanced" / "04-beyond.ipynb", make_notebook(lang, "02-advanced", 4, level4))
+            doc = make_notebook(lang, "02-advanced", 4, level4)
+            if thin:
+                doc["cells"] = [cell for n, cell in enumerate(doc["cells"]) if cell["cell_type"] != "code" or n == 3]
+            write_json(root / "notebooks" / lang / "02-advanced" / "04-beyond.ipynb", doc)
             index.append("- 02-advanced/04-beyond.ipynb")
         (root / "notebooks" / lang / "README.md").write_text("\n".join(index) + "\n", encoding="utf-8")
     return root
@@ -411,13 +407,20 @@ def runner_repo(tmp_path: Path, body: str) -> tuple[Path, Path]:
     doc = json.loads(path.read_text(encoding="utf-8"))
     code = next(c for c in doc["cells"] if c["cell_type"] == "code")
     code["source"], code["outputs"], code["execution_count"] = body, [], None
+    doc["cells"] = [
+        {"cell_type": "markdown", "id": "runner-title", "metadata": {}, "source": "# Runner test"},
+        code,
+    ]
     write_json(path, doc)
     return base, path
 
 
 def run_runner(base: Path, *args: str) -> subprocess.CompletedProcess:
+    env = dict(os.environ)
+    env.setdefault("CAOS_TEMP_ROOT", rf"D:\_Temp\phaseflow-notebook-runner-tests-{os.getpid()}")
+    Path(env["CAOS_TEMP_ROOT"]).mkdir(parents=True, exist_ok=True)
     return subprocess.run([str(NOTEBOOK_PYTHON), str(base / "scripts" / "run_notebooks.py"), *args], capture_output=True, encoding="utf-8",
-                          errors="replace", cwd=base, timeout=300)
+                          errors="replace", cwd=base, env=env, timeout=300)
 
 
 needs_env = pytest.mark.skipif(NOTEBOOK_PYTHON is None, reason="the notebook environment is not built (scripts/setup.sh --notebooks)")
@@ -471,7 +474,7 @@ def test_adversarial_runner_copies_released_models_into_the_check_worktree(tmp_p
     first_run = run_runner(base, "--only", "notebooks/en/01-basics/01-note.ipynb")
     assert first_run.returncode == 0, first_run.stdout + first_run.stderr
 
-    temp_root = tmp_path / "temp-root"
+    temp_root = Path(os.environ.get("CAOS_TEMP_ROOT", rf"D:\_Temp\phaseflow-notebook-runner-tests-{os.getpid()}")) / f"model-copy-{os.getpid()}-{tmp_path.name}"
     temp_root.mkdir()
     before = path.read_bytes()
     checked = run_runner(
@@ -677,7 +680,7 @@ def test_the_runner_refuses_a_notebook_outside_the_layout_and_runs_none(tmp_path
 
 def test_a_notebook_that_redefines_the_oracle_is_found(repo: Path) -> None:
     oracles = repo / "data-pipeline" / "pipeline"
-    oracles.mkdir(parents=True)
+    oracles.mkdir(parents=True, exist_ok=True)
     (oracles / "oracles.py").write_text("def final_size(r0):\n    return r0\n", encoding="utf-8")
     edit(repo, "en", "01-basics/01-note.ipynb", lambda d: next(c for c in d["cells"] if c["cell_type"] == "code").update(
         source="# a copy of the oracle\ndef final_size(r0):\n    return r0"))
@@ -905,11 +908,13 @@ def bar_doc(lang: str = "en", level: int = 2, salt: str = "a", *, methods: int |
     figures = (1 if level == 1 else 2) if figures is None else figures
     prose = (560 if level == 1 else 860) if prose is None else prose
     h = dict(zip(HEADINGS["en"], HEADINGS[lang]))
+    packages = ["numpy==2.4.6"] + ([REFERENCE] if level == 3 else [])
+    install = "pip install " + " ".join(packages)
     q, a = ("**Question:**", "**Answer:**") if lang == "en" else ("**Pregunta:**", "**Respuesta:**")
     b = Builder(lang, level, salt)
     b.md(f"# Title {salt}\n\n" + (f"{q} {words(6, salt + 'q')}?\n\n" if question else "") + f"- Level: {level}\n- Reading time: 20 minutes")
     b.md(f"## {h['Objectives']}\n\n{words(40, salt + 'o')}.")
-    b.md(f"## {h['Setup']}\n\nInstall with `pip install numpy==2.4.6`.\n\n```bash\npip install numpy==2.4.6\n```")
+    b.md(f"## {h['Setup']}\n\nInstall with `{install}`.\n\n```bash\n{install}\n```")
     b.code(first_code or SETUP_CODE, "2.4.6\n")
     for n in range(setups - 1):
         b.md(f"What setup cell {n} does.")
@@ -928,7 +933,7 @@ def bar_doc(lang: str = "en", level: int = 2, salt: str = "a", *, methods: int |
         b.md(f"An extra cell, number {n}.")
         b.code(source, "")
     if level >= 3:
-        b.md(f"## {h['State of the art']}\n\nThe reference implementation, run on the same data.")
+        b.md(f"## {h['Comparison']}\n\nThe reference implementation, run on the same data.")
         if sota_method:
             b.md("Run the reference.")
             b.code("# the pinned reference implementation\nfrom scipy.integrate import solve_ivp\n\nref = solve_ivp(lambda t, y: -y, (0, 1), [1.0])", "")
@@ -937,7 +942,7 @@ def bar_doc(lang: str = "en", level: int = 2, salt: str = "a", *, methods: int |
             b.code("# draw the comparison\nplt.plot([0, 1], [1, 0.4])\nplt.show()", "", figure=True)
             b.md(f"{words(after, salt + 'sf')}.")
     if level >= 4:
-        b.md(f"## {h['Beyond the state of the art']}\n\nThe claim, measured.")
+        b.md(f"## {h['Evidence']}\n\nThe claim, measured.")
         if beyond == "figure":
             b.md("Draw it.")
             b.code("# draw the claim\nplt.plot([0, 1], [0, 1])\nplt.show()", "", figure=True)
@@ -948,7 +953,6 @@ def bar_doc(lang: str = "en", level: int = 2, salt: str = "a", *, methods: int |
     b.md(f"## {h['Results']}\n\n" + (f"{a} {result}\n\n" if answer else f"{result}\n\n") + words(30, salt + 'r') + ".")
     b.md(f"## {h['Summary']}\n\n- {words(12, salt + 's')}.")
     b.md(f"## {h['References']}\n\n- {SOURCE}")
-    packages = ["numpy==2.4.6"] + ([REFERENCE] if level == 3 else [])
     return {"cells": b.cells, "nbformat": 4, "nbformat_minor": 5, "metadata": {
         "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"}, "language_info": {"name": "python"},
         "caos": {"language": lang, "topic": "01-t", "level": level if metadata_level is None else metadata_level, "title": "t",
@@ -1209,8 +1213,8 @@ def test_nb058_the_answer_quotes_a_number_that_an_output_shows(bar_root: Path) -
 
 
 def test_nb059_level_three_runs_the_state_of_the_art_and_draws_it(bar_root: Path) -> None:
-    only(bar_of(bar_root, bar_doc("en", 3, sota_method=False)), "no method cell under State of the art")
-    only(bar_of(bar_root, bar_doc("en", 3, sota_figure=False)), "no figure under State of the art")
+    only(bar_of(bar_root, bar_doc("en", 3, sota_method=False)), "no method cell under Comparison")
+    only(bar_of(bar_root, bar_doc("en", 3, sota_figure=False)), "no figure under Comparison")
     # a method cell and a figure elsewhere do not stand in for the section
     findings = bar_of(bar_root, bar_doc("en", 3, sota_method=False, sota_figure=False))
     assert len(findings) == 2, findings
@@ -1219,7 +1223,7 @@ def test_nb059_level_three_runs_the_state_of_the_art_and_draws_it(bar_root: Path
 def test_nb060_level_four_shows_a_figure_or_a_table_under_beyond(bar_root: Path) -> None:
     assert bar_of(bar_root, bar_doc("en", 4, beyond="figure")) == []
     assert bar_of(bar_root, bar_doc("en", 4, beyond="table")) == []
-    only(bar_of(bar_root, bar_doc("en", 4, beyond="none")), "no figure or table under Beyond the state of the art")
+    only(bar_of(bar_root, bar_doc("en", 4, beyond="none")), "no figure or table under Evidence")
 
 
 def test_nb061_a_notebook_without_a_valid_level_is_measured_at_level_two(bar_root: Path) -> None:
@@ -1233,14 +1237,14 @@ def test_nb061_a_notebook_without_a_valid_level_is_measured_at_level_two(bar_roo
 
 def test_nb062_the_floors_run_in_the_full_gate_after_the_form_checks(tmp_path: Path) -> None:
     """``findings_of`` is the form checks then the floors; a form-clean repository of thin notebooks fails only the floors."""
-    repo = make_repo(tmp_path / "repo")
+    repo = make_repo(tmp_path / "repo", thin=True)
     findings = CHECK.findings_of(repo)
     assert findings and all(": bar:" in f for f in findings), findings[:3]
     assert CHECK.form_findings(repo) == []
 
 
 def test_nb063_the_command_line_reports_the_floors_and_exits_one(tmp_path: Path) -> None:
-    repo = make_repo(tmp_path / "repo")
+    repo = make_repo(tmp_path / "repo", thin=True)
     shutil.copy2(ROOT / "scripts" / "check_notebooks.py", tmp_path / "check_notebooks.py")
     shutil.copy2(ROOT / "scripts" / "notebook_bar.json", tmp_path / "notebook_bar.json")
     r = subprocess.run([sys.executable, "-I", str(tmp_path / "check_notebooks.py"), str(repo)], capture_output=True, encoding="utf-8")
