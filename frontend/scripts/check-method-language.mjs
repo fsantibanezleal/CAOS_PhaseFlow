@@ -14,12 +14,36 @@ function checkText(file, text) {
   if (match) findings.push(`${relative(root, file)}: user-facing method label ${JSON.stringify(match[0])}`);
 }
 
+function checkMarkdown(file, text) {
+  let fenced = false;
+  for (const line of text.split(/\r?\n/)) {
+    if (/^\s*(```+|~~~+)/.test(line)) {
+      fenced = !fenced;
+      continue;
+    }
+    if (fenced) continue; // code examples preserve machine field names and values
+    const visible = /^\s{0,3}#{1,6}\s/.test(line) ? line : line.replace(/`[^`]*`/g, '');
+    checkText(file, visible);
+  }
+}
+
 function sourceFiles(directory) {
   const out = [];
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) out.push(...sourceFiles(path));
     else if (['.ts', '.tsx'].includes(extname(entry.name))) out.push(path);
+  }
+  return out;
+}
+
+function contentFiles(directory, extensions, skip = () => false) {
+  const out = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (skip(path)) continue;
+    if (entry.isDirectory()) out.push(...contentFiles(path, extensions, skip));
+    else if (extensions.has(extname(entry.name).toLowerCase())) out.push(path);
   }
   return out;
 }
@@ -44,6 +68,17 @@ for (const file of sourceFiles(join(frontend, 'src'))) {
 
 for (const file of ['README.md', 'notebooks/README.md', 'notebooks/en/README.md', 'notebooks/es/README.md']) {
   checkText(join(root, file), readFileSync(join(root, file), 'utf8'));
+}
+
+checkText(join(root, 'CHANGELOG.md'), readFileSync(join(root, 'CHANGELOG.md'), 'utf8'));
+for (const file of contentFiles(join(root, 'content'), new Set(['.json']))) {
+  checkText(file, readFileSync(file, 'utf8'));
+}
+const internalDocs = /[\\/]docs[\\/](?:design|contracts|data-contract)(?:[\\/]|$)/;
+for (const file of contentFiles(join(root, 'docs'), new Set(['.md', '.svg']), (path) => internalDocs.test(path))) {
+  const text = readFileSync(file, 'utf8');
+  if (extname(file).toLowerCase() === '.md') checkMarkdown(file, text);
+  else checkText(file, text);
 }
 
 for (const language of ['en', 'es']) {
@@ -76,5 +111,5 @@ if (findings.length) {
   for (const finding of findings) console.error(`method-language: ${finding}`);
   process.exitCode = 1;
 } else {
-  console.log('method-language: no internal method-tier labels in app copy, notebook text, README, or manuscripts');
+  console.log('method-language: no internal method-tier labels in app copy, content, notebooks, public docs, README, changelog, or manuscripts');
 }

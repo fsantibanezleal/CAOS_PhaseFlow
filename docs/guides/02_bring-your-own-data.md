@@ -21,9 +21,9 @@ PhaseFlow applies to a NEW deposit, not only to its thirteen cases. The door is 
 - **The column map.** The tonnage column is per instance; the reader refuses a column that is not strictly
   positive and never guesses another.
 - **The vertical convention.** Levels increase upward; predecessors sit above. A downward file is rejected.
-- **Grade.** Without a grade column the learned rung and the grade charts are skipped; that is correct, not a
+- **Grade.** Without a grade column the learned method and the grade charts are skipped; that is correct, not a
   failure. Value per tonne is not grade.
-- **Destinations.** Without a `.pcpsp` (or per-destination economics) the destination rungs are skipped;
+- **Destinations.** Without a `.pcpsp` (or per-destination economics) the destination methods are skipped;
   nothing is reconstructed from the CPIT value.
 
 ## What the contract will tell you

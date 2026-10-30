@@ -20,8 +20,8 @@ solver's state:
 |---|---|
 | `instance` | dims, block and arc counts, source, the synthetic flag |
 | `scenario` | periods, discount rate, capacities, whether the scenario is declared or published |
-| `methods[]` | per method: rung, NPV, the bound of its own problem, gap, runtime, per-period rows, and for synthetic cases the per-block schedule |
-| `bound` | Algorithm 4, the joint LP (or why it was skipped), the PCPSP LP, which CPIT bound was used, and the reason for every rung that did not run |
+| `methods[]` | per method: family, NPV, the bound of its own problem, gap, runtime, per-period rows, and for synthetic cases the per-block schedule |
+| `bound` | Algorithm 4, the joint LP (or why it was skipped), the PCPSP LP, which CPIT bound was used, and the reason for every method that did not run |
 | `ensemble` | the uncertainty readout, or the reason it did not run |
 | `learned` | the held-out scores of the learned lane, or absent |
 | `blocks` | x, y, level, grade, tonnage, processTonnage, value and inPit per block. **Only for redistributable instances**; the live solver reads the baked processing coefficient instead of inferring it from net-value sign. |

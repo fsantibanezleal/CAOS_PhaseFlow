@@ -68,7 +68,7 @@ PCPSP LP equals the CPIT bound (Lane's mine-limited result), on the degenerate c
    $\mathcal F_{\text{re-cut}}\subseteq\mathcal F_{\mathrm{PCPSP}}$.
 3. **Schedule it as a CPIT**: its own ultimate pit (dumping marginal ore changes values), its own
    critical-multiplier relaxations, then ExTS (`destination-toposort`) and the sliding window with the
-   CPIT rung's settings (`destination-sliding-window`).
+   CPIT method's settings (`destination-sliding-window`).
 4. **Search exactly** with every destination free again: the OPBSP-[D] re-solve starts from the best of
    those two plans and the best CPIT plan lifted to PCPSP, so it can never end below CPIT
    (`destination-local-search`).
@@ -144,7 +144,7 @@ integer solve could separate:
 - **The twins** build both destination values from their seeded economics (dump: minus the mining cost;
   plant: recovered revenue less processing, less mining) and run the same CPIT-reduction check.
 - **The declared `kd` and `zuck_small` scenarios** have no source PCPSP model and no declared processing
-  economics, so the destination rungs are skipped and say why: a fixed-destination value cannot recover
+  economics, so the destination methods are skipped and say why: a fixed-destination value cannot recover
   the alternative destination value that was discarded.
 
 The period chart of a destination plan charges each block's CHOSEN destination's value and resources,
@@ -187,5 +187,5 @@ is stated.
 
 `oreblocks.pcpsp_lp_bound(solution=True)`, `oreblocks.pcpsp_lagrangian_bound`,
 `PcpspBound.preferred_destination`, `oreblocks.restrict_destinations`, `oreblocks.lift_to_pcpsp`, `oreblocks.exact_destination_local_search`,
-`oreblocks.solve_opbsp_exact`, `oreblocks.lane_cutoffs` (engine 0.6.3); the three rungs in
+`oreblocks.solve_opbsp_exact`, `oreblocks.solve_opbsp_with_status`, `oreblocks.lane_cutoffs` (engine 0.6.5); the three methods in
 `data-pipeline/pipeline/stages/solve.py`.

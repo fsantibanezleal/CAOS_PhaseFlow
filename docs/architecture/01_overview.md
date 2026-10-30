@@ -1,8 +1,7 @@
 # 01 · Overview
 
-PhaseFlow is an instance of the CAOS product-repo archetype (ADR-0057, in the management repository's
-conventions): offline-pipeline-heavy, backend-free, deployed as a static site that replays committed
-artifacts and re-solves live where the case allows. What follows describes THIS product.
+PhaseFlow is an offline-pipeline-heavy, backend-free scientific workbench, deployed as a static site that
+replays committed artifacts and re-solves live where the case allows. What follows describes this product.
 
 ![The lanes: the offline bake, the committed artifact, the browser](../assets/lanes.svg)
 
@@ -38,7 +37,7 @@ $PHASEFLOW_DATA_DIR/minelib/   MineLib .blocks/.prec/.cpit/.pcpsp   +   oreblock
         |
         v  CONTRACT 1  (accept / flag / reject, with reasons)
    bounds: critical multiplier, Algorithm 4, Bienstock-Zuckerberg, PCPSP LP
-   ladder: classical, sota, learned, beyond (re-cut destinations, min-width); controls; ensemble
+   method groups: reference, published, learned, proposed (re-cut destinations, min-width); controls; ensemble
         |
         v  CONTRACT 2  (trace + manifest + index, re-read and checked; mirrored in contract.types.ts)
 data/derived/<case>/trace.json   data/derived/manifests/<case>.json   data/derived/manifests/index.json

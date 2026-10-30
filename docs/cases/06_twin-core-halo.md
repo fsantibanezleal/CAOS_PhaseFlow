@@ -2,7 +2,7 @@
 
 **Family:** `deposit`. **Role in the argument**, as the case source states it:
 
-> Concentric grade. Nested pits look sensible on this deposit and the schedule still does something different, which is the point of solving rather than nesting. With the vein it is one of the two archetypes on which the learned rung is measured to fail most: a thin rich core makes the order of extraction delicate.
+> Concentric grade. Nested pits look sensible on this deposit and the schedule still does something different, which is the point of solving rather than nesting. With the vein it is one of the two archetypes on which the learned method is measured to fail most: a thin rich core makes the order of extraction delicate.
 
 ## The instance
 
@@ -18,7 +18,7 @@ different, which is the point of solving rather than nesting.
 
 ## What to read in it
 
-- **The learned rung's hard case.** A thin core makes the order of extraction delicate, and it is one of the
+- **The learned method's hard case.** A thin core makes the order of extraction delicate, and it is one of the
   two archetypes where the surrogate is measured to fail most ([08](../methodologies/08_when-the-surrogate-fails.md));
   the measured share of the exact ExTS plan is in the case table.
 - **Greedy against Gershon.** The greedy order chases the core and pays for the halo late; Gershon's set sum
@@ -49,22 +49,22 @@ CPIT bound the case uses. Coherence is the mean over periods of the connected co
 the largest one.
 
 <!-- generated:case:twin-core-halo -->
-| method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
+| method | family | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | -3,749,944 | Algorithm 4 | 103.85% | 195 ms | 4.6 / 81% |
-| `nested-shells` | classical | 32,082,725 | Algorithm 4 | 67.05% | 189 ms | 10.4 / 85% |
-| `toposort-greedy` | classical | 19,478,724 | Algorithm 4 | 80.00% | 182 ms | 8.9 / 84% |
-| `toposort-gershon` | classical | 72,931,999 | Algorithm 4 | 25.10% | 867 ms | 79.1 / 34% |
-| `toposort-expected` | sota | 87,353,943 | Algorithm 4 | 10.29% | 77.5 s | 15.4 / 50% |
-| `exts-two-resource` | sota | 87,353,943 | Algorithm 4 | 10.29% | 77.7 s | 15.4 / 50% |
-| `shift-local-search` | sota | 89,079,079 | Algorithm 4 | 8.52% | 138 ms | 9.6 / 71% |
-| `sliding-window` **(best)** | sota | 94,400,395 | Algorithm 4 | 3.05% | 56.8 min | 13.1 / 45% |
-| `cpitD-local-search` | sota | 89,185,799 | Algorithm 4 | 8.41% | 294 ms | 10.2 / 71% |
-| `learned-expected-time` | learned | 70,548,003 | Algorithm 4 | 27.55% | 255 ms | 72.7 / 42% |
-| `destination-toposort` | beyond | 110,093,185 | PCPSP LP | 16.51% | 45.1 s | 15.0 / 51% |
-| `destination-sliding-window` | beyond | 124,663,892 | PCPSP LP | 5.46% | 20.07 h | 21.2 / 61% |
-| `destination-local-search` | beyond | 124,888,370 | PCPSP LP | 5.29% | 1.6 s | 22.3 / 60% |
-| `min-width` | beyond | 94,383,318 | Algorithm 4 | 3.07% | 327 ms | 12.3 / 45% |
+| `bench-by-bench` | Reference methods | -3,749,944 | Algorithm 4 | 103.85% | 195 ms | 4.6 / 81% |
+| `nested-shells` | Reference methods | 32,082,725 | Algorithm 4 | 67.05% | 189 ms | 10.4 / 85% |
+| `toposort-greedy` | Reference methods | 19,478,724 | Algorithm 4 | 80.00% | 182 ms | 8.9 / 84% |
+| `toposort-gershon` | Reference methods | 72,931,999 | Algorithm 4 | 25.10% | 867 ms | 79.1 / 34% |
+| `toposort-expected` | Published methods | 87,353,943 | Algorithm 4 | 10.29% | 77.5 s | 15.4 / 50% |
+| `exts-two-resource` | Published methods | 87,353,943 | Algorithm 4 | 10.29% | 77.7 s | 15.4 / 50% |
+| `shift-local-search` | Published methods | 89,079,079 | Algorithm 4 | 8.52% | 138 ms | 9.6 / 71% |
+| `sliding-window` **(best)** | Published methods | 94,400,395 | Algorithm 4 | 3.05% | 56.8 min | 13.1 / 45% |
+| `cpitD-local-search` | Published methods | 89,185,799 | Algorithm 4 | 8.41% | 294 ms | 10.2 / 71% |
+| `learned-expected-time` | Learned methods | 70,548,003 | Algorithm 4 | 27.55% | 255 ms | 72.7 / 42% |
+| `destination-toposort` | Additional analyses | 110,093,185 | PCPSP LP | 16.51% | 45.1 s | 15.0 / 51% |
+| `destination-sliding-window` | Additional analyses | 124,663,892 | PCPSP LP | 5.46% | 20.07 h | 21.2 / 61% |
+| `destination-local-search` | Additional analyses | 124,888,370 | PCPSP LP | 5.29% | 1.6 s | 22.3 / 60% |
+| `min-width` | Additional analyses | 94,383,318 | Algorithm 4 | 3.07% | 327 ms | 12.3 / 45% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/twin-core-halo.json` by `scripts/docs_tables.py`.*

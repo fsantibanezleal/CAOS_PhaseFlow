@@ -36,22 +36,22 @@ CPIT bound the case uses. Coherence is the mean over periods of the connected co
 the largest one.
 
 <!-- generated:case:regime-high-discount -->
-| method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
+| method | family | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | 71,675,727 | joint LP | 61.18% | 82 ms | 6.6 / 87% |
-| `nested-shells` | classical | 88,065,737 | joint LP | 52.30% | 77 ms | 2.9 / 90% |
-| `toposort-greedy` | classical | 80,712,545 | joint LP | 56.29% | 77 ms | 10.9 / 87% |
-| `toposort-gershon` | classical | 141,804,902 | joint LP | 23.20% | 272 ms | 50.4 / 41% |
-| `toposort-expected` | sota | 168,506,775 | joint LP | 8.73% | 18.3 s | 10.5 / 78% |
-| `exts-two-resource` | sota | 168,506,775 | joint LP | 8.73% | 18.3 s | 10.5 / 78% |
-| `shift-local-search` | sota | 169,738,336 | joint LP | 8.07% | 54 ms | 6.8 / 85% |
-| `sliding-window` **(best)** | sota | 181,093,517 | joint LP | 1.92% | 15.2 min | 11.4 / 73% |
-| `cpitD-local-search` | sota | 169,795,008 | joint LP | 8.04% | 706 ms | 7.1 / 86% |
-| `learned-expected-time` | learned | 164,747,237 | joint LP | 10.77% | 114 ms | 68.8 / 40% |
-| `destination-toposort` | beyond | 225,093,470 | PCPSP LP | 12.23% | 24.2 s | 17.2 / 66% |
-| `destination-sliding-window` | beyond | 250,128,042 | PCPSP LP | 2.47% | 28.2 min | 26.6 / 69% |
-| `destination-local-search` | beyond | 251,355,084 | PCPSP LP | 1.99% | 2.3 s | 27.4 / 68% |
-| `min-width` | beyond | 181,077,136 | joint LP | 1.93% | 173 ms | 10.6 / 73% |
+| `bench-by-bench` | Reference methods | 71,675,727 | joint LP | 61.18% | 82 ms | 6.6 / 87% |
+| `nested-shells` | Reference methods | 88,065,737 | joint LP | 52.30% | 77 ms | 2.9 / 90% |
+| `toposort-greedy` | Reference methods | 80,712,545 | joint LP | 56.29% | 77 ms | 10.9 / 87% |
+| `toposort-gershon` | Reference methods | 141,804,902 | joint LP | 23.20% | 272 ms | 50.4 / 41% |
+| `toposort-expected` | Published methods | 168,506,775 | joint LP | 8.73% | 18.3 s | 10.5 / 78% |
+| `exts-two-resource` | Published methods | 168,506,775 | joint LP | 8.73% | 18.3 s | 10.5 / 78% |
+| `shift-local-search` | Published methods | 169,738,336 | joint LP | 8.07% | 54 ms | 6.8 / 85% |
+| `sliding-window` **(best)** | Published methods | 181,093,517 | joint LP | 1.92% | 15.2 min | 11.4 / 73% |
+| `cpitD-local-search` | Published methods | 169,795,008 | joint LP | 8.04% | 706 ms | 7.1 / 86% |
+| `learned-expected-time` | Learned methods | 164,747,237 | joint LP | 10.77% | 114 ms | 68.8 / 40% |
+| `destination-toposort` | Additional analyses | 225,093,470 | PCPSP LP | 12.23% | 24.2 s | 17.2 / 66% |
+| `destination-sliding-window` | Additional analyses | 250,128,042 | PCPSP LP | 2.47% | 28.2 min | 26.6 / 69% |
+| `destination-local-search` | Additional analyses | 251,355,084 | PCPSP LP | 1.99% | 2.3 s | 27.4 / 68% |
+| `min-width` | Additional analyses | 181,077,136 | joint LP | 1.93% | 173 ms | 10.6 / 73% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/regime-high-discount.json` by `scripts/docs_tables.py`.*

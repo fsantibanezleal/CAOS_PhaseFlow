@@ -65,16 +65,17 @@ $$
   positive means the single-model number flatters;
 - the **value of re-planning** once the realisation is known.
 
-That last quantity was first called EVPI. It is not: true EVPI needs the per-realisation OPTIMUM, and the
-per-realisation solve here is a heuristic, so the number is a **lower bound** on EVPI. Computed naively it
-came out negative on `newman1` (-0.148 percent), because a fixed plan can beat a heuristic re-solve on a
-lucky realisation; the re-solve is now the maximum of the heuristic and every candidate already evaluated,
-which makes it a proper, non-negative lower bound, and a test asserts both.
+That last quantity is not EVPI: true EVPI needs the globally optimal schedule for every realisation. The
+reported re-plan starts from one fixed candidate selected by its expected NPV and runs OreBlocks' exact
+C-PIT[D] neighbourhood search on each perturbed value field. Each restricted neighbourhood is solved to
+the declared MIP gap, and the feasible incumbent is preserved; the outer randomized search is still a
+heuristic, so the mean improvement is a **lower bound** on EVPI. The trace records the selected fixed
+policy, the exact-local-search settings and elapsed time. Its reference never switches between fixed
+candidates after the realisation is observed.
 
-**The per-realisation solve is deliberately the cheap one** (Gershon weights and a shift search, no bound):
-the ensemble compares NPVs and never reads a bound, and with the bound left on, the first full bake ran for
-four hours and finished one case. The trace carries `resolveMethod` so the number is never read without
-knowing what produced it.
+The re-plan does not compute a certified bound. It reuses the feasible fixed schedule and solves local
+restricted MILPs, making the uncertainty readout distinct from the case's offline certified bound. Its
+method label and cost are recorded in the trace; the result is not a global two-stage stochastic optimum.
 
 ## 5. Measured on every case, and what the value of re-planning says here
 
@@ -96,12 +97,9 @@ knowing what produced it.
 | [`ctrl-degenerate`](../cases/13_ctrl-degenerate.md) | not run | - | - | - | - | a single-period scenario has no schedule to stress |
 <!-- /generated -->
 
-**Read the value-of-re-planning column for what it is.** It is zero on every case. The fixed plans
-include the sliding window, within a few percent of the bound, and the cheap per-realisation re-solve
-never beats it, so the lower bound collapses to its floor. Zero here does NOT mean that knowing the
-realisation is worthless; it means this lower bound is too weak to say anything in this release. A
-re-solve strong enough to matter costs a sliding window per realisation (backlog BL-049), and until then
-the column is shown with this reading attached.
+**Read the value-of-re-planning column as a measured lower bound.** A zero means the frozen local search
+found no improvement from its single fixed-policy start on this finite set of realisations. It does not
+mean that knowing the realisation has no value, and it does not establish a global stochastic optimum.
 
 ## 6. The label that stays on it
 

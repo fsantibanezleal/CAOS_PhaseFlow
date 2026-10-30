@@ -8,7 +8,7 @@
 | `routes` | App (`/`), Introduction, Methodology, Implementation, Experiments, Benchmark, each with its EN and ES label |
 | `links` | the GitHub repository |
 | `version` | `APP_VERSION`, the display version from the artifacts |
-| `architecture` | `frontend/src/architecture.ts`: the "how it was built" modal, five tabs of bilingual text with a hand-authored, theme-aware SVG each, laid out by measuring labels so a translation cannot run off a box |
+| `architecture` | `frontend/src/architecture/index.ts`: the "how it was built" modal, five tabs of bilingual text with a hand-authored, theme-aware SVG each, laid out by measuring labels so a translation cannot run off a box |
 | `footer` | one line: attribution, licence, provenance ("Engine: oreblocks (MIT); MineLib not redistributed"), disclaimer ("Not for mine planning") |
 
 `CitationsProvider items={CITATIONS}` (`frontend/src/data/citations.ts`) makes every reference on the reading

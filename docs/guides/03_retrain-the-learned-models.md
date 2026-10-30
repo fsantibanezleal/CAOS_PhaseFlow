@@ -1,6 +1,6 @@
 # 03 · Retrain, re-score or re-verify the learned models
 
-All of this is offline (ADR-0074: CI never trains). Install the precompute requirements first
+All of this is offline; CI never trains. Install the precompute requirements first
 (`pip install -r requirements-precompute.txt`).
 
 | want | run | cost |
@@ -19,7 +19,7 @@ All of this is offline (ADR-0074: CI never trains). Install the precompute requi
 2. `validate_guard.py` (writes `guard-validation.json`);
 3. `export_surrogate_parity.py` (the fixture the browser test reads);
 4. `cd frontend && npm test` (the forward pass and the features must match the new fixture);
-5. a release bake (the learned rung in every trace uses the new model) and the steps after it
+5. a release bake (the learned method in every trace uses the new model) and the steps after it
    ([01](01_bake-the-artifacts.md));
 6. `python scripts/docs_tables.py` (the wiki's learned tables read these files).
 
@@ -27,7 +27,7 @@ All of this is offline (ADR-0074: CI never trains). Install the precompute requi
 
 - The split is by deposit seed; the scripts assert the training, held-out and validation seed sets are
   disjoint. Never split by row.
-- The target is the tightest single-resource relaxation's expected time, the one the ExTS rung schedules
+- The target is the tightest single-resource relaxation's expected time, the one the ExTS method schedules
   from.
 - The scenario sweep crosses rate and capacity; a sweep that moves them together teaches one as a proxy
   for the other ([methodologies/08](../methodologies/08_when-the-surrogate-fails.md)).

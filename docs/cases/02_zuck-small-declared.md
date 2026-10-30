@@ -26,10 +26,10 @@ MineLib's published optimum, 1,422,726,898.
 - **Scale on a real precedence graph**: nearly nine times the blocks of `newman1` and 145,640 arcs; the
   critical multiplier bound and the sliding window are the expensive steps.
 - **No grade field.** Zuck Small publishes cost, value, rock tonnes and ore tonnes but no grade; value per
-  tonne is not grade, so the grade-dependent learned rung is skipped (with the reason in the trace) and the
+  tonne is not grade, so the grade-dependent learned method is skipped (with the reason in the trace) and the
   charts show strip ratio without a grade curve.
 - **No destination economics.** There is no source PCPSP model and no declared processing economics, so
-  the destination rungs are skipped rather than invented from the CPIT value.
+  the destination methods are skipped rather than invented from the CPIT value.
 
 ## Bounds
 
@@ -49,18 +49,18 @@ CPIT bound the case uses. Coherence is the mean over periods of the connected co
 the largest one.
 
 <!-- generated:case:zuck-small-declared -->
-| method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
+| method | family | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | 346,832,457 | joint LP | 51.78% | 256 ms | 8.9 / 84% |
-| `nested-shells` | classical | 495,393,570 | joint LP | 31.12% | 249 ms | 63.2 / 72% |
-| `toposort-greedy` | classical | 386,377,893 | joint LP | 46.28% | 239 ms | 48.0 / 66% |
-| `toposort-gershon` | classical | 483,991,843 | joint LP | 32.71% | 722 ms | 104.0 / 52% |
-| `toposort-expected` | sota | 565,706,313 | joint LP | 21.35% | 3.1 min | 35.0 / 75% |
-| `exts-two-resource` | sota | 566,520,496 | joint LP | 21.23% | 3.1 min | 55.1 / 61% |
-| `shift-local-search` | sota | 594,985,768 | joint LP | 17.28% | 429 ms | 43.9 / 83% |
-| `sliding-window` **(best)** | sota | 705,009,489 | joint LP | 1.98% | 90.4 min | 64.0 / 69% |
-| `cpitD-local-search` | sota | 597,620,803 | joint LP | 16.91% | 406 ms | 48.4 / 78% |
-| `min-width` | beyond | 703,210,121 | joint LP | 2.23% | 284 ms | 42.9 / 74% |
+| `bench-by-bench` | Reference methods | 346,832,457 | joint LP | 51.78% | 256 ms | 8.9 / 84% |
+| `nested-shells` | Reference methods | 495,393,570 | joint LP | 31.12% | 249 ms | 63.2 / 72% |
+| `toposort-greedy` | Reference methods | 386,377,893 | joint LP | 46.28% | 239 ms | 48.0 / 66% |
+| `toposort-gershon` | Reference methods | 483,991,843 | joint LP | 32.71% | 722 ms | 104.0 / 52% |
+| `toposort-expected` | Published methods | 565,706,313 | joint LP | 21.35% | 3.1 min | 35.0 / 75% |
+| `exts-two-resource` | Published methods | 566,520,496 | joint LP | 21.23% | 3.1 min | 55.1 / 61% |
+| `shift-local-search` | Published methods | 594,985,768 | joint LP | 17.28% | 429 ms | 43.9 / 83% |
+| `sliding-window` **(best)** | Published methods | 705,009,489 | joint LP | 1.98% | 90.4 min | 64.0 / 69% |
+| `cpitD-local-search` | Published methods | 597,620,803 | joint LP | 16.91% | 406 ms | 48.4 / 78% |
+| `min-width` | Additional analyses | 703,210,121 | joint LP | 2.23% | 284 ms | 42.9 / 74% |
 | `learned-expected-time` | - | not run | - | - | - | no source grade field for the learned input features |
 | `destination-toposort` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
 | `destination-sliding-window` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
