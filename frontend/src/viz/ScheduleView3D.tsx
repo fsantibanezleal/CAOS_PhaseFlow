@@ -52,7 +52,7 @@ export interface ScheduleView3DProps {
   cursor: number;
   mode?: StageMode;
   theme: string;
-  /** 0 means fill the parent, which is the ADR-0070 focus stage contract */
+  /** 0 means fill the parent, which is the Focus stage contract */
   height?: number;
   /** cut everything with y index above this, to look inside. -1 disables. */
   sectionY?: number;
@@ -193,7 +193,7 @@ export function ScheduleView3D({
     // correctly sized and scroll-free is all of those things while still blank, so both the CSS
     // placeholder and the browser gate key off THIS rather than off a timer. On a software
     // rasteriser a frame of this scene costs about 100 ms, so a fixed sleep is a promise the stage
-    // size can break: growing the stage to meet the ADR-0071 floor tripled its pixels and broke
+    // size can break: growing the stage to meet the minimum stage height tripled its pixels and broke
     // exactly that assumption once already.
     // Only once the mesh actually HAS instances. The build effect renders before the cursor effect
     // has written a single matrix, so a flag set in the render loop alone marks a black frame as

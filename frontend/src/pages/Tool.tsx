@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Callout, CaseWorkbench, Cite, Readout, SubTabs, Tabs, useWorkbenchState, type CaseDef } from '@fasl-work/caos-app-shell';
-import { fmtDuration, fmtInt, fmtMoney, fmtTonnes, dec, exp, overrunText, resourceLabel, rungLabel } from '../lib/artifacts.ts';
+import { fmtDuration, fmtInt, fmtMoney, fmtTonnes, dec, exp, overrunText, resourceLabel } from '../lib/artifacts.ts';
 import { largestOverrun } from '../lib/feasibility.ts';
 import { loadManifest } from '../lib/artifacts.ts';
 import { stageLabel, useCase } from '../lib/useCase.ts';
@@ -125,6 +125,7 @@ export default function Tool() {
   if (!st.trace || !st.manifest || !st.method) return <p className="pf-muted">{es ? 'Cargando...' : 'Loading...'}</p>;
 
   const { trace, manifest, method } = st;
+  const guardAvailable = trace.learned?.guard?.live_available === true;
   // The baked controls in older releases included the PCPSP and operability
   // rows in this envelope. Derive the displayed range from comparable CPIT
   // schedules so a stale artifact cannot repeat that misleading comparison.
@@ -145,7 +146,7 @@ export default function Tool() {
   const optionSuffix = (m: typeof method): string => {
     const over = largestOverrun(m.periods);
     if (over) return ` (${overrunText(over, resources, true)})`;
-    return m.rung === 'beyond' ? '' : ` (${dec(m.gapPct, 2)}%)`;
+    return m.method === 'beyond' ? '' : ` (${dec(m.gapPct, 2)}%)`;
   };
 
   const stage = hasBlocks ? (
@@ -171,11 +172,11 @@ export default function Tool() {
         </div>
         <div className="pf-hud-grid">
           <div className="pf-hud-row"><span className="pf-hud-val">{fmtMoney(p?.cumNpv ?? 0)}</span><span className="pf-hud-key">{es ? 'NPV acum' : 'cum NPV'}</span></div>
-          <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '-' : fmtMoney(method.bound)}</span><span className="pf-hud-key">{es ? 'cota' : 'bound'}</span></div>
+          <div className="pf-hud-row"><span className="pf-hud-val">{method.method === 'beyond' ? '-' : fmtMoney(method.bound)}</span><span className="pf-hud-key">{es ? 'cota' : 'bound'}</span></div>
           {overrun ? (
             <div className="pf-hud-row pf-warn" data-testid="hud-infeasible"><span className="pf-hud-val">+{dec(overrun.pct, 1)}%</span><span className="pf-hud-key">{es ? 'sobre capacidad' : 'over capacity'}</span></div>
           ) : (
-            <div className="pf-hud-row"><span className="pf-hud-val">{method.rung === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</span><span className="pf-hud-key">{es ? 'brecha' : 'gap'}</span></div>
+            <div className="pf-hud-row"><span className="pf-hud-val">{method.method === 'beyond' ? '-' : `${dec(method.gapPct, 2)}%`}</span><span className="pf-hud-key">{es ? 'brecha' : 'gap'}</span></div>
           )}
           <div className="pf-hud-row"><span className="pf-hud-val">{p?.components ?? 0}</span><span className="pf-hud-key">{es ? 'fragmentos' : 'components'}</span></div>
         </div>
@@ -310,7 +311,7 @@ export default function Tool() {
       label: es ? 'Métodos' : 'Methods',
       content: (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <MethodBars rows={trace.methods.filter((m) => !m.method.startsWith('destination-')).map((m) => ({ method: m.method, rung: m.rung, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs, comparable: m.rung !== 'beyond' }))} />
+          <MethodBars rows={trace.methods.filter((m) => !m.method.startsWith('destination-')).map((m) => ({ method: m.method, gapPct: m.gapPct, npv: m.npv, runtimeMs: m.runtimeMs, comparable: m.rung !== 'beyond' }))} />
           <Callout variant="note" title={es ? 'Como leer esto' : 'How to read this'}>
             {es
               ? 'La pista es la cota certificada CPIT usada para este caso y el relleno es el NPV capturado por cada plan CPIT. Lo rayado muestra la brecha a la misma escala. La cota no es un plan: BZ aproxima el óptimo LP dentro de su tolerancia cuando converge; en otros casos puede usarse la cota más holgada del Algoritmo 4. min-width es el mejor plan suavizado hacia un ancho operable con las mismas capacidades: un plan CPIT factible, dibujado con su brecha, que por regla no compite por el mejor: suavizar casi siempre cuesta valor y puede ganar un poco donde un bloque absorbido pasa a un período anterior. Los planes con destino resuelven PCPSP contra su propia cota y aparecen solo en la tabla.'
@@ -321,7 +322,7 @@ export default function Tool() {
             <table className="pf-table">
               <thead>
                 <tr>
-                  <th>{es ? 'método' : 'method'}</th><th>{es ? 'peldaño' : 'rung'}</th><th>NPV</th><th>{es ? 'cota' : 'bound'}</th>
+                  <th>{es ? 'método' : 'method'}</th><th>NPV</th><th>{es ? 'cota' : 'bound'}</th>
                   <th>{es ? 'brecha' : 'gap'}</th><th>{es ? 'tiempo' : 'time'}</th><th>{es ? 'bloques' : 'blocks'}</th><th>{es ? 'notas' : 'notes'}</th>
                 </tr>
               </thead>
@@ -330,7 +331,7 @@ export default function Tool() {
                   const over = largestOverrun(m.periods);
                   return (
                     <tr key={m.method} data-infeasible={over ? 'true' : undefined}>
-                      <td>{m.method}</td><td>{rungLabel(m.rung)}</td><td>{fmtMoney(m.npv)}</td><td>{m.rung === 'beyond' ? '-' : fmtMoney(m.bound)}</td>
+                      <td>{m.method}</td><td>{fmtMoney(m.npv)}</td><td>{m.rung === 'beyond' ? '-' : fmtMoney(m.bound)}</td>
                       <td className={over ? 'pf-warn' : undefined}>{over ? overrunText(over, resources, true) : m.rung === 'beyond' ? '-' : `${dec(m.gapPct, 2)}%`}</td><td>{fmtDuration(m.runtimeMs)}</td><td>{m.minedBlocks}</td>
                       <td style={{ textAlign: 'left' }} className="pf-cap pf-muted"><EngineText text={m.notes} /></td>
                     </tr>
@@ -354,7 +355,7 @@ export default function Tool() {
             <PanelBoundary title={es ? 'Capacidad por período' : 'Capacity by period'}>
               <CapacityChart
                 periods={method.periods}
-                names={resources.map((r) => r.name)}
+                names={resources.map((r) => resourceLabel(r.name))}
                 theme={st.theme}
                 height={productionChartHeight}
               />
@@ -367,7 +368,7 @@ export default function Tool() {
           )}
           <PanelBoundary title={es ? 'Las dos cotas' : 'The two bounds'}>
             {trace.bound
-              ? <BoundPanel bound={trace.bound} best={trace.methods.filter((m) => m.rung !== 'beyond').reduce((a, b) => (a.npv >= b.npv ? a : b))} es={es} />
+              ? <BoundPanel bound={trace.bound} best={trace.methods.filter((m) => m.method !== 'beyond').reduce((a, b) => (a.npv >= b.npv ? a : b))} es={es} />
               : <Absent title={es ? 'Las dos cotas' : 'The two bounds'} what={es ? 'la cota conjunta' : 'the joint bound'} es={es} />}
           </PanelBoundary>
           <PanelBoundary title={es ? 'El carril aprendido' : 'The learned lane'}>
@@ -381,7 +382,7 @@ export default function Tool() {
               : <Absent title={es ? 'Riesgo' : 'Risk'} what={es ? 'el ensemble de incertidumbre' : 'the uncertainty ensemble'} es={es} />}
           </PanelBoundary>
           <div className="pf-panel">
-            <h4>{es ? 'Peldaños' : 'Rungs'}</h4>
+            <h4>{es ? 'Métodos' : 'Methods'}</h4>
             {Object.entries(trace.bound?.skipped_methods ?? {}).map(([name, why]) => (
               <p className="pf-cap pf-warn" key={name}>
                 <strong>{name}</strong>{' '}
@@ -389,23 +390,10 @@ export default function Tool() {
                 <EngineText text={String(why)} />
               </p>
             ))}
-            {(['classical', 'sota', 'learned', 'beyond'] as const).map((rung) => {
-              const rows = trace.methods.filter((m) => m.rung === rung);
-              if (!rows.length) return null;
-              const best = rows.reduce((a, b) => (a.npv >= b.npv ? a : b));
-              return (
-                <p className="pf-cap" key={rung}>
-                  <b>{rung}</b>: {rows.length} {es ? 'métodos' : 'methods'}, {es ? 'mejor' : 'best'}{' '}
-                  {rung === 'beyond'
-                    ? <span>{es ? 'vistas de operabilidad y de destino' : 'operability and destination views'}</span>
-                    : <><code>{best.method}</code> {es ? 'con brecha' : 'at a gap of'} {dec(best.gapPct, 2)}%</>}
-                </p>
-              );
-            })}
             <p className="pf-cap pf-muted">
               {es
-                ? 'Los peldaños beyond no compiten por el mejor plan: los planes con destino resuelven otro problema (PCPSP, con el destino como decisión) y se miden contra la LP PCPSP; min-width cambia valor por un ancho operable con las mismas capacidades, así que la diferencia entre su brecha y la del mejor plan es lo que ese cambio mueve, casi siempre un costo.'
-                : 'The beyond rungs do not compete for the best plan: the destination plans solve a different problem (PCPSP, with the destination as a decision) and are measured against the PCPSP LP; min-width trades value for a workable width under the same capacities, so the difference between its gap and that of the best plan is what that trade moves, almost always a cost.'}
+                ? 'La tabla nombra cada método y muestra sus resultados. Los planes con elección de destino resuelven PCPSP y se miden contra su cota LP; min-width cambia valor por un ancho operable con las mismas capacidades, así que su diferencia respecto del mejor plan CPIT mide el costo de ese cambio.'
+                : 'The table names each method and shows its results. Destination-choice plans solve PCPSP and are measured against its LP bound; min-width trades value for workable width under the same capacities, so its difference from the best CPIT schedule measures the cost of that change.'}
             </p>
           </div>
         </div>
@@ -486,8 +474,8 @@ export default function Tool() {
               <p className="pf-cap pf-muted">
                 {trace.caseId === 'ctrl-abundant'
                   ? (es
-                    ? 'La capacidad holgada no elimina las diferencias de período con descuento positivo. Los métodos clásicos siguen por detrás del mejor plan. ctrl-degenerate, con tasa cero y un período, es el control donde las brechas sí colapsan.'
-                    : 'Loose capacity does not erase timing differences with positive discounting. Classical methods still trail the best schedule. The zero-rate, one-period ctrl-degenerate case is the control whose gaps collapse.')
+                    ? 'La capacidad holgada no elimina las diferencias de período con descuento positivo. La planificación banco a banco y la secuencia de cáscaras anidadas siguen por detrás del mejor plan. ctrl-degenerate, con tasa cero y un período, es el control donde las brechas sí colapsan.'
+                    : 'Loose capacity does not erase timing differences with positive discounting. Bench-by-bench and nested-shell schedules still trail the best schedule. The zero-rate, one-period ctrl-degenerate case is the control whose gaps collapse.')
                   : (es
                     ? 'Solo entran en este rango los planes CPIT que compiten por el mejor. Los planes con destino resuelven otro problema y min-width cambia valor por operabilidad a propósito, así que quedan fuera.'
                     : 'Only the CPIT plans that compete for the best enter this range. The destination plans solve another problem and min-width trades value for workability on purpose, so both are left out.')}
@@ -636,14 +624,14 @@ export default function Tool() {
               {es ? 'Medido aquí: ' : 'Measured here: '}
               <b>{dec((100 * method.measuredVsExact), 1)}%</b>{' '}
               {es
-                ? 'del plan exacto que aproxima. No es una predicción: ambos peldaños están en este mismo horneado, contra la misma cota.'
-                : 'of the exact plan it approximates. Not a prediction: both rungs are in this same bake, against the same bound.'}
-              {method.flaggedByRule && (
+                ? 'del plan exacto que aproxima. No es una predicción: ambos métodos están en este mismo horneado, contra la misma cota.'
+                : 'of the exact plan it approximates. Not a prediction: both methods are in this same bake, against the same bound.'}
+              {guardAvailable && method.flaggedByRule && (
                 <>
                   {' '}
                   {es
-                    ? 'La regla de escenario también lo marcaría (tasa de descuento alta).'
-                    : 'The scenario rule would flag it too (high discount rate).'}
+                    ? 'La regla validada de fallas también marca este caso.'
+                    : 'The independently validated failure rule also flags this case.'}
                 </>
               )}
             </p>
@@ -652,8 +640,16 @@ export default function Tool() {
             <p className="pf-cap pf-warn">
               <strong>{es ? 'Poco fiable en este caso.' : 'Unreliable on this case.'}</strong>{' '}
               {es
-                ? 'Sin el plan exacto en este horneado no hay guarda: la regla medida es sobre el cuerpo mineralizado y necesita una etiqueta de arquetipo que un depósito real no trae.'
-                : 'Without the exact plan in this bake there is no guard: the measured rule is about the orebody and needs an archetype label a real deposit does not carry.'}
+                ? 'No se horneó el plan exacto; esta advertencia viene de una regla validada y no es una medición de este caso.'
+                : 'The exact plan was not baked; this warning comes from a validated rule and is not a measurement of this case.'}
+            </p>
+          )}
+          {method.measuredVsExact == null && method.method === 'learned' && !guardAvailable && !method.unreliable && (
+            <p className="pf-cap pf-muted">
+              <strong>{es ? 'Guarda no disponible. ' : 'Guard unavailable. '}</strong>
+              {es
+                ? 'Ninguna regla superó los umbrales de validación independiente; esta vista previa no clasifica el caso como seguro. La comparación exacta sigue siendo la medida del caso.'
+                : 'No rule met the independent validation thresholds; this preview does not classify the case as safe. The exact comparator remains the case-specific measurement.'}
             </p>
           )}
           <SelectionReadout method={method} period={p} share={p?.largestComponentShare ?? 0} infeasible={overrun?.pct ?? null} provenance={manifest.real_or_synthetic} />
@@ -671,8 +667,8 @@ export default function Tool() {
             <div><dt>{es ? 'tasa' : 'rate'}</dt><dd>{dec((trace.scenario.discountRate * 100), 0)}%</dd></div>
             {trace.scenario.resources.map((r) => (
               <div key={r.id}>
-                <dt>{r.name}</dt>
-                <dd>{fmtTonnes(r.limitPerPeriod[0])}<i>/{es ? 'per' : 'per'}</i></dd>
+                <dt>{resourceLabel(r.name)}</dt>
+                <dd>{fmtTonnes(r.limitPerPeriod[0])}<i>/{es ? 'período' : 'period'}</i></dd>
               </div>
             ))}
             {trace.published.best_known_gap_pct != null && (

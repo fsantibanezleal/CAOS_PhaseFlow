@@ -13,7 +13,7 @@ import { useShellLang } from '@fasl-work/caos-app-shell';
 import 'uplot/dist/uPlot.min.css';
 import type { TracePeriod } from '../lib/contract.types.ts';
 import { periodCss } from './colormap.ts';
-import { dec, fmtDuration, rungLabel } from '../lib/artifacts.ts';
+import { dec, fmtDuration } from '../lib/artifacts.ts';
 
 function cssVar(name: string, fallback: string): string {
   const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -240,11 +240,11 @@ export function GradeStripChart({ periods, theme, gradeAvailable = true, height 
   );
 }
 
-/** Method comparison: the gap to the certified bound, sorted, with the rung shown. */
+/** Method comparison: each named method against the same certified bound. */
 export function MethodBars({
   rows,
 }: {
-  rows: { method: string; rung: string; gapPct: number; npv: number; runtimeMs: number; comparable?: boolean }[];
+  rows: { method: string; gapPct: number; npv: number; runtimeMs: number; comparable?: boolean }[];
 }) {
   const es = useShellLang() === 'es';
 
@@ -259,11 +259,6 @@ export function MethodBars({
   // can BE the bound: the fill is the NPV the schedule actually captured, and the empty remainder IS the
   // gap, at the same scale, on every row. Longer is better, the shortfall is visible rather than stated,
   // and the comparison is honest by construction because the ceiling is shared.
-  const rungColor: Record<string, string> = {
-    classical: 'var(--color-fg-subtle)', sota: 'var(--color-accent)',
-    learned: '#8957e5', beyond: 'var(--color-warn)',
-  };
-  const seen = [...new Set(rows.map((r) => r.rung))];
   const rowTop = 104;
   const rowHeight = 46;
   const barX = 258;
@@ -299,15 +294,14 @@ export function MethodBars({
             <text x="24" y={y + 5} className="pf-mc-method">{r.method}</text>
             <rect x={barX} y={y - 12} width={barWidth} height="22" rx="5" className="pf-mc-track" />
             {!off && <>
-              <rect x={barX} y={y - 12} width={barWidth * captured / 100} height="22" rx="5" fill={rungColor[r.rung] ?? 'var(--color-fg-subtle)'} />
+              <rect x={barX} y={y - 12} width={barWidth * captured / 100} height="22" rx="5" fill="var(--color-accent)" />
               {captured < 100 && <rect x={barX + barWidth * captured / 100} y={y - 12} width={barWidth * (100 - captured) / 100} height="22" fill="url(#pf-gap-hatch)" />}
             </>}
             <text x="790" y={y + 5} className="pf-mc-value">{fmtMillions(r.npv)}</text>
             <text x="850" y={y + 5} className="pf-mc-value">{off ? (es ? 'no comparable' : 'not comparable') : `${dec(r.gapPct, 2)}% · ${fmtDuration(r.runtimeMs)}`}</text>
           </g>;
         })}
-        {seen.map((g, i) => <g key={g} transform={`translate(${24 + i * 175} 728)`}><rect width="13" height="13" rx="3" fill={rungColor[g] ?? 'var(--color-fg-subtle)'} /><text x="20" y="11" className="pf-mc-legend">{rungLabel(g)}</text></g>)}
-        <g transform={`translate(${24 + seen.length * 175} 728)`}><rect width="13" height="13" fill="url(#pf-gap-hatch)" stroke="var(--color-border)" /><text x="20" y="11" className="pf-mc-legend">{es ? 'brecha a la cota' : 'gap to the bound'}</text></g>
+        <g transform="translate(24 728)"><rect width="13" height="13" rx="3" fill="var(--color-accent)" /><text x="44" y="11" className="pf-mc-legend">{es ? 'valor del plan factible' : 'feasible schedule value'}</text><rect x="280" width="13" height="13" fill="url(#pf-gap-hatch)" stroke="var(--color-border)" /><text x="300" y="11" className="pf-mc-legend">{es ? 'brecha a la cota' : 'gap to the bound'}</text></g>
       </svg>
     </div>
   );

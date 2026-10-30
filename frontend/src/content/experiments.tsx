@@ -122,8 +122,8 @@ export const EXPERIMENTS: TopicGroup[] = [
             es: 'Cada caso se hornea con el mismo pipeline desde sus parámetros y semillas, sin límite de reloj en ninguna parte, de modo que la evidencia versionada es reproducible. Antes de registrar un plan se verifica en precedencia en cada período y en cada capacidad; después de escribir la traza el pipeline la relee. Los tres controles corren en cada caso, y un caso que falla uno no puede publicarse: la verificación de artefactos que corre en CI y antes de cada despliegue lo rechaza.',
           },
           {
-            en: 'The learned models are evaluated by deposit, never by row. Twelve generator seeds train, six disjoint seeds are held out, and a third set of six seeds measures the guard chosen on the first two; the scripts assert that the sets do not overlap. A random split of block rows is the anti-pattern: two scenarios of one deposit share almost every feature, so the model would be scored on a copy of what it memorised. In the ladder, the learned plan is measured against the exact plan of the same case, which is available in the same bake.',
-            es: 'Los modelos aprendidos se evalúan por depósito, nunca por fila. Doce semillas del generador entrenan, seis semillas disjuntas quedan retenidas y un tercer conjunto de seis semillas mide la guarda elegida con los dos primeros; los scripts verifican que los conjuntos no se superponen. Una partición aleatoria por filas de bloque es el antipatrón: dos escenarios de un depósito comparten casi todos los rasgos, así que el modelo se juzgaría sobre una copia de lo que memorizó. En la escalera, el plan aprendido se mide contra el plan exacto del mismo caso, disponible en el mismo horneado.',
+            en: 'The learned models are evaluated by deposit, never by row. Twelve generator seeds train, six disjoint seeds are held out, and a third set of six seeds measures the guard chosen on the first two; the scripts assert that the sets do not overlap. A random split of block rows is the anti-pattern: two scenarios of one deposit share almost every feature, so the model would be scored on a copy of what it memorised. For every case, the learned plan is measured against the exact plan for that same case, which is available in the same bake.',
+            es: 'Los modelos aprendidos se evalúan por depósito, nunca por fila. Doce semillas del generador entrenan, seis semillas disjuntas quedan retenidas y un tercer conjunto de seis semillas mide la guarda elegida con los dos primeros; los scripts verifican que los conjuntos no se superponen. Una partición aleatoria por filas de bloque es el antipatrón: dos escenarios de un depósito comparten casi todos los rasgos, así que el modelo se juzgaría sobre una copia de lo que memorizó. Para cada caso, el plan aprendido se mide contra el plan exacto de ese mismo caso, disponible en el mismo horneado.',
           },
         ],
         figure: { caption: { en: 'The split by deposit, with the forbidden row split struck out.', es: 'La partición por depósito, con la partición prohibida por filas tachada.' }, render: (lang) => <DepositSplit lang={lang} /> },
@@ -142,7 +142,7 @@ export const EXPERIMENTS: TopicGroup[] = [
     topics: [
       {
         id: 'ladder',
-        title: { en: 'The ladder on every case', es: 'La escalera en cada caso' },
+        title: { en: 'Scheduling methods across cases', es: 'Métodos de planificación en cada caso' },
         paragraphs: [
           {
             en: 'The grid is the whole experiment in one table: every method on every case, as the gap to the bound of its own problem, with the best comparable plan of each case outlined. Select a case, or click its row, to draw its methods as captured share of the bound; hovering a bar gives the plan\'s value and its gap. Rows without a value say why the method did not run on that case.',
@@ -162,8 +162,8 @@ export const EXPERIMENTS: TopicGroup[] = [
         title: { en: 'Q2: seeding the plan with the bound', es: 'P2: sembrar el plan con la cota' },
         paragraphs: [
           {
-            en: 'The published argument for computing the bound before scheduling is that the expected times it yields are a far better ordering than any reference weight. Here the comparison is made on each non-trivial case against the BEST of the four reference methods, not against greedy alone, so the advantage shown is the smallest one that can be claimed.',
-            es: 'El argumento publicado para calcular la cota antes de programar es que los tiempos esperados que entrega son un orden mucho mejor que cualquier peso de referencia. Aquí la comparación se hace en cada caso no trivial contra el MEJOR de los cuatro métodos de referencia, no solo contra el codicioso, de modo que la ventaja mostrada es la menor que se puede afirmar.',
+            en: 'The published argument for computing the bound before scheduling is that the expected times it yields are a far better ordering than any reference weight. Here each non-trivial case is compared with the best of four concrete alternatives: bench-by-bench scheduling, nested-shell sequencing, greedy TopoSort and Gershon TopoSort. This measures the advantage against the strongest comparator in that set, not against greedy alone.',
+            es: 'El argumento publicado para calcular la cota antes de programar es que los tiempos esperados que entrega son un orden mucho mejor que cualquier peso de referencia. Aquí cada caso no trivial se compara con el mejor de cuatro alternativas concretas: planificación banco a banco, secuencia de cáscaras anidadas, TopoSort codicioso y TopoSort de Gershon. Así, la comparación usa el mejor referente del conjunto y no solo el codicioso.',
           },
           {
             en: 'This is a measured plan outcome, not a claim that the relaxation solves the integer schedule. A share above one means the rounded plan captured more NPV than the best reference plan on that case; feasibility and the shared certified bound still decide whether that result is valid.',
@@ -235,7 +235,7 @@ export const EXPERIMENTS: TopicGroup[] = [
   },
   {
     id: 'learned',
-    label: { en: 'Results: learned', es: 'Resultados: aprendido' },
+    label: { en: 'Expected-time policy', es: 'Política de tiempo esperado' },
     topics: [
       {
         id: 'heldout',
@@ -275,7 +275,7 @@ export const EXPERIMENTS: TopicGroup[] = [
   },
   {
     id: 'beyond',
-    label: { en: 'Results: beyond CPIT', es: 'Resultados: más allá de CPIT' },
+    label: { en: 'Destination-choice results', es: 'Resultados de elección de destino' },
     topics: [
       {
         id: 'destinations',
