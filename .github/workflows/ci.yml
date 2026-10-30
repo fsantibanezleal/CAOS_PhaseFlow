@@ -45,6 +45,8 @@ jobs:
         run: python scripts/check_sdd.py
       - name: Static notebook structure and measured quality bar
         run: python scripts/check_notebooks.py
+      - name: Internal method names stay out of reader-facing content
+        run: python scripts/check_internal_names.py .
       - name: Product manuscripts are declared and versioned
         run: python scripts/check_manuscripts.py
       - name: README areas, notebook mirror and documentation links

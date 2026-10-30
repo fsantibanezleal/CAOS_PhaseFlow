@@ -18,6 +18,7 @@ interpreter. Running the product from a fresh clone is [`local/`](local/README.m
 | script | what it enforces |
 |---|---|
 | `check_artifacts.py` | CONTRACT 2 on the committed evidence: index, manifests and traces agree; byte sizes; lane equals the gate; the engine pin equals the baking version; roles equal the case source; every plan within capacity and under its own bound; a PCPSP LP for every destination plan, never below the joint CPIT LP; no per-block data for a non-redistributable case |
+| `check_internal_names.py` | internal method labels stay out of reader-facing notebooks, manuscripts, README and app strings (template 0.14.000 gate) |
 | `docs_tables.py --check` | every generated table in `docs/` equals what the manifests and model files say |
 | `check_readme_numbers.py` | the README's trust-anchor table equals the `newman1` artifact; no control bytes |
 | `check_content_standards.py` | no em-dash and no pictographic emoji in tracked content (ADR-0067) |
