@@ -17,7 +17,8 @@ A case is **live** if all of the following hold:
 | trace bytes | `LIVE_TRACE_BYTES = 6 MiB` | the per-block schedule has to reach the browser before anything can be re-solved in it |
 
 Otherwise the case is **replay**. Either way a committed artifact ALWAYS exists, so the page paints
-from real numbers on first frame and the live lane only ever improves on that (ADR-0054).
+from committed, measured values on first frame; the live lane reports its result against the same case's
+certified bound.
 
 `OFFLINE_MS_GATE = 60,000 ms` is not a lane condition. It is a NOTE: a case whose offline solve passes
 a minute is recorded as such in the manifest, because a bake that quietly grows is a bake nobody will

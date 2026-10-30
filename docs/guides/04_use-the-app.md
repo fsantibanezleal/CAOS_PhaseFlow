@@ -6,8 +6,8 @@ Implementation, Experiments, Benchmark) explain and measure; the App is where th
 
 ## The App
 
-The rail holds the case selector, the method selector (any rung; the default is the case's best comparable
-plan; each method shows its gap to the bound of its own problem and, for the learned rung, its measured
+The rail holds the case selector, the method selector (any method; the default is the case's best comparable
+plan; each method shows its gap to the bound of its own problem and, for the learned method, its measured
 share of the exact plan) and the period cursor with play (the animation starts paused; every view follows
 one cursor). The workbench has six tabs:
 
@@ -16,7 +16,7 @@ one cursor). The workbench has six tabs:
 | **3D pit** | the pit excavating itself; modes: schedule (pit walls coloured by the year that exposed them), grade, mined blocks; a section cut at a northing to look inside |
 | **Profile and plan** | the pit profile at a northing and the bench plan at a level, coloured by period: the drawings the discipline reads |
 | **Production and NPV** | ore and waste per period with cumulative NPV and the certified bound; capacity utilisation; head grade and strip ratio (strip ratio alone where the case has no grade); spatial coherence per period |
-| **Methods** | the bound as the track and each CPIT plan's captured NPV as the fill, with its gap; the full table of every rung, destination plans included (they solve PCPSP against their own bound, so they are not in the bars) |
+| **Methods** | the bound as the track and each CPIT plan's captured NPV as the fill, with its gap; the full table of every method, destination plans included (they solve PCPSP against their own bound, so they are not in the bars) |
 | **Analysis** | the bounds of the case (Algorithm 4, joint LP, PCPSP LP) and what separates them; the learned lane's measured record; the sensitivity surface of the bound over rate and plant capacity; the risk readout across the ensemble |
 | **Controls** | each control with what it asserts, what was measured on this case, and the verdict; the contract flags |
 

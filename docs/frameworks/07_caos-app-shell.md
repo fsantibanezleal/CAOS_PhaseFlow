@@ -4,12 +4,12 @@
 (light/dark) toggles, the one-line footer, the architecture modal, citations, and the document components
 (`Equation`, `InlineMath`, `Figure`, `Callout`, `Refs`, `Tabs`, `SubTabs`) the reading pages are built from.
 
-**Pin.** `@fasl-work/caos-app-shell@0.19.6` in `frontend/package.json`, resolved from npm and locked in `frontend/package-lock.json`. The corresponding shell repository release tag is `v0.19.006`.
+**Pin.** `@fasl-work/caos-app-shell@0.19.9` in `frontend/package.json`, resolved from npm and locked in `frontend/package-lock.json`. The corresponding shell repository release tag is `v0.19.009`.
 
-**Current release note.** Shell 0.19.6 marks the product licence identifier `translate="no"`, preventing a browser translator from changing SPDX identifiers and keeping them out of numeric formatting checks. PhaseFlow uses the MIT licence, and the current pin also keeps the product aligned with the shared shell release. PhaseFlow continues to opt into `CaseWorkbench`'s `noteFit` because the published-case anchor is part of its case context. The package pin and lockfile are checked by `scripts/check_tech_matrix.py`.
+**Current release note.** Shell 0.19.9 adds `data-instrument` to the normal `CaseWorkbench` root, matching Focus mode and satisfying gate G6. PhaseFlow adopts the shared fix without a product-side marker workaround. Shell 0.19.6 marked SPDX licence identifiers `translate="no"`, preventing browser translation from changing them and keeping them out of numeric formatting checks. PhaseFlow uses the MIT licence. PhaseFlow continues to opt into `CaseWorkbench`'s `noteFit` because the published-case anchor is part of its case context. The package pin and lockfile are checked by `scripts/check_tech_matrix.py`.
 
 **Why a shared shell.** Products in this line must read as one system and keep one standard of structure
-(ADR-0016: the six pages, the header, the footer) and quality (ADR-0071: sized containers, one navigation
+(the six pages, the header, the footer) and quality (sized containers, one navigation
 row). Hand-rolling a header or a footer per product drifts; adopting the shell keeps the floor shared and
 fixes it once.
 

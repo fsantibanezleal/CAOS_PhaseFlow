@@ -12,7 +12,7 @@ first closure, and the numerics would run in an interpreter inside WebAssembly.
 | `maxflow.ts` | Dinic on typed arrays, with `maxClosureWithin` for the parametric family |
 | `instance.ts` | `buildPrecedence`, mirroring `oreblocks.build_precedence` term for term, flat index included |
 | `cpit.ts` | `ParametricPits`, `cpitLpRelaxation` (the critical multiplier algorithm), the greedy, Gershon (cone sets as bitsets) and ExTS walks, the shift search, `solveCpit` |
-| `learned.ts` | the twelve block features and the expected-time forward pass (ReLU, sigmoid head) |
+| `learned.ts` | the eleven non-constant block features and five-member expected-time forward pass (ReLU, sigmoid head) |
 | `boundSurrogate.ts` | the bound surrogate's forward pass for the sensitivity surface |
 | `coherence.ts` | `voidBoundaryPeriods` (what the 3D stage colours) and per-period components |
 | `solver.worker.ts` | the exact solve off the main thread: bounds per resource, three TopoSorts, the shift search; and a `parity` message that re-solves a baked case at its absolute limits for the Benchmark page |
@@ -31,7 +31,7 @@ plan's share of the exact ExTS plan and the speed-up. A newer setting discards o
   ultimate pit agrees block by block (4,621 blocks, zero disagreements), the plant coefficient comes from the
   baked `processTonnage` (a block may prefer the plant while its net value is negative), the browser's
   bound equals the trace's Algorithm 4 bound to 1e-6, a live plan is feasible and never above the bound, and
-  every beyond rung sits under the bound of its own problem. There is no NPV equality assertion: the lanes run
+  every proposed method sits under the bound of its own problem. There is no NPV equality assertion: the lanes run
   different methods, so equal NPVs would be a coincidence, not a check.
 - `surrogate-parity.test.ts`: the forward passes and the features against outputs the Python models wrote
   (1e-9 and 1e-6). The browser once ran tanh layers and a linear head against a model trained with ReLU and
@@ -40,13 +40,13 @@ plan's share of the exact ExTS plan and the speed-up. A newer setting discards o
 
 ## What the live lane does NOT do
 
-No MILP rungs (the sliding windows, C-PIT[D], OPBSP-[D]), no joint Bienstock-Zuckerberg bound, no PCPSP LP and
-no destination rungs, no ensemble. Those are offline and in the artifact; the focus view says which method
-it shows.
+No MILP methods (the sliding windows, C-PIT[D], OPBSP-[D]), no joint Bienstock-Zuckerberg bound, no PCPSP LP and
+no destination methods. The expected-time ensemble is pre-trained offline and evaluated in the browser; the
+focus view identifies the method used for its displayed plan.
 
 ## Profile and plan sizing
 
 The section canvases sit in `.pf-canvas-host`, whose height is viewport-bounded; the canvas is absolutely
 positioned so writing its pixel size cannot grow the host and loop the `ResizeObserver`, and the observer
 remembers the last drawn size so a shrink-and-restore redraws at the restored size. `npm run verify:profile`
-measures host and bitmap at five viewports after time, slider changes, shrink and restore.
+measures host and bitmap at six viewports after time, slider changes, shrink and restore.

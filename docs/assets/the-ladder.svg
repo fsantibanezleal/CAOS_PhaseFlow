@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 440" role="img" aria-labelledby="t d">
-  <title id="t">The method ladder</title>
-  <desc id="d">Bounds on the left (critical multiplier, Algorithm 4, Bienstock-Zuckerberg, PCPSP LP); rungs grouped classical, sota, learned, and beyond; CPIT rungs scored against the CPIT bound, destination rungs against the PCPSP LP.</desc>
+  <title id="t">Method comparison map</title>
+  <desc id="d">Certified bounds on the left. Reference methods, published methods, the learned ordering policy, and proposed analyses are grouped by problem; each schedule is scored against the bound for its own problem.</desc>
   <style>
     :root { --bg:#ffffff; --card:#f6f8fa; --ink:#1f2328; --muted:#59636e; --line:#d0d7de;
             --a:#0969da; --b:#8250df; --c:#1a7f37; --d:#9a6700; --e:#cf222e;
@@ -37,7 +37,7 @@
       <path d="M0 0 L10 5 L0 10 z" style="fill:var(--a)"/></marker>
   </defs>
   <rect class="bg" x="0" y="0" width="960" height="440" rx="10"/>
-  <text x="480" y="30" class="t" text-anchor="middle">The ladder: bounds first, then every plan against the bound of its own problem</text>
+  <text x="480" y="30" class="t" text-anchor="middle">Certified bounds and methods, each plan scored against its own problem</text>
   <rect x="30" y="60" width="240" height="56" rx="8" class="fc"/>
   <text x="150.0" y="78.5" class="h" text-anchor="middle">critical multiplier</text>
   <text x="150.0" y="95.5" class="s" text-anchor="middle">exact CPIT LP, one resource</text>
@@ -52,13 +52,13 @@
   <text x="150.0" y="335.5" class="s" text-anchor="middle">destinations free</text>
   <text x="30" y="278" class="ms" text-anchor="start">CPIT bound used: the joint LP, else Algorithm 4</text>
   <rect x="330" y="64" width="190" height="122" rx="8" class="fw"/>
-  <text x="425" y="86" class="h" text-anchor="middle">classical</text>
+  <text x="425" y="86" class="h" text-anchor="middle">reference methods</text>
   <text x="425" y="108" class="ms" text-anchor="middle">bench-by-bench</text>
   <text x="425" y="130" class="ms" text-anchor="middle">nested-shells</text>
   <text x="425" y="152" class="ms" text-anchor="middle">toposort-greedy</text>
   <text x="425" y="174" class="ms" text-anchor="middle">toposort-gershon</text>
   <rect x="535" y="64" width="190" height="144" rx="8" class="fa"/>
-  <text x="630" y="86" class="h" text-anchor="middle">sota</text>
+  <text x="630" y="86" class="h" text-anchor="middle">published methods</text>
   <text x="630" y="108" class="ms" text-anchor="middle">toposort-expected</text>
   <text x="630" y="130" class="ms" text-anchor="middle">exts-two-resource</text>
   <text x="630" y="152" class="ms" text-anchor="middle">shift-local-search</text>
@@ -68,12 +68,12 @@
   <text x="835" y="86" class="h" text-anchor="middle">learned</text>
   <text x="835" y="108" class="ms" text-anchor="middle">learned-expected-time</text>
   <rect x="330" y="300" width="395" height="90" rx="8" class="fb"/>
-  <text x="527" y="322" class="h" text-anchor="middle">beyond: destinations (PCPSP)</text>
+  <text x="527" y="322" class="h" text-anchor="middle">proposed destination analyses (PCPSP)</text>
   <text x="527" y="344" class="ms" text-anchor="middle">destination-toposort</text>
   <text x="527" y="362" class="ms" text-anchor="middle">destination-sliding-window</text>
   <text x="527" y="380" class="ms" text-anchor="middle">destination-local-search</text>
   <rect x="740" y="300" width="190" height="90" rx="8" class="fw"/>
-  <text x="835" y="322" class="h" text-anchor="middle">beyond: questions</text>
+  <text x="835" y="322" class="h" text-anchor="middle">additional analyses</text>
   <text x="835" y="344" class="ms" text-anchor="middle">min-width (CPIT bound)</text>
   <text x="835" y="362" class="ms" text-anchor="middle">ensemble</text>
   <path d="M330 52 L925 52" class="ln sa"/>

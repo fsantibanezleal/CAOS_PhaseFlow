@@ -12,7 +12,7 @@ byte-identical to 0.07.005, as in the 0.07.005 release.
   only for `min-width`, on 12 of the 13 cases, from +2.77% (`ctrl-abundant`, processing, period 2)
   to +154.49% (`regime-mining-bound`, mining, period 11); `ctrl-degenerate`'s `min-width` is within
   capacity. On `twin-vein` the overrun is +32.22% processing in period 1, the plan whose NPV
-  (288,885,486.29) is above the certified bound (285,385,073.56). Every classical, SOTA and learned
+  (288,885,486.29) is above the certified bound (285,385,073.56). Every reference, published and learned
   schedule is within capacity on every case, which `scripts/check_artifacts.py` also asserts.
 - **MineLib CPIT check.** [MineLib's results page](https://minelib.org/v1/Results.xhtml), read on
   2026-10-02, lists for `newman1`: ultimate pit 26,086,899; CPIT LP upper bound 24,486,184; best

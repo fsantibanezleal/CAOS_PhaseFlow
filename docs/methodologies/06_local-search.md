@@ -24,11 +24,11 @@ loses value and it needs no solver (up to twelve passes). **What it cannot do** 
 together with its cone: a block worth pulling forward whose predecessors are not yet clear is invisible
 to it, and that is where the remaining value usually is.
 
-## 2. `cpitD-local-search`: the exact restricted re-solve
+## 2. `cpitD-local-search`: bounded restricted MILP neighbourhoods
 
 Chicoisne et al. ([doi:10.1287/opre.1120.1050](https://doi.org/10.1287/opre.1120.1050)) section 3.3,
 an enhanced version of Amaya et al. (2009). Fix every block outside a small set $D$ at its incumbent
-period and re-solve the restricted problem **exactly** as a mixed-integer program. Three neighbourhood
+period and solve a restricted mixed-integer program. Three neighbourhood
 constructions, chosen with equal probability:
 
 1. a random scheduled block $a$ plus a connected subset of its predecessors $\mathcal B^{-}(a)$;
@@ -50,23 +50,22 @@ $$
 
 The capacity used by fixed blocks is subtracted from each period; a fixed predecessor imposes a floor on
 when a free block may be mined, and a fixed successor a ceiling. Getting either direction wrong produces
-a plan that mines a block before the rock above it and still passes an objective check. Every accepted
-re-solve is a proven improvement of the restricted problem, so the objective is again monotone. The
-authors measured their heuristic at 0.937 to 0.986 of the bound before local search and 0.955 to 0.997
+a plan that mines a block before the rock above it and still passes an objective check. A feasible
+incumbent is accepted only when its full-schedule value improves; this proves monotonicity of the
+reported schedule, not optimality of the neighborhood MILP. The authors measured their heuristic at 0.937 to 0.986 of the bound before local search and 0.955 to 0.997
 after an hour of it (CPLEX, neighbourhoods up to 3,250 blocks).
 
-**No wall-clock limit.** Each re-solve stops on a relative MIP gap of 1e-4, never on time. Until
-oreblocks 0.4.1 it stopped on eight seconds of CPU, and the product's headline gap was not reproducible
-from its inputs and seed, because how much of each re-solve completed depended on the machine's load. A
-relative gap is a property of the problem and stops in the same place everywhere; a test asserts two
-runs agree block for block.
+Each neighborhood has a deterministic 2,000-node limit and a relative MIP gap target of 1e-4. A
+node-limited solve can return a feasible incumbent before reaching the gap target. Its trace records
+the solver status, nodes, gap, incumbent value, upper bound and whether optimality was certified. This
+keeps the work budget independent of wall-clock speed without representing an incumbent as a proof.
 
 | setting | value |
 |---|---|
 | neighbourhood size | up to 180 free blocks |
 | rounds | 16, or 10 above 8,000 blocks |
 | seed | 11 |
-| solver | HiGHS MILP, relative gap 1e-4, no time limit |
+| solver | HiGHS MILP, relative gap target 1e-4, at most 2,000 branch-and-bound nodes per neighborhood |
 | start | the shift plan, which starts from the best Algorithm 4 plan |
 
 The same neighbourhoods with binary destinations are the destination search, OPBSP-[D]
@@ -74,7 +73,7 @@ The same neighbourhoods with binary destinations are the destination search, OPB
 
 ## 3. Measured on every case
 
-The two local searches beside the rounding they start from. The exact search never loses to the shift
+The two local searches beside the rounding they start from. The restricted search never loses to the shift
 plan it starts from (a test in `frontend/test/parity.test.ts`); where both sit far behind the sliding
 window, the remaining distance is the look-ahead neither neighbourhood has ([05](05_sliding-window.md)).
 
@@ -99,7 +98,7 @@ window, the remaining distance is the look-ahead neither neighbourhood has ([05]
 
 ## Requirements and limits
 
-The exact neighbourhood needs a MILP solver and lives behind the `oreblocks[milp]` extra (scipy, which
+The bounded neighbourhood MILP needs a solver and lives behind the `oreblocks[milp]` extra (scipy, which
 brings HiGHS). Where it is unavailable the pipeline records `NOT RUN` with the reason and shows the shift
 plan in its place, rather than presenting a weaker method under the stronger name. A local optimum of a
 neighbourhood is not an optimum of the problem, and the neighbourhoods and rounds here are smaller than
@@ -107,5 +106,5 @@ the published hour of CPLEX.
 
 ## Where it lives
 
-`oreblocks.improve_schedule` (shifts), `oreblocks.exact_local_search` (C-PIT[D]); the browser engine
+`oreblocks.improve_schedule` (shifts), `oreblocks.exact_local_search` (bounded C-PIT[D] MILPs); the browser engine
 runs the shift search on every live re-solve (`frontend/src/engine/cpit.ts`).

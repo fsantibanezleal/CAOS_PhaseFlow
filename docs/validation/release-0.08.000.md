@@ -26,11 +26,11 @@ claim was checked against what the code computes. Each defect below was fixed in
   bound on every case.
 - **The sliding window refused on twelve of thirteen cases.** Its candidate set had to cover the window
   and the whole remaining horizon, and the relaxation argument was accepted and never read. The set is
-  now the LP's own prefix sized by the window's tonnage; the rung runs on every case.
-- **The destination rungs did not use the destination decision.** They compared a block's two values,
+  now the LP's own prefix sized by the window's tonnage; the method runs on every case.
+- **The destination methods did not use the destination decision.** They compared a block's two values,
   so every marginal ore block took plant tonnage the richer ore below needed. Settled by exact integer
   solves on a 320-block plant-bound twin: exact OPBSP 10.37 M (MIP bound 10.50 M) against exact CPIT
-  6.53 M, PCPSP LP 11.01 M, and the old rung -0.79 M. The rungs are now the re-cut: each block fixed
+  6.53 M, PCPSP LP 11.01 M, and the old method -0.79 M. The methods are now the re-cut: each block fixed
   where the PCPSP LP sends it, scheduled by ExTS and the sliding window, then searched exactly with every
   destination free, starting from the best of those plans and the best CPIT plan.
 - **The PCPSP LP stopped scaling at about 1.4 million rows.** HiGHS solved 1,082,684 rows in 2.65 hours
@@ -42,11 +42,11 @@ claim was checked against what the code computes. Each defect below was fixed in
 
 **Pipeline and models**
 
-- **The learned rung saw capacity fractions of (1.0, 1.0) at inference** while trained on each
+- **The learned method saw capacity fractions of (1.0, 1.0) at inference** while trained on each
   scenario's real ones, was trained on 1,008-block twins only although the product's twins are 6,912 to
   14,400 blocks, and learned the resource-0 relaxation's times while ExTS schedules from the tightest
   one. Fixed all three; retrained on two grid sizes; the guard is capped at flagging half the cases.
-- **The learned rung had no consumer.** The browser now draws the learned plan on the next frame of
+- **The learned method had no consumer.** The browser now draws the learned plan on the next frame of
   every control change (42 to 126 ms, against 0.9 to 3.6 s for the exact live solve) and replaces it
   with the exact plan from a worker, showing the share it reached.
 - **The browser's bound surrogate ran tanh layers and a linear head** against a model trained with ReLU
@@ -57,7 +57,7 @@ claim was checked against what the code computes. Each defect below was fixed in
 - **CONTRACT 1 promised a cycle check it did not run.** Acyclicity is now proven when every arc rises
   and checked with Kahn's algorithm otherwise.
 - **The manifest's bound summary is a whitelist**, and the dual's keys were not on it; caught before the
-  twin bake landed and tested. Every rung is checked for precedence, capacity and its own bound at bake
+  twin bake landed and tested. Every method is checked for precedence, capacity and its own bound at bake
   time and in `check_artifacts.py`.
 - **The release bake ran cases one after another** while the scripts promised ninety minutes; it now
   runs them side by side (`run.py all --jobs N`).
@@ -112,7 +112,7 @@ twelve non-trivial cases; on `twin-layered` it ends at 6.38 percent behind ExTS'
 `ctrl-abundant` the exact neighbourhood search edges it out. Gershon's weight now follows its published
 definition (each successor counted once): that improved it by 2.6 to 75.9 points on ten cases and made it
 worse on two, the vein (82.98 to 92.14) and the layered deposit (19.01 to 19.36), where opening what unlocks
-much is the wrong order; a correction, not a tuning. The learned rung improved on every twin but the
+much is the wrong order; a correction, not a tuning. The learned method improved on every twin but the
 layered one (0.886 to 0.871) and fell on the real KD model (F30, recorded above).
 
 The destination plans, against the best CPIT plan of the same case and against their own bound:
@@ -150,7 +150,7 @@ why a HiGHS case's record is the one it had before the dual existed.
 
 | Gate | Result |
 |---|---|
-| `python scripts/check_artifacts.py` | PASS: 13 cases, every rung feasible and under the bound of its own problem |
+| `python scripts/check_artifacts.py` | PASS: 13 cases, every method feasible and under the bound of its own problem |
 | `python scripts/check_readme_numbers.py` | PASS: the trust-anchor table matches `newman1-published` |
 | `python scripts/docs_tables.py --check` | PASS: every generated table in `docs/` equals the artifacts |
 | `python scripts/check_content_standards.py` | PASS |
@@ -180,10 +180,10 @@ tab, on `twin-porphyry-l`, `newman1-published`, `twin-vein`, `kd-declared`, `twi
 horizontal overflow, console errors, NaN, undefined and `[object Object]` text, and the footer height, and
 read by eye where the release changed something. Defects found that way and fixed in this release: the
 default case opening on a blank 3D pit (the WebGL restore), "-0.000%" slack and "over budget" for a
-one-resource case, run times printed in milliseconds (9,351,446 ms ran off the method bars), raw rung keys
-in Spanish tables, the Benchmark's description of the old destination rung, and the min-width claim. The
+one-resource case, run times printed in milliseconds (9,351,446 ms ran off the method bars), raw method keys
+in Spanish tables, the Benchmark's description of the old destination method, and the min-width claim. The
 footer is one line in English; in Spanish it wraps once inside the shell's fixed 1,200 px box, which
-ADR-0016 allows.
+the documented application structure allows.
 
 ## Bake cost
 

@@ -46,7 +46,7 @@ separate CPIT/PCPSP comparison limits.
 
 `scripts/check_artifacts.py --root <candidate>` passed before promotion; after promotion the same guard
 passes the committed `data/derived/` tree. All thirteen cases have a schema-valid trace and manifest,
-feasible schedules, and every scored rung remains below the bound of its own problem. All certified
+feasible schedules, and every scored method remains below the bound of its own problem. All certified
 bound values match 0.08.000. The trust-anchor checks and generated docs tables are refreshed from these
 manifests.
 

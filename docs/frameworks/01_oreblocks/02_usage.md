@@ -6,6 +6,7 @@ makes them, with the settings it uses.
 ## Building the instance
 
 ```python
+import numpy as np
 import oreblocks as ob
 
 # a seeded twin: grid, grade, tonnage, economics, slope precedence and its ultimate pit
@@ -33,7 +34,7 @@ if pb is None:                                                            # abov
 # pb.method is "highs-lp" or "lagrangian"; the dual also carries iterations, gap_estimate and slack
 ```
 
-## The ladder
+## Methods
 
 ```python
 ob.toposort_schedule(cpit, prec, weight=w_bench, allowed=pit.in_pit)        # bench-by-bench
@@ -47,7 +48,7 @@ ob.sliding_window_schedule(cpit, prec, window=3, fix=1, allowed=pit.in_pit, rela
 ob.exact_local_search(cpit, prec, improved, d_max=180, rounds=16, time_limit=None, mip_gap=1e-4, seed=11)
 ```
 
-## The destination rungs (the re-cut)
+## Destination methods (the re-cut)
 
 ```python
 cut = ob.restrict_destinations(pcpsp, pb.preferred_destination())   # the LP's destinations fixed
@@ -69,9 +70,36 @@ coherence = ob.schedule_coherence(period_of_block, x, y, level, n_periods)   # p
 # the ensemble: 12 correlated, mean-preserving realisations (6 above 25,000 blocks, none above 60,000)
 ens = ob.perturb_values(values, x, y, level, n=12, sigma=0.25, seed=31)        # a RealisationSet
 plans = {r.method: r.period_of_block for r in results if r.rung != "beyond"}
-optima = [...]   # one cheap re-solve per realisation: solve_cpit(..., bound=False) on Gershon weights
+fixed = ob.evaluate_across(cpit, ens, plans)                                # choose once by expected NPV
+fixed_method = fixed.best_by_expected
+fixed_plan = np.asarray(plans[fixed_method], dtype=np.int64)
+fixed_index = fixed.method_ids.index(fixed_method)
+optima = []
+for k, values_k in enumerate(ens.values):
+    cpit_k = ob.Cpit(
+        name=f"{cpit.name}-r{k}", n_blocks=cpit.n_blocks, n_periods=cpit.n_periods,
+        discount_rate=cpit.discount_rate, value=values_k, limit=cpit.limit,
+        sense=cpit.sense, coef=cpit.coef,
+        period_one_undiscounted=cpit.period_one_undiscounted,
+    )
+    start = ob.ScheduleResult(
+        method=f"fixed:{fixed_method}", period_of_block=fixed_plan.copy(),
+        npv=float(fixed.matrix[fixed_index, k]),
+    )
+    replanned = ob.exact_local_search(
+        cpit_k, prec, start, d_max=180, rounds=16, seed=31 + k,
+        time_limit=None, mip_gap=1e-5,
+    )
+    if replanned.npv < start.npv - 1e-6 * max(1.0, abs(start.npv)):
+        raise AssertionError("re-plan degraded its feasible fixed-policy start")
+    optima.append(max(start.npv, replanned.npv))
 outcome = ob.evaluate_across(cpit, ens, plans, per_realisation_optimum=np.array(optima))
 ```
+
+The fixed-policy reference is the greatest expected value among the candidate schedules. Do not use
+`per_realisation_best` as the reference: that is a different fixed candidate on each value field and
+already has information about which realisation occurred. The repeated exact C-PIT[D] neighbourhood
+solves are still an outer heuristic; their mean improvement is a lower bound on EVPI.
 
 ## What the pipeline adds on top
 

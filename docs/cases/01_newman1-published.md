@@ -60,7 +60,7 @@ optimum, so no other case's gap can be split this way.
 ## Destinations on newman1
 
 The two published LP bounds differ by 365 units in 24.5 million, so the destination freedom can add almost
-nothing here, and the destination rungs show exactly that: the re-cut and the destination search end within
+nothing here, and the destination methods show exactly that: the re-cut and the destination search end within
 a few thousand units of the best CPIT plan. Against the 2018 PCPSP result the comparison is like for like
 (both PCPSP plans, both scored against the PCPSP LP), with the caveat that their method and ours differ.
 
@@ -88,22 +88,22 @@ CPIT bound the case uses. Coherence is the mean over periods of the connected co
 the largest one.
 
 <!-- generated:case:newman1-published -->
-| method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
+| method | family | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | 22,915,557 | joint LP | 6.41% | 11 ms | 6.0 / 92% |
-| `nested-shells` | classical | 23,839,631 | joint LP | 2.64% | 11 ms | 4.8 / 93% |
-| `toposort-greedy` | classical | 23,552,842 | joint LP | 3.81% | 11 ms | 6.8 / 88% |
-| `toposort-gershon` | classical | 23,474,084 | joint LP | 4.13% | 28 ms | 12.2 / 75% |
-| `toposort-expected` | sota | 23,864,349 | joint LP | 2.54% | 1.5 s | 10.0 / 84% |
-| `exts-two-resource` | sota | 23,864,349 | joint LP | 2.54% | 1.5 s | 10.0 / 84% |
-| `shift-local-search` | sota | 23,873,589 | joint LP | 2.50% | 12 ms | 9.8 / 83% |
-| `sliding-window` **(best)** | sota | 24,142,200 | joint LP | 1.40% | 25.2 s | 11.0 / 90% |
-| `cpitD-local-search` | sota | 23,875,538 | joint LP | 2.49% | 937 ms | 9.2 / 83% |
-| `learned-expected-time` | learned | 23,894,774 | joint LP | 2.42% | 14 ms | 8.7 / 91% |
-| `destination-toposort` | beyond | 23,864,349 | PCPSP LP | 2.54% | 2.1 s | 10.0 / 84% |
-| `destination-sliding-window` | beyond | 24,142,200 | PCPSP LP | 1.41% | 27.2 s | 11.0 / 90% |
-| `destination-local-search` | beyond | 24,142,200 | PCPSP LP | 1.41% | 2.1 s | 11.0 / 90% |
-| `min-width` | beyond | 24,047,160 | joint LP | 1.79% | 42 ms | 7.7 / 90% |
+| `bench-by-bench` | Reference methods | 22,915,557 | joint LP | 6.41% | 11 ms | 6.0 / 92% |
+| `nested-shells` | Reference methods | 23,839,631 | joint LP | 2.64% | 11 ms | 4.8 / 93% |
+| `toposort-greedy` | Reference methods | 23,552,842 | joint LP | 3.81% | 11 ms | 6.8 / 88% |
+| `toposort-gershon` | Reference methods | 23,474,084 | joint LP | 4.13% | 28 ms | 12.2 / 75% |
+| `toposort-expected` | Published methods | 23,864,349 | joint LP | 2.54% | 1.5 s | 10.0 / 84% |
+| `exts-two-resource` | Published methods | 23,864,349 | joint LP | 2.54% | 1.5 s | 10.0 / 84% |
+| `shift-local-search` | Published methods | 23,873,589 | joint LP | 2.50% | 12 ms | 9.8 / 83% |
+| `sliding-window` **(best)** | Published methods | 24,142,200 | joint LP | 1.40% | 25.2 s | 11.0 / 90% |
+| `cpitD-local-search` | Published methods | 23,875,538 | joint LP | 2.49% | 937 ms | 9.2 / 83% |
+| `learned-expected-time` | Learned methods | 23,894,774 | joint LP | 2.42% | 14 ms | 8.7 / 91% |
+| `destination-toposort` | Additional analyses | 23,864,349 | PCPSP LP | 2.54% | 2.1 s | 10.0 / 84% |
+| `destination-sliding-window` | Additional analyses | 24,142,200 | PCPSP LP | 1.41% | 27.2 s | 11.0 / 90% |
+| `destination-local-search` | Additional analyses | 24,142,200 | PCPSP LP | 1.41% | 2.1 s | 11.0 / 90% |
+| `min-width` | Additional analyses | 24,047,160 | joint LP | 1.79% | 42 ms | 7.7 / 90% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/newman1-published.json` by `scripts/docs_tables.py`.*

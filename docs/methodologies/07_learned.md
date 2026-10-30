@@ -14,26 +14,32 @@ first, because its weight is the relaxation's expected extraction time; that rel
 maximum closures, and in the browser it is about one to four seconds per change on the larger cases.
 When a reader drags a slider, that is what stands between the gesture and the answer.
 
-**What it predicts.** Each block's expected extraction time as a fraction of the horizon, from twelve
-features a block and a scenario carry: the block's value, tonnage and grade, its depth fraction, the
-size and value of the cone above it, its radial distance from the centre, whether it is in the ultimate
-pit, the discount rate, the two capacity fractions and the number of periods. The plan is the same
-TopoSort walk with the predicted weight, and it costs one forward pass:
+**What it predicts.** Each block's expected extraction time as a fraction of the horizon, from eleven
+features a block and a scenario carry: value and grade, depth fraction, an immediate-predecessor size
+and value recurrence, radial distance, ultimate-pit membership, discount rate, two capacity fractions and
+the number of periods. The recurrence is a feature proxy, not the exact size or value of the unique
+transitive predecessor closure. For predecessor set $P_b$, the current feature definitions are
+$s_b=|P_b|+\max(0,\max_{p\in P_b}s_p)$ and
+$u_b=\sum_{p\in P_b}v_p+\max(0,\max_{p\in P_b}u_p)$, with zero for an empty predecessor set. Shared
+ancestors are not deduplicated into a unique cone. Tonnage is excluded because it was constant in the
+training twins and received no training gradient. The plan is the same TopoSort walk with the predicted weight:
 
 $$
-\hat E_b=(T+1)\,\sigma\!\Bigl(W_3\,\mathrm{ReLU}\bigl(W_2\,\mathrm{ReLU}(W_1\tilde f_b+b_1)+b_2\bigr)+b_3\Bigr),\qquad \tilde f_b=\frac{f_b-\mu}{s}.
+\hat E_b=\frac{T+1}{5}\sum_{j=1}^{5}\sigma\!\Bigl(W^{(j)}_3\,\mathrm{ReLU}\bigl(W^{(j)}_2\,\mathrm{ReLU}(W^{(j)}_1\tilde f_b+b^{(j)}_1)+b^{(j)}_2\bigr)+b^{(j)}_3\Bigr),\qquad \tilde f_b=\frac{f_b-\mu}{s}.
 $$
 
-**The model.** A multilayer perceptron with hidden layers of 48 and 24 ReLU units and a sigmoid output,
-trained with explicit Adam (Kingma and Ba, [arXiv:1412.6980](https://arxiv.org/abs/1412.6980)) on a
-squared loss, written in numpy so the whole vertical is inspectable in one file: no optimiser state
-behind an API, no framework version to reproduce.
+**The model.** Five multilayer perceptrons with 48 and 24 ReLU units and a sigmoid output are trained
+with distinct frozen seeds on the same rows and train-only standardisation. Their mean prediction is
+used. Ten epochs are the measured twin plateau; longer training cost transfer to real deposits. Each
+member uses explicit Adam (Kingma and Ba, [arXiv:1412.6980](https://arxiv.org/abs/1412.6980)) and a
+squared loss, implemented in numpy so the whole vertical is inspectable without hidden optimizer state
+or a framework version to reproduce. Constant and non-finite inputs are rejected before fitting.
 
 **What it is trained on, and why each choice was made.**
 
 - **The target is the tightest single-resource relaxation's $E_b$**, the one the `toposort-expected`
-  rung schedules from. An earlier version trained on the resource-0 relaxation and was then compared
-  against a rung seeded by a different relaxation.
+  method schedules from. An earlier version trained on the resource-0 relaxation and was then compared
+  against a method seeded by a different relaxation.
 - **The sweep crosses nine scenarios** (horizons of 6 to 12 periods, rates of 5 to 20 percent, capacity
   fractions crossed rather than tied to the rate) over four archetypes (porphyry, vein, layered,
   core-halo). An earlier five-scenario sweep moved rate and capacity together at a correlation of
@@ -61,15 +67,15 @@ approach zero is not a summary statistic.
 <!-- generated:learned-metrics -->
 | model | measure | value |
 | --- | --- | ---: |
-| expected-time surrogate | held-out Spearman rank correlation with the true E_b | 0.807 |
-|  | held-out mean absolute error of E_b / (T + 1) | 0.046 |
-|  | held-out plan value / exact ExTS plan: median | 0.926 |
-|  | same: tenth percentile | 0.817 |
-|  | same: minimum | 0.702 |
-|  | the worst held-out case | core_halo, seed 223, 10 periods, rate 0.2, 24x24x12 |
-|  | held-out cases where it beats greedy TopoSort | 94.4% |
-|  | held-out median at 1,008 blocks | 0.945 |
-|  | held-out median at 6,912 blocks | 0.913 |
+| expected-time surrogate | held-out Spearman rank correlation with the true E_b | 0.814 |
+|  | held-out mean absolute error of E_b / (T + 1) | 0.045 |
+|  | held-out plan value / exact ExTS plan: median | 0.941 |
+|  | same: tenth percentile | 0.836 |
+|  | same: minimum | 0.710 |
+|  | the worst held-out case | vein, seed 211, 10 periods, rate 0.1, 12x12x7 |
+|  | held-out cases where it beats greedy TopoSort | 92.1% |
+|  | held-out median at 1,008 blocks | 0.939 |
+|  | held-out median at 6,912 blocks | 0.941 |
 |  | training rows / held-out rows (blocks) | 3,421,440 / 1,710,720 |
 | bound surrogate | held-out relative error: mean | 2.31% |
 |  | same: 90th percentile | 5.48% |
@@ -105,8 +111,8 @@ the table above, and the panel refuses to draw a plane from a model that breaks 
 
 ## 3. In the browser: the instant plan
 
-The learned rung's job in the product is the instant plan. On every control change in the focus view,
-the browser rebuilds the precedence for the slope, solves the ultimate pit, computes the twelve features
+The learned method's job in the product is the instant plan. On every control change in the focus view,
+the browser rebuilds the precedence for the slope, solves the ultimate pit, computes the eleven features
 (rounded to single precision as the pipeline does), runs the forward pass and walks TopoSort: the learned
 plan, drawn on the next frame. When the control has been still for 220 ms a worker computes the bounds
 and the exact plans; when they arrive the exact plan replaces the learned one and the HUD shows the
@@ -141,7 +147,7 @@ Measured 2026-10-05 on node v24.14.1, the browser engine's TypeScript, single th
 
 ## 4. In the offline ladder
 
-`learned-expected-time` is a rung like the others, with the same gap to the same bound. Because every
+`learned-expected-time` is a method like the others, with the same gap to the same bound. Because every
 baked case also contains the exact plan it approximates, the measured ratio to it is recorded per case
 (`measuredVsExact` in the trace) and the flag is raised off the measurement, not off a forecast.
 
@@ -184,4 +190,4 @@ runtime, and the parity fixture holds that pass to the trained function.
 `models/*.json` and `*.onnx` (committed weights and metrics), `frontend/src/engine/learned.ts`,
 `boundSurrogate.ts` and `solver.worker.ts` (the browser lane), `frontend/test/surrogate-parity.test.ts`
 (the fixture) and `frontend/scripts/measure-learned-preview.mjs` (the timing table). Retraining is offline only
-(ADR-0074): see [guides/03](../guides/03_retrain-the-learned-models.md).
+; see [guides/03](../guides/03_retrain-the-learned-models.md).

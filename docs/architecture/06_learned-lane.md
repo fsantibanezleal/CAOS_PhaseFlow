@@ -1,9 +1,13 @@
 # 06 · The learned lane, as a component
 
 `data-pipeline/pipeline/model/` (features, the MLP, the ONNX export), trained by `scripts/train_learned.py`,
-weights and studies committed under `models/`, consumed in two places: the offline ladder (a rung, measured
+weights and studies committed under `models/`, consumed in two places: the offline pipeline (a method, measured
 against the exact plan of each case) and the browser (the instant plan and the sensitivity surface). Neither
 model certifies anything.
+
+The expected-time model averages five seed-distinct 48-24 MLP members over the eleven non-constant block
+features; the bound model remains a single MLP. The JSON names and orders every input, and both consumers
+refuse a feature-schema or scale mismatch.
 
 The method, the training choices, the scores and the browser timing are on
 [methodologies/07](../methodologies/07_learned.md); where it fails, on three disjoint seed sets, on
@@ -14,7 +18,7 @@ The method, the training choices, the scores and the browser timing are on
 
 | boundary | rule |
 |---|---|
-| training | offline only (ADR-0074); hours; never in CI or the deploy |
+| training | offline only; it can take hours and never runs in CI or the deploy |
 | split | by deposit seed, never by row; three disjoint seed sets, asserted |
 | artifact | JSON weights with their metrics (NaN as null) plus a verified ONNX graph |
 | offline consumer | `LearnedBundle` loads the JSON; the inference capacity fractions are read off the instance (they were once hard-coded) |
