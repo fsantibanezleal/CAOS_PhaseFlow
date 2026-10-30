@@ -112,6 +112,9 @@ MACHINE_PATH = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:(?:\\{1,2}|/(?!/))|/home/|/
 RUNS_PIP = re.compile(r"^\s*[%!]\s*(?:pip|conda|mamba)\b|-m['\"]?\s*,?\s*['\"]?pip\b|\bpip\s+install\b", re.M)
 TRACEBACK = "Traceback (most recent call last)"
 NOTEBOOK_PATH = "notebooks/<language>/<topic>/<notebook>.ipynb"
+SPANISH_ENGLISH_READER_METADATA = re.compile(
+    r"(?im)^\s*(?:[-*]\s*)?\*{0,2}(?:level|prerequisites|reading time)\*{0,2}\s*:|\b\d+\s+minutes\b"
+)
 TOKENS = (
     re.compile(r"\bghp_[A-Za-z0-9]{20,}"), re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),
     re.compile(r"\bsk-[A-Za-z0-9_-]{20,}"), re.compile(r"\bAKIA[0-9A-Z]{16}\b"), re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}"),
@@ -1780,6 +1783,11 @@ def bar_findings(root: Path, docs: dict[str, dict[str, dict]], bar: dict | None 
     for lang in LANGS:
         readings = {key: Reading(doc, lang, root, bar) for key, doc in docs.get(lang, {}).items()}
         for key, r in readings.items():
+            if lang == "es":
+                opening = next((text_of(c["source"]) for c in docs[lang][key]["cells"]
+                                if c["cell_type"] == "markdown"), "")
+                if SPANISH_ENGLISH_READER_METADATA.search(opening):
+                    out.append(f"notebooks/es/{key}: bar: the Spanish reader metadata uses English labels or time units")
             out.extend(reading_findings(f"notebooks/{lang}/{key}", r, bar))
         owners: dict[str, set[str]] = {}
         for key, r in readings.items():

@@ -417,10 +417,21 @@ def runner_repo(tmp_path: Path, body: str) -> tuple[Path, Path]:
 
 def run_runner(base: Path, *args: str) -> subprocess.CompletedProcess:
     env = dict(os.environ)
-    env.setdefault("CAOS_TEMP_ROOT", rf"D:\_Temp\phaseflow-notebook-runner-tests-{os.getpid()}")
-    Path(env["CAOS_TEMP_ROOT"]).mkdir(parents=True, exist_ok=True)
+    if not env.get("CAOS_TEMP_ROOT"):
+        env["CAOS_TEMP_ROOT"] = str(device_temp_root())
     return subprocess.run([str(NOTEBOOK_PYTHON), str(base / "scripts" / "run_notebooks.py"), *args], capture_output=True, encoding="utf-8",
                           errors="replace", cwd=base, env=env, timeout=300)
+
+
+def device_temp_root() -> Path:
+    value = os.environ.get("CAOS_TEMP_ROOT")
+    if not value:
+        pytest.skip("CAOS_TEMP_ROOT must name the device data-root temp directory")
+    root = Path(value).expanduser().resolve()
+    if root == ROOT or root.is_relative_to(ROOT):
+        raise RuntimeError("CAOS_TEMP_ROOT must be outside the product repository")
+    root.mkdir(parents=True, exist_ok=True)
+    return root
 
 
 needs_env = pytest.mark.skipif(NOTEBOOK_PYTHON is None, reason="the notebook environment is not built (scripts/setup.sh --notebooks)")
@@ -474,7 +485,7 @@ def test_adversarial_runner_copies_released_models_into_the_check_worktree(tmp_p
     first_run = run_runner(base, "--only", "notebooks/en/01-basics/01-note.ipynb")
     assert first_run.returncode == 0, first_run.stdout + first_run.stderr
 
-    temp_root = Path(os.environ.get("CAOS_TEMP_ROOT", rf"D:\_Temp\phaseflow-notebook-runner-tests-{os.getpid()}")) / f"model-copy-{os.getpid()}-{tmp_path.name}"
+    temp_root = device_temp_root() / f"model-copy-{os.getpid()}-{tmp_path.name}"
     temp_root.mkdir()
     before = path.read_bytes()
     checked = run_runner(
@@ -911,8 +922,9 @@ def bar_doc(lang: str = "en", level: int = 2, salt: str = "a", *, methods: int |
     packages = ["numpy==2.4.6"] + ([REFERENCE] if level == 3 else [])
     install = "pip install " + " ".join(packages)
     q, a = ("**Question:**", "**Answer:**") if lang == "en" else ("**Pregunta:**", "**Respuesta:**")
+    level_label, time_label, time_unit = ("Level", "Reading time", "minutes") if lang == "en" else ("Nivel", "Tiempo de lectura", "minutos")
     b = Builder(lang, level, salt)
-    b.md(f"# Title {salt}\n\n" + (f"{q} {words(6, salt + 'q')}?\n\n" if question else "") + f"- Level: {level}\n- Reading time: 20 minutes")
+    b.md(f"# Title {salt}\n\n" + (f"{q} {words(6, salt + 'q')}?\n\n" if question else "") + f"- {level_label}: {level}\n- {time_label}: 20 {time_unit}")
     b.md(f"## {h['Objectives']}\n\n{words(40, salt + 'o')}.")
     b.md(f"## {h['Setup']}\n\nInstall with `{install}`.\n\n```bash\n{install}\n```")
     b.code(first_code or SETUP_CODE, "2.4.6\n")
@@ -1210,6 +1222,18 @@ def test_nb058_the_answer_quotes_a_number_that_an_output_shows(bar_root: Path) -
     only(bar_of(bar_root, bar_doc("en", 2, answer_text="It came out well, as expected.")), "quotes no number")
     # a decimal comma is read as a point, in the answer as in the output
     assert bar_of(bar_root, bar_doc("es", 2, answer_text="El total fue de 42,5 en la corrida."), "es") == []
+
+
+def test_spanish_reader_metadata_does_not_leak_english_labels_or_time_units(bar_root: Path) -> None:
+    es = bar_doc("es", 2)
+    assert bar_of(bar_root, es, "es") == []
+    opening = es["cells"][0]["source"]
+    es["cells"][0]["source"] = (
+        opening.replace("Nivel:", "Level:")
+        .replace("Tiempo de lectura:", "Reading time:")
+        .replace("20 minutos", "20 minutes")
+    )
+    only(bar_of(bar_root, es, "es"), "Spanish reader metadata uses English labels or time units")
 
 
 def test_nb059_level_three_runs_the_state_of_the_art_and_draws_it(bar_root: Path) -> None:
