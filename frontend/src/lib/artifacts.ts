@@ -5,6 +5,8 @@
 import type { BoundSummary, CaseIndex, CaseManifest, ScheduleTrace } from './contract.types.ts';
 import type { CapacityOverrun } from './feasibility.ts';
 import { INDEX_SCHEMA, MANIFEST_SCHEMA, TRACE_SCHEMA } from './contract.types.ts';
+import { evaluateGuardEligibility, type GuardReceipt } from './guardEligibility.ts';
+import { loadPublicJSON as loadVersionedPublicJSON } from './publicJson.ts';
 import { useLangStore } from '@fasl-work/caos-app-shell';
 
 export const APP_VERSION = import.meta.env.VITE_APP_VERSION as string;
@@ -12,9 +14,14 @@ export const APP_VERSION = import.meta.env.VITE_APP_VERSION as string;
 // ROOT-relative. A bare `data/...` resolves against the CURRENT path, so every fetch from
 // `/focus/<case>` went to `/focus/data/...`, hit the SPA fallback, and parsed index.html as JSON:
 // "Unexpected token '<'". It never showed up while the gate clicked through from `/` with a warm
-// cache, and it broke every deep link, which ADR-0070 requires to work.
+// cache, and it broke every deep link, which must work when opened directly.
 const BASE = '/data';
 const cache = new Map<string, unknown>();
+
+/** Share one in-flight static-artifact request between the workbench and reading panels. */
+export function loadPublicJSON<T>(path: string): Promise<T> {
+  return loadVersionedPublicJSON<T>(path, APP_VERSION);
+}
 
 async function getJSON<T>(rel: string): Promise<T> {
   const hit = cache.get(rel);
@@ -45,6 +52,34 @@ export async function loadManifest(caseId: string): Promise<CaseManifest> {
 export async function loadTrace(caseId: string): Promise<ScheduleTrace> {
   const t = await getJSON<ScheduleTrace>(`${caseId}/trace.json`);
   expect(t.schema, TRACE_SCHEMA, `trace ${caseId}`);
+  try {
+    const [model, receipt] = await Promise.all([
+      loadPublicJSON<{ metrics?: Record<string, unknown> }>('/models/expected-time.json'),
+      loadPublicJSON<GuardReceipt>('/models/guard-validation.json'),
+    ]);
+    const rule = String(model.metrics?.failure_rule ?? '');
+    const status = evaluateGuardEligibility(rule, receipt);
+    t.learned ??= {};
+    t.learned.guard = {
+      ...(t.learned.guard ?? {}), rule,
+      failure_below: receipt.failure_below as number | undefined,
+      validation_n: receipt.n as number | undefined,
+      validation_recall: receipt.recall as number | undefined,
+      validation_precision: receipt.precision as number | undefined,
+      validation_worst_unflagged: receipt.worst_unflagged as number | undefined,
+      live_available: status.available, live_unavailable_reason: status.reason,
+    };
+    if (!status.available) t.methods = t.methods.map((m) => m.rung === 'learned'
+      ? { ...m, flaggedByRule: false, unreliable: m.measuredVsExact != null && m.unreliable }
+      : m);
+  } catch (error) {
+    t.learned ??= {};
+    t.learned.guard = { ...(t.learned.guard ?? {}), live_available: false,
+      live_unavailable_reason: error instanceof Error ? error.message : 'current guard evidence is unavailable' };
+    t.methods = t.methods.map((m) => m.rung === 'learned'
+      ? { ...m, flaggedByRule: false, unreliable: m.measuredVsExact != null && m.unreliable }
+      : m);
+  }
   return t;
 }
 
@@ -109,16 +144,6 @@ export function fmtTonnes(v: number): string {
   if (a >= 1e6) return `${dec(v / 1e6, 2)} Mt`;
   if (a >= 1e3) return `${dec(v / 1e3, 1)} kt`;
   return `${dec(v, 0)} t`;
-}
-
-/** A rung's name in the app's language; the rung keys themselves are data. */
-export function rungLabel(rung: string): string {
-  const es = useLangStore.getState().lang === 'es';
-  const names: Record<string, string> = {
-    classical: es ? 'clásico' : 'classical', sota: 'SOTA',
-    learned: es ? 'aprendido' : 'learned', beyond: es ? 'más allá' : 'beyond',
-  };
-  return names[rung] ?? rung;
 }
 
 /** A wall time in the unit a reader can hold: ms, s, min, or h above an hour. */

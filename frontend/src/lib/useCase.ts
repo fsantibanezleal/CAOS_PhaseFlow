@@ -1,6 +1,6 @@
 // Shared state for the App and the focus route: the selected case, its trace, the period cursor and
 // the selected method. Both surfaces read the same hook, so switching between them cannot show two
-// different answers, and the ADR-0070 round trip (App -> focus -> App) preserves the scenario.
+// different answers, and the Focus round trip (App -> focus -> App) preserves the scenario.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useShellLang, useThemeStore } from '@fasl-work/caos-app-shell';
@@ -116,7 +116,7 @@ export function useCase(initialCaseId?: string): CaseState {
   };
 }
 
-/** The state NAMED on the stage, in words, per ADR-0070 clause 4. */
+/** The state NAMED on the stage, in words, for clear user feedback */
 /**
  * The sentence under the stage, describing the schedule that is ON SCREEN.
  *
