@@ -60,3 +60,20 @@ def test_catalog_change_updates_its_digest(tmp_path: Path):
     catalog.write_text(catalog.read_text(encoding="utf-8") + "\n<!-- reviewed -->\n", encoding="utf-8")
     after = compute(root)["catalog_sha256"]
     assert after != before
+
+
+def test_current_template_api_accepts_explicit_data_model_and_catalog_roots(tmp_path: Path):
+    root = isolated_repo(tmp_path)
+    derived = tmp_path / "external-derived"
+    models = tmp_path / "external-models"
+    shutil.copytree(ROOT / "data/derived", derived)
+    shutil.copytree(ROOT / "models", models)
+    shutil.copytree(ROOT / "models", root / "models")
+    explicit = compute(
+        repo_root=root,
+        derived_root=derived,
+        models_dir=models,
+        catalog_path=root / "docs/contracts/catalog.md",
+        version=VERSION,
+    )
+    assert explicit == compute(root)
