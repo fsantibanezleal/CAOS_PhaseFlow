@@ -1,26 +1,15 @@
 # Guide: write the executive view
 
-The executive view is the first thing a CAOS product writes, before its sizing, its contracts and any code. It frames the
-problem space the product works in, for a senior decision maker, in executive language, and it is kept in one data file,
-`content/executive.json`, that the shell renders as the first view of the Introduction, where the product lands (the App stays the leftmost tab). This guide
-is enough to fill it with no other context. The binding text is CAOS_MANAGE `conventions/problem-context-first.md` (Felipe,
-2026-10-12 and 2026-10-13); the shell's own guide is its page `06_executive-view` (CAOS_APP_SHELL, folder `docs`). If they
-differ from this page, they win.
+The executive view frames the open-pit scheduling problem for a decision maker before the technical detail. Its content
+lives in `content/executive.json`; the shared shell renders it as the first view of the Introduction. The technical view
+on the same page explains PhaseFlow's model, data, methods and evidence limits.
 
 A product writes content. It never designs this view: the shell's `ExecutiveView` takes no children, no section can be
 added, removed or reordered, and the shell's gate cannot be waived for it.
 
 ## 1. Why it is the core, and what it is not
 
-Felipe, 2026-10-12: "force that, it is the point of my apps, anyone can write code and release an app, but tailored
-on a real problem context is the expected core." And: "the intro must have 2 visions, the executive and the technical."
-
-Felipe, 2026-10-13: "It is an executive view to cover what the pain in the industry is, its context, its current
-situation, its current trends, and the proposal." And: "the problem can be wider than what we cover in the app, they are
-not the same." And: "That app is not designed for a specific client. It must be general ... I'm not selling or promoting
-that to anybody."
-
-So the view is a frame of the industry's problem, not a description of the product. It is never tied to a client (no named
+The view is a frame of the industry's problem, not a description of the product. It is never tied to a client (no named
 bank, company, hospital or person, no "our client"), never a pitch (no offer, price, contact or call to buy), and it is not
 filler: each sub-tab has real depth, written for a decision maker ("it requires a deep understanding of the problem, but
 set as an executive problem framework"). Named institutions appear only as the sources of public facts.
@@ -39,19 +28,19 @@ five lines), then its supporting content at its floor:
 |---|---|---|---|---|---|
 | 1 | The pain | What goes wrong, for whom, how big | Two paragraphs; 3 to 5 bearers (who bears it, the cost, how it is measured); 2 to 4 sourced figures; 3 to 5 causes, non-overlapping, weighted by size; the pain illustration | A feature list, a pitch, one named organisation, an unsourced number | The pain is X, it falls on Y, it costs Z, and it comes mainly from these causes |
 | 2 | The context | The force that keeps the pain going | One or two paragraphs; the setting; 3 or 4 forces, each with its direction; 1 to 4 sourced pieces of evidence | History of the field, long background | This is the world the problem lives in and what keeps it going |
-| 3 | The current situation | How it is handled today and where that falls short | 3 to 5 roles (what each decides, what it needs) and how they interact; 3 to 5 approaches of the state of the art, each with what it achieves and where it falls short, fair to each; one sourced status figure with its date; the situation illustration | A product comparison, a vendor named as the problem | These are the roles, this is what exists, and why it is not enough |
+| 3 | The current situation | How it is handled today and where that falls short | 3 to 5 roles (what each decides, what it needs) and how they interact; 3 to 5 published approaches, each with its evidence and limitations; one sourced status figure with its date; the situation illustration | A product comparison, a vendor named as the problem | These are the roles, this is what exists, and why it is not enough |
 | 4 | The trends | The shift that makes it urgent, with its horizon | 3 to 5 trends (regulatory, technological, market, practice), each with direction, horizon (now, two years, ten years), a sourced signal, its effect on the roles of tab 3 and how sure the signal is | Hype, a trend without its effect on a role, an unsourced forecast | This is changing, by when, and who it hits first |
 | 5 | The proposal | The approach in one sentence and the first action with its owner | One or two paragraphs tied to the causes of tab 1; the 4 C's, each applied; 3 to 6 actions (owner, horizon, how success is checked); 1 to 4 risks and 1 to 4 unknowns; the proposal illustration; at most one closing line on the part the work explores | A call to buy, a price, a contact, a feature tour, an action without an owner | This is how the problem should be approached, who does what by when, and how we would know |
 
 ### 2.1 Cards that flip, and the carousel (shell 0.14.0)
 
 The shell shows four groups of the view as small cards that flip: the bearers of the pain (`pain.bearers`), the roles
-(`situation.roles`), the approaches of the state of the art (`situation.state_of_the_art`) and the 4 C's
+(`situation.roles`), the documented published approaches (`situation.state_of_the_art`) and the 4 C's
 (`proposal.four_cs`). The face shows the title; a click, Enter or Space turns the card and shows its content on the back;
 Escape or another click turns it back. The other groups (`context.forces`, `trends.items`, `proposal.actions`) stay plain. A
 product does not choose which groups flip; it writes the data so that those four groups fit the rule of use.
 
-**The rule of use (Felipe, 2026-10-13): small cards only, where the reader scans the titles and opens the ones that matter.**
+**Use flip cards only for concise items a reader can scan and open when needed.**
 A card is small when its title has at most 8 words in English and 10 in Spanish and its back at most 40 words in English
 and 50 in Spanish, the labels the shell prints on the back (such as "Cost" or "Falls short") counted. The gate (G16) fails a
 longer title or back, so a longer text is cut, or the point is moved into a paragraph, where it reads whole. A card that
@@ -60,8 +49,8 @@ needs more than that is not a flip card and is not written as one.
 **The carousel.** A group longer than four cards is shown as a carousel: as many cards as fit the width (at least one),
 previous and next buttons, a swipe on touch, the arrow keys, Home and End, and a position ("2 of 5"). There is no autoplay,
 every card is reachable by keyboard and the page never scrolls sideways. The floors allow up to five bearers, five roles and
-five approaches; a group of five is a carousel, so write a fifth card only when it carries real content (the example holds
-five bearers, the fifth being the ambulance crews held at the hospital door), never a filler to reach the number.
+five approaches; a group of five is a carousel, so include a fifth card only when it carries distinct content, never as
+filler to reach a target count.
 
 Below the sub-tabs the shell lists the numbered linked sources and two onward links, "How the work explores this problem"
 (the technical view) and "Open the App". The App is at `/app`; the root opens this view.
@@ -77,7 +66,7 @@ Never write the view from memory. Research the problem space and persist it as d
    their limits, fair to each.
 4. **What is changing?** Regulatory, technological, market and practice signals, each with a date and how sure it is.
 
-A figure or a claim of the state of the art or of the trends with no primary source you read is not written. Every source is
+A figure or a claim about published approaches or trends without a reviewed primary source is not written. Every source is
 a title and an https link.
 
 ## 4. The data file
@@ -104,13 +93,13 @@ governance over data, models and agents). Each `c` is the name in both languages
 `applies` says, in one sentence, what that C means for this proposal and its roles.
 
 **Sources are links.** Each source has a lower-case `id`, a `title` (the publication in plain words), an https `url` and an
-optional one-sentence `note`. Every figure and every claim of the state of the art and of the trends cites one by id, every
+optional one-sentence `note`. Every figure and every claim about published approaches and trends cites one by id, every
 source is cited, and no sub-tab names more than about six. A source is never a file name, a file number or a prose citation.
 
 **Owners are roles.** Each action's `owner` is one of the `situation.roles`, written the same in both languages.
 
 **Weights are the author's judgement of relative size** unless the sizing measures them; say so in `unknowns` when they are an
-estimate (the example does).
+estimate and identify the estimate in `unknowns`.
 
 Writing limits, checked by `scripts/check_sdd.py` and the executive-content unit tests that exercise `validateExecutive`,
 and by the gate on the rendered page, in both languages alike:
@@ -125,13 +114,12 @@ and by the gate on the rendered page, in both languages alike:
   price, offer (and their Spanish forms);
 - no acronym without its words in full the first time (a reviewer's duty).
 
-The template ships a filled example: hospital capacity in respiratory seasons, framed for no single hospital, every figure
-read at its source. Replace every field.
+PhaseFlow's filled view is the product's current executive brief. Its headline figures and narrative sections are backed
+by public references in `frontend/src/data/citations.ts`; revise the source and displayed claim together.
 
 ## 5. The three illustrations
 
-Felipe, 2026-10-12: "i need high quality diagrams, not graphs, illustrations of the initiative, the problem, the proposed
-solutions." Three, authored for the product, as SVG files under `frontend/public/executive/`:
+Three high-quality illustrations are authored for this product as SVG files under `frontend/public/executive/`:
 
 | Illustration | Placed in | What it shows |
 |---|---|---|
@@ -151,17 +139,12 @@ Each meets this standard:
   in an 800 wide viewBox use a font size of 22 and keep each label short, on a chip that fits the wider language.
 - No equation, no acronym, no `data-chart`, no named organisation.
 - One caption sentence under each, saying what the reader should take from it.
-- The pain and the proposal share the same setting and layout, so the change is visible between them (the example keeps the
-  hospital, its wards, hall, theatre and lounge in the same places in both, with the queue, the full beds and the cancelled
-  surgery replaced by the free beds, the planning board and the surgery that goes ahead).
+- The pain and proposal use a consistent visual setting so readers can see which constraints and decisions change.
 
 ### 5.1 Animation: when to animate, and the reduced-motion block (shell 0.14.0)
 
-Felipe, 2026-10-13: "in the intro promote the use of animation, not only static illustration". **Animate an illustration
-when it explains a change, a flow or a sequence**: the pain growing, the roles handing work over, the proposal's before and
-after. A still stays right for a single state (a map of who is where, a snapshot). The example's pain illustration is
-animated: the winter wave arrives, the queue of waiting patients grows one by one, a clock runs and the surgery is
-cancelled, with the labels fixed in place.
+**Animate an illustration when motion explains a change, a flow or a sequence.** A still image is right for a single state,
+such as a map of roles or a snapshot of a planning decision. Keep labels fixed in place while the illustrated process moves.
 
 An animated illustration is an SVG that carries its animation in the file (CSS keyframes or SMIL; CSS keyframes are the
 choice for a figure in a documentation page) and keeps these rules:

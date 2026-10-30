@@ -54,7 +54,7 @@
   <rect x="560" y="170" width="220" height="64" rx="8" class="fw"/>
   <text x="670.0" y="185.0" class="h" text-anchor="middle">mine inner shells first</text>
   <text x="670.0" y="202.0" class="s" text-anchor="middle">the same TopoSort walk</text>
-  <text x="670.0" y="217.0" class="s" text-anchor="middle">and capacities as every rung</text>
+  <text x="670.0" y="217.0" class="s" text-anchor="middle">and capacities as every schedule method</text>
   <path d="M670 146 L670 168" class="ar"/>
   <text x="670" y="262" class="s" text-anchor="middle">the most favourable reading:</text>
   <text x="670" y="278" class="s" text-anchor="middle">every shell, no manual step</text>

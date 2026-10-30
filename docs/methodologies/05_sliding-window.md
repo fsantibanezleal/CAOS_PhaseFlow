@@ -11,7 +11,7 @@ variables (Oyu Tolgoi) and 6.6 million (the Pilbara).
 
 What makes it a look-ahead is that the window is solved **jointly**: a block worth taking in period one
 only because of what it unlocks in period three is visible to the solver. In this product it is the
-best CPIT method on most of the case matrix (table below), which is why it is labelled `sota`.
+best published CPIT method on most of the case matrix (table below).
 
 ![Three periods solved jointly with an aggregated tail; one fixed; slide](../assets/sliding-window.svg)
 
@@ -34,7 +34,7 @@ makes it run.
 **The tail is optimistic by design.** Its capacity is the total of the remaining periods and its
 discount factor that of its first period, which over-values tail production: the standard optimistic
 relaxation for this heuristic, which keeps the tail from dominating while still telling the window a
-horizon exists. The rung's notes say so in every trace.
+horizon exists. The method's notes say so in every trace.
 
 ## 2. The candidate set: the relaxation's own guess
 
@@ -53,9 +53,9 @@ on a later slide.
 ## 3. Three versions, and what each one taught
 
 1. **A greedy wearing the name** (until oreblocks 0.5.0). Each window was scheduled with the same greedy
-   TopoSort as another rung, then every placement past the frozen prefix was undone. Since a placement
+   TopoSort as another method, then every placement past the frozen prefix was undone. Since a placement
    consumes only its own period's capacity, nothing inside the window could influence the prefix:
-   windows of 1, 2, 3, 5, 8 and T gave bit-identical schedules on three instances. The rung carried
+   windows of 1, 2, 3, 5, 8 and T gave bit-identical schedules on three instances. The method carried
    Cullenbine, Wood and Newman's name for a look-ahead it did not perform.
 2. **A real window that refused to run** (0.5.0). Solved jointly, with a candidate set sized to cover
    the window AND the whole remaining horizon, ordered by value density. On real-size cases that asked
@@ -91,7 +91,7 @@ The same window, candidate rule and gap schedule the **re-cut** destination inst
 
 ## 5. Measured on every case
 
-The sliding window against the rounding and local-search rungs it competes with:
+The sliding window against the rounding and local-search methods it competes with:
 
 <!-- generated:methods:toposort-expected,shift-local-search,cpitD-local-search,sliding-window -->
 | case | bound | `toposort-expected` | `shift-local-search` | `cpitD-local-search` | `sliding-window` | best plan of the case |
@@ -116,7 +116,7 @@ The sliding window against the rounding and local-search rungs it competes with:
 
 - The tail is optimistic; the window never sees the true capacity of later periods.
 - The candidate set approximates the published full-model window.
-- It is the most expensive CPIT rung by two orders of magnitude, and the price is visible in the
+- It is the most expensive CPIT method by two orders of magnitude, and the price is visible in the
   runtime table of [12](12_reading-the-results.md).
 
 ## Where it lives

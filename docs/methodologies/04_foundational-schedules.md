@@ -1,9 +1,9 @@
-# 04 · The classical floor: bench by bench and nested shells
+# 04 · Foundational schedules: bench by bench and nested shells
 
-What a planner or a textbook would do. These rungs are here so the state-of-the-art rungs have
-something to beat: a method comparison with no floor in it is a marketing chart. Both are built in the
-most FAVOURABLE reading of the classical practice, because a weak straw man flatters every rung above it.
-(The two classical TopoSort weights, greedy and Gershon, are on [03](03_toposort.md).)
+These reference schedules show what the documented extraction rules produce before adding LP-derived
+weights or look-ahead. Both use a favourable reading of the published operational sequence so the
+comparison tests the method, not a deliberately weak baseline. The value-weighted and successor-cone
+TopoSort schedules are described on [03](03_toposort.md).
 
 ## 1. `bench-by-bench`
 
@@ -14,8 +14,8 @@ $$
 w^{\text{bench}}_b=\text{level}_b\cdot 10^{6}-\epsilon\, b .
 $$
 
-It is not a straw man: it is what a schedule degenerates to when nobody optimises, and its gap is the
-number every other rung implicitly claims to improve on. On deposits whose value sits deep it is
+This is a simple feasible ordering, and its gap shows how much the schedule leaves below the bound.
+On deposits whose value sits deep it is
 strongly negative in the early periods (a gap above 100 percent means a negative NPV).
 
 ## 2. `nested-shells`: the industry's four-step chain as a weight
@@ -51,8 +51,8 @@ more than one.
 
 ![Nested pits by revenue factor become the pushback order](../assets/nested-shells.svg)
 
-**What this gives the classical method that reality does not.** Every shell is taken, in order, with no
-manual pushback selection and no smoothing, and capacity is respected by the same walk the other rungs
+**What this implementation adds to the documented sequence.** Every shell is taken, in order, with no
+manual pushback selection and no smoothing, and capacity is respected by the same walk the other methods
 use. In practice, as Morales, Jelvez, Nancel-Penard, Marinho and Guimaraes record (APCOM 2015, 1040-1051,
 [delphoslab.cl](https://delphoslab.cl/Publicaciones/2015/MJNMG_A2015.pdf)), "only steps 1 and 3 are
 based on optimization models or known algorithms, but the pushback selection is made by the planner",

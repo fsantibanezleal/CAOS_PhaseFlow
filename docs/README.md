@@ -5,14 +5,14 @@ block model. The ultimate pit answers *which* blocks are worth mining; PhaseFlow
 precedence in every period and a mining and a plant capacity per period, and, where the economics exist,
 *where each block goes*.
 
-![The method ladder: the bounds, the rungs, and which bound scores which plan](assets/the-ladder.svg)
+![Method comparison map: the bounds and the methods scored against each problem's bound](assets/the-ladder.svg)
 
 ## What it is, and what it is not
 
 **It is** a solver workbench for the constrained pit limit problem (CPIT) and its destination variant
 (PCPSP): a certified upper bound computed first (the critical multiplier algorithm, Algorithm 4,
-Bienstock-Zuckerberg, the PCPSP LP), a ladder of methods from the classical floor to the published state of
-the art and a learned accelerator, each plan scored against the bound of its own problem, three controls on
+Bienstock-Zuckerberg, the PCPSP LP), published scheduling methods, a learned accelerator, and proposed
+analyses, each plan scored against the bound of its own problem, three controls on
 every case, operability and uncertainty readouts, thirteen cases each with a role, and a browser that
 re-solves the synthetic cases live.
 
@@ -73,7 +73,7 @@ because the failure mode is more transferable than the fix:
   ([05](methodologies/05_sliding-window.md));
 - a bisection that stopped on an interval width rather than a duality certificate
   ([02](methodologies/02_the-bound.md));
-- a confounded sweep that produced two wrong answers about when the learned rung fails, and a bound
+- a confounded sweep that produced two wrong answers about when the learned method fails, and a bound
   surrogate that predicted more capacity lowering a bound ([08](methodologies/08_when-the-surrogate-fails.md));
 - inference features hard-coded at (1.0, 1.0) while training used real ones, and a browser forward pass with
   the wrong activations ([07](methodologies/07_learned.md));

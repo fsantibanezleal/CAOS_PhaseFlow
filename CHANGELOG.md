@@ -3,6 +3,16 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.11.000] - 2026-10-29
+
+Release candidate; full artifact and deployment acceptance remain pending.
+
+- Align the candidate with CAOS Product Template 0.13.001, App Shell 0.19.9 and OreBlocks 0.6.5. Adopt shell SHW-046, which marks the normal CaseWorkbench instrument for gate G6; no product workaround is needed.
+- Add the five-member expected-time ensemble and exact restricted C-PIT[D] re-planning measurement, with bilingual worked notebooks and model provenance.
+- Keep the failed statistical warning rule research-only; stale traces are reconciled against the current independent receipt, and the UI shows the measured failure metrics.
+- Bound Profile and plan charts to the host container to prevent resize feedback from growing chart height without limit.
+- Refresh bilingual methodology, feature designs, contracts, architecture diagrams and manuscript drafts. Complete release acceptance still requires the exact 0.6.5 rebake and all remaining evidence gates.
+
 ## [0.10.000] - 2026-10-28
 
 PhaseFlow targets CAOS App Shell 0.19.6 and CAOS Product Template 0.12.000. The release refreshes documentation, contracts, readiness, 26 bilingual worked notebooks, frontend content, and responsive layout; all 13 cases were rebaked with learned methods enabled and field-compared against 0.09.000 with no scientific drift. After the initial 0.10.000 deployment, the app was aligned to App Shell 0.19.6 and redeployed under the same release version before its release tag was created. See `docs/validation/release-0.10.000.md` for evidence.
@@ -31,7 +41,7 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
 
 ### Fixed
 
-- **The destination rungs did not use the destination decision.** They compared a block's two values,
+- **The destination methods did not use the destination decision.** They compared a block's two values,
   so every marginal ore block took plant tonnage the richer ore below needed; on the plant-bound twins
   they ended 27 to 39 percent below the PCPSP LP and on a small twin solved exactly the constructive one
   returned a negative NPV where choosing destinations is worth about 59 percent. They are now the
@@ -40,8 +50,8 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
   free (`destination-local-search`, never below the best CPIT plan).
 - **Gershon's weight counted precedence paths, not successors** (engine and browser), **`min-width`
   broke capacity** and once reported an NPV above a certified bound, **the sliding window refused on
-  twelve of thirteen cases**, and **the old destination rung lost to CPIT** (oreblocks 0.6.0).
-- **The learned rung was fed capacity fractions of (1.0, 1.0) at inference** while trained on real ones;
+  twelve of thirteen cases**, and **the old destination method lost to CPIT** (oreblocks 0.6.0).
+- **The learned method was fed capacity fractions of (1.0, 1.0) at inference** while trained on real ones;
   they are read off the instance. The model is retrained on two grid sizes against the tightest
   relaxation's expected times, and its guard is capped at flagging half the cases (a rule over every
   archetype had flagged all of them and won on recall).
@@ -51,7 +61,7 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
   the model's own input range and refuses a saturated sample.
 - **CONTRACT 1 promised a cycle check it did not run**; acyclicity is proven when every arc rises and
   checked with Kahn's algorithm otherwise.
-- Every rung, the beyond ones included, is checked for precedence, capacity and its own bound at bake
+- Every method, the beyond ones included, is checked for precedence, capacity and its own bound at bake
   time and in `check_artifacts.py`.
 - **The default case could open on a blank 3D pit**: the build loses its WebGL context once after the
   first frame under headless Chromium, and the on-demand stage never redrew after the restore. It now
@@ -64,7 +74,7 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
   named best.
 - Bound tables printed "-0.000%" slack and "over budget" for a one-resource case; long wall times were
   printed in milliseconds (the window's 9,351,446 ms ran off the method bars); Spanish tables showed raw
-  rung keys. The contract mirror now declares the bound report's PCPSP keys, and the drift test covers it.
+  method keys. The contract mirror now declares the bound report's PCPSP keys, and the drift test covers it.
 - Two browser gates (`verify:focus`, `verify:infeasible`) and a unit test had broken on this release's
   own changes; they follow the new HUD and the feasible min-width, and take `PHASEFLOW_BASE`.
 
@@ -96,7 +106,7 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
   footer is one line.
 - The docs wiki rebuilt as the SimLab tree: methodologies, use cases, data contract, architecture,
   frameworks, guides; sixteen theme-aware diagrams.
-- `sliding-window` is a `sota` rung; `min-width` is described as the feasible plan it now is.
+- `sliding-window` is a `published` method; `min-width` is described as the feasible plan it now is.
 
 ### Removed
 
@@ -112,7 +122,7 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
   certified bound. The App's method picker, the warning under it, the HUD, the KPIs and the methods
   table carry the label; the Experiments ladder draws no captured share and prints no gap for a
   non-comparable row.
-- Draw the Experiments method ladder. Its fixed columns took the whole 290px panel, so every bar
+- Draw the Experiments method comparison. Its fixed columns took the whole 290px panel, so every bar
   track resolved to 0px and runtimes ran into the next panel; panels are wider and the gap line moves
   under the bar when the chart is narrow. Grid column minimums no longer push panels past a phone's
   edge.
@@ -179,7 +189,7 @@ forced. Engine `oreblocks` 0.6.1. Every case re-baked; the release record is
 ### Fixed - the Benchmark page contradicted its own table
 
 - The note under the published-instance table said the best plan sat 2.49 percent from the bound and
-  that the C-PIT[D] neighbourhood was the rung that produced it. The table above it, read from the
+  that the C-PIT[D] neighbourhood was the method that produced it. The table above it, read from the
   artifact, said 1.37 percent from `sliding-window`. The sentence now reads the best method and its
   gap from the same artifact as the table. `docs/README.md` and `docs/methods/04_local_search.md`
   carried the same stale 2.49 and are corrected from the committed `newman1-published` numbers.
@@ -328,12 +338,12 @@ tabs in both languages against real text shaping; it catches the same defect on 
   the ACTIVE tab was unreadable. Two things were wrong: a row that clipped its own labels, and nav
   chrome that changed size depending on which tab you were looking at. Pinned with `flex: 0 0 auto`.
 
-- **The method ladder chart drew the WORST method as the LONGEST bar.** The fill was `gapPct / worstGap`,
+- **The method comparison chart drew the WORST method as the LONGEST bar.** The fill was `gapPct / worstGap`,
   so on the hero case bench-by-bench (a 50.27 percent gap) nearly filled its track while
   cpitD-local-search (5.20 percent, the best schedule in the ladder) drew a stub. Longer read as better
   and longer was worse. Re-encoded so the track IS the certified bound and the fill is the NPV actually
   captured: `npv/bound` is exactly `1 - gap/100`, so the empty remainder IS the gap, at the same scale
-  on every row, with the ceiling shared by construction. Added a ruler, a rung key, and a hatched gap
+  on every row, with the ceiling shared by construction. Added a ruler, a method key, and a hatched gap
   remainder. The explanatory callout was rewritten in the same commit, because it described the old
   encoding and would otherwise have contradicted the chart it sits under.
 
@@ -413,8 +423,8 @@ Verified by driving the browser: `_reach.mjs` all six routes clean with 0 unreac
 
 ### Still outstanding, and NOT fixed here
 Felipe's content review stands: Methodology, Analysis and Controls, Implementation and the Architecture
-modal are all flagged as weak content, with no high-quality SVG diagrams, and the classical / SOTA /
-beyond-SOTA ladder needs validating and showing. **This release fixes the layout and the behaviour. It
+modal are all flagged as weak content, with no high-quality SVG diagrams, and the established / published /
+method comparisons need validating and showing. **This release fixes the layout and the behaviour. It
 does not make the product publishable.**
 
 ## [0.04.001] - 2026-08-10
@@ -441,11 +451,11 @@ were, because the list is more useful than the summary.
 
 ### Fixed, blockers
 - **A capacity-INFEASIBLE plan was the reported best on three cases, and the DEFAULT selection.**
-  `best = max(results, key=npv)` ranked the `beyond` rungs alongside the rest. `min-width` does not
+  `best = max(results, key=npv)` ranked the `beyond` methods alongside the rest. `min-width` does not
   re-impose capacity and `destination-toposort` solves a richer problem; both say so in their own
   notes, and were ranked anyway. Measured: `min-width` was the reported best on `twin-vein` at a 3.69
   percent gap while overshooting a period capacity by 18.65 percent, and the real best feasible plan
-  was 4.09. Worse, it opened the 3D pit on that plan. Ranking now excludes those rungs everywhere,
+  was 4.09. Worse, it opened the 3D pit on that plan. Ranking now excludes those methods everywhere,
   ties break by name so a degenerate case is reproducible, and there is no fallback that re-admits
   them.
 - **The spatial-coherence KPI was 100x wrong.** `(p?.largestComponentShare ?? 0 * 100)` parses as
@@ -455,7 +465,7 @@ were, because the list is more useful than the summary.
 - **The README's trust anchor was two releases stale and denied a shipped capability.** It quoted a
   bound of 24,487,410 (the product uses 24,486,184), a best plan of 23,873,589 (it is 23,875,617), a
   gap of 2.51 percent (2.49), and stated that the exact local search was NOT implemented while that
-  rung was number nine of twelve and the best method on that very case.
+  method was number nine of twelve and the best method on that very case.
 - **The README's PowerShell block contained raw NUL, SOH and ETX bytes**, so none of its three
   commands could run. A script that wrote it had its backslash escapes collapsed on the way in.
 - **Em-dashes in four tracked files while the ADR-0067 gate printed OK.** The gate scanned a
@@ -472,7 +482,7 @@ were, because the list is more useful than the summary.
 ### Fixed, and each one is a gate that did not exist
 - Nothing checked that a committed schedule was FEASIBLE. 23 method rows across 13 cases exceeded a
   period capacity, by up to 447 percent, with every gate green. `check_artifacts.py` now checks
-  capacity per rung, array shapes, the live-lane contract, and that the pinned dependencies are the
+  capacity per method, array shapes, the live-lane contract, and that the pinned dependencies are the
   ones that baked.
 - `frontend/test/contract.test.ts` did not exist, while three module docstrings said a drift would
   fail the build because of it. `tsconfig` did not include `test/` either. Both fixed, and the field
@@ -511,7 +521,7 @@ were, because the list is more useful than the summary.
   0.82, precision 0.67. The scenario rule it replaces scored 0.44 on that same split. Both wrong
   answers came from the same five-point confounded sweep.
 - **The learned guard is a MEASUREMENT where one is available.** Every baked case contains the exact
-  plan the learned rung approximates, so the ratio between them is a fact about that case rather than
+  plan the learned method approximates, so the ratio between them is a fact about that case rather than
   a forecast about cases like it. And the rule cannot travel to the live lane at all: it is about the
   orebody, and a real deposit does not arrive with an archetype label. The product says that instead
   of applying a rule with a measured recall of 0.44.
@@ -547,7 +557,7 @@ Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry th
 ## [0.03.000] - 2026-08-10
 
 The two things the last release listed as OPEN, closed: the joint bound now runs on every case, and
-the learned rung's worst case has a measured answer to WHEN rather than a caveat.
+the learned method's worst case has a measured answer to WHEN rather than a caveat.
 
 ### Added
 - **The joint bound on every case.** It previously ran on nothing but the published instance: the
@@ -558,7 +568,7 @@ the learned rung's worst case has a measured answer to WHEN rather than a caveat
   same 24,486,184 as before, now in 746 ms instead of tens of seconds. On the twins the two bounds
   agree to machine precision, which is a RESULT: on those cases one resource alone determines the LP
   and Algorithm 4 was never loose.
-- **A measured guard on the learned rung.** The surrogate's worst held-out case is 0.344 of the exact
+- **A measured guard on the learned method.** The surrogate's worst held-out case is 0.344 of the exact
   plan. The archetype hypothesis (all six training failures are `core_halo`) is REFUTED by the
   held-out deposits, three of whose five failures are `vein`. What survives is the scenario, and it
   is the reading with a mechanism: under heavy discounting the value of a plan depends on precise
@@ -569,7 +579,7 @@ the learned rung's worst case has a measured answer to WHEN rather than a caveat
 - `docs/methods/10_when_the_surrogate_fails.md`, and the full study committed as
   `models/learned-failure-modes.json` with every case, both splits, and its covariates.
 - Three new gates: a joint bound that was computed must carry ZERO rounding slack, a case without one
-  must say why in words, and the learned rung must be flagged exactly where the rule says.
+  must say why in words, and the learned method must be flagged exactly where the rule says.
 
 ### Fixed
 - **A sandbox bake could not use the learned lane.** `--output` redirected the MODELS path too, and
@@ -597,7 +607,7 @@ Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry th
 
 ## [0.02.000] - 2026-08-08
 
-The full method ladder: 12 methods across 4 rungs, two bounds, a learned lane, an uncertainty
+The full method comparison: 12 methods across 4 methods, two bounds, a learned lane, an uncertainty
 ensemble, and a docs wiki with the theory behind each.
 
 ### Added
@@ -609,10 +619,10 @@ ensemble, and a docs wiki with the theory behind each.
   24,486,549. Where the time-expanded graph exceeds a MEASURED budget for a pure-Python max-flow, the
   report says so in words rather than leaving the field blank.
 - **`sliding-window`** (Cullenbine, Wood and Newman 2011): the industrial baseline.
-- **`cpitD-local-search`**: the EXACT restricted re-solve (Chicoisne et al. section 3.3), the rung the
+- **`cpitD-local-search`**: the EXACT restricted re-solve (Chicoisne et al. section 3.3), the method the
   shift neighbourhood is explicitly not.
 - **`destination-toposort`**: PCPSP, where the cutoff grade becomes an OUTPUT of the schedule rather
-  than an input. Labelled `beyond` and NOT NPV-comparable with the CPIT rungs, which the app says.
+  than an input. Labelled `beyond` and NOT NPV-comparable with the CPIT methods, which the app says.
 - **`min-width`**: operability, reporting how many slivers were absorbed and what it cost in NPV.
 - **The learned lane**: an expected-time surrogate that produces an ExTS-quality schedule with NO LP
   solve, and a bound surrogate for the sensitivity surface. Trained in explicit numpy Adam, exported
@@ -624,7 +634,7 @@ ensemble, and a docs wiki with the theory behind each.
   choice by P10, the optimism of the single-model forecast, and the value of re-planning.
 - **`docs/methods/`**: eight pages, each with the theory, the citations, and the bug that method
   shipped with.
-- App: a fourth **Analysis** tab (two bounds, learned scorecard, risk fan, rung summary); Methodology
+- App: a fourth **Analysis** tab (two bounds, learned scorecard, risk fan, method summary); Methodology
   gains a **Learned** sub-tab; Benchmark gains the two-bound table and the learned scorecard.
 
 ### Fixed
@@ -663,7 +673,7 @@ ensemble, and a docs wiki with the theory behind each.
 - Engine bumped to `oreblocks[milp]` 0.3.1, for `solve_cpit(..., bound=False)`. The uncertainty
   ensemble was computing the certified bound once per realisation and never reading it: the first full
   bake ran four hours and finished one case of thirteen. All thirteen now bake in about 90 minutes.
-- Engine bumped to `oreblocks[milp]` 0.3.0. Three rungs need a MILP solver; without it they record
+- Engine bumped to `oreblocks[milp]` 0.3.0. Three methods need a MILP solver; without it they record
   NOT RUN with the reason rather than substituting a weaker method under the stronger name.
 
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
@@ -675,11 +685,10 @@ year over the block model.
 
 ### Added
 - **Engine**: `oreblocks` 0.2.x consumed as a pinned PyPI dependency. PhaseFlow declares no package
-  of its own (`conventions/no-internal-packages.md`, ADR-0057); `data-pipeline/` is repo-local
+  of its own (product packaging rule); `data-pipeline/` is repo-local
   tooling invoked by path.
-- **Method ladder** on every case: bench-by-bench and nested-shells (classical), greedy and Gershon
-  TopoSort (classical), the critical multiplier certified bound, expected-time TopoSort, Algorithm 4
-  for two resources, and a shift local search (SOTA). Every schedule carries its gap to the same
+- **Method comparisons** on every case: bench-by-bench, nested shells, greedy and Gershon TopoSort,
+  expected-time TopoSort, Algorithm 4 for two resources, and shift local search. Every schedule carries its gap to the same
   certified bound.
 - **Thirteen cases** across five categories, each with a stated role: the published `newman1.cpit`
   solved as published, two real block models under declared scenarios, four seeded archetypes, three
