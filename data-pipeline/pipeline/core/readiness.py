@@ -134,3 +134,11 @@ def compute(repo_root: str | Path, *, derived_root: str | Path | None = None,
         "catalog_sha256": hashlib.sha256(raw).hexdigest(),
         "contracts": outputs,
     }
+
+
+def write(derived_root: str | Path, document: dict[str, Any]) -> int:
+    """Write the compact, byte-stable readiness contract and return its size."""
+    path = Path(derived_root) / "readiness.json"
+    encoded = json.dumps(document, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    path.write_bytes(encoded)
+    return len(encoded)
