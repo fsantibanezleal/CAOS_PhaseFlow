@@ -5,10 +5,10 @@ closure (pure-Python Dinic and a compiled path), the critical multiplier algorit
 Bienstock-Zuckerberg, the TopoSort family, the sliding time window, the shift and exact local searches,
 the PCPSP LP and the destination methods, Lane's cutoffs, operability and the uncertainty ensemble.
 
-**Pin.** `oreblocks[milp]==0.6.5` in `requirements.txt`. The `milp` extra brings SciPy and highspy; both are pinned in the precompute environment,
+**Pin.** `oreblocks[milp]==0.6.6` in `requirements.txt`. The `milp` extra brings SciPy and highspy; both are pinned in the precompute environment,
 because five methods need a solver: the BZ restricted master, the sliding window, the bounded C-PIT[D]
 neighborhood MILPs, the PCPSP LP and the bounded OPBSP-[D] neighborhood search. Without it those methods record NOT RUN with the
-reason rather than quietly substituting a weaker method. Version 0.6.5 adds bounded neighborhood MILP receipts solver receipts with
+reason rather than quietly substituting a weaker method. Version 0.6.6 adds bounded neighborhood MILP receipts with
 incumbent, status, upper bound, gap and model-cost metadata; the exact-only API still refuses uncertified results.
 
 **Why a separate repo.** PhaseFlow declares no package of its own.

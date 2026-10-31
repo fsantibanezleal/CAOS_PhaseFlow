@@ -6,9 +6,9 @@ PhaseFlow consumes the engine as a pinned dependency; it never vendors it.
 # from the repository root, inside the project's own virtual environment
 python -m venv .venv
 . .venv/bin/activate            # Windows PowerShell: .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt  # brings oreblocks[milp]==0.6.5 and numpy
+pip install -r requirements.txt  # brings oreblocks[milp]==0.6.6 and numpy
 pip install -r requirements-precompute.txt  # adds scipy, highspy, ONNX and the full bake runtime
-python -c "import oreblocks; print(oreblocks.__version__)"   # 0.6.5
+python -c "import oreblocks; print(oreblocks.__version__)"   # 0.6.6
 ```
 
 `scripts/local/01_init.sh` / `01_init.ps1` do exactly this plus the development requirements, `npm ci` and a

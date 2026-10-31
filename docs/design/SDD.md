@@ -72,7 +72,7 @@ The table records every pinned direct dependency of the scientific, development,
 | tests | `httpx` | `0.28.1` | in-process ASGI client for endpoint contract tests (`requirements-dev.txt`) | Network-backed tests would be nondeterministic for the local API contract. |
 | tests | `ruff` | `0.15.18` | Python lint and formatting checks (`requirements-dev.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | pipeline | `numpy` | `2.5.1` | numerical arrays and model features (`requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
-| pipeline | `oreblocks` | `0.6.5` | scheduling engine and MILP rungs (`requirements.txt`), including bounded OPBSP proof receipts | A product-local solver would duplicate tested scheduling and solver integration. |
+| pipeline | `oreblocks` | `0.6.6` | scheduling engine and MILP rungs (`requirements.txt`), including bounded OPBSP proof receipts | A product-local solver would duplicate tested scheduling and solver integration. |
 | notebooks | `matplotlib` | `3.11.2` | notebook plots (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `nbclient` | `0.11.0` | fresh-kernel notebook execution (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `nbformat` | `5.11.1` | notebook structure and deterministic serialization (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
@@ -113,7 +113,7 @@ PhaseFlow evaluates published scheduling methods and the proposed BS-1 expected-
 | stage | memory | disk | time | where it runs |
 |---|---|---|---|---|
 | bake | peak memory not yet instrumented; no fixed estimate claimed | clean candidate directory under the configured external data root | solver and case dependent; each manifest records method timings, while full-run elapsed time is recorded separately | isolated `.venv-pipeline`; MineLib source cache stays local |
-| tests | peak memory not yet instrumented | temporary solver files under the configured external temp root | OreBlocks 0.6.5 candidate: 86 tests passed in 825.16 seconds; PhaseFlow artifact-drift checks remain blocked on a fresh full rebake | isolated `.venv-notebooks` and `frontend/` Node environment |
+| tests | peak memory not yet instrumented | temporary solver files under the configured external temp root | OreBlocks 0.6.6 source: 88 tests passed in 610.10 seconds; PhaseFlow artifact-drift checks remain blocked on a fresh full rebake | isolated `.venv-notebooks` and `frontend/` Node environment |
 | build | peak memory not yet instrumented | `frontend/dist/` including committed replay artifacts | Vite build completed in under one second in the current local run; route materialisation followed | Vite production build |
 | deploy | no deployment in this change set | GitHub Pages workflow artifact | remote duration is recorded by Actions after a release | GitHub Pages at `https://phaseflow.fasl-work.com` |
 

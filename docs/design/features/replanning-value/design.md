@@ -1,6 +1,6 @@
 # Re-planning value: design
 
-Status: reviewed 2026-10-30 against the PhaseFlow trace and OreBlocks 0.6.5 receipt API for
+Status: reviewed 2026-10-31 against the PhaseFlow trace and OreBlocks 0.6.6 receipt API for
 backlog BL-049. Its full-case rebake and
 result-dependent acceptance remain pending.
 
