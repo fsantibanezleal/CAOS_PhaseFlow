@@ -1,6 +1,6 @@
 # Expected-time ensemble: design
 
-Status: implementation is present. The OreBlocks 0.6.5 full-case rebake, result review,
+Status: implementation is present. The OreBlocks 0.6.6 full-case rebake, result review,
 fresh-kernel notebook execution, and final artifact/parity checks remain release gates in `requirements.md`
 and `validation.md`.
 
