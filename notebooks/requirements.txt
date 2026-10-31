@@ -1,5 +1,5 @@
 # Exact environment for PhaseFlow method imports and the notebook runner.
-oreblocks==0.6.5
+oreblocks==0.6.6
 numpy==2.5.1
 scipy==1.18.1
 matplotlib==3.11.2

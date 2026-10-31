@@ -7,7 +7,7 @@ product, and how to apply it elsewhere. Every card matches a pin in a `requireme
 
 | # | framework | role | pin |
 |---|---|---|---|
-| 01 | [oreblocks](frameworks/01_oreblocks.md) | the scheduling engine: bounds, methods, destinations, operability, ensemble | `oreblocks[milp]==0.6.5` |
+| 01 | [oreblocks](frameworks/01_oreblocks.md) | the scheduling engine: bounds, methods, destinations, operability, ensemble | `oreblocks[milp]==0.6.6` |
 | 02 | [three.js](frameworks/02_threejs.md) | the 3D stage: one instanced mesh, the void-boundary rule | `three@^0.171.0` |
 | 03 | [uPlot](frameworks/03_uplot.md) | the interactive charts with a value readout at the cursor | `uplot@^1.6.31` |
 | 04 | [ONNX and onnxruntime](frameworks/04_onnx.md) | the learned models' portable export and its verification (offline only) | `onnx==1.22.0`, `onnxruntime==1.28.0` |

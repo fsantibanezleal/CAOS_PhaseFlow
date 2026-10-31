@@ -94,7 +94,7 @@ artifacts and checked in CI.
 | Web | [`frontend/`](frontend/) | active | Bilingual research workbench, Focus view, charts, and shell routes; build with `cd frontend && npm ci && npm run build`. |
 | API | [`app/`](app/) | dormant: no hosted service is in the product contract | PhaseFlow is a static research application and its reserved API boundary documents the current scope. |
 | Core pipelines | [`data-pipeline/`](data-pipeline/) | active | Case ingestion, scheduling methods, validation, and reproducible artifact baking. |
-| Packages | [oreblocks 0.6.5 candidate](https://pypi.org/project/oreblocks/) | active | Product methods remain in the local pipeline package; OreBlocks supplies the pinned optimization engine and bounded neighborhood proof receipts. |
+| Packages | [oreblocks 0.6.6](https://pypi.org/project/oreblocks/) | active | Product methods remain in the local pipeline package; OreBlocks supplies the pinned optimization engine and bounded neighborhood proof receipts. |
 | Notebooks | [`notebooks/`](notebooks/) | active | Bilingual, executed research notebooks teach the problem, methods, and evidence. |
 | Data | [`data/`](data/) | active | Compact derived traces, manifests, metrics, and source provenance; raw MineLib data stays external. |
 | Contracts | [`docs/contracts/`](docs/contracts/) | active | Versioned trace and manifest schemas with producer and consumer gates. |
