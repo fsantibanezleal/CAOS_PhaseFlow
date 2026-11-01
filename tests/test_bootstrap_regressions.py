@@ -21,6 +21,10 @@ from test_local_bootstrap import ROOT, free_port, present, write
 from test_local_bootstrap import fixture_repo as fixture_repo
 from test_local_bootstrap import workflow as workflow
 
+TEMPLATE_ONLY = pytest.mark.skipif(
+    not (ROOT / ".template-source").is_file(), reason="requires the uninstantiated product template"
+)
+
 
 def stamp(root, config, module, name=".venv"):
     item = next(row for row in config["environments"] if row["path"] == name)
@@ -564,32 +568,34 @@ def test_adversarial_locked_node_engines(workflow, tmp_path, monkeypatch, capsys
         workflow.compatible_node(tmp_path, (24, 14, 1))
 
 
-def test_adversarial_real_template_generation_admission(workflow, tmp_path, monkeypatch):
+def test_phaseflow_readiness_contract_admission(workflow):
     config = workflow.settings(ROOT)
-    if not (ROOT / ".template-source").is_file():
-        # A product admits only its actual contract inventory and currently available outcomes.
-        ready = json.loads((ROOT / "data/derived/readiness.json").read_text())
-        assert len(ready["contracts"]) == 5
-        if all(row.get("state") == "available" for row in ready["contracts"]):
+    ready = json.loads((ROOT / "data/derived/readiness.json").read_text())
+    assert len(ready["contracts"]) == 5
+    if all(row.get("state") == "available" for row in ready["contracts"]):
+        workflow.check_readiness_states(ROOT, config, ready, ROOT)
+    else:
+        with pytest.raises(workflow.Failure, match="Partial readiness"):
             workflow.check_readiness_states(ROOT, config, ready, ROOT)
-        else:
-            with pytest.raises(workflow.Failure, match="Partial readiness"):
-                workflow.check_readiness_states(ROOT, config, ready, ROOT)
-        bad = json.loads(json.dumps(ready))
-        bad["contracts"][0]["state"] = "missing"
+    bad = json.loads(json.dumps(ready))
+    bad["contracts"][0]["state"] = "missing"
+    with pytest.raises(workflow.Failure, match="Partial readiness"):
+        workflow.check_readiness_states(ROOT, config, bad, ROOT)
+    for state in (None, "dormant", "partial"):
+        bad["contracts"][0]["state"] = state
         with pytest.raises(workflow.Failure, match="Partial readiness"):
             workflow.check_readiness_states(ROOT, config, bad, ROOT)
-        for state in (None, "dormant", "partial"):
-            bad["contracts"][0]["state"] = state
-            with pytest.raises(workflow.Failure, match="Partial readiness"):
-                workflow.check_readiness_states(ROOT, config, bad, ROOT)
-        assert not config.get("readiness_exceptions")
-        assert set(config.get("stage_inputs", [])) == {
-            path.relative_to(ROOT).as_posix()
-            for path in (ROOT / "models").iterdir()
-            if path.is_file() and path.name != ".gitkeep"
-        }
-        return
+    assert not config.get("readiness_exceptions")
+    assert set(config.get("stage_inputs", [])) == {
+        path.relative_to(ROOT).as_posix()
+        for path in (ROOT / "models").iterdir()
+        if path.is_file() and path.name != ".gitkeep"
+    }
+
+
+@TEMPLATE_ONLY
+def test_adversarial_real_template_generation_admission(workflow, tmp_path, monkeypatch):
+    config = workflow.settings(ROOT)
 
     python = workflow.venv_python(ROOT, config["primary_environment"])
     root = tmp_path / "real template sources with spaces"
