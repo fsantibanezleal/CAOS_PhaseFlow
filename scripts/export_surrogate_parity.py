@@ -13,8 +13,8 @@ Output: ``models/surrogate-parity.json`` with
 - ``features``: for one committed twin case, the block features Python computes from the trace's own
   arrays, so the browser's feature builder is checked against the definition, not against itself.
 
-Run after training (``scripts/train_learned.py``) or after a rebake of the fixture case. It reads
-committed files only and writes one file.
+Run after training (``scripts/train_learned.py``) or after a rebake of the fixture case. It reads the
+selected external model bundle and committed fixture trace, then writes the fixture into that bundle.
 """
 from __future__ import annotations
 
@@ -32,6 +32,7 @@ import oreblocks as ob  # noqa: E402
 from pipeline.io.schema import Scenario  # noqa: E402
 from pipeline.model.features import block_feature_matrix  # noqa: E402
 from pipeline.model.learned import Mlp  # noqa: E402
+from model_paths import external_model_root  # noqa: E402
 
 FIXTURE_CASE = "twin-porphyry-s"
 
@@ -43,7 +44,7 @@ def _samples(model: Mlp, n: int, seed: int) -> list[list[float]]:
 
 
 def main() -> int:
-    models = ROOT / "models"
+    models = external_model_root()
     bound = Mlp.from_json(json.loads((models / "bound.json").read_text(encoding="utf-8")))
     etime = Mlp.from_json(json.loads((models / "expected-time.json").read_text(encoding="utf-8")))
 

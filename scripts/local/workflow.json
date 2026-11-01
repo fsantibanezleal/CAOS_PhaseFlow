@@ -11,6 +11,8 @@
     "models/surrogate-parity.json",
     "models/training-report.json"
   ],
+  "stage_input_roots": {"models/": "CAOS_MODEL_SOURCE_ROOT"},
+  "model_stage_directory": "models",
   "readiness_check": "scripts/check_readiness.py",
   "primary_environment": ".venv-pipeline",
   "generation_environments": [".venv-pipeline"],
@@ -49,7 +51,7 @@
   ],
   "validators": [
     {"script": "scripts/local/producer_bridge.py", "args": ["phaseflow-validate", "{stage}"]},
-    {"script": "scripts/check_artifacts.py", "args": ["--root", "{derived}"]},
+    {"script": "scripts/check_artifacts.py", "args": ["--root", "{derived}", "--models-dir", "{stage}/models"]},
     {"script": "scripts/check_documents.py", "args": ["{stage}"]}
   ],
   "generation_modules": ["numpy", "oreblocks", "scipy", "onnxruntime", "highspy"]

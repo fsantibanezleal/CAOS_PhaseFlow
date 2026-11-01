@@ -58,10 +58,10 @@ def inside(path, parent):
     return path.resolve().is_relative_to(parent.resolve())
 
 
-def external(path, root):
+def external(path, root, label="CAOS_TEMP_ROOT"):
     result = Path(path).expanduser().resolve()
     if inside(result, root):
-        raise Failure("CAOS_TEMP_ROOT and generation stages must be outside the repository.")
+        raise Failure(f"{label} and generated data must be outside the repository.")
     return result
 
 
@@ -399,9 +399,10 @@ def source_identity(root, config):
         for p in root.glob(pattern)
     ]
     paths.extend(root / name for name in requirement_files(root, requirement_names))
-    paths.extend(authored_inputs(root, config).values())
+    authored = authored_inputs(root, config)
     paths.extend(relative(root, row["script"]) for row in config["generation"] + config["validators"])
     values = {p.relative_to(root).as_posix(): digest(p) for p in sorted(set(paths)) if p.is_file()}
+    values.update({f"stage-input:{name}": digest(path) for name, path in authored.items()})
     return hashlib.sha256(json.dumps(values, sort_keys=True).encode()).hexdigest()
 
 
@@ -420,10 +421,23 @@ def payload_hashes(stage, config):
 
 
 def authored_inputs(root, config):
-    inputs = {name: relative(root, name) for name in config.get("stage_inputs", [])}
-    for name, path in inputs.items():
-        if not path.is_file():
-            raise Failure(f"Missing authored stage input: {name}")
+    inputs = {}
+    for name in config.get("stage_inputs", []):
+        source = relative(root, name)
+        for prefix, variable in config.get("stage_input_roots", {}).items():
+            if name.startswith(prefix) and os.environ.get(variable, "").strip():
+                source_root = external(os.environ[variable], root, variable)
+                suffix = Path(name[len(prefix):])
+                candidate = source_root / suffix
+                if candidate.is_symlink():
+                    raise Failure(f"External stage input cannot be a symlink: {name}")
+                source = candidate.resolve()
+                if not inside(source, source_root) or source == source_root:
+                    raise Failure(f"External stage input escapes {variable}: {name}")
+                break
+        if not source.is_file() or source.is_symlink():
+            raise Failure(f"Missing or unsafe authored stage input: {name}")
+        inputs[name] = source
     return inputs
 
 
@@ -557,7 +571,8 @@ def generate(root, config, env):
         if (root / name).is_file():
             (stage / name).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(root / name, stage / name)
-    child_env = {**env, "CAOS_MODELS_ROOT": str(stage / "checkpoints")}
+    model_stage = config.get("model_stage_directory", "checkpoints")
+    child_env = {**env, "CAOS_MODELS_ROOT": str(relative(stage, model_stage))}
     commands(root, config["generation"], substitutions(root, stage, python), child_env)
     if source_identity(root, config) != initial_source:
         raise Failure(

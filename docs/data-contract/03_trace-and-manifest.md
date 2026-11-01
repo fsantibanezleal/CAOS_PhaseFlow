@@ -52,8 +52,9 @@ case view reads.
 ## 3. The index: `data/derived/manifests/index.json`
 
 One entry per case: `case_id`, `category`, `manifest_path`, `default`, `lane`, bilingual `title` and
-`role`. The full bake (`run.py all`) writes it after every case of the registry has been baked in that
-run; a single-case bake does not touch it, so a partial bake is never indexed beside stale cases.
+`role`. The full bake (`run.py all --output <external-stage>/data/derived`) writes it only after every
+case in the registry succeeds; a single-case bake does not touch it, so a partial bake is never indexed
+beside stale cases. The numbered local workflow validates that external index before any promotion.
 
 ## 4. Enforcement, three mechanisms because one is not enough
 

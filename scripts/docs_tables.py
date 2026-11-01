@@ -31,6 +31,10 @@ DOCS = ROOT / "docs"
 MANIFESTS = ROOT / "data" / "derived" / "manifests"
 MODELS = ROOT / "models"
 
+def configured_models() -> Path:
+    from model_paths import external_model_root
+    return external_model_root()
+
 #: The order the argument is made in, and the order every case table follows.
 FAMILY_ORDER = ("published", "declared", "deposit", "regime", "control")
 DESTINATION = ("destination-toposort", "destination-sliding-window", "destination-local-search")
@@ -462,7 +466,9 @@ def main() -> int:
                     help="read another manifest folder (a sandbox bake) instead of the committed one")
     args = ap.parse_args()
 
-    global MANIFESTS
+    global MANIFESTS, MODELS
+    if not args.check:
+        MODELS = configured_models()
     if args.manifests is not None:
         if args.check:
             raise SystemExit("--check always reads the committed manifests")

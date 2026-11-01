@@ -12,6 +12,20 @@ PowerShell: set `$env:CAOS_TEMP_ROOT` and `$env:CAOS_DATA_ROOT`, then run
 workflow records source and payload fingerprints, runs the complete registry and validators, and refuses
 partial, stale or modified stages. Direct `data-pipeline/run.py <case>` calls remain available for
 isolated experiments but cannot create a release candidate.
+
+Train a model candidate into an external directory, then use that same directory as the immutable
+model input for a separate artifact bake:
+
+```bash
+export CAOS_MODELS_ROOT=/external/model-candidate
+python scripts/train_learned.py
+export CAOS_MODEL_SOURCE_ROOT="$CAOS_MODELS_ROOT"
+./scripts/local/02_generate-data.sh
+```
+
+The local workflow binds every staged model byte into its source receipt, runs the bake and artifact
+checks against that exact bundle, and promotes models only with the validated artifact stage.
+
 Outputs: `<root>/<case>/trace.json`, `<root>/manifests/<case>.json` and `<root>/manifests/index.json`
 ([data-contract/03](../data-contract/03_trace-and-manifest.md)). Scientific outputs are deterministic for
 fixed inputs and seeds (every random choice is seeded, no solver stops on wall-clock time); measured run
