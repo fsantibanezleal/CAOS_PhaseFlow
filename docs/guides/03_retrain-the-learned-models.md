@@ -11,7 +11,7 @@ when preparing the next staged bake. Candidate commands never write model files 
 | re-score the guard rules without retraining | `python scripts/rescore_guard.py` | minutes |
 | measure the candidate rule on the third seed set | `python scripts/validate_guard.py` | about an hour |
 | re-verify candidate ONNX exports | `python scripts/reexport_onnx.py` | seconds |
-| rewrite the browser parity fixture in the candidate bundle | `python scripts/export_surrogate_parity.py` | seconds |
+| rewrite the browser parity fixture in the candidate bundle | `python scripts/export_surrogate_parity.py --derived-root <external-stage>/data/derived` | seconds |
 | re-measure the browser's learned-preview timing | `cd frontend && node scripts/measure-learned-preview.mjs` | a minute |
 
 ## The order after a retrain
@@ -19,7 +19,7 @@ when preparing the next staged bake. Candidate commands never write model files 
 1. `train_learned.py` (writes `expected-time.*`, `bound.*`, `training-report.json`,
    `learned-failure-modes.json` into the external model stage);
 2. `validate_guard.py` (writes `guard-validation.json`);
-3. `export_surrogate_parity.py` (the fixture the browser test reads);
+3. `export_surrogate_parity.py --derived-root <external-stage>/data/derived` (the fixture uses the same rebaked twin trace as the candidate model);
 4. `cd frontend && npm test` (the forward pass and the features must match the new fixture);
 5. a release bake (the learned method in every trace uses the new model) and the steps after it
    ([01](01_bake-the-artifacts.md));
