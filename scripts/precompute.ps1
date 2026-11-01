@@ -1,4 +1,4 @@
-# Run the offline pipeline in .venv-pipeline (pass-through args). E.g.:  ./scripts/precompute.ps1 <case-id> --seed 7
+# Run the offline pipeline in .venv-pipeline. Pass --output with an external candidate root.
 $ErrorActionPreference = "Stop"
 Set-Location (Join-Path $PSScriptRoot "..")
 $vp = Join-Path ".venv-pipeline" "Scripts\python.exe"

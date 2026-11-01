@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import json
+import importlib.util
+import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 BRIDGE = ROOT / "scripts/local/producer_bridge.py"
@@ -98,3 +102,120 @@ def test_phaseflow_write_modes_refuse_repository_targets() -> None:
     result = invoke("phaseflow-finalize", ROOT)
     assert result.returncode != 0
     assert "external prepared stage" in result.stderr
+
+
+def test_adversarial_external_model_root_is_used_for_bake_and_training(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    model_root = tmp_path / "external model bundle"
+    model_root.mkdir()
+    config = json.loads((ROOT / "scripts/local/workflow.json").read_text(encoding="utf-8"))
+    for name in config["stage_inputs"]:
+        target = model_root / Path(name).relative_to("models")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((ROOT / name).read_bytes())
+    monkeypatch.setenv("CAOS_MODEL_SOURCE_ROOT", str(model_root))
+    spec = importlib.util.spec_from_file_location("phaseflow_workflow_model_source", ROOT / "scripts/local/workflow.py")
+    assert spec and spec.loader
+    workflow = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(workflow)
+    inputs = workflow.authored_inputs(ROOT, config)
+    assert all(path.is_relative_to(model_root) for path in inputs.values())
+    original_identity = workflow.source_identity(ROOT, config)
+    report = model_root / "training-report.json"
+    report.write_text(report.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    assert workflow.source_identity(ROOT, config) != original_identity
+    assert report.read_bytes() != (ROOT / "models/training-report.json").read_bytes()
+
+    observed: dict[str, str] = {}
+
+    def fake_commands(_root, rows, values, child_env):
+        assert rows == config["generation"]
+        observed.update(child_env)
+        index = Path(values["derived"]) / "manifests/index.json"
+        index.parent.mkdir(parents=True)
+        index.write_text("{}", encoding="utf-8")
+
+    monkeypatch.setattr(workflow, "generation_python", lambda *_: sys.executable)
+    monkeypatch.setattr(workflow, "commands", fake_commands)
+    monkeypatch.setattr(workflow, "validate_stage", lambda *_args, **_kwargs: None)
+    config["generation_modules"] = []
+    temp_root = tmp_path / "external temporary"
+    data_root = tmp_path / "external data"
+    temp_root.mkdir()
+    data_root.mkdir()
+    stage = workflow.generate(
+        ROOT,
+        config,
+        {
+            **os.environ,
+            "CAOS_TEMP_ROOT": str(temp_root),
+            "CAOS_DATA_ROOT": str(data_root),
+        },
+    )
+    assert Path(observed["CAOS_MODELS_ROOT"]) == stage / "models"
+    assert (stage / "models/training-report.json").read_bytes() == report.read_bytes()
+
+    env = {**os.environ, "CAOS_MODELS_ROOT": str(model_root)}
+    probe = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import sys; from pipeline.pipeline import MODELS, PipelinePaths; print(MODELS); print(PipelinePaths.from_output(sys.argv[1]).models)",
+            str(tmp_path / "external candidate"),
+        ],
+        cwd=ROOT / "data-pipeline",
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert probe.returncode == 0, probe.stderr
+    assert probe.stdout.splitlines() == [str(model_root.resolve())] * 2
+
+    for expression, expected in (
+        ("PipelinePaths.from_output()", "Pass --output with an external candidate directory"),
+        (f"PipelinePaths.from_output({str(ROOT / 'data/derived')!r})", "outside the product repository"),
+    ):
+        refused = subprocess.run(
+            [sys.executable, "-c", f"from pipeline.pipeline import PipelinePaths; {expression}"],
+            cwd=ROOT / "data-pipeline",
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert refused.returncode != 0 and expected in refused.stderr
+
+    no_training_root = os.environ.copy()
+    no_training_root.pop("CAOS_MODELS_ROOT", None)
+    training = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/train_learned.py")],
+        cwd=ROOT,
+        env=no_training_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert training.returncode != 0
+    assert "Set CAOS_MODELS_ROOT to an external model-output directory" in training.stderr
+    assert "models" not in training.stdout
+
+    paths = subprocess.run(
+        [sys.executable, "-c", "import sys; sys.path.insert(0, 'scripts'); from model_paths import external_model_root; print(external_model_root())"],
+        cwd=ROOT,
+        env={**os.environ, "CAOS_MODELS_ROOT": str(model_root)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert paths.returncode == 0 and paths.stdout.strip() == str(model_root.resolve())
+    in_repo = subprocess.run(
+        [sys.executable, "-c", "import sys; sys.path.insert(0, 'scripts'); from model_paths import external_model_root; external_model_root()"],
+        cwd=ROOT,
+        env={**os.environ, "CAOS_MODELS_ROOT": str(ROOT / "models")},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert in_repo.returncode != 0
+    assert "outside the product repository" in in_repo.stderr

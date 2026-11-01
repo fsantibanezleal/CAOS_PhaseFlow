@@ -117,7 +117,7 @@ def _lane_check(cid: str, trace: dict, manifest: dict) -> list[str]:
     return []
 
 
-def main(root: Path = DERIVED) -> int:
+def main(root: Path = DERIVED, models_dir: Path = ROOT / "models") -> int:
     root = root.resolve()
     manifests = root / "manifests"
     product_version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
@@ -125,12 +125,12 @@ def main(root: Path = DERIVED) -> int:
     from pipeline import registry
     from pipeline.model.learned import LearnedBundle
 
-    guard_status = LearnedBundle.load(ROOT / "models").live_guard_status()
+    guard_status = LearnedBundle.load(models_dir.resolve()).live_guard_status()
 
     fail: list[str] = []
     index_path = manifests / "index.json"
     if not index_path.exists():
-        print(f"missing {index_path}; run 'python data-pipeline/run.py' first", file=sys.stderr)
+        print(f"missing {index_path}; generate and validate an external candidate before promotion", file=sys.stderr)
         return 1
     index = json.loads(index_path.read_text(encoding="utf-8"))
     if index["schema"] != INDEX_SCHEMA:
@@ -292,4 +292,6 @@ def main(root: Path = DERIVED) -> int:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=DERIVED, help="artifact tree to validate")
-    raise SystemExit(main(parser.parse_args().root))
+    parser.add_argument("--models-dir", type=Path, default=ROOT / "models", help="trained model bundle to validate against")
+    args = parser.parse_args()
+    raise SystemExit(main(args.root, args.models_dir))

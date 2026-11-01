@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Train the two learned methods, evaluate them on HELD-OUT deposits, and export verified ONNX.
 
-    .venv-precompute/Scripts/python.exe scripts/train_learned.py
+    CAOS_MODELS_ROOT=<external-model-stage> .venv-pipeline/Scripts/python.exe scripts/train_learned.py
 
-This is a precompute-lane script. It is never run by CI and never by the deploy: it writes
-``models/*.onnx`` and ``models/*.json``, which are committed, and the deploy serves them as-is.
+This is a precompute-lane script. It is never run by CI or deploy. It writes its validated candidate
+bundle under the externally configured ``CAOS_MODELS_ROOT``; compact release models are admitted later.
 
 **The split is by DEPOSIT SEED, not by row.** Two scenarios of the same deposit share almost all of
 their block-level features, so a row-wise split would let the model memorise the deposit and score
@@ -54,7 +54,7 @@ from pipeline.model.learned import (  # noqa: E402
     train_mlp,
 )
 
-MODELS = ROOT / "models"
+MODELS = Path(os.environ.get("CAOS_MODELS_ROOT", "")).expanduser().resolve() if os.environ.get("CAOS_MODELS_ROOT") else None
 
 TRAIN_SEEDS = [101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157]
 HOLDOUT_SEEDS = [211, 223, 227, 229, 233, 239]
@@ -586,6 +586,10 @@ def spearman(a: np.ndarray, b: np.ndarray) -> float:
 
 def main() -> int:
     assert not (set(TRAIN_SEEDS) & set(HOLDOUT_SEEDS)), "the splits share a deposit seed"
+    if MODELS is None:
+        raise SystemExit("Set CAOS_MODELS_ROOT to an external model-output directory before training.")
+    if MODELS.is_relative_to(ROOT):
+        raise SystemExit("CAOS_MODELS_ROOT must resolve outside the product repository during training.")
     MODELS.mkdir(parents=True, exist_ok=True)
 
     print(f"collecting TRAIN ({len(TRAIN_SEEDS)} seeds x {len(ARCHETYPES)} archetypes x {len(SCENARIOS)} scenarios "

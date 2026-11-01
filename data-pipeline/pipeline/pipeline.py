@@ -1,11 +1,11 @@
 """Offline pipeline orchestrator and CLI.
 
-    python data-pipeline/run.py                          # bake every case (canonical)
-    python data-pipeline/run.py twin-porphyry-s          # one case
-    python data-pipeline/run.py all --output build/smoke # sandbox: never touches committed evidence
+    python data-pipeline/run.py all --output <external-stage>/data/derived
+    python data-pipeline/run.py twin-porphyry-s --output <external-stage>/data/derived
+    python data-pipeline/run.py all --output <external-stage>/data/derived # sandbox output
 
-The canonical bake is an explicit release operation. Tests and CI smoke runs must pass ``--output``
-so they cannot mutate committed scientific evidence.
+The canonical bake is an explicit release operation. Candidate artifacts and trained model inputs use
+external roots; only validated compact release evidence is admitted to the repository.
 
 Stages, in order, each with real typed inputs and outputs:
 
@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -37,7 +38,7 @@ from .stages import solve as solve_stage
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DERIVED = REPO_ROOT / "data" / "derived"
 MANIFESTS = DERIVED / "manifests"
-MODELS = REPO_ROOT / "models"
+MODELS = Path(os.environ.get("CAOS_MODELS_ROOT", REPO_ROOT / "models")).expanduser().resolve()
 
 
 @dataclass(frozen=True)
@@ -49,12 +50,11 @@ class PipelinePaths:
     @classmethod
     def from_output(cls, output: str | Path | None = None) -> PipelinePaths:
         if output is None:
-            return cls(root=DERIVED, manifests=MANIFESTS, models=MODELS)
+            raise ValueError("Pass --output with an external candidate directory; repository writes are never a pipeline default.")
         root = Path(output).resolve()
-        # The models are an INPUT, not an output: they are trained by a separate script and
-        # committed. A sandbox bake redirects where artifacts are WRITTEN, and pointing the model
-        # path at the sandbox too made `--output <external-stage>/data/derived --learned` fail on a missing file that
-        # was never supposed to be there.
+        if root.is_relative_to(REPO_ROOT):
+            raise ValueError(f"Pipeline output must resolve outside the product repository: {root}")
+        # The model bundle is an input to this bake, selected independently from its output tree.
         return cls(root=root, manifests=root / "manifests", models=MODELS)
 
 
@@ -307,14 +307,17 @@ def rebuild_index(*, output_root: str | Path | None = None) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser(prog="phaseflow-pipeline")
     ap.add_argument("case", nargs="?", default="all", help="a case id, 'all', 'index', or 'readiness'")
-    ap.add_argument("--output", type=Path, help="sandbox output root; omit only for a release bake")
+    ap.add_argument("--output", type=Path, required=True, help="required external candidate output root")
     ap.add_argument("--skip-minelib", action="store_true",
                     help="skip cases that need a MineLib cache that is not present")
     ap.add_argument("--learned", action="store_true", help="include the learned methods (needs models/)")
     ap.add_argument("--jobs", type=int, default=1,
                     help="with 'all': bake this many cases at once, as separate processes")
     args = ap.parse_args()
-    paths = PipelinePaths.from_output(args.output)
+    try:
+        paths = PipelinePaths.from_output(args.output)
+    except ValueError as exc:
+        ap.error(str(exc))
 
     learned = None
     if args.learned:

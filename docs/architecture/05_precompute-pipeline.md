@@ -3,9 +3,9 @@
 `data-pipeline/`, plain scripts invoked by path; not a package, never installed.
 
 ```bash
-python data-pipeline/run.py all --learned --jobs 8               # the release bake (writes data/derived)
-python data-pipeline/run.py twin-porphyry-s --learned            # one case into data/derived
-python data-pipeline/run.py all --learned --output <external-stage>/data/derived   # isolated experiment only
+export CAOS_MODELS_ROOT=<external-model-stage>
+python data-pipeline/run.py all --learned --jobs 3 --output <external-stage>/data/derived
+python data-pipeline/run.py twin-porphyry-s --learned --output <external-stage>/data/derived
 ```
 
 (The local scripts wrap these and refuse a single-case release: [guides/01](../guides/01_bake-the-artifacts.md).)

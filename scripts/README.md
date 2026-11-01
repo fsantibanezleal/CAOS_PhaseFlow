@@ -37,7 +37,7 @@ interpreter. Running the product from a fresh clone is [`local/`](local/README.m
 
 | script | what it does |
 |---|---|
-| `train_learned.py` | trains both models by deposit seed and writes the weights, metrics, failure study and training report (hours) |
+| `train_learned.py` | trains both models by deposit seed into required external `CAOS_MODELS_ROOT` (hours); set `CAOS_MODEL_SOURCE_ROOT` to that bundle for the next staged bake |
 | `rescore_guard.py` | re-scores the guard rules from the committed study, without retraining |
 | `validate_guard.py` | measures the shipped rule on a third disjoint seed set |
 | `export_surrogate_parity.py` | writes the fixture that holds the browser's forward pass and features to the Python models |
