@@ -33,7 +33,7 @@ a separate repository with a published PyPI project, consumed pinned ([framework
 ## The flow
 
 ```text
-$PHASEFLOW_DATA_DIR/minelib/   MineLib .blocks/.prec/.cpit/.pcpsp   +   oreblocks.make_twin (seeded)
+$CAOS_DATA_ROOT/minelib/      MineLib .blocks/.prec/.cpit/.pcpsp (external) + oreblocks.make_twin (seeded)
         |
         v  CONTRACT 1  (accept / flag / reject, with reasons)
    bounds: critical multiplier, Algorithm 4, Bienstock-Zuckerberg, PCPSP LP

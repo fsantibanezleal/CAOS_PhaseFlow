@@ -112,7 +112,7 @@ EPOCHS = 10
 
 #: Real deposits scored as a HELD-OUT check, never used as training data: the twins teach the model,
 #: and these say whether what it learned transfers. Scored only where the MineLib cache is present
-#: (PHASEFLOW_DATA_DIR); a run without it records that it could not check.
+#: (CAOS_DATA_ROOT or PHASEFLOW_DATA_DIR); a run without it records that it could not check.
 REAL_HOLDOUT = ("newman1-published", "kd-declared")
 
 

@@ -42,8 +42,8 @@ and everything grade-dependent is skipped with the reason recorded.
 
 **Reaching the files.** The canonical site is not fetchable from a script (expired certificate, WAF
 challenge). `scripts/fetch_minelib.py` downloads `newman1` with its `.cpit` and `.pcpsp` from the AMPL
-mirror and `zuck_small` and `kd` in UPIT form from the whattle mirror, into the machine's data folder
-(`$PHASEFLOW_DATA_DIR/minelib`, falling back to the git-ignored `data/raw/minelib`).
+mirror and `zuck_small` and `kd` in UPIT form from the whattle mirror, into the external data folder
+(`$CAOS_DATA_ROOT/minelib`; `$PHASEFLOW_DATA_DIR` remains an explicit compatibility alias).
 
 ## 2. Seeded synthetic twins
 

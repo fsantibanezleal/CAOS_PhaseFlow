@@ -5,7 +5,7 @@
 ```bash
 python data-pipeline/run.py all --learned --jobs 8               # the release bake (writes data/derived)
 python data-pipeline/run.py twin-porphyry-s --learned            # one case into data/derived
-python data-pipeline/run.py all --learned --output build/local   # a sandbox that cannot touch the evidence
+python data-pipeline/run.py all --learned --output <external-stage>/data/derived   # isolated experiment only
 ```
 
 (The local scripts wrap these and refuse a single-case release: [guides/01](../guides/01_bake-the-artifacts.md).)
