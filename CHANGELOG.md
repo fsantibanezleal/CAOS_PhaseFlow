@@ -7,8 +7,8 @@ Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry th
 
 Release candidate; full artifact and deployment acceptance remain pending.
 
-- Adopt CAOS Product Template 0.14.001: structured deploy target parsing and adversarial deploy-place coverage. PhaseFlow remains on the single `pages` target.
-- Align with CAOS Product Template 0.14.001 and App Shell 0.19.10, with OreBlocks 0.6.6. Adopt the released internal-name guard and the reader-facing notebook sections `Comparison` and `Evidence`. Adopt shell SHW-046, which marks the normal CaseWorkbench instrument for gate G6; no product workaround is needed. The latest shell also owns full-column documentation framing and checks executive SVG labels after transforms.
+- Adopt CAOS Product Template 0.14.002 and App Shell 0.19.11, with OreBlocks 0.6.6. The local workflow now uses source-bound external stages, exact model inputs, complete registry/readiness validation and explicit recoverable promotion. PhaseFlow remains on the single `pages` deployment target.
+- Keep the released internal-name guard and reader-facing notebook sections `Comparison` and `Evidence`. Adopt shell SHW-046, which marks the normal CaseWorkbench instrument for gate G6, shell-owned full-column documentation framing, transformed executive SVG label checks and the 0.19.11 full-document measurement fix.
 - Add the five-member expected-time ensemble and exact restricted C-PIT[D] re-planning measurement, with bilingual worked notebooks and model provenance.
 - Keep the failed statistical warning rule research-only; stale traces are reconciled against the current independent receipt, and the UI shows the measured failure metrics.
 - Bound Profile and plan charts to the host container to prevent resize feedback from growing chart height without limit.

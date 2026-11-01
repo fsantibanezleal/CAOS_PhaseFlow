@@ -53,7 +53,7 @@ class PipelinePaths:
         root = Path(output).resolve()
         # The models are an INPUT, not an output: they are trained by a separate script and
         # committed. A sandbox bake redirects where artifacts are WRITTEN, and pointing the model
-        # path at the sandbox too made `--output build/local --learned` fail on a missing file that
+        # path at the sandbox too made `--output <external-stage>/data/derived --learned` fail on a missing file that
         # was never supposed to be there.
         return cls(root=root, manifests=root / "manifests", models=MODELS)
 

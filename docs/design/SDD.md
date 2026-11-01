@@ -53,8 +53,20 @@ UNVERIFIED: no claim is made about a universal distribution of mine-block sizes 
 The offline pipeline and pinned `oreblocks` engine are the scientific authority.
 The web app reads committed artifacts; it does not silently regenerate benchmark
 results. A release bake is all cases at once because mixed engine versions can pass
-per-case checks. MineLib files remain in a local ignored cache. The repository does
+per-case checks. Academic MineLib files remain in the configured external data root. The repository does
 not redistribute per-block data or per-block schedules for MineLib instances.
+
+## Repository workflow and data roots
+
+The product is instantiated from CAOS Product Template `0.14.002` and pins CAOS App Shell `0.19.11`.
+The numbered PowerShell and Bash entrypoints share the template's receipt-based `scripts/local/workflow.py`;
+the product-specific JSON plan invokes the actual PhaseFlow registry pipeline, stages the trained models,
+computes readiness from staged outputs, and runs PhaseFlow's artifact and document validators. A complete
+candidate is written under external `CAOS_TEMP_ROOT`, bound to its source and payload hashes, and promoted
+only after explicit admission. `CAOS_DATA_ROOT` contains raw academic MineLib downloads; the legacy
+`PHASEFLOW_DATA_DIR` remains an explicit alias. Neither source data nor temporary candidates fall back to
+a repository path. The requirements, design, and validation record is
+[the repository workflow feature](features/repository/requirements.md).
 
 ## Technology and versions
 
@@ -77,7 +89,7 @@ The table records every pinned direct dependency of the scientific, development,
 | notebooks | `nbclient` | `0.11.0` | fresh-kernel notebook execution (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `nbformat` | `5.11.1` | notebook structure and deterministic serialization (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `ipykernel` | `7.4.0` | Python notebook kernel (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
-| frontend | `@fasl-work/caos-app-shell` | `0.19.10` | shared navigation, documentation, shell gate and workbench primitives (`frontend/package-lock.json`); release tag `v0.19.010` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
+| frontend | `@fasl-work/caos-app-shell` | `0.19.11` | shared navigation, documentation, shell gate and workbench primitives (`frontend/package-lock.json`); release tag `v0.19.011` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
 | frontend | `katex` | `0.19.1` | math rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `lucide-react` | `1.61.0` | interface icons (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `react` | `19.3.1` | component rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |

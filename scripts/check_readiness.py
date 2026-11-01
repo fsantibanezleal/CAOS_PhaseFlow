@@ -12,20 +12,25 @@ sys.path.insert(0, str(ROOT / "data-pipeline"))
 from pipeline.core.readiness import compute  # noqa: E402
 
 
-def main() -> int:
-    path = ROOT / "data/derived/readiness.json"
+def main(repo_root: Path = ROOT) -> int:
+    repo_root = repo_root.resolve()
+    path = repo_root / "data/derived/readiness.json"
     try:
         committed = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         print(f"readiness check failed: {exc}")
         return 1
-    current = compute(ROOT)
+    current = compute(repo_root)
     if committed != current:
-        print("readiness check failed: snapshot differs from catalog or committed evidence; run scripts/update_readiness.py")
+        print(
+            "readiness check failed: snapshot differs from catalog or committed evidence; "
+            "run scripts/update_readiness.py"
+        )
         return 1
     print(f"readiness OK: {len(current['contracts'])} contracts, {current['product_version']}")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    selected = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT
+    raise SystemExit(main(selected))

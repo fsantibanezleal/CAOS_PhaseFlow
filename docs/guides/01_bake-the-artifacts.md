@@ -1,14 +1,17 @@
 # 01 · Bake the artifacts
 
 ```bash
-./scripts/local/02_generate-data.sh                        # all cases -> build/local (a sandbox)
-./scripts/local/02_generate-data.sh twin-porphyry-s        # one case  -> build/local
-PHASEFLOW_BAKE_JOBS=8 ./scripts/local/02_generate-data.sh --release   # all cases -> data/derived
+export CAOS_TEMP_ROOT=/external/scratch CAOS_DATA_ROOT=/external/data
+./scripts/local/02_generate-data.sh                        # all thirteen cases -> external stage
+./scripts/local/02_generate-data.sh --release --from-stage '<validated external stage>'
 ```
 
-PowerShell: `.\scripts\local\02_generate-data.ps1 [-Case <id>] [-Release] [-Jobs 8]`. Underneath, both call
-`python data-pipeline/run.py <case|all> --learned [--output DIR] [--jobs N]`.
-
+PowerShell: set `$env:CAOS_TEMP_ROOT` and `$env:CAOS_DATA_ROOT`, then run
+`./scripts/local/02_generate-data.ps1` to create the full external candidate. Promotion requires
+`./scripts/local/02_generate-data.ps1 -Release -FromStage '<validated external stage>'`. The shared
+workflow records source and payload fingerprints, runs the complete registry and validators, and refuses
+partial, stale or modified stages. Direct `data-pipeline/run.py <case>` calls remain available for
+isolated experiments but cannot create a release candidate.
 Outputs: `<root>/<case>/trace.json`, `<root>/manifests/<case>.json` and `<root>/manifests/index.json`
 ([data-contract/03](../data-contract/03_trace-and-manifest.md)). Scientific outputs are deterministic for
 fixed inputs and seeds (every random choice is seeded, no solver stops on wall-clock time); measured run
@@ -16,11 +19,7 @@ times and byte counts change between bakes.
 
 ## Sandbox by default, and why
 
-`data/derived/` is the committed evidence the deployed site replays. Writing it is a RELEASE action and
-takes an explicit flag, and a release bake of a single case is refused: a tree that mixes two engine
-versions is internally consistent and passes every per-case check there is. Tests always bake into a
-sandbox and assert the committed files are byte-identical afterwards.
-
+`data/derived/` is the committed evidence the deployed site replays. Generation writes a full, source-bound candidate into an external `CAOS_TEMP_ROOT`; the repository and system temporary directory are never fallback destinations. The stage must pass source identity, complete case inventory, readiness, contract, artifact and document checks before explicit promotion. `--release --from-stage` revalidates the exact candidate, prepares rollback copies for all promoted directories, and reports retained recovery paths if restoration cannot complete.
 ## What it costs, and how to run it
 
 The 0.09.000 rebake completed all thirteen cases with oreblocks 0.6.3. The longest measured case took
@@ -59,8 +58,7 @@ An academic download, never redistributed:
 python scripts/fetch_minelib.py --all
 ```
 
-They land in `$PHASEFLOW_DATA_DIR/minelib` (the machine's data folder; set it) or the git-ignored
-`data/raw/minelib`. The bake reads them; CONTRACT 2 refuses to commit their per-block data.
+They land in `$CAOS_DATA_ROOT/minelib` (an external machine data directory; set it before fetching). `PHASEFLOW_DATA_DIR` remains an explicit compatibility alias. The bake reads those files; CONTRACT 2 refuses to commit their per-block data. The external source directory is checked before generation.
 
 ## After a release bake
 

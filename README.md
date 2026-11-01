@@ -108,9 +108,9 @@ Numbered scripts, in the order you run them. Each ends by printing the next comm
 options and the release gates: [`scripts/local/README.md`](scripts/local/README.md).
 
 ```powershell
-.\scripts\local\00_install-prereqs.ps1     # check python 3.12+, node 20+, git
-.\scripts\local\01_init.ps1                # venv, deps, frontend packages, artifacts if empty
-.\scripts\local\03_dev.ps1                 # http://localhost:5173
+.\scripts\local\00_install-prereqs.ps1     # check Python 3.12+, Node 22.12+/24/26+, git
+.\scripts\local\01_init.ps1                # initialize pinned environments and frontend
+.\scripts\local\03_dev.ps1                 # validate shipped evidence, then start http://localhost:5173
 ```
 
 ```bash
@@ -119,11 +119,12 @@ options and the release gates: [`scripts/local/README.md`](scripts/local/README.
 ./scripts/local/03_dev.sh
 ```
 
-The MineLib instances are an academic download and are never redistributed:
-`python scripts/fetch_minelib.py --all` puts them in the machine's data folder (`PHASEFLOW_DATA_DIR`) or
-a git-ignored one. `02_generate-data` bakes into `build/local` unless you pass `--release`, so it cannot
-overwrite the committed evidence by accident; the whole set takes hours and runs cases side by side
-(`PHASEFLOW_BAKE_JOBS`). `npm test` runs the engine, parity, contract and design-token gates.
+Raw MineLib inputs are academic downloads and are never redistributed. Set `CAOS_DATA_ROOT` to an
+external data directory and `CAOS_TEMP_ROOT` to an external scratch directory before acquisition or
+generation. Run `python scripts/fetch_minelib.py --all` to populate the external MineLib cache. The
+numbered `02_generate-data` workflow creates a complete, source-bound sandbox; it does not overwrite
+shipped evidence. Inspect and validate its candidate, then explicitly promote that exact stage with
+`--release --from-stage`. See [`scripts/local/README.md`](scripts/local/README.md) for commands and recovery.
 
 ## Shape
 

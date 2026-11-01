@@ -5,7 +5,7 @@ PhaseFlow applies to a NEW deposit, not only to its thirteen cases. The door is 
 
 ## The steps
 
-1. **Put the instance in the machine's data folder** (`$PHASEFLOW_DATA_DIR/minelib/<id>/<id>.blocks`,
+1. **Put the instance in an external data root** (`$CAOS_DATA_ROOT/minelib/<id>/<id>.blocks`,
    `.prec`, and `.upit` or `.cpit`; `.pcpsp` if you have destination economics), never in the repository.
 2. **Register a case** in `data-pipeline/pipeline/cases/phaseflow_cases.py`: an id, a family, bilingual
    title and ROLE (a case with no role is a case nobody needs), a `DepositSpec(kind="minelib",

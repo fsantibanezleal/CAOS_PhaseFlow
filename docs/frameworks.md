@@ -9,14 +9,14 @@ product, and how to apply it elsewhere. Every card matches a pin in a `requireme
 |---|---|---|---|
 | 01 | [oreblocks](frameworks/01_oreblocks.md) | the scheduling engine: bounds, methods, destinations, operability, ensemble | `oreblocks[milp]==0.6.6` |
 | 02 | [three.js](frameworks/02_threejs.md) | the 3D stage: one instanced mesh, the void-boundary rule | `three@^0.171.0` |
-| 03 | [uPlot](frameworks/03_uplot.md) | the interactive charts with a value readout at the cursor | `uplot@^1.6.31` |
+| 03 | [uPlot](frameworks/03_uplot.md) | the interactive charts with a value readout at the cursor | `uplot@^1.6.32` |
 | 04 | [ONNX and onnxruntime](frameworks/04_onnx.md) | the learned models' portable export and its verification (offline only) | `onnx==1.22.0`, `onnxruntime==1.28.0` |
-| 05 | [scipy and HiGHS](frameworks/05_scipy-highs.md) | the LP and MILP solver behind five methods and the PCPSP LP | `scipy==1.18.0` |
-| 06 | [KaTeX](frameworks/06_katex.md) | the equations on the reading pages, through the shell | `katex@^0.16.11` |
-| 07 | [caos-app-shell](frameworks/07_caos-app-shell.md) | the shared header, footer, theme, language, modal, citations and document components | `@fasl-work/caos-app-shell@0.19.10` |
+| 05 | [scipy and HiGHS](frameworks/05_scipy-highs.md) | the LP and MILP solver behind five methods and the PCPSP LP | `scipy==1.18.1` |
+| 06 | [KaTeX](frameworks/06_katex.md) | the equations on the reading pages, through the shell | `katex@0.19.1` |
+| 07 | [caos-app-shell](frameworks/07_caos-app-shell.md) | the shared header, footer, theme, language, modal, citations and document components | `@fasl-work/caos-app-shell@0.19.11` |
 
 Also in the stack, without a card because nothing product-specific rides on them: numpy (`numpy==2.5.1`,
-the arrays and the hand-written MLP and Adam), React 19 with React Router 7, Vite 6 and TypeScript 5, and
+the arrays and the hand-written MLP and Adam), React 19 with React Router 8, Vite 8 and TypeScript 5, and
 Playwright for the browser gates (a development dependency; browsers installed under the machine's temp
 folder).
 

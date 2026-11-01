@@ -10,7 +10,7 @@ interpreter. Running the product from a fresh clone is [`local/`](local/README.m
 |---|---|
 | `00_install-prereqs` | checks python, node and git against the versions CI pins |
 | `01_init` | one virtualenv, the requirements, `npm ci`, `.env` from `.env.example`, a sandbox bake if `data/derived/` is empty |
-| `02_generate-data` | bakes the artifacts: a sandbox by default, `--release` / `-Release` for the committed set; cases side by side (`PHASEFLOW_BAKE_JOBS` / `-Jobs`) |
+| `02_generate-data` | creates the complete source-bound artifact/model stage under external `CAOS_TEMP_ROOT`; `--release --from-stage` explicitly validates and promotes that exact stage |
 | `03_dev` | overlays `data/derived` into the frontend and starts Vite |
 
 ## Guards: run in CI and before deploy (cheap, never train; ADR-0074)
@@ -29,7 +29,7 @@ interpreter. Running the product from a fresh clone is [`local/`](local/README.m
 
 | script | what it does |
 |---|---|
-| `fetch_minelib.py` | downloads MineLib instances into `$PHASEFLOW_DATA_DIR/minelib` (or the git-ignored `data/raw/minelib`); academic download, never committed |
+| `fetch_minelib.py` | downloads MineLib instances into external `$CAOS_DATA_ROOT/minelib` (`PHASEFLOW_DATA_DIR` is a compatibility alias); academic download, never committed |
 | `docs_tables.py` | rewrites the measured tables of `docs/` from the manifests and model files (`--manifests DIR` previews a sandbox bake) |
 | `compare_rebake.py` | compares a candidate bake with the committed evidence and lists every changed number for review |
 
