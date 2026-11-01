@@ -40,10 +40,10 @@
 .pfd-symbols { border: 1px solid var(--color-border); border-radius: 8px; padding: 0.7rem 0.9rem; background: var(--color-surface); }
 .pfd-symbols-title,
 .pfd-steps-title { font-size: 0.78rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-fg-subtle); margin-bottom: 0.4rem; }
-.pfd-symbols dl { margin: 0; display: grid; gap: 0.32rem; }
-.pfd-symbol { display: grid; grid-template-columns: minmax(3.2rem, max-content) minmax(0, 1fr); gap: 0.7rem; align-items: baseline; font-size: 0.88rem; }
-.pfd-symbol dt { margin: 0; }
-.pfd-symbol dd { margin: 0; color: var(--color-fg-subtle); line-height: 1.45; }
+.pfd-symbols dl { margin: 0; display: grid; grid-template-columns: minmax(3.2rem, 35%) minmax(0, 1fr); column-gap: 0.7rem; row-gap: 0.32rem; align-items: baseline; font-size: 0.88rem; }
+.pfd-symbols dt { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.pfd-symbol-plain { margin-left: 0.2rem; color: var(--color-fg-subtle); font: 0.78em ui-monospace, monospace; overflow-wrap: anywhere; }
+.pfd-symbols dd { margin: 0; color: var(--color-fg-subtle); line-height: 1.45; }
 
 .pfd-steps { margin: 0.9rem 0; padding: 0.7rem 0.9rem 0.5rem; border-left: 3px solid var(--color-accent); background: var(--color-surface-2); border-radius: 0 8px 8px 0; max-width: 82ch; }
 .pfd-steps ol { margin: 0; padding-left: 1.25rem; }
