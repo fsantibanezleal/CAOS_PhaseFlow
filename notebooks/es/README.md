@@ -29,6 +29,7 @@ El notebook de nivel 3 ejecuta replanificación determinista por escenario, como
 
 - 04-learned-surrogates/01-learned-preview.ipynb : nivel 1: cargar modelos comprometidos de tiempos esperados y cota, construir un plan aprendido factible y medirlo frente a ExTS exacto.
 - 04-learned-surrogates/02-cross-case-validation.ipynb : nivel 2: comparar razones pareadas de valor en cuatro arquetipos generados e inspeccionar la regla en particiones de validación y limpias. Sin nivel 3: el dossier evalúa el surrogate propio y no identifica una implementación aprendida de referencia ejecutable.
+- 04-learned-surrogates/03-frontier-state-and-feasibility-mask.ipynb : nivel 4: generar un grafo con semilla, inspeccionar máscaras de precedencia y dos recursos, reproducir una puntuación transparente y validar objetivo y cobertura de forma independiente.
 
 ## Tema 05: operabilidad
 

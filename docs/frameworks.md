@@ -14,11 +14,13 @@ product, and how to apply it elsewhere. Every card matches a pin in a `requireme
 | 05 | [scipy and HiGHS](frameworks/05_scipy-highs.md) | the LP and MILP solver behind five methods and the PCPSP LP | `scipy==1.18.1` |
 | 06 | [KaTeX](frameworks/06_katex.md) | the equations on the reading pages, through the shell | `katex@0.19.1` |
 | 07 | [caos-app-shell](frameworks/07_caos-app-shell.md) | the shared header, footer, theme, language, modal, citations and document components | `@fasl-work/caos-app-shell@0.19.12` |
+| 08 | [PyTorch frontier training](frameworks/08_pytorch-frontier.md) | the CPU graph actor-critic and masked PPO training environment; weights remain external | `torch==2.14.1` |
 
 Also in the stack, without a card because nothing product-specific rides on them: numpy (`numpy==2.5.1`,
-the arrays and the hand-written MLP and Adam), React 19 with React Router 8, Vite 8 and TypeScript 5, and
-Playwright for the browser gates (a development dependency; browsers installed under the machine's temp
-folder).
+the arrays and the hand-written expected-time MLP), React 19 with React Router 8, Vite 8 and TypeScript 5,
+and Playwright for browser gates. The frontier policy's separate environment installs the CPU PyTorch wheel
+from `requirements-frontier-training.txt`; no training library is installed in CI, the pipeline environment,
+or the web deployment.
 
 PhaseFlow declares **no package of its own**: where an engine is
 required it is a separate repository with a published project, consumed pinned, and named for the domain

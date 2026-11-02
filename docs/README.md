@@ -29,7 +29,7 @@ is read from the committed artifacts.
 | use cases | [cases.md](cases.md) | the thirteen cases, the role of each, every bound and plan per case |
 | data contract | [data-contract.md](data-contract.md) | inputs, CONTRACT 1 (ingestion), CONTRACT 2 (artifacts), licences, model files |
 | architecture | [architecture.md](architecture.md) | the lanes, the bake, the live port, the gate, deploy |
-| frameworks | [frameworks.md](frameworks.md) | each engine and library: card, installation, usage, applying it elsewhere |
+| frameworks | [frameworks.md](frameworks.md) | each engine and library: card, installation, usage, applying it elsewhere, including the isolated CPU training stack |
 | guides | [guides.md](guides.md) | bake, bring your own data, retrain, use the app, run the checks |
 | design | [design/SDD.md](design/SDD.md) | the software design document: contracts, lanes, oracle, named gates; proposed feature designs |
 | validation | [validation/](validation/) | the release records: what each release re-baked and what changed |

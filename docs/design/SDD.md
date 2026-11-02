@@ -33,6 +33,7 @@ The product model and claims are bounded to these primary sources and independen
 - Jelvez et al. (2018), destination-aware open-pit scheduling, https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf
 - Rivera Letelier et al. (2020), production scheduling formulation and evaluated methods, https://doi.org/10.1287/opre.2019.1965
 - Cullenbine, Wood and Newman (2011), sliding time-window heuristic for open-pit block sequencing, https://doi.org/10.1007/s11590-011-0306-2
+- Teichteil-Königsbuch et al. (2023), graph policy with schedule generation for resource-constrained project scheduling, https://doi.org/10.1609/icaps.v33i1.27244
 - PhaseFlow source repository, deterministic synthetic twins and derived case manifests (MIT project code): https://github.com/fsantibanezleal/CAOS_PhaseFlow
 - MineLib Newman1 CPIT benchmark, https://minelib.org/v1/Results.xhtml
 - Morales et al. (2015), production schedules and pit-profile visualisation, https://www.delphoslab.cl/Publicaciones/2015/Morales_et_al_APCOM2015.pdf
@@ -77,6 +78,7 @@ The table records every pinned direct dependency of the scientific, development,
 | pipeline | `scipy` | `1.18.1` | scientific routines and HiGHS-backed optimisation (`requirements-precompute.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | pipeline | `onnx` | `1.22.0` | portable learned-model interchange (`requirements-precompute.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | pipeline | `onnxruntime` | `1.28.0` | CPU learned-model inference and export parity (`requirements-precompute.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontier training | `torch` | `2.14.1` | masked PPO graph actor-critic in a separate training-only environment (`requirements-frontier-training.txt`; official CPU wheels) | A hand-maintained autodiff/training stack would add unreviewed numerical risk; this dependency is absent from CI, deployment and the runtime pipeline. |
 | tests | `pytest` | `9.1.1` | Python contract and scientific tests (`requirements-dev.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | tests | `jsonschema` | `4.26.0` | validate catalogued JSON data contracts (`requirements-dev.txt`) | Handwritten shape checks drift from the consumer schema. |
 | tests | `openapi-spec-validator` | `0.9.0` | validate API descriptions when the dormant API lane is activated (`requirements-dev.txt`) | Schema-only checks miss OpenAPI structure and path errors. |
@@ -152,15 +154,19 @@ already deployed in 0.07.002; the gate protects it.
 | M-3 | sota | Published destination-choice binary formulation and node-bounded C-PIT[D] neighborhood search | Separates constructive, restricted solver results with proof status and full exact results; restricted search never degrades its seed | pipeline tests; level-3 destination-choice notebook |
 | M-4 | sota | Deterministic scenario re-planning from one fixed pre-draw policy using exact local neighborhood search | Reports the policy comparison as a lower bound on EVPI and preserves paired draw values | pipeline tests; level-3 re-planning notebook |
 | BS-1 | beyond | Expected-time ensemble policy: five seed-disjoint learned predictors rank blocks, then precedence-safe TopoSort constructs the schedule | On deposit-disjoint holdouts, compare feasibility and discounted NPV with M-1 through M-3 and exact ExTS; report transfer failures and per-case results | adversarial feature/training tests; ONNX and browser parity; level-4 bilingual learned-planning notebook; rebaked manifests |
+| BS-2 | beyond | State-conditioned frontier policy: a graph-conditioned actor selects only currently eligible, resource-feasible blocks from the partial schedule state | Independently validate every output; report completeness/coverage, NPV, comparable certified gap, runtime, memory and every failure on frozen seed/family-disjoint tests and all declared cases | `docs/design/features/learned-frontier/`; adversarial action-mask and leakage tests; independent schedule validator; two bilingual notebook pairs; full 0.12.000 bake |
 
 ## Beyond the state of the art
 
 **BS-1, expected-time ensemble policy.** Hypothesis: a five-member ensemble trained on deposit-disjoint synthetic instances can rank blocks by expected extraction time and produce a feasible precedence-safe CPIT schedule whose discounted NPV is competitive with exact expected-time ordering, while avoiding an LP solve at inference. Method: train each member on the same train-only normalization with frozen, distinct seeds; average predictions; run the shared TopoSort constructor; compare against the classical constructor, sliding-window look-ahead, exact expected-time ordering and exact local-search results under identical deposits and constraints. Evaluation: use seed-disjoint holdout deposits, retain each case and seed, report NPV ratios, feasibility, timing and uncertainty, and test the ONNX and browser implementations against Python. The claim is limited to this benchmark and does not imply a field-wide performance improvement. A result that misses the hypothesis remains in the report and notebook.
 
+**BS-2, state-conditioned frontier policy.** A second learned scheduler is approved for design by Felipe (2026-11-01); the method remains unimplemented. An autoregressive graph-conditioned actor scores feasible blocks using the current partial schedule, period and remaining resources, with explicit stop-period and stop-schedule actions. Its masked PPO training return uses the same discounted-value objective as the CPIT evaluator, without a second discount. The independent validator, rather than the mask alone, certifies every output. Training, validation and test partitions are disjoint by generator seed and graph family; all 13 product cases remain sealed until the checkpoint/settings freeze. We report incomplete coverage and negative results and make no performance claim without paired evidence. The versioned SDD amendment fixes the compute cap and names the method/code/data/docs/browser gates. The active 0.11.000 baseline bake must finish unchanged; this result-changing method targets a separate full 0.12.000 bake.
+
 The product-quality backlog still has three open units: a deposit-statistics live
-guard, a second learned schedule rung, and a scalable sliding window on larger
-instances. Their requirements, design and tasks live under `docs/design/features/`.
-Until their gates pass, the UI must not claim they exist.
+guard, the newly approved second learned schedule policy, and a scalable sliding
+window on larger instances. Their requirements and design records live under
+`docs/design/features/`; implementation and empirical gates remain pending.
+Until those gates pass, the UI must not claim the features exist.
 
 The uncertainty re-planning estimate uses one fixed policy selected by expected
 NPV, then exact local search in restricted C-PIT[D] neighborhoods on each
@@ -210,6 +216,16 @@ No single HTTP 200 or green build substitutes for this chain.
 | P-14 | WHEN a learned model is trained, THE trainer SHALL reject any non-finite or zero-variance input feature rather than silently assign it unit scale. | `tests/adversarial/test_training_features.py::test_adversarial_training_rejects_constant_features`; `::test_adversarial_training_names_non_finite_features` |
 | P-15 | WHEN the expected-time model is trained and loaded, THE offline and browser lanes SHALL average the same five members and reject schema or scale mismatches. | `tests/adversarial/test_training_features.py::test_expected_time_ensemble_averages_five_members_and_roundtrips`; `frontend/test/surrogate-parity.test.ts` |
 | P-16 | WHEN a notebook loads a released model under `--check`, THE isolated fresh-kernel worktree SHALL include the model while preserving committed files and cleaning up its temporary copy. | `tests/test_check_notebooks.py::test_adversarial_runner_copies_released_models_into_the_check_worktree` |
+| P-17 | WHEN the frontier policy emits a block assignment, THE assignment SHALL be unassigned, precedence eligible in that period and within every residual resource capacity. | `tests/test_frontier_policy.py`; adversarial action-mask tests |
+| P-18 | WHEN a frontier schedule is exported, THE independent product validator SHALL recompute precedence, resource use, uniqueness, period bounds and discounted NPV. | pipeline integration tests; `scripts/check_artifacts.py` |
+| P-19 | WHEN frontier features are normalized, THE normalizer SHALL use training-only statistics and reject forbidden identifiers, non-finite inputs and unapproved missing/constant features. | `tests/adversarial/test_frontier_features.py`; training-receipt validator |
+| P-20 | WHEN the frontier policy is trained, ITS train, validation and test partitions SHALL be disjoint by seed and synthetic graph family; product cases SHALL remain sealed until the checkpoint and settings are frozen. | split-manifest tests; test-access receipt |
+| P-21 | WHEN frontier inference is repeated with identical inputs and checkpoint, THE action sequence, schedule, objective and coverage SHALL be identical. | deterministic replay test; checkpoint/config checksum receipt |
+| P-22 | WHEN a frontier schedule is partial or unavailable, THE trace and app SHALL show coverage or the failure reason and SHALL NOT present the schedule as complete. | trace contract tests; EN/ES replay browser gate |
+| P-23 | WHEN the frontier method is released, THE all-case artifacts SHALL use one source version, engine pin, feature contract and frozen checkpoint and SHALL retain every case failure. | 0.12.000 external bake receipt; artifact, manifest, index and readiness checks |
+| P-24 | WHEN the frontier policy is exposed in the web app, THE browser SHALL replay the committed schedule and SHALL NOT load or execute the training checkpoint. | frontend trace/replay tests; no-live-model browser assertion |
+| P-25 | WHEN frontier training inputs or weights are persisted, THEY SHALL remain under the configured device data/training/model roots; CI and deployment SHALL never train. | `scripts/check_base_integrity.py`; training runner tests; `scripts/check_ci_budget.py` |
+| P-26 | WHEN the frontier method is taught, THE EN/ES notebooks SHALL execute the product observation, mask, training and frozen evaluation code and interpret numeric results and failures. | notebook content gate; fresh-kernel execution and byte-stable `--check` |
 
 ## Deploy driver
 
@@ -223,6 +239,10 @@ The product template's CI runs static and scientific contract checks on every ch
   stop the release and rebuild the complete set.
 - If a learned guard misses more failures than its predeclared gate or requires
   an unavailable synthetic archetype label, abstain on the live lane.
+- If the frontier actor selects a masked action, the independent validator fails,
+  or a checkpoint/config hash differs, reject the method result and the bake.
+- If training reaches its frozen compute cap without a reproducible checkpoint,
+  keep the negative receipt and do not expand the budget after test access.
 - If the external Newman1 model cannot be shown equivalent coefficient by
   coefficient, keep its optimum attributed and its use limited to reference.
 - If a diagram or translated statement conflicts with an artifact or primary
@@ -240,10 +260,13 @@ The product template's CI runs static and scientific contract checks on every ch
 | Responsive behavior | Route sizes, charts and navigation are measured across supported viewports. |
 | Design before new work | New feature designs name requirements, implementation boundaries and adversarial verification gates. |
 | Shared base adoption | Shell behavior comes from an exact released package pin; defects are resolved in that shared package. |
+| Frontier scheduler | Offline actor training, feasible-action masking, independent validation and committed replay are specified by `features/learned-frontier/SDD-amendment-0.12.000.md`; isolated mask/replay/validator primitives have partial implementation, while training, pipeline integration and release evidence remain pending. |
 
 ## Convergence record
 
 This SDD backfills a shipped product and is awaiting independent review.
 The existing requirements are checked by the named gates above.
-The three feature designs are proposals; their code and claimed outcomes remain pending
-until review and their own convergence evidence.
+Feature records name their approval and implementation state individually. The frontier
+policy direction is approved, its reviewed SDD amendment fixes the implementation and
+evaluation boundary, and its code/results remain pending until the full 0.12.000 vertical
+and convergence gates pass. No design proposal is evidence of a measured result.

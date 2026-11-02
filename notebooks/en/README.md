@@ -29,6 +29,7 @@ The level-3 lesson executes deterministic scenario re-planning as described in t
 
 - 04-learned-surrogates/01-learned-preview.ipynb : level 1: load committed expected-time and bound models, construct a feasible learned schedule, and measure it against exact ExTS.
 - 04-learned-surrogates/02-cross-case-validation.ipynb : level 2: compare paired plan-value ratios across four generated archetypes and inspect the guard on held-out and clean splits. No level 3: PhaseFlow's dossier evaluates its own surrogate and names no runnable learned CPIT reference implementation for this case.
+- 04-learned-surrogates/03-frontier-state-and-feasibility-mask.ipynb : level 4: generate a seeded graph, inspect precedence and two-resource action masks, replay a transparent score, and independently validate coverage and objective.
 
 ## Topic 05: operability
 
