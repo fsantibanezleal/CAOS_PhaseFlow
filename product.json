@@ -32,6 +32,11 @@
     "oreblocks.run_controls",
     "pipeline.model.learned.LearnedBundle",
     "oreblocks.pcpsp_schedule_value",
-    "oreblocks.schedule_coherence"
+    "oreblocks.schedule_coherence",
+    "pipeline.model.frontier_data.generate_graph",
+    "pipeline.model.frontier_policy.precedence_frontier",
+    "pipeline.model.frontier_policy.feasible_frontier",
+    "pipeline.model.frontier_policy.replay_frontier_policy",
+    "pipeline.model.frontier_policy.validate_schedule"
   ]
 }

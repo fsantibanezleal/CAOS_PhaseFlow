@@ -44,3 +44,9 @@ interpreter. Running the product from a fresh clone is [`local/`](local/README.m
 | `reexport_onnx.py` | re-exports and re-verifies the ONNX graphs from the committed weights |
 
 The order after a retrain is in [docs/guides/03](../docs/guides/03_retrain-the-learned-models.md).
+
+The state-conditioned frontier policy has its own, external CPU training environment. See
+[`docs/frameworks/08_pytorch-frontier.md`](../docs/frameworks/08_pytorch-frontier.md) and use the paired
+`setup-frontier-training.ps1` or `setup-frontier-training.sh` script. The frozen trainer is
+`train_frontier_policy.py`; `--check` validates its contract without training. Synthetic-test and product-case
+evaluation remain required before any checkpoint is exposed as a release result.
