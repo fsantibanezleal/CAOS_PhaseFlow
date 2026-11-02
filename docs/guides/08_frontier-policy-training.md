@@ -50,6 +50,7 @@ checkpoints respectively; both roots must be outside the checkout.
 ```powershell
 $run = "frontier-0.12.000-r01"
 $venv = Join-Path $env:CAOS_VENVS_ROOT "phaseflow-frontier"
+$baseline = Join-Path $env:CAOS_TEMP_ROOT "phaseflow-0.11.000-full-0.6.6-20261031\results"
 & "$venv\Scripts\python.exe" scripts/train_frontier_policy.py `
   --run-name $run `
   --model-root $env:CAOS_MODELS_ROOT `
@@ -90,12 +91,18 @@ licensed MineLib cases retain aggregate metrics and explicit failures.
   --data-root $env:CAOS_DATA_ROOT `
   --approved-data-root $env:CAOS_DATA_ROOT `
   --case-data-root $env:CAOS_DATA_ROOT `
-  --approved-case-data-root $env:CAOS_DATA_ROOT
+  --approved-case-data-root $env:CAOS_DATA_ROOT `
+  --baseline-root $baseline `
+  --approved-baseline-root $env:CAOS_TEMP_ROOT
 ```
 
 Both scripts refuse a dirty source, mismatched split or unsupported product version. The product-case script also
-requires the completed synthetic test ledger and binds each row to an input-instance digest. Neither script
-changes the repository or edits the frozen result after the one-shot evaluation.
+requires the completed synthetic test ledger, the complete exact 0.11.000/OreBlocks 0.6.6 baseline, and binds each
+row to an input-instance digest plus per-method paired NPV/runtime evidence. It excludes baseline rows on a
+different objective. The test report also carries a seed-clustered 95% percentile-bootstrap interval with 10,000
+resamples and fixed RNG seed 5519; failures remain explicit and are not scored. Per-case inference time and sampled
+process peak resident memory are recorded. Neither script changes the repository or edits the frozen result after
+the one-shot evaluation.
 
 The method contract, transition equations, ablations and acceptance criteria are in the
 [versioned amendment](../design/features/learned-frontier/SDD-amendment-0.12.000.md). The executable

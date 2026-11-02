@@ -6,6 +6,7 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -25,11 +26,14 @@ from pipeline.model.frontier_ppo import (  # noqa: E402
     replay_frontier_ensemble,
 )
 from pipeline.model.frontier_policy import validate_split_manifest  # noqa: E402
+from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
 from pipeline.model.frontier_splits import build_split_manifest, manifest_sha256  # noqa: E402
 from train_frontier_policy import RUN_NAME, _check_environment, _target_version  # noqa: E402
 
 MANIFEST_PATH = ROOT / "docs/design/features/learned-frontier/split-manifest.json"
 CASE_INDEX = ROOT / "data/derived/manifests/index.json"
+BOOTSTRAP_REPLICATES = 10_000
+BOOTSTRAP_SEED = 5519
 
 
 def _under(path: Path, parent: Path) -> bool:
@@ -100,6 +104,40 @@ def _load_frozen_ensemble(model_run: Path, data_run: Path, *, source_commit: str
     return loaded, receipt, contract
 
 
+def seed_clustered_interval(
+    cases: list[dict], *, metric: str = "normalized_npv", replicates: int = BOOTSTRAP_REPLICATES,
+    seed: int = BOOTSTRAP_SEED,
+) -> dict:
+    """Percentile bootstrap over seed clusters, averaging repeated family rows within each seed."""
+    if replicates < 1:
+        raise ValueError("bootstrap replicate count must be positive")
+    groups: dict[int, list[float]] = {}
+    for row in cases:
+        value = row.get(metric)
+        cluster = row.get("seed")
+        if (row.get("status") not in {"complete", "partial"} or isinstance(cluster, bool)
+                or not isinstance(cluster, int) or isinstance(value, bool)
+                or not isinstance(value, (int, float)) or not math.isfinite(value)):
+            continue
+        groups.setdefault(cluster, []).append(float(value))
+    cluster_values = np.asarray([np.mean(values) for values in groups.values()], dtype=np.float64)
+    if not len(cluster_values):
+        return {
+            "metric": metric, "unit": "seed-cluster", "clusters": 0,
+            "replicates": replicates, "rng_seed": seed, "confidence_level": 0.95,
+            "lower": None, "upper": None,
+        }
+    rng = np.random.default_rng(seed)
+    sample = rng.integers(0, len(cluster_values), size=(replicates, len(cluster_values)))
+    means = cluster_values[sample].mean(axis=1)
+    lower, upper = np.quantile(means, [0.025, 0.975])
+    return {
+        "metric": metric, "unit": "seed-cluster", "clusters": int(len(cluster_values)),
+        "replicates": replicates, "rng_seed": seed, "confidence_level": 0.95,
+        "lower": float(lower), "upper": float(upper),
+    }
+
+
 def evaluate(args: argparse.Namespace) -> int:
     _check_environment()
     target_version = _target_version()
@@ -136,11 +174,17 @@ def evaluate(args: argparse.Namespace) -> int:
     for row in manifest["test"]:
         case_id = f"synthetic-{row['family']}-{row['seed']}"
         started = time.monotonic()
+        memory = PeakRSS()
+        inference_seconds = 0.0
+        inference_started: float | None = None
         try:
-            graph = generate_graph(row["seed"], row["family"], row["size"])
-            result = replay_frontier_ensemble(
-                graph.instance, graph.node_features, models, tonnage=graph.tonnage,
-            )
+            with memory:
+                graph = generate_graph(row["seed"], row["family"], row["size"])
+                inference_started = time.monotonic()
+                result = replay_frontier_ensemble(
+                    graph.instance, graph.node_features, models, tonnage=graph.tonnage,
+                )
+                inference_seconds = time.monotonic() - inference_started
             elapsed = time.monotonic() - started
             complete_schedule = len(result.assignments) == row["size"] and result.stopped == "horizon-complete"
             cases.append({
@@ -150,18 +194,27 @@ def evaluate(args: argparse.Namespace) -> int:
                 "normalized_npv": result.npv / max(float(np.abs(graph.instance.values).sum()), 1e-12),
                 "tonnage_coverage": result.tonnage_coverage,
                 "positive_value_coverage": result.positive_value_coverage,
-                "inference_seconds": elapsed, "stop_reason": result.stopped,
+                "case_seconds": elapsed, "inference_seconds": inference_seconds,
+                "peak_memory_bytes": memory.peak_bytes,
+                "stop_reason": result.stopped,
             })
         except TimeoutError as exc:
+            if inference_started is not None:
+                inference_seconds = time.monotonic() - inference_started
             cases.append({
                 "case_id": case_id, "seed": row["seed"], "family": row["family"], "size": row["size"],
-                "status": "unavailable", "failure_reason": str(exc), "inference_seconds": time.monotonic() - started,
+                "status": "unavailable", "failure_reason": str(exc),
+                "case_seconds": time.monotonic() - started, "inference_seconds": inference_seconds,
+                "peak_memory_bytes": memory.peak_bytes,
             })
         except (ValueError, RuntimeError, FloatingPointError) as exc:
+            if inference_started is not None:
+                inference_seconds = time.monotonic() - inference_started
             cases.append({
                 "case_id": case_id, "seed": row["seed"], "family": row["family"], "size": row["size"],
                 "status": "failed", "failure_reason": f"{type(exc).__name__}: {exc}",
-                "inference_seconds": time.monotonic() - started,
+                "case_seconds": time.monotonic() - started, "inference_seconds": inference_seconds,
+                "peak_memory_bytes": memory.peak_bytes,
             })
 
     counts = {status: sum(row["status"] == status for row in cases)
@@ -185,6 +238,7 @@ def evaluate(args: argparse.Namespace) -> int:
             "cases": len(cases),
             "mean_normalized_npv_feasible": float(np.mean(numeric)) if numeric else None,
             "median_normalized_npv_feasible": float(np.median(numeric)) if numeric else None,
+            "normalized_npv_seed_clustered_interval": seed_clustered_interval(cases),
         },
         "interpretation": "Synthetic held-out schedules only; no product-case or operating-mine claim.",
     }
