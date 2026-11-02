@@ -31,6 +31,7 @@ def test_product_adapter_preserves_source_economics_and_builds_declared_features
     assert adapted.instance.predecessors == ((), (0,), (1,))
     assert adapted.node_features.shape == (3, 7)
     assert adapted.source_contract["grade_source"] == "synthetic-twin"
+    assert len(adapted.source_contract["instance_sha256"]) == 64
     np.testing.assert_array_equal(adapted.instance.values, [10.0, -2.0, 6.0])
     np.testing.assert_array_equal(adapted.instance.capacities, [[4.0, 1.0], [6.0, 2.0]])
 
@@ -40,6 +41,10 @@ def test_product_adapter_fails_closed_on_resource_or_grade_contract_drift():
         adapt_product_case(_case(resources=1))
     with pytest.raises(ValueError, match="source-backed grade"):
         adapt_product_case(_case(grade_source=None))
+    sentinel_case = _case()
+    sentinel_case.cpit.value[0] = -1e18
+    with pytest.raises(ValueError, match="forbidden-value sentinel"):
+        adapt_product_case(sentinel_case)
 
 
 def test_adapter_computes_depth_independent_of_block_index_order():
@@ -50,6 +55,14 @@ def test_adapter_computes_depth_independent_of_block_index_order():
     adapted = adapt_product_case(case)
     assert adapted.instance.predecessors == ((2,), (), ())
     np.testing.assert_array_equal(adapted.node_features[:, 4], [1.0, 0.0, 0.0])
+
+
+def test_product_instance_digest_changes_when_source_economics_change():
+    first = adapt_product_case(_case())
+    second_case = _case()
+    second_case.cpit.value = np.array([10.0, -2.0, 6.1])
+    second = adapt_product_case(second_case)
+    assert first.source_contract["instance_sha256"] != second.source_contract["instance_sha256"]
 
 
 def test_product_result_recomputes_objective_and_reports_partial_coverage():

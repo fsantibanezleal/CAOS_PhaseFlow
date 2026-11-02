@@ -38,8 +38,8 @@ loads the test rows or product cases.
 The SDD fixes five member seeds, one million environment transitions and two CPU-hours per member, validation
 every 50,000 transitions, five consecutive feasible validation checkpoints without improvement as a stop rule,
 and a 24-hour wall-clock cap across all five members. No command-line override can silently change those values.
-An incomplete run preserves each started member's final checkpoint and receipt, marks unstarted members, and is
-not a complete ensemble.
+An incomplete run preserves each successful member's checkpoint and receipt, marks failed members with their
+failure record, marks unstarted members, and writes an incomplete ensemble receipt. It is not a complete ensemble.
 
 ## Run from a clean 0.12.000 source
 
@@ -63,6 +63,39 @@ checkpoint hash, training contract, normalization receipt and validation history
 schedule or negative objective remains in the evidence; it is not repaired or relabeled. Training success alone
 does not establish test performance, product-case behavior, comparison with the 0.11.000 baseline, or suitability
 for app replay.
+
+## Open the frozen evaluations once
+
+After all five members are complete, run the sealed synthetic test exactly once. It reports each seed and retains
+partial schedules; failed and unavailable cases make the command return nonzero.
+
+```powershell
+& "$venv\Scripts\python.exe" scripts/evaluate_frontier_policy.py `
+  --run-name $run `
+  --model-root $env:CAOS_MODELS_ROOT `
+  --approved-model-root $env:CAOS_MODELS_ROOT `
+  --data-root $env:CAOS_DATA_ROOT `
+  --approved-data-root $env:CAOS_DATA_ROOT
+```
+
+Only after that receipt is complete, open the 13 product cases once. Supply the external root containing the
+MineLib cache and twin inputs. Per-block assignments are recorded only for redistributable synthetic cases;
+licensed MineLib cases retain aggregate metrics and explicit failures.
+
+```powershell
+& "$venv\Scripts\python.exe" scripts/evaluate_frontier_product_cases.py `
+  --run-name $run `
+  --model-root $env:CAOS_MODELS_ROOT `
+  --approved-model-root $env:CAOS_MODELS_ROOT `
+  --data-root $env:CAOS_DATA_ROOT `
+  --approved-data-root $env:CAOS_DATA_ROOT `
+  --case-data-root $env:CAOS_DATA_ROOT `
+  --approved-case-data-root $env:CAOS_DATA_ROOT
+```
+
+Both scripts refuse a dirty source, mismatched split or unsupported product version. The product-case script also
+requires the completed synthetic test ledger and binds each row to an input-instance digest. Neither script
+changes the repository or edits the frozen result after the one-shot evaluation.
 
 The method contract, transition equations, ablations and acceptance criteria are in the
 [versioned amendment](../design/features/learned-frontier/SDD-amendment-0.12.000.md). The executable
