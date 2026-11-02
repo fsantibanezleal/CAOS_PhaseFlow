@@ -7,10 +7,13 @@ the in-progress baseline pipeline.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import json
 from typing import Any
 
 import numpy as np
 
+from ..io.contract import FORBIDDEN_VALUE
 from .frontier_data import FEATURE_NAMES
 from .frontier_policy import Assignment, FrontierInstance, ScheduleResult, validate_schedule
 
@@ -47,6 +50,8 @@ def adapt_product_case(product_case: Any) -> ProductFrontierCase:
     capacities = np.asarray(cpit.limit, dtype=np.float64).reshape(int(cpit.n_resources), int(cpit.n_periods)).T
     if values.shape != (n,) or resources.shape != (n, 2) or capacities.shape != (int(cpit.n_periods), 2):
         raise ValueError("frontier policy currently requires the declared two-resource CPIT contract")
+    if np.any(values <= FORBIDDEN_VALUE):
+        raise ValueError("frontier feature contract does not support forbidden-value sentinel blocks")
     predecessors = _csr_predecessors(product_case.precedence, n)
     tonnage = np.asarray(product_case.tonnage, dtype=np.float64).reshape(-1)
     grade_source = getattr(product_case, "grade_source", None)
@@ -99,11 +104,24 @@ def adapt_product_case(product_case: Any) -> ProductFrontierCase:
         discount_rate=float(cpit.discount_rate),
         period_one_undiscounted=bool(cpit.period_one_undiscounted),
     )
+    instance_digest = hashlib.sha256()
+    for name, array in (
+        ("values", instance.values), ("resources", instance.resources),
+        ("capacities", instance.capacities), ("tonnage", tonnage), ("grade", grade),
+    ):
+        contiguous = np.ascontiguousarray(array, dtype="<f8")
+        instance_digest.update(name.encode("utf-8") + b"\0")
+        instance_digest.update(json.dumps(contiguous.shape).encode("ascii") + b"\0")
+        instance_digest.update(contiguous.tobytes())
+    instance_digest.update(json.dumps(predecessors, separators=(",", ":")).encode("ascii"))
+    instance_digest.update(str(instance.discount_rate).encode("ascii"))
+    instance_digest.update(str(instance.period_one_undiscounted).encode("ascii"))
     return ProductFrontierCase(
         case_id=str(product_case.case_id), instance=instance, node_features=features,
         tonnage=tonnage,
         source_contract={
             "case_id": str(product_case.case_id),
+            "instance_sha256": instance_digest.hexdigest(),
             "grade_source": str(grade_source),
             "resources": int(cpit.n_resources),
             "periods": int(cpit.n_periods),
