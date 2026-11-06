@@ -20,13 +20,9 @@ sys.path.insert(0, str(ROOT / "data-pipeline"))
 from pipeline import registry  # noqa: E402
 from pipeline.model.frontier_cases import adapt_product_case, validate_product_result  # noqa: E402
 from pipeline.model.frontier_data import GENERATOR_VERSION  # noqa: E402
-from pipeline.model.frontier_ppo import (  # noqa: E402
-    INFERENCE_CAP_SECONDS,
-    replay_frontier_ensemble,
-)
 from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
 from evaluate_frontier_policy import _frozen_manifest, _load_frozen_ensemble  # noqa: E402
-from train_frontier_policy import RUN_NAME, _check_environment, _target_version  # noqa: E402
+from pipeline.model.frontier_evaluation import RUN_NAME, target_version as read_target_version  # noqa: E402
 
 CASE_INDEX = ROOT / "data/derived/manifests/index.json"
 
@@ -64,7 +60,7 @@ def _case_index() -> tuple[list[str], str]:
 
 
 def _baseline_version() -> str:
-    major, minor, patch = (int(part) for part in _target_version().split("."))
+    major, minor, patch = (int(part) for part in read_target_version(ROOT).split("."))
     if minor < 1:
         raise ValueError("frontier evaluation requires a preceding minor product version")
     return f"{major}.{minor - 1:02d}.{patch:03d}"
@@ -197,8 +193,11 @@ def _validate_baseline_pairing(baseline: dict, case, source_instance) -> None:
 
 
 def evaluate(args: argparse.Namespace) -> int:
+    from pipeline.model.frontier_ppo import INFERENCE_CAP_SECONDS, replay_frontier_ensemble
+    from train_frontier_policy import _check_environment
+
     _check_environment()
-    target_version = _target_version()
+    target_version = read_target_version(ROOT)
     if (ROOT / "VERSION").read_text(encoding="utf-8").strip() != target_version:
         raise ValueError(f"product-case evaluation opens only from the approved {target_version} source")
     dirty = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True, check=True)

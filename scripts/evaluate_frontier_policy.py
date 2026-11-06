@@ -6,7 +6,6 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
-import math
 import os
 from pathlib import Path
 import subprocess
@@ -14,28 +13,17 @@ import sys
 import time
 
 import numpy as np
-import torch
-
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
 
 from pipeline.model.frontier_data import GENERATOR_VERSION, generate_graph  # noqa: E402
-from pipeline.model.frontier_ppo import (  # noqa: E402
-    INFERENCE_CAP_SECONDS,
-    load_checkpoint,
-    replay_frontier_ensemble,
-)
 from pipeline.model.frontier_policy import validate_split_manifest  # noqa: E402
 from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
 from pipeline.model.frontier_splits import build_split_manifest, manifest_sha256  # noqa: E402
-from train_frontier_policy import RUN_NAME, _check_environment, _target_version  # noqa: E402
+from pipeline.model.frontier_evaluation import RUN_NAME, seed_clustered_interval, target_version  # noqa: E402
 
 MANIFEST_PATH = ROOT / "docs/design/features/learned-frontier/split-manifest.json"
 CASE_INDEX = ROOT / "data/derived/manifests/index.json"
-BOOTSTRAP_REPLICATES = 10_000
-BOOTSTRAP_SEED = 5519
-
-
 def _under(path: Path, parent: Path) -> bool:
     try:
         path.resolve().relative_to(parent.resolve())
@@ -95,6 +83,9 @@ def _load_frozen_ensemble(model_run: Path, data_run: Path, *, source_commit: str
         checkpoint = Path(row["checkpoint"]).expanduser().resolve()
         if not _under(checkpoint, expected_root):
             raise ValueError("a member checkpoint is outside the approved external model root")
+        import torch
+        from pipeline.model.frontier_ppo import load_checkpoint
+
         model = load_checkpoint(checkpoint, expected_sha256=row["checkpoint_sha256"])
         expected_mean = torch.as_tensor(normalization["mean"], dtype=model.feature_mean.dtype)
         expected_scale = torch.as_tensor(normalization["scale"], dtype=model.feature_scale.dtype)
@@ -104,45 +95,14 @@ def _load_frozen_ensemble(model_run: Path, data_run: Path, *, source_commit: str
     return loaded, receipt, contract
 
 
-def seed_clustered_interval(
-    cases: list[dict], *, metric: str = "normalized_npv", replicates: int = BOOTSTRAP_REPLICATES,
-    seed: int = BOOTSTRAP_SEED,
-) -> dict:
-    """Percentile bootstrap over seed clusters, averaging repeated family rows within each seed."""
-    if replicates < 1:
-        raise ValueError("bootstrap replicate count must be positive")
-    groups: dict[int, list[float]] = {}
-    for row in cases:
-        value = row.get(metric)
-        cluster = row.get("seed")
-        if (row.get("status") not in {"complete", "partial"} or isinstance(cluster, bool)
-                or not isinstance(cluster, int) or isinstance(value, bool)
-                or not isinstance(value, (int, float)) or not math.isfinite(value)):
-            continue
-        groups.setdefault(cluster, []).append(float(value))
-    cluster_values = np.asarray([np.mean(values) for values in groups.values()], dtype=np.float64)
-    if not len(cluster_values):
-        return {
-            "metric": metric, "unit": "seed-cluster", "clusters": 0,
-            "replicates": replicates, "rng_seed": seed, "confidence_level": 0.95,
-            "lower": None, "upper": None,
-        }
-    rng = np.random.default_rng(seed)
-    sample = rng.integers(0, len(cluster_values), size=(replicates, len(cluster_values)))
-    means = cluster_values[sample].mean(axis=1)
-    lower, upper = np.quantile(means, [0.025, 0.975])
-    return {
-        "metric": metric, "unit": "seed-cluster", "clusters": int(len(cluster_values)),
-        "replicates": replicates, "rng_seed": seed, "confidence_level": 0.95,
-        "lower": float(lower), "upper": float(upper),
-    }
-
-
 def evaluate(args: argparse.Namespace) -> int:
+    from pipeline.model.frontier_ppo import INFERENCE_CAP_SECONDS, replay_frontier_ensemble
+    from train_frontier_policy import _check_environment
+
     _check_environment()
-    target_version = _target_version()
-    if (ROOT / "VERSION").read_text(encoding="utf-8").strip() != target_version:
-        raise ValueError(f"the synthetic test partition opens only from the approved {target_version} source")
+    frozen_version = target_version(ROOT)
+    if (ROOT / "VERSION").read_text(encoding="utf-8").strip() != frozen_version:
+        raise ValueError(f"the synthetic test partition opens only from the approved {frozen_version} source")
     dirty = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True, check=True)
     if dirty.stdout.strip():
         raise ValueError("synthetic test evaluation requires the clean frozen product source")
