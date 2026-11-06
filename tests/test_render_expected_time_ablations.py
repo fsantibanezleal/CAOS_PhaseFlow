@@ -51,6 +51,9 @@ def test_render_table_preserves_cluster_interval_and_negative_case_values():
     assert "-0.151" in output
     assert r"432/432 (100.0\%)" in output
     assert "record_sha256=" + "f" * 64 in output
+    assert r"\begin{table}[!htbp]" in output
+    assert r"\footnotesize" in output
+    assert r"\setlength{\tabcolsep}{3pt}" in output
 
 
 def test_validate_record_rejects_missing_holdout_case():
