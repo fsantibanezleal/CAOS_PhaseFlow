@@ -9,6 +9,12 @@ Approved development line for the state-conditioned frontier scheduler. The 0.11
 artifacts remain the comparison baseline; this candidate is not a release and has no trained-policy or
 deployment evidence yet.
 
+- Require each ensemble member to carry finite validation history and the matching selected-checkpoint hash;
+  incomplete or mismatched receipts fail closed.
+- For a separately frozen run, set validation at 32,768 transitions, stop validation inside each member's
+  compute budget, and reserve up to 30 CPU seconds and 60 wall seconds for final checkpoint and receipt writes.
+  The original 50,000-transition run remains unchanged and is not eligible for selection.
+
 ## [0.11.000] - 2026-10-29
 
 Release candidate; full artifact and deployment acceptance remain pending.
