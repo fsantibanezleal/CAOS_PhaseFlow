@@ -114,7 +114,7 @@ export default function Tool() {
     : viewportWidth <= 900
       ? tabletChartHeight
     : viewportHeight >= 1200
-      ? Math.min(900, Math.round(viewportHeight * 0.58))
+      ? Math.min(960, Math.round(viewportHeight * 0.64))
       : Math.min(900, Math.max(620, viewportHeight - 120));
 
   const dims = useMemo<[number, number, number]>(
@@ -734,7 +734,7 @@ export default function Tool() {
       controls={{ period: st.cursor, method: st.methodId, stageMode: mode, northing: northingAt, bench: benchAt }}
       cases={{ cases: caseDefs, selectedId: st.caseId, onSelect: st.setCaseId, lang: st.lang, ariaLabel: es ? 'Selector de casos' : 'Case selector', layout: 'select', deepLink: true }}
       rail={rail}
-      railWidth={150}
+      railWidth={172}
       tabDensity="compact"
       railLabel={{ en: 'Case controls', es: 'Controles del caso' }}
       groups={workbenchGroups}

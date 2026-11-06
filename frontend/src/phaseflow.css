@@ -237,8 +237,8 @@
  * in-flow canvas fed the host its own height back and the pit profile grew to 1216px, leaving the
  * drawing a thin line at the bottom of an empty panel. The host takes a definite height from the
  * viewport and the canvas sits out of flow inside it. */
-.pf-canvas-host { position: relative; width: 100%; height: clamp(260px, 50vh, 480px); overflow: hidden; }
-.tabpanel[data-panel="diagnostics"] .pf-canvas-host { height: clamp(620px, 85vh, 720px); }
+.pf-canvas-host { position: relative; width: 100%; height: clamp(280px, 56vh, 720px); overflow: hidden; }
+.tabpanel[data-panel="diagnostics"] .pf-canvas-host { height: clamp(620px, 85vh, 900px); }
 .pf-canvas-host > canvas { position: absolute; inset: 0; }
 .pf-split--wide:has(.pf-canvas-host) > .pf-panel:has(.pf-canvas-host) { grid-column: 1 / -1; order: -1; }
 .tabpanel[data-panel="production"] .pf-split--wide > .pf-panel:first-child { grid-column: 1 / -1; }
