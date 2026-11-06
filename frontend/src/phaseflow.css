@@ -840,21 +840,26 @@ select option { color: var(--color-fg); background: var(--color-surface); }
 }
 /* Charts and the 3D stage scale with desktop viewports but have finite ceilings. */
 @media (min-width: 901px) {
+  .pf-workbench-view { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
   .caos-wb-main .pf-panel {
     gap: 6px;
     padding: 8px;
   }
   .caos-wb-main [data-panel="sections"] .pf-panel {
-    gap: 4px;
-    padding: 6px;
+    gap: 2px;
+    padding: 2px 6px 6px;
   }
+  .caos-wb-main [data-panel="sections"] .pf-panel > h4 { font-size: 0.7rem; line-height: 1; }
+  .caos-wb-main [data-panel="sections"] .pf-ctl { gap: 2px; font-size: 0.75rem; }
+  .caos-wb-main [data-panel="sections"] .pf-ctl > span { line-height: 1; }
   .caos-wb .pf-stage3d {
     flex: 1 1 0 !important;
     width: 100% !important;
     height: clamp(590px, 77vh, 1080px) !important;
     min-height: clamp(590px, 77vh, 1080px) !important;
   }
-  .pf-canvas-host { height: clamp(320px, 75vh, 900px); }
+  .pf-canvas-host { height: clamp(320px, 75vh, 1080px); }
+  .caos-wb-main .tabpanel[data-panel="evidence"] .pf-fig { padding-inline: 0.5rem; }
 }
 @media (min-width: 901px) and (max-width: 1350px) {
   .caos-wb .pf-rail { gap: 4px; }

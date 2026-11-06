@@ -36,7 +36,7 @@ function SelectionReadout({ method, period, share, infeasible, provenance }: {
       { label: { en: 'Net present value', es: 'Valor presente neto' }, text: { en: fmtMoney(method.npv), es: fmtMoney(method.npv) }, unitless: true, hint: { en: 'Committed result for the selected method and case.', es: 'Resultado comprometido del método y caso seleccionados.' } },
       { label: { en: infeasible == null ? 'Gap to bound' : 'Capacity overrun', es: infeasible == null ? 'Brecha a la cota' : 'Exceso de capacidad' }, text: { en: infeasible != null ? `+${dec(infeasible, 1)}%` : method.rung === 'beyond' ? 'another bound' : `${dec(method.gapPct, 2)}%`, es: infeasible != null ? `+${dec(infeasible, 1)}%` : method.rung === 'beyond' ? 'otra cota' : `${dec(method.gapPct, 2)}%` }, unitless: true, hint: { en: 'A gap is reported only for a feasible schedule against its matching CPIT bound; other problem families use another bound.', es: 'La brecha solo se informa para un plan factible frente a su cota CPIT; otras familias de problemas usan otra cota.' }, tone: infeasible == null ? 'neutral' : 'warn' },
       { label: { en: 'Mined this period', es: 'Extraído este período' }, text: { en: fmtTonnes(period?.minedTonnes ?? 0), es: fmtTonnes(period?.minedTonnes ?? 0) }, unitless: true, hint: { en: 'Material assigned to the current period in the committed schedule.', es: 'Material asignado al período actual en el plan comprometido.' } },
-      { label: { en: 'Largest connected component', es: 'Componente conexa mayor' }, text: { en: `${dec(share * 100, 0)}%`, es: `${dec(share * 100, 0)}%` }, unitless: true, hint: { en: 'Share of this period’s mined blocks in its largest connected component.', es: 'Proporción de los bloques extraídos del período que pertenece a su componente conexa mayor.' } },
+      { label: { en: 'Largest connected component (%)', es: 'Componente conexa mayor (%)' }, text: { en: dec(share * 100, 0), es: dec(share * 100, 0) }, unitless: true, hint: { en: 'Share of this period’s mined blocks in its largest connected component, expressed as a percentage.', es: 'Proporción de los bloques extraídos del período que pertenece a su componente conexa mayor, expresada como porcentaje.' } },
     ]}
   />;
 }
@@ -734,7 +734,7 @@ export default function Tool() {
       controls={{ period: st.cursor, method: st.methodId, stageMode: mode, northing: northingAt, bench: benchAt }}
       cases={{ cases: caseDefs, selectedId: st.caseId, onSelect: st.setCaseId, lang: st.lang, ariaLabel: es ? 'Selector de casos' : 'Case selector', layout: 'select', deepLink: true }}
       rail={rail}
-      railWidth={172}
+      railWidth={170}
       tabDensity="compact"
       railLabel={{ en: 'Case controls', es: 'Controles del caso' }}
       groups={workbenchGroups}

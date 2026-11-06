@@ -7,7 +7,7 @@ Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry th
 
 Release candidate; full artifact and deployment acceptance remain pending.
 
-- Adopt CAOS Product Template 0.14.006 and App Shell 0.22.0, with OreBlocks 0.6.6. Use compact shared tabs with the released story and scene primitives for ADR-0082 showcase work. The local workflow uses source-bound external stages, complete readiness validation, explicit recoverable promotion and per-device external Python runtime roots. PhaseFlow remains on the single `pages` deployment target.
+- Adopt App Shell 0.23.0, including its bounded mobile story-stage floor; keep the 620 px mobile stage on the product's four-step case story so 3D replay, controls and sourced callouts remain usable together. This candidate also uses OreBlocks 0.6.6. The local workflow uses source-bound external stages, complete readiness validation, explicit recoverable promotion and per-device external Python runtime roots. PhaseFlow remains on the single `pages` deployment target.
 - Keep the released internal-name guard and reader-facing notebook sections `Comparison` and `Evidence`. Adopt shell SHW-046, which marks the normal CaseWorkbench instrument for gate G6, shell-owned full-column documentation framing, transformed executive SVG label checks and the 0.19.11 full-document measurement fix.
 - Add the five-member expected-time ensemble and exact restricted C-PIT[D] re-planning measurement, with bilingual worked notebooks and model provenance.
 - Keep the failed statistical warning rule research-only; stale traces are reconciled against the current independent receipt, and the UI shows the measured failure metrics.

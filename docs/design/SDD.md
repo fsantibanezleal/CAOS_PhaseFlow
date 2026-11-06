@@ -59,7 +59,7 @@ not redistribute per-block data or per-block schedules for MineLib instances.
 
 ## Repository workflow and data roots
 
-The product is instantiated from CAOS Product Template `0.14.006` and pins CAOS App Shell `0.22.0`.
+The product is instantiated from CAOS Product Template `0.15.000` and pins CAOS App Shell `0.23.0`.
 The numbered PowerShell and Bash entrypoints share the template's receipt-based `scripts/local/workflow.py`;
 the product-specific JSON plan invokes the actual PhaseFlow registry pipeline, stages the trained models,
 computes readiness from staged outputs, and runs PhaseFlow's artifact and document validators. A complete
@@ -91,7 +91,7 @@ The table records every pinned direct dependency of the scientific, development,
 | notebooks | `nbclient` | `0.11.0` | fresh-kernel notebook execution (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `nbformat` | `5.11.1` | notebook structure and deterministic serialization (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `ipykernel` | `7.4.0` | Python notebook kernel (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
-| frontend | `@fasl-work/caos-app-shell` | `0.22.0` | shared navigation, documentation, compact tab density, shell gate and workbench/story primitives (`frontend/package-lock.json`); release tag `v0.22.000` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
+| frontend | `@fasl-work/caos-app-shell` | `0.23.0` | shared navigation, documentation, compact tab density, bounded mobile story stage, shell gate and workbench/story primitives (`frontend/package-lock.json`); release tag `v0.23.000` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
 | frontend | `katex` | `0.19.1` | math rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `lucide-react` | `1.61.0` | interface icons (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `react` | `19.3.1` | component rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
