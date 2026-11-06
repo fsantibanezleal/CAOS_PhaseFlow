@@ -3,6 +3,12 @@
 All notable changes to PhaseFlow. Format: Keep a Changelog, newest on top.
 Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry the semver form.
 
+## [0.12.000] - Unreleased
+
+Approved development line for the state-conditioned frontier scheduler. The 0.11.000/OreBlocks 0.6.6
+artifacts remain the comparison baseline; this candidate is not a release and has no trained-policy or
+deployment evidence yet.
+
 ## [0.11.000] - 2026-10-29
 
 Release candidate; full artifact and deployment acceptance remain pending.
