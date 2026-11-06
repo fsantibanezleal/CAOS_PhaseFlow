@@ -60,4 +60,4 @@ def test_cluster_summary_bootstraps_deposit_seeds_not_case_rows():
     assert result["deposit_seed_mean_ratios"] == pytest.approx({"101": 0.9, "103": 0.7})
     assert result["failure_count_below_0_90"] == 3
     lo, hi = result["deposit_seed_mean_cluster_bootstrap_95_percentile_interval"]
-    assert lo <= 0.8 <= hi
+    assert (lo, hi) == pytest.approx((0.7, 0.9))

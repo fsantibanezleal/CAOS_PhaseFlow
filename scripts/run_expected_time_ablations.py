@@ -99,7 +99,7 @@ def cluster_summary(ratios: np.ndarray, seeds: np.ndarray) -> dict[str, Any]:
         raise ValueError("ratios and seed labels must be finite aligned one-dimensional arrays")
     grouped = {int(seed): ratios[seeds == seed] for seed in np.unique(seeds)}
     seed_means = {str(seed): float(values.mean()) for seed, values in grouped.items()}
-    means = np.asarray(list(grouped.values()), dtype=np.float64)
+    means = np.asarray([values.mean() for values in grouped.values()], dtype=np.float64)
     rng = np.random.default_rng(BOOTSTRAP_SEED)
     draws = rng.integers(0, len(means), size=(BOOTSTRAP_SAMPLES, len(means)))
     boot = means[draws].mean(axis=1)
@@ -161,7 +161,33 @@ def save_model(path: Path, model: Mlp) -> None:
     path.write_text(json.dumps(model.to_json(), separators=(",", ":"), allow_nan=False), encoding="utf-8")
 
 
-def build_candidates(train: dict, output: Path, baseline_path: Path) -> list[dict[str, str]]:
+def build_candidates(train: dict, output: Path, baseline_path: Path, *, reuse_models: bool = False) -> list[dict[str, str]]:
+    model_dir = output / "models"
+    if reuse_models:
+        names = [
+            "full_ensemble",
+            *(f"single_member_{index}" for index in range(1, len(ENSEMBLE_SEEDS) + 1)),
+            "drop_predecessor_recurrence",
+            "drop_depth_grade_radial",
+            "half_deposit_seeds",
+        ]
+        specs = [{"name": name, "path": str(model_dir / (
+            "full-ensemble.json" if name == "full_ensemble" else f"{name}.json"
+        ))} for name in names]
+        missing = [spec["path"] for spec in specs if not Path(spec["path"]).is_file()]
+        if missing:
+            raise ValueError(f"cannot reuse incomplete candidate model directory; missing {missing}")
+        for spec in specs:
+            payload = json.loads(Path(spec["path"]).read_text(encoding="utf-8"))
+            model = Mlp.from_json(payload)
+            if not model.feature_names or any(name not in BLOCK_FEATURES for name in model.feature_names):
+                raise ValueError(f"{spec['name']} has an incompatible feature contract")
+            if spec["name"] == "full_ensemble" and len(model._weight_sets()) != len(ENSEMBLE_SEEDS):
+                raise ValueError("reused baseline is not the expected five-member ensemble")
+            if spec["name"].startswith("single_member_") and len(model._weight_sets()) != 1:
+                raise ValueError(f"{spec['name']} is not a single-member model")
+        return specs
+
     feature_names = tuple(BLOCK_FEATURES)
     candidates: list[dict[str, str]] = []
     baseline = Mlp.from_json(json.loads(baseline_path.read_text(encoding="utf-8")))
@@ -208,7 +234,7 @@ def build_candidates(train: dict, output: Path, baseline_path: Path) -> list[dic
     return candidates
 
 
-def run(cache_dir: Path, model_path: Path, output_dir: Path, workers: int) -> Path:
+def run(cache_dir: Path, model_path: Path, output_dir: Path, workers: int, *, reuse_models: bool = False) -> Path:
     train_path = cache_dir / f"collect-{_cache_key(trainer.TRAIN_SEEDS)}.npz"
     holdout_path = cache_dir / f"collect-{_cache_key(trainer.HOLDOUT_SEEDS)}.npz"
     train = read_cache(train_path, set(trainer.TRAIN_SEEDS))
@@ -216,7 +242,7 @@ def run(cache_dir: Path, model_path: Path, output_dir: Path, workers: int) -> Pa
     if set(trainer.TRAIN_SEEDS) & set(trainer.HOLDOUT_SEEDS):
         raise ValueError("frozen training and holdout deposit seeds overlap")
     output_dir.mkdir(parents=True, exist_ok=True)
-    model_specs = build_candidates(train, output_dir, model_path)
+    model_specs = build_candidates(train, output_dir, model_path, reuse_models=reuse_models)
     names = [item["name"] for item in model_specs]
     case_outputs: dict[str, dict[str, Any]] = {}
     with ProcessPoolExecutor(max_workers=workers, initializer=worker_init, initargs=(model_specs,)) as pool:
@@ -256,6 +282,9 @@ def run(cache_dir: Path, model_path: Path, output_dir: Path, workers: int) -> Pa
         "claim_boundary": "synthetic deposit-disjoint evaluation; two MineLib cases are not part of this ablation",
         "cache_sha256": {"train": train["sha256"], "holdout": holdout["sha256"]},
         "baseline_model_sha256": sha256(model_path),
+        "candidate_model_sha256": {item["name"]: sha256(Path(item["path"])) for item in model_specs},
+        "source_sha256": {"ablation_runner": sha256(Path(__file__).resolve()),
+                           "training_program": sha256(ROOT / "scripts" / "train_learned.py")},
         "train_seeds": trainer.TRAIN_SEEDS,
         "holdout_seeds": trainer.HOLDOUT_SEEDS,
         "member_seeds": ENSEMBLE_SEEDS,
@@ -288,12 +317,15 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, required=True,
                         help="external candidate-model/receipt directory")
     parser.add_argument("--workers", type=int, default=trainer.WORKERS)
+    parser.add_argument("--reuse-models", action="store_true",
+                        help="score existing candidate model files without retraining them")
     args = parser.parse_args()
     if args.cache_dir is None:
         parser.error("--cache-dir or PHASEFLOW_TRAIN_CACHE must name the external training cache")
     if args.workers < 1:
         parser.error("--workers must be positive")
-    run(args.cache_dir.resolve(), args.model.resolve(), args.output_dir.resolve(), args.workers)
+    run(args.cache_dir.resolve(), args.model.resolve(), args.output_dir.resolve(), args.workers,
+        reuse_models=args.reuse_models)
     return 0
 
 
