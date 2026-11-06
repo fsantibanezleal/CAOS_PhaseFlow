@@ -2,7 +2,7 @@
 
 **Design status:** Felipe approved the state-conditioned feasible-frontier direction on 2026-11-01. This amendment fixes the problem, algorithm, data boundaries and verification contract. It is a design record, not evidence of an implemented or successful method.
 
-**Implementation boundary:** the 0.11.000/OreBlocks 0.6.6 baseline bake is running against the current source. Do not edit the pipeline, solver, model bundle, inputs or version while that bake runs. It supplies the frozen baseline. The policy changes the schedule set and therefore targets the next complete product version, 0.12.000; it requires a fresh, all-case bake after implementation. No 0.11.000 result is to be relabeled as containing this method.
+**Implementation boundary:** the 0.11.000/OreBlocks 0.6.6 baseline bake is complete across all 13 registered cases, and the current artifact, contract and readiness guards pass. That evidence remains the frozen baseline. The 0.11.000 candidate is not yet released because its required manuscripts and publication records are incomplete. The policy changes the schedule set and therefore targets the next complete product version, 0.12.000; it requires a fresh, all-case bake after implementation. No 0.11.000 result is to be relabeled as containing this method.
 
 ## 1. Research basis and transfer limits
 
