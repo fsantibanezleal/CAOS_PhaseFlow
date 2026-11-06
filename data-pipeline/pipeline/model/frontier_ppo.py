@@ -23,6 +23,13 @@ from torch.distributions import Categorical
 from .frontier_policy import Assignment, FrontierInstance, ScheduleResult, feasible_frontier, validate_schedule
 
 INFERENCE_CAP_SECONDS = 900.0
+CPU_FINALIZATION_RESERVE_SECONDS = 30.0
+WALL_FINALIZATION_RESERVE_SECONDS = 60.0
+
+
+def _finalization_reserve(cap_seconds: float, maximum_reserve: float) -> float:
+    """Reserve 5% of small test budgets, capped at the production finalization allowance."""
+    return min(maximum_reserve, cap_seconds * 0.05)
 
 
 def configure_determinism(seed: int) -> None:
@@ -584,6 +591,10 @@ def train_member(
     run_dir.mkdir(parents=True, exist_ok=True)
     optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     started_wall, started_cpu = time.monotonic(), time.process_time()
+    cpu_reserve = _finalization_reserve(max_cpu_seconds, CPU_FINALIZATION_RESERVE_SECONDS)
+    wall_reserve = _finalization_reserve(max_wall_seconds, WALL_FINALIZATION_RESERVE_SECONDS)
+    cpu_training_deadline = max_cpu_seconds - cpu_reserve
+    wall_training_deadline = max_wall_seconds - wall_reserve
     transitions = 0
     next_validation = validation_interval
     best_metric: float | None = None
@@ -597,35 +608,35 @@ def train_member(
     while transitions < max_transitions:
         cpu_elapsed = time.process_time() - started_cpu
         wall_elapsed = time.monotonic() - started_wall
-        if cpu_elapsed >= max_cpu_seconds:
+        if cpu_elapsed >= cpu_training_deadline:
             stop_reason = "cpu-cap"
             break
-        if wall_elapsed >= max_wall_seconds:
+        if wall_elapsed >= wall_training_deadline:
             stop_reason = "wall-cap"
             break
         count = min(config.rollout_decisions, max_transitions - transitions)
         def budget_ok() -> bool:
-            return (time.process_time() - started_cpu < max_cpu_seconds
-                    and time.monotonic() - started_wall < max_wall_seconds)
+            return (time.process_time() - started_cpu < cpu_training_deadline
+                    and time.monotonic() - started_wall < wall_training_deadline)
         rollout = collect_rollout(model, episode_factory, decisions=count, budget_check=budget_ok)
         if not rollout:
-            stop_reason = "cpu-cap" if time.process_time() - started_cpu >= max_cpu_seconds else "wall-cap"
+            stop_reason = "cpu-cap" if time.process_time() - started_cpu >= cpu_training_deadline else "wall-cap"
             break
         transitions += len(rollout)
         if not budget_ok():
-            stop_reason = "cpu-cap" if time.process_time() - started_cpu >= max_cpu_seconds else "wall-cap"
+            stop_reason = "cpu-cap" if time.process_time() - started_cpu >= cpu_training_deadline else "wall-cap"
             break
         last_update = update_policy(model, optimizer, rollout, config, seed=seed + transitions,
                                     budget_check=budget_ok)
         if last_update.get("interrupted", 0.0):
-            stop_reason = "cpu-cap" if time.process_time() - started_cpu >= max_cpu_seconds else "wall-cap"
+            stop_reason = "cpu-cap" if time.process_time() - started_cpu >= cpu_training_deadline else "wall-cap"
             break
         if transitions >= next_validation:
             report = validate(model, budget_ok)
             if report is None or not budget_ok():
                 stop_reason = (
-                    "cpu-cap" if time.process_time() - started_cpu >= max_cpu_seconds
-                    else "wall-cap" if time.monotonic() - started_wall >= max_wall_seconds
+                    "cpu-cap" if time.process_time() - started_cpu >= cpu_training_deadline
+                    else "wall-cap" if time.monotonic() - started_wall >= wall_training_deadline
                     else "validation-interrupted"
                 )
                 break
@@ -651,10 +662,10 @@ def train_member(
             if all_feasible and stale_checkpoints >= patience:
                 stop_reason = "validation-plateau"
                 break
-        if time.process_time() - started_cpu >= max_cpu_seconds:
+        if time.process_time() - started_cpu >= cpu_training_deadline:
             stop_reason = "cpu-cap"
             break
-        if time.monotonic() - started_wall >= max_wall_seconds:
+        if time.monotonic() - started_wall >= wall_training_deadline:
             stop_reason = "wall-cap"
             break
 
@@ -679,6 +690,14 @@ def train_member(
         "final_checkpoint_sha256": receipt.final_checkpoint_sha256,
         "validation_history": list(receipt.validation_history), "last_update": receipt.final_update,
         "ppo_config": config.__dict__,
+        "budget": {
+            "cpu_cap_seconds": max_cpu_seconds,
+            "wall_cap_seconds": max_wall_seconds,
+            "cpu_finalization_reserve_seconds": cpu_reserve,
+            "wall_finalization_reserve_seconds": wall_reserve,
+            "cpu_training_deadline_seconds": cpu_training_deadline,
+            "wall_training_deadline_seconds": wall_training_deadline,
+        },
         "training_contract": training_contract,
         "runtime": {
             "device": "cpu", "torch": torch.__version__, "numpy": np.__version__,
