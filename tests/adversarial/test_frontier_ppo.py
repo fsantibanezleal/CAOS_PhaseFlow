@@ -11,6 +11,7 @@ import pytest
 torch = pytest.importorskip("torch")
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
+sys.path.insert(0, str(ROOT / "scripts"))
 
 from pipeline.model.frontier_policy import FeatureNormalizer, FrontierInstance  # noqa: E402
 from pipeline.model.frontier_data import FEATURE_NAMES, generate_graph  # noqa: E402
@@ -26,6 +27,8 @@ from pipeline.model.frontier_ppo import (  # noqa: E402
     replay_frontier_ensemble,
     train_member,
 )
+from pipeline.model import frontier_ppo  # noqa: E402
+from train_frontier_policy import _validate_member  # noqa: E402
 
 
 def _instance() -> FrontierInstance:
@@ -218,13 +221,14 @@ def test_adversarial_gae_respects_terminal_masks_and_ppo_loss_is_differentiable(
     assert set(details) == {"policy", "value", "entropy", "total"}
 
 
-def test_training_emits_capped_run_receipt_and_checkpoint_round_trips(tmp_path: Path):
+def test_training_emits_capped_run_receipt_and_checkpoint_round_trips(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(frontier_ppo.importlib.metadata, "version", lambda _name: "0.6.6")
     model_root = tmp_path / "device-models"
     model = MaskedGraphActorCritic(node_feature_count=2, state_feature_count=4)
     run = train_member(
         model,
         lambda: FrontierPolicyEnv(_instance(), np.ones((3, 2))),
-        lambda _model: {"mean_normalized_npv": 0.25, "all_feasible": True},
+        lambda _model, _budget_check: {"mean_normalized_npv": 0.25, "all_feasible": True},
         seed=1103,
         model_root=model_root,
         approved_model_root=tmp_path,
@@ -253,12 +257,42 @@ def test_training_emits_capped_run_receipt_and_checkpoint_round_trips(tmp_path: 
         load_checkpoint(run.selected_checkpoint, expected_sha256="0" * 64)
 
 
+def test_budget_expiry_during_validation_does_not_select_partial_checkpoint(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(frontier_ppo.importlib.metadata, "version", lambda _name: "0.6.6")
+    run = train_member(
+        MaskedGraphActorCritic(node_feature_count=2, state_feature_count=4),
+        lambda: FrontierPolicyEnv(_instance(), np.ones((3, 2))),
+        lambda _model, _budget_check: None,
+        seed=2207,
+        model_root=tmp_path / "device-models",
+        approved_model_root=tmp_path,
+        repository_root=ROOT,
+        max_transitions=1,
+        max_cpu_seconds=60,
+        max_wall_seconds=60,
+        validation_interval=1,
+        training_contract=_training_contract(),
+    )
+    assert run.stop_reason == "validation-interrupted"
+    assert run.validation_history == ()
+
+
+def test_validation_member_returns_no_partial_report_when_budget_is_expired():
+    model = MaskedGraphActorCritic(node_feature_count=2, state_feature_count=4)
+    assert model.training
+    report = _validate_member(
+        model, [{"seed": 1, "family": "crosscut", "size": 32}], lambda: False,
+    )
+    assert report is None
+    assert model.training
+
+
 def test_adversarial_training_rejects_repository_checkpoint_root(tmp_path: Path):
     with pytest.raises(ValueError, match="outside the repo"):
         train_member(
             MaskedGraphActorCritic(node_feature_count=2, state_feature_count=4),
             lambda: FrontierPolicyEnv(_instance(), np.ones((3, 2))),
-            lambda _model: {"mean_normalized_npv": 0.0, "all_feasible": True},
+            lambda _model, _budget_check: {"mean_normalized_npv": 0.0, "all_feasible": True},
             seed=7,
             model_root=ROOT / "models" / "must-not-be-created",
             approved_model_root=ROOT,

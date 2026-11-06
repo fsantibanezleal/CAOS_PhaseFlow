@@ -67,6 +67,8 @@ The training environment uses PyTorch `2.14.1` CPU wheels in a training-only env
 
 This is a new scheduling method and changes scientific output. It must not be added to the active 0.11.000 bake. After the baseline bake and its gates complete, implement this design vertically, increment the product to 0.12.000, train once under the frozen receipt, evaluate against the frozen 0.11 baseline, refresh the full bilingual notebook set and result-derived docs, then rebake all cases with the single 0.12.000 source/model snapshot. Promotion remains governed by the product's branch/PR/main/tag/Pages flow. The existing shell pin and template pin remain exact; no shell or template fork is introduced.
 
+Training protocol revision after the cap-only first run is recorded separately in [`training-protocol-amendment-01.md`](training-protocol-amendment-01.md). It applies only to a new, separately frozen run; it does not alter the original run's source, receipts or outcome.
+
 ## 8. Review record
 
 - 2026-11-01: Felipe approved the state-conditioned frontier-policy direction.

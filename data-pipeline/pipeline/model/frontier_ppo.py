@@ -518,7 +518,7 @@ class MemberRun:
 def train_member(
     model: MaskedGraphActorCritic,
     episode_factory: Callable[[], FrontierPolicyEnv],
-    validate: Callable[[MaskedGraphActorCritic], dict],
+    validate: Callable[[MaskedGraphActorCritic, Callable[[], bool]], dict | None],
     *,
     seed: int,
     model_root: str | Path,
@@ -527,7 +527,7 @@ def train_member(
     max_transitions: int = 1_000_000,
     max_cpu_seconds: float = 7_200.0,
     max_wall_seconds: float = 86_400.0,
-    validation_interval: int = 50_000,
+    validation_interval: int = 32_768,
     patience: int = 5,
     config: PPOConfig = PPOConfig(),
     training_contract: dict,
@@ -621,7 +621,14 @@ def train_member(
             stop_reason = "cpu-cap" if time.process_time() - started_cpu >= max_cpu_seconds else "wall-cap"
             break
         if transitions >= next_validation:
-            report = validate(model)
+            report = validate(model, budget_ok)
+            if report is None or not budget_ok():
+                stop_reason = (
+                    "cpu-cap" if time.process_time() - started_cpu >= max_cpu_seconds
+                    else "wall-cap" if time.monotonic() - started_wall >= max_wall_seconds
+                    else "validation-interrupted"
+                )
+                break
             metric = float(report.get("mean_normalized_npv", float("nan")))
             all_feasible = report.get("all_feasible") is True
             if not np.isfinite(metric):
