@@ -455,7 +455,7 @@ def build(root: Path) -> None:
     }
     (generated / "build-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
 
-    print(f"Built {len(list(report_fig.glob('*.pdf')))} report figures and {len(list(bs1_fig.glob('*.pdf')))} BS-1 figures from {len(traces)} registered traces.")
+    print(f"Built {len(list(report_fig.glob('*.pdf')))} report figures and {len(list(bs1_fig.glob('*.pdf')))} expected-time-policy figures from {len(traces)} registered traces.")
     print(f"Generated {len(list(generated.glob('*.tex')))} artifact-derived TeX tables.")
     print(f"Verified learned study rows={len(holdout_rows)}, independent guard rows={len(guard['rows'])}, predictors={len(model.get('members', []))+1}.")
 
