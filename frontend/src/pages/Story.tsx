@@ -213,6 +213,6 @@ export default function Story() {
 
   if (st.error) return <p role="alert">{st.error}</p>;
   if (st.loading || !trace || !manifest || !method || !steps.length) return <p role="status">{st.lang === 'es' ? 'Cargando el caso…' : 'Loading case…'}</p>;
-  return <StoryFrame steps={steps} activeId={activeId} onStepChange={go} onExit={exit}
+  return <StoryFrame steps={steps} activeId={activeId} mobileStageMinHeight={620} onStepChange={go} onExit={exit}
     labels={{ steps: bilingual('Case story', 'Recorrido del caso'), previous: bilingual('Previous', 'Anterior'), next: bilingual('Next', 'Siguiente'), play: bilingual('Play', 'Reproducir'), pause: bilingual('Pause', 'Pausar'), exit: bilingual('Return to the workbench', 'Volver al espacio de trabajo') }} />;
 }

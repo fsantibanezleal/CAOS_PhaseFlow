@@ -23,7 +23,7 @@
     "verify:showcase": "node scripts/verify-showcase.mjs"
   },
   "dependencies": {
-    "@fasl-work/caos-app-shell": "0.22.0",
+    "@fasl-work/caos-app-shell": "0.23.0",
     "katex": "0.19.1",
     "lucide-react": "^1.52.0",
     "react": "^19.3.0",

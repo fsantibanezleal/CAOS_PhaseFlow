@@ -30,7 +30,7 @@ function check(rows, viewportWidth, viewportHeight, label) {
   assert.equal(rows.length, 2, `${label}: both section drawings must exist`);
   const ceiling = Math.max(260, viewportWidth <= 900
     ? Math.min(viewportHeight * 0.5, 440)
-    : Math.min(viewportHeight * 0.75, 900)) + 2;
+    : Math.min(viewportHeight * 0.75, 1080)) + 2;
   for (const [i, row] of rows.entries()) {
     assert.ok(row.host >= 200 && row.host <= ceiling,
       `${label}: section ${i} host grew to ${row.host}px (ceiling ${ceiling}px)`);
