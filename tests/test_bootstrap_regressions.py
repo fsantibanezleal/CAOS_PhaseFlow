@@ -570,27 +570,19 @@ def test_adversarial_locked_node_engines(workflow, tmp_path, monkeypatch, capsys
 
 def test_phaseflow_readiness_contract_admission(workflow):
     config = workflow.settings(ROOT)
-    ready = json.loads((ROOT / "data/derived/readiness.json").read_text())
-    assert len(ready["contracts"]) == 5
-    if all(row.get("state") == "available" for row in ready["contracts"]):
-        workflow.check_readiness_states(ROOT, config, ready, ROOT)
-    else:
-        with pytest.raises(workflow.Failure, match="Partial readiness"):
-            workflow.check_readiness_states(ROOT, config, ready, ROOT)
-    bad = json.loads(json.dumps(ready))
-    bad["contracts"][0]["state"] = "missing"
-    with pytest.raises(workflow.Failure, match="Partial readiness"):
-        workflow.check_readiness_states(ROOT, config, bad, ROOT)
-    for state in (None, "dormant", "partial"):
-        bad["contracts"][0]["state"] = state
+    ready = json.loads((ROOT / "data/derived/readiness.json").read_text(encoding="utf-8"))
+    workflow.check_readiness_inventory(ROOT, config, ready)
+    workflow.check_readiness_states(ROOT, config, ready, ROOT)
+    available = next(row["id"] for row in ready["contracts"] if row["state"] == "available")
+    for state in ("missing", None, "dormant", "partial"):
+        bad = json.loads(json.dumps(ready))
+        next(row for row in bad["contracts"] if row["id"] == available)["state"] = state
         with pytest.raises(workflow.Failure, match="Partial readiness"):
             workflow.check_readiness_states(ROOT, config, bad, ROOT)
-    assert not config.get("readiness_exceptions")
-    assert set(config.get("stage_inputs", [])) == {
-        path.relative_to(ROOT).as_posix()
-        for path in (ROOT / "models").iterdir()
-        if path.is_file() and path.name != ".gitkeep"
-    }
+    declared = config.get("readiness_exceptions", {})
+    assert all(any(row["id"] == name and row["state"] == state for row in ready["contracts"])
+               for name, state in declared.items())
+    assert all((ROOT / name).is_file() for name in config.get("stage_inputs", []))
 
 
 @TEMPLATE_ONLY

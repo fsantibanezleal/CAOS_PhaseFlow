@@ -90,7 +90,7 @@ otherwise Algorithm 4), beside the best plan of the case.
 <!-- generated:methods:toposort-greedy,toposort-gershon,toposort-expected,exts-two-resource -->
 | case | bound | `toposort-greedy` | `toposort-gershon` | `toposort-expected` | `exts-two-resource` | best plan of the case |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 3.81% | 4.13% | 2.54% | 2.54% | `sliding-window` 1.40% |
+| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 3.81% | 4.13% | 2.54% | 2.54% | `cpitD-local-search` 2.49% |
 | [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | joint LP | 46.28% | 32.71% | 21.35% | 21.23% | `sliding-window` 1.98% |
 | [`kd-declared`](../cases/03_kd-declared.md) | Algorithm 4 | 31.92% | 51.70% | 16.89% | 16.89% | `sliding-window` 6.46% |
 | [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | joint LP | 49.79% | 20.06% | 4.62% | 4.62% | `sliding-window` 1.11% |

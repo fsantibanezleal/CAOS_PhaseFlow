@@ -44,7 +44,7 @@ so the destination methods are skipped. Three things to read in it:
 | bound | value | time | detail |
 | --- | ---: | ---: | --- |
 | ultimate pit (UPIT, exact, undiscounted) | 652,195,037 |  | 12,154 of 14,153 blocks; no time, no capacity |
-| Algorithm 4 (min over single-resource LPs) | 254,345,711 | 20.4 min | 307 maximum closures |
+| Algorithm 4 (min over single-resource LPs) | 254,345,711 | 20.5 min | 307 maximum closures |
 | joint LP (Bienstock-Zuckerberg) | not computed | - | time-expanded graph is 141,530 nodes and 2,325,157 edges, above the 130,000/1,400,000 budget. Pricing would be fast, but the bound is only worth reporting once it has been CERTIFIED by one exact solve, and that solve is the pure-Python max-flow. Algorithm 4's certified but looser bound is used |
 | used for every CPIT gap on this case | Algorithm 4 |  |  |
 <!-- /generated -->
@@ -58,17 +58,17 @@ the largest one.
 <!-- generated:case:kd-declared -->
 | method | family | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | Reference methods | 161,242,754 | Algorithm 4 | 36.60% | 444 ms | 2.7 / 79% |
-| `nested-shells` | Reference methods | 162,475,932 | Algorithm 4 | 36.12% | 463 ms | 12.0 / 77% |
-| `toposort-greedy` | Reference methods | 173,166,103 | Algorithm 4 | 31.92% | 450 ms | 15.8 / 59% |
-| `toposort-gershon` | Reference methods | 122,846,660 | Algorithm 4 | 51.70% | 1.4 s | 98.8 / 50% |
-| `toposort-expected` | Published methods | 211,382,547 | Algorithm 4 | 16.89% | 20.4 min | 35.5 / 70% |
-| `exts-two-resource` | Published methods | 211,382,547 | Algorithm 4 | 16.89% | 20.4 min | 35.5 / 70% |
-| `shift-local-search` | Published methods | 215,466,062 | Algorithm 4 | 15.29% | 580 ms | 58.6 / 56% |
-| `sliding-window` **(best)** | Published methods | 237,922,440 | Algorithm 4 | 6.46% | 11.11 h | 39.0 / 70% |
-| `cpitD-local-search` | Published methods | 216,143,500 | Algorithm 4 | 15.02% | 839 ms | 63.3 / 55% |
-| `learned-expected-time` | Learned methods | 87,285,802 | Algorithm 4 | 65.68% | 1.1 s | 34.6 / 63% |
-| `min-width` | Additional analyses | 237,448,231 | Algorithm 4 | 6.64% | 404 ms | 25.9 / 75% |
+| `bench-by-bench` | Reference methods | 161,242,754 | Algorithm 4 | 36.60% | 549 ms | 2.7 / 79% |
+| `nested-shells` | Reference methods | 162,475,932 | Algorithm 4 | 36.12% | 564 ms | 12.0 / 77% |
+| `toposort-greedy` | Reference methods | 173,166,103 | Algorithm 4 | 31.92% | 546 ms | 15.8 / 59% |
+| `toposort-gershon` | Reference methods | 122,846,660 | Algorithm 4 | 51.70% | 1.8 s | 98.8 / 50% |
+| `toposort-expected` | Published methods | 211,382,547 | Algorithm 4 | 16.89% | 20.5 min | 35.5 / 70% |
+| `exts-two-resource` | Published methods | 211,382,547 | Algorithm 4 | 16.89% | 20.5 min | 35.5 / 70% |
+| `shift-local-search` | Published methods | 215,466,062 | Algorithm 4 | 15.29% | 712 ms | 58.6 / 56% |
+| `sliding-window` **(best)** | Published methods | 237,922,440 | Algorithm 4 | 6.46% | 11.96 h | 39.0 / 70% |
+| `cpitD-local-search` | Published methods | 216,143,500 | Algorithm 4 | 15.02% | 730 ms | 63.3 / 55% |
+| `learned-expected-time` | Learned methods | 189,960,771 | Algorithm 4 | 25.31% | 1.0 s | 40.1 / 63% |
+| `min-width` | Additional analyses | 237,448,231 | Algorithm 4 | 6.64% | 378 ms | 25.9 / 75% |
 | `destination-toposort` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
 | `destination-sliding-window` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
 | `destination-local-search` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |

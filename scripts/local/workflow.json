@@ -1,5 +1,7 @@
 {
-  "readiness_excludes": ["readiness"],
+  "readiness_excludes": [
+    "readiness"
+  ],
   "stage_inputs": [
     "models/bound.json",
     "models/bound.onnx",
@@ -11,20 +13,29 @@
     "models/surrogate-parity.json",
     "models/training-report.json"
   ],
-  "stage_input_roots": {"models/": "CAOS_MODEL_SOURCE_ROOT"},
+  "stage_input_roots": {
+    "models/": "CAOS_MODEL_SOURCE_ROOT"
+  },
   "model_stage_directory": "models",
   "readiness_check": "scripts/check_readiness.py",
   "primary_environment": ".venv-pipeline",
-  "generation_environments": [".venv-pipeline"],
+  "generation_environments": [
+    ".venv-pipeline"
+  ],
   "environments": [
     {
       "path": ".venv-pipeline",
-      "requirements": ["requirements-precompute.txt", "requirements-dev.txt"]
+      "requirements": [
+        "requirements-precompute.txt",
+        "requirements-dev.txt"
+      ]
     },
     {
       "path": ".venv-notebooks",
       "when": "notebooks",
-      "requirements": ["notebooks/requirements.txt"]
+      "requirements": [
+        "notebooks/requirements.txt"
+      ]
     }
   ],
   "node_stamp": ".caos-package-lock.sha256",
@@ -33,26 +44,97 @@
     "data/derived/manifests/index.json",
     "data/derived/readiness.json"
   ],
-  "promote": ["data/derived", "models"],
+  "promote": [
+    "data/derived",
+    "models"
+  ],
   "api": {
     "environment": ".venv",
     "active": false,
     "port": 8000,
     "health": "/health",
-    "command": ["{python}", "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "{port}"]
+    "command": [
+      "{python}",
+      "-m",
+      "uvicorn",
+      "app.main:app",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "{port}"
+    ]
   },
   "web_port": 5173,
-  "frontend_environment": {"PHASEFLOW_DERIVED_ROOT": "{root}/data/derived"},
-  "frontend_prepare": [["{npm}", "run", "predev"]],
-  "frontend_command": ["node", "node_modules/vite/bin/vite.js", "--host", "127.0.0.1", "--port", "{web_port}", "--strictPort"],
+  "frontend_environment": {
+    "PHASEFLOW_DERIVED_ROOT": "{root}/data/derived"
+  },
+  "frontend_prepare": [
+    [
+      "{npm}",
+      "run",
+      "predev"
+    ]
+  ],
+  "frontend_command": [
+    "node",
+    "node_modules/vite/bin/vite.js",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "{web_port}",
+    "--strictPort"
+  ],
   "generation": [
-    {"script": "data-pipeline/run.py", "args": ["all", "--learned", "--jobs", "3", "--output", "{derived}"]},
-    {"script": "scripts/local/producer_bridge.py", "args": ["phaseflow-finalize", "{stage}"]}
+    {
+      "script": "data-pipeline/run.py",
+      "args": [
+        "all",
+        "--learned",
+        "--jobs",
+        "3",
+        "--output",
+        "{derived}"
+      ]
+    },
+    {
+      "script": "scripts/local/producer_bridge.py",
+      "args": [
+        "phaseflow-finalize",
+        "{stage}"
+      ]
+    }
   ],
   "validators": [
-    {"script": "scripts/local/producer_bridge.py", "args": ["phaseflow-validate", "{stage}"]},
-    {"script": "scripts/check_artifacts.py", "args": ["--root", "{derived}", "--models-dir", "{stage}/models"]},
-    {"script": "scripts/check_documents.py", "args": ["{stage}"]}
+    {
+      "script": "scripts/local/producer_bridge.py",
+      "args": [
+        "phaseflow-validate",
+        "{stage}"
+      ]
+    },
+    {
+      "script": "scripts/check_artifacts.py",
+      "args": [
+        "--root",
+        "{derived}",
+        "--models-dir",
+        "{stage}/models"
+      ]
+    },
+    {
+      "script": "scripts/check_documents.py",
+      "args": [
+        "{stage}"
+      ]
+    }
   ],
-  "generation_modules": ["numpy", "oreblocks", "scipy", "onnxruntime", "highspy"]
+  "generation_modules": [
+    "numpy",
+    "oreblocks",
+    "scipy",
+    "onnxruntime",
+    "highspy"
+  ],
+  "external_environments_required": true,
+  "environment_namespace": "phaseflow"
 }

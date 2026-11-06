@@ -154,18 +154,18 @@ baked case also contains the exact plan it approximates, the measured ratio to i
 <!-- generated:learned-ladder -->
 | case | learned plan gap | exact ExTS gap | learned / exact ExTS | note |
 | --- | ---: | ---: | ---: | --- |
-| [`newman1-published`](../cases/01_newman1-published.md) | 2.42% | 2.54% | 1.001 |  |
+| [`newman1-published`](../cases/01_newman1-published.md) | 2.65% | 2.54% | 0.999 |  |
 | [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | not run | - | - | no source grade field for the learned input features |
-| [`kd-declared`](../cases/03_kd-declared.md) | 65.68% | 16.89% | 0.413 |  |
-| [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | 7.91% | 4.62% | 0.965 |  |
-| [`twin-porphyry-l`](../cases/05_twin-porphyry-l.md) | 11.11% | 7.31% | 0.959 |  |
-| [`twin-core-halo`](../cases/06_twin-core-halo.md) | 27.55% | 10.29% | 0.808 |  |
-| [`twin-layered`](../cases/07_twin-layered.md) | 16.00% | 3.55% | 0.871 |  |
-| [`twin-vein`](../cases/08_twin-vein.md) | 18.26% | 1.54% | 0.830 |  |
-| [`regime-high-discount`](../cases/09_regime-high-discount.md) | 10.77% | 8.73% | 0.978 |  |
-| [`regime-mill-bound`](../cases/10_regime-mill-bound.md) | 12.76% | 14.94% | 1.026 |  |
-| [`regime-mining-bound`](../cases/11_regime-mining-bound.md) | 17.16% | 7.53% | 0.896 |  |
-| [`ctrl-abundant`](../cases/12_ctrl-abundant.md) | 1.07% | 0.33% | 0.993 |  |
+| [`kd-declared`](../cases/03_kd-declared.md) | 25.31% | 16.89% | 0.899 |  |
+| [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | 7.05% | 4.62% | 0.974 |  |
+| [`twin-porphyry-l`](../cases/05_twin-porphyry-l.md) | 9.85% | 7.31% | 0.973 |  |
+| [`twin-core-halo`](../cases/06_twin-core-halo.md) | 21.71% | 10.29% | 0.873 |  |
+| [`twin-layered`](../cases/07_twin-layered.md) | 15.07% | 3.55% | 0.881 |  |
+| [`twin-vein`](../cases/08_twin-vein.md) | 19.69% | 1.54% | 0.816 |  |
+| [`regime-high-discount`](../cases/09_regime-high-discount.md) | 9.29% | 8.73% | 0.994 |  |
+| [`regime-mill-bound`](../cases/10_regime-mill-bound.md) | 13.42% | 14.94% | 1.018 |  |
+| [`regime-mining-bound`](../cases/11_regime-mining-bound.md) | 11.82% | 7.53% | 0.954 |  |
+| [`ctrl-abundant`](../cases/12_ctrl-abundant.md) | 1.25% | 0.33% | 0.991 |  |
 | [`ctrl-degenerate`](../cases/13_ctrl-degenerate.md) | 0.00% | 0.00% | 1.000 |  |
 <!-- /generated -->
 

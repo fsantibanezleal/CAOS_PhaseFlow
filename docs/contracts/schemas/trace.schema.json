@@ -330,7 +330,10 @@
           "minimum": 0
         },
         "nodes": {
-          "type": "integer",
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 0
         },
         "mipGap": {

@@ -100,6 +100,7 @@ try {
     if (width === 390) {
       await page.locator('button').filter({ hasText: /^en$/ }).click();
       await page.getByRole('tab', { name: 'Perfil y planta' }).click();
+      await page.getByRole('tab', { name: 'Escenario' }).click();
       check(await measure(page), width, height, '390x844 Spanish profile');
       const scenario = page.locator('.pf-scenario');
       const resourceLabels = (await scenario.locator('dt').allTextContents()).map((label) => label.trim());

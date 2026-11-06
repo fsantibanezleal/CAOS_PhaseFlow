@@ -96,7 +96,7 @@ The sliding window against the rounding and local-search methods it competes wit
 <!-- generated:methods:toposort-expected,shift-local-search,cpitD-local-search,sliding-window -->
 | case | bound | `toposort-expected` | `shift-local-search` | `cpitD-local-search` | `sliding-window` | best plan of the case |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 2.54% | 2.50% | 2.49% | 1.40% | `sliding-window` 1.40% |
+| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 2.54% | 2.50% | 2.49% | 4.32% | `cpitD-local-search` 2.49% |
 | [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | joint LP | 21.35% | 17.28% | 16.91% | 1.98% | `sliding-window` 1.98% |
 | [`kd-declared`](../cases/03_kd-declared.md) | Algorithm 4 | 16.89% | 15.29% | 15.02% | 6.46% | `sliding-window` 6.46% |
 | [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | joint LP | 4.62% | 4.26% | 4.22% | 1.11% | `sliding-window` 1.11% |
@@ -109,7 +109,7 @@ The sliding window against the rounding and local-search methods it competes wit
 | [`regime-mining-bound`](../cases/11_regime-mining-bound.md) | Algorithm 4 | 7.53% | 7.48% | 7.46% | 2.68% | `sliding-window` 2.68% |
 | [`ctrl-abundant`](../cases/12_ctrl-abundant.md) | Algorithm 4 | 0.33% | 0.26% | 0.26% | 0.65% | `cpitD-local-search` 0.26% |
 | [`ctrl-degenerate`](../cases/13_ctrl-degenerate.md) | Algorithm 4 | 0.00% | 0.00% | 0.00% | 0.00% | `toposort-greedy` 0.00% |
-| **median** |  | **7.31%** | **4.26%** | **4.22%** | **1.92%** |  |
+| **median** |  | **7.31%** | **4.26%** | **4.22%** | **1.98%** |  |
 <!-- /generated -->
 
 ## Limits

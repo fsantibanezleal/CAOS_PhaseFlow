@@ -29,7 +29,7 @@ periods, its own eight percent rate, its own two capacities.
 |---|---|---|
 | ultimate pit optimum | 26,086,899 | 26,086,899 |
 | certified LP bound, joint (Bienstock-Zuckerberg) | 24,486,184 | 24,486,549 (PCPSP LP) |
-| best feasible schedule (`sliding-window` for PhaseFlow) | 24,142,200 | 24,176,861 |
+| best feasible schedule (`cpitD-local-search` for PhaseFlow) | 23,875,538 | 24,176,861 |
 | gap to each problem's LP bound | 1.40% | 1.26% |
 
 The ultimate pit reproduces exactly. The bound has a direct check on the same problem:
@@ -37,16 +37,14 @@ The ultimate pit reproduces exactly. The bound has a direct check on the same pr
 24,486,184 for `newman1`, and PhaseFlow's 24,486,184.09 reproduces it to the unit. The ORDERING is a
 second check: a CPIT LP bound must sit BELOW a PCPSP LP bound, because PCPSP is the richer problem, and
 it does, by 365 units in 24.5 million. The schedule sits below the 2018 PCPSP feasible result, but the
-two gap percentages use different LP bounds and must not be read as a like-for-like method contest. It
-sits above the best known feasible CPIT value MineLib still lists, 23,483,671 (4.1%), which predates
-both the 2018 results and the external optimum below. The best plan is the sliding time window
-(Cullenbine, Wood and Newman), solved as a MILP per window on an LP-guided candidate set. The 2018 PCPSP
-numbers are from Tables 3 and 4 of [Jelvez, Morales and Nancel-Penard](https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf).
+two gap percentages use different LP bounds and must not be read as a like-for-like method contest. The
+current best feasible CPIT result is from `cpitD-local-search`; its 2.49% gap is measured against
+PhaseFlow's certified joint bound. The 2018 PCPSP numbers are from Tables 3 and 4 of [Jelvez, Morales
+and Nancel-Penard](https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf).
 
 An [external AMPL/Gurobi notebook](https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html)
 later reports an integer optimum of 24,176,864.82 for Newman1 CPIT, with a matching MIP best bound.
-Relative to that external result, PhaseFlow's feasible plan is 0.143% lower. Most of the displayed
-1.40% LP-bound gap is integrality gap rather than a loss of the scheduling method. This external
+Relative to that external result, PhaseFlow's current feasible plan is about 1.25% lower. This external
 certificate was not produced by PhaseFlow; [the source comparison](docs/cases/01_newman1-published.md)
 shows the inputs, calculations and limits.
 
@@ -119,9 +117,9 @@ options and the release gates: [`scripts/local/README.md`](scripts/local/README.
 ./scripts/local/03_dev.sh
 ```
 
-Raw MineLib inputs are academic downloads and are never redistributed. Set `CAOS_DATA_ROOT` to an
-external data directory and `CAOS_TEMP_ROOT` to an external scratch directory before acquisition or
-generation. Run `python scripts/fetch_minelib.py --all` to populate the external MineLib cache. The
+Set `CAOS_VENVS_ROOT` to an absolute external runtime directory before initialization. Raw MineLib
+inputs are academic downloads and are never redistributed. Set `CAOS_DATA_ROOT` to an external data
+directory and `CAOS_TEMP_ROOT` to an external scratch directory before acquisition or generation. Run `python scripts/fetch_minelib.py --all` to populate the external MineLib cache. The
 numbered `02_generate-data` workflow creates a complete, source-bound sandbox; it does not overwrite
 shipped evidence. Inspect and validate its candidate, then explicitly promote that exact stage with
 `--release --from-stage`. See [`scripts/local/README.md`](scripts/local/README.md) for commands and recovery.

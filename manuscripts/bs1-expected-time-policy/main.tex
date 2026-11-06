@@ -1,0 +1,118 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs,array}
+\usepackage[hidelinks]{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\newcommand{\doctype}{Preprint}
+\newcommand{\docversion}{v0.01}
+\newcommand{\docdate}{31 October 2026}
+\newcommand{\versiondoi}{10.5281/zenodo.NNNNNNNN}
+\newcommand{\conceptdoi}{10.5281/zenodo.NNNNNNNN}
+\newcommand{\docrepo}{github.com/fsantibanezleal/CAOS\_PhaseFlow}
+\newcommand{\headerblock}{\begin{center}\fbox{\parbox{0.94\textwidth}{\small\raggedright
+\textbf{\doctype}\quad$\cdot$\quad\docversion, \docdate\quad$\cdot$\quad Licence CC BY 4.0\\
+CAOS Research, PhaseFlow open-pit production scheduling\\
+Version DOI \href{https://doi.org/\versiondoi}{\texttt{\versiondoi}}\\[2pt]
+Concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptdoi}}\\[2pt]
+Not peer reviewed. Source code, data and computational records:\\
+\href{https://\docrepo}{\texttt{\docrepo}}
+}}\end{center}\vspace{4pt}}
+\title{An Expected-Time Ensemble for Feasible Open-Pit Block Scheduling}
+\author{Felipe Santibáñez-Leal\\ORCID: 0000-0002-0150-3246}
+\date{}
+\begin{document}
+\maketitle
+\headerblock
+\begin{abstract}
+Expected-time TopoSort (ExTS) uses block extraction times derived from a linear relaxation to rank blocks before a precedence-safe schedule constructor assigns periods \cite{chicoisne}. Computing the relaxation can dominate interactive use. We study a learned alternative that predicts normalized expected extraction times from block and scenario features, averages five fixed-seed multilayer perceptrons, and passes the ranking to the same schedule constructor. Training and evaluation split by deposit seed. Across the synthetic held-out design, median learned-to-exact-ExTS discounted value is 0.9405, the minimum is 0.7101, and 33.56 percent of cases fall below 0.90. The policy beats the greedy schedule in 92.13 percent of cases. Two real held-out cases have ratios 0.9989 and 0.8987. On a separate six-seed evaluation set, an archetype warning has precision 0.5278, recall 0.4286, and a worst unflagged ratio of 0.7322; it fails the predeclared criteria for live use. The lower tail, vein failures, limited number of real cases, and synthetic data prevent a broad transfer claim. The model is an ordering heuristic and supplies no bound certificate.
+\end{abstract}
+\noindent\textbf{Keywords:} mine scheduling, expected extraction time, learned heuristic, CPIT, deposit-disjoint evaluation
+\section{Introduction}
+The constrained pit-limit production-scheduling problem assigns precedence-linked blocks to periods under mining and processing limits while maximizing discounted value. In interactive planning, a useful block ordering can yield feasible schedules before an integer optimum is available. We ask whether an expected-time policy trained on generated deposits preserves enough value on unseen deposits to serve as a fast candidate schedule.
+
+The evaluation separates deposits by seed, preserves the same schedule constructor, and compares feasibility and discounted value with exact Expected-time TopoSort on matched cases. Prediction error alone does not measure economic usefulness: a high rank correlation may still misorder early, high-value blocks and reduce discounted value. The analysis therefore reports schedule ratios, the lower tail, and failures by deposit type.
+
+\section{Related work}
+Expected-time TopoSort (ExTS) orders blocks by expected extraction times from a fractional relaxation; a precedence-safe constructor then assigns periods \cite{chicoisne,newman}. The relaxation incorporates discounting and resource constraints, but repeated solves can dominate interactive use. The learned policy replaces only the ordering signal; it retains the constructor and leaves mathematical bound certification separate.
+
+\section{Method}
+Let $B$ be the blocks in the ultimate pit, $T$ the number of periods, and $A$ the precedence arcs. For each block $b$, $x_{bt}$ indicates whether it has been extracted by the end of period $t$. A feasible schedule satisfies monotonic extraction, precedence, and per-period limits on mining and processing resource increments. The objective is discounted net present value. PhaseFlow's TopoSort constructor maintains the eligible frontier of the precedence directed acyclic graph, selects the next block by a weight, and places it in the earliest period that satisfies predecessor timing and all resource limits.
+
+The exact expected time $E_b$ is derived from a fractional schedule. If $x^*_{bt}$ is the cumulative fractional extraction level for block $b$ at the end of period $t$, then
+\[
+E_b=\sum_{t=1}^{T} t(x^*_{bt}-x^*_{b,t-1})+(T+1)(1-x^*_{bT}),\qquad x^*_{b0}=0.
+\]
+This assigns each fractional extraction increment to its period and assigns the unmined fraction to the sentinel period $T+1$. The learned model approximates $E_b/(T+1)$ using eleven features:
+\[
+f_b=(v_b^{\rm norm}, d_b, s_b^{\rm norm}, q_b^{\rm norm}, g_b^{\rm norm}, r_b, I_b, \eta, \kappa_1, \kappa_2, T^{\rm norm}),
+\]
+where the terms encode normalized value, depth, two predecessor-recurrence proxies, normalized grade, radial position, ultimate-pit membership, discount rate, two resource-capacity fractions, and normalized horizon. The serialized contract keys for the two recurrence features retain the historical names \texttt{cone\_size\_norm} and \texttt{cone\_value\_norm}; their values are not exact transitive-cone cardinality or value. The feature definitions are:
+\begin{center}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.64\textwidth}}\toprule
+Feature & Definition \\\midrule
+\texttt{value\_norm} & $p_b/\max(1,\max_j|p_j|)$ \\
+\texttt{depth\_frac} & $1-\ell_b/\max(1,n_z-1)$, with level $\ell_b=0$ at the surface \\
+\texttt{cone\_size\_norm} & $s_b/\max(1,\max_j s_j)$, where $s_b=|P(b)|+\max_{a\in P(b)}s_a$, and $s_b=0$ when $P(b)$ is empty \\
+\texttt{cone\_value\_norm} & $q_b/[v_{\max}\max(1,\max_j s_j)]$, where $q_b=\sum_{a\in P(b)}p_a+\max(0,\max_{a\in P(b)}q_a)$, $q_b=0$ for an empty predecessor set, and $v_{\max}=\max(1,\max_j|p_j|)$ \\
+\texttt{grade\_norm} & $g_b/\max(10^{-9},\max_j g_j)$ \\
+\texttt{radial\_frac} & The block's normalized distance from the horizontal grid center, clipped to $[0,2]$ and divided by 2 \\
+\texttt{in\_pit} & Indicator that block $b$ belongs to the ultimate pit \\
+\texttt{rate} & Scenario discount rate $\eta$ \\
+\texttt{capacity\_frac\_0}, \texttt{capacity\_frac\_1} & Each resource fraction clipped at 3 and divided by 3 \\
+\texttt{periods\_norm} & $T/20$ \\\bottomrule
+\end{tabular}
+\end{center}
+Here $P(b)$ is the set of immediate predecessors. The recurrence aggregates immediate-predecessor summaries in a topological sweep; a shared ancestor can be counted along multiple paths. These are linear-time ranking features, not graph-closure constraints or exact cone statistics. This distinction matters because the model uses them as predictors, while the schedule constructor enforces precedence exactly. Tonnage is deliberately omitted because it had no spread in the synthetic training design and therefore no training gradient. Eleven feature names and their order are checked by both offline and browser loaders.
+
+Each ensemble member is a two-hidden-layer multilayer perceptron with 48 and 24 ReLU units and a sigmoid output. For training-only mean $\mu$ and standard deviation $\sigma$, the standardized input is $z_b=(f_b-\mu)/\sigma$. Member $m$ computes $h^{(m)}_1=\operatorname{ReLU}(W^{(m)}_1z_b+a^{(m)}_1)$, $h^{(m)}_2=\operatorname{ReLU}(W^{(m)}_2h^{(m)}_1+a^{(m)}_2)$, and $\hat{\tau}^{(m)}_b=\operatorname{sigmoid}(W^{(m)}_3h^{(m)}_2+a^{(m)}_3)$. The ensemble output is $\hat{\tau}_b=\frac{1}{5}\sum_{m=1}^{5}\hat{\tau}^{(m)}_b$.
+
+Members share training rows and training-only standardization but use distinct initialization and shuffle seeds $17,29,41,53,67$. The bounded target and sigmoid head keep predictions in $[0,1]$. Each member minimizes $L_m=n^{-1}\sum_b(\hat{\tau}^{(m)}_b-\tau_b)^2$ with shuffled mini-batches of 2,048 rows, ten epochs, and learning rate $0.004$ using explicit Adam updates \cite{kingma}. Non-finite or constant training features are rejected. Inference rescales the averaged fraction by $T+1$ to obtain expected periods. The ordering weight is the negative predicted expected time. The inference path solves no relaxation to produce these learned weights, and the output is not a dual bound.
+\section{Experiments}
+The generator spans porphyry, vein, layered, and core-halo deposit archetypes. Twelve deposit seeds supply training data, six disjoint seeds form the selection holdout, and another six disjoint seeds support evaluation of the fixed warning rule. The split is by deposit, not by block row. Multiple scenarios for a deposit share geometry and many features; assigning different scenarios of one deposit to training and holdout would create leakage through near-duplicate block rows. The five-member expected-time ensemble is trained on 3,421,440 block rows; the selection holdout contains 1,710,720 rows.
+
+Nine crossed scenarios vary horizon from six to twelve periods, discount rate from five to twenty percent, and mining and processing capacity fractions separately. Two grid sizes, 1,008 and 6,912 blocks, evaluate scale transfer. The expected-time study contains 3,421,440 training block rows and 1,710,720 selection-holdout rows. The synthetic deposits are controlled generated instances. They are not conditional geological simulations and do not include drillhole conditioning.
+
+The principal comparator is exact ExTS on the same deposit and scenario. It uses the target expected times and the same TopoSort constructor. The policy also is compared with a greedy value-weighted order. Destination-choice schedules, sliding-window MILPs, and restricted neighborhood search address related but different formulations; their results retain separate method labels. For each paired case, the primary score is the NPV ratio $V_{\rm learned}/V_{\rm ExTS}$. We also report Spearman correlation with expected times, mean absolute error of the normalized target, the fraction beating greedy, and the lower tail. A value ratio below 0.90 is a diagnostic threshold for this study, not a universal mine-planning criterion.
+\clearpage
+\section{Results}
+\begin{table}[h]
+\centering
+\caption{Deposit-disjoint synthetic holdout measurements.}
+\begin{tabular}{lr}\toprule
+Measure & Value \\\midrule
+Spearman correlation with $E_b$ & 0.8137 \\
+Mean absolute error of normalized $E_b$ & 0.0454 \\
+Median learned-to-exact-ExTS NPV ratio & 0.9405 \\
+Mean learned-to-exact-ExTS NPV ratio & 0.9401 \\
+Tenth percentile of NPV ratio & 0.8364 \\
+Minimum NPV ratio & 0.7101 \\
+Holdout cases below 0.90 & 33.56\% \\
+Cases beating greedy & 92.13\% \\
+\bottomrule\end{tabular}
+\end{table}
+
+The median ratio indicates that the learned ordering often preserves most of the exact ExTS schedule value in this generated design. The minimum and failure frequency qualify that central result: a material minority of cases lose more than ten percent, and the weakest case is a vein deposit at the larger grid size. Beating greedy is a weaker comparison because greedy may perform poorly on a constrained schedule.
+
+The warning rule flags synthetic vein cases. On the selected holdout, its measured precision is 0.7407 and recall 0.5517. The rule therefore misses a substantial fraction of failures and also flags some cases above the threshold. Its archetype input may be unavailable for real deposits; a missing classification must not be interpreted as safety.
+
+The two MineLib cases with exact expected-time schedules yield ratios 0.9989 for Newman1 and 0.8987 for KD. These are case-specific measurements; two benchmark cases do not characterize transfer across real deposits. MineLib block files remain under their source terms and are not redistributed with the repository.
+\section{Discussion}
+The median learned-to-exact ratio summarizes a broad distribution: one third of the generated evaluation cases fall below 0.90, and the minimum is 0.7101. The policy can therefore produce a useful fast candidate on many generated cases while still losing material value on a substantial lower tail. The warning rule does not recover that tail reliably and remains unavailable for live plans.
+
+\subsection{Implementation and consistency}
+The model loader checks exact feature names and order, finite standardization parameters, and positive scales. The expected-time JSON and ONNX graphs implement the ensemble average. Export parity is measured against the Python forward pass. A browser TypeScript implementation consumes the same ordered feature contract and is tested against Python-generated fixtures. These measures establish that implementations calculate the same function; they do not establish that the function generalizes.
+
+Every learned schedule is checked for precedence and capacity and is scored against exact ExTS where available. Learned predictions are excluded from bound certification. A case without its required licensed input is left unscored. Model, feature, data, or method changes require a new training run and recalculation of the reported summaries.
+\subsection{Limitations}
+The generated study permits repeatable controlled comparisons, but it does not represent a mine-specific conditional simulation. Holdout separation addresses deposit leakage within the generator, not domain shift to arbitrary geology. The failure warning depends on synthetic archetype information and has imperfect recall. Only two real held-out cases are reported here. The MLP is an ordering aid, not a schedule optimizer or certificate.
+
+\section{Conclusions}
+The five-member expected-time policy produces feasible schedules and retains a median ratio of 0.9405 on the generated holdout. Its lower tail and archetype failures are part of the result. The appropriate use is a fast candidate that can be measured against exact ExTS or replaced by a conservative method when exact comparison is unavailable. Broader use requires additional conditioned datasets and independently specified operational constraints.
+\begin{thebibliography}{9}
+\bibitem{chicoisne} J. Chicoisne, D. Espinoza, M. Goycoolea, E. Moreno, and E. Rubio, ``A new algorithm for the open-pit mine production scheduling problem,'' \emph{Operations Research}, 60(3), 517--528, 2012. doi:10.1287/opre.1120.1050.
+\bibitem{newman} W. B. Lambert, A. Brickey, A. M. Newman, and K. Eurek, ``Open-Pit Block-Sequencing Formulations: A Tutorial,'' \emph{Interfaces}, 44(2), 127--142, 2014. doi:10.1287/inte.2013.0731.
+\bibitem{kingma} D. P. Kingma and J. Ba, ``Adam: A Method for Stochastic Optimization,'' arXiv:1412.6980, 2014.
+\end{thebibliography}
+\end{document}

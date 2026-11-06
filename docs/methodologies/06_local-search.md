@@ -80,7 +80,7 @@ window, the remaining distance is the look-ahead neither neighbourhood has ([05]
 <!-- generated:methods:exts-two-resource,shift-local-search,cpitD-local-search -->
 | case | bound | `exts-two-resource` | `shift-local-search` | `cpitD-local-search` | best plan of the case |
 | --- | --- | ---: | ---: | ---: | --- |
-| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 2.54% | 2.50% | 2.49% | `sliding-window` 1.40% |
+| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 2.54% | 2.50% | 2.49% | `cpitD-local-search` 2.49% |
 | [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | joint LP | 21.23% | 17.28% | 16.91% | `sliding-window` 1.98% |
 | [`kd-declared`](../cases/03_kd-declared.md) | Algorithm 4 | 16.89% | 15.29% | 15.02% | `sliding-window` 6.46% |
 | [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | joint LP | 4.62% | 4.26% | 4.22% | `sliding-window` 1.11% |

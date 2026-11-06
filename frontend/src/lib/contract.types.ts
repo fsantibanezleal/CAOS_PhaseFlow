@@ -57,7 +57,7 @@ export interface NeighborhoodReceipt {
   backend: string;
   status: string;
   seconds: number;
-  nodes: number;
+  nodes: number | null;
   mipGap?: number | null;
   incumbentNpv?: number | null;
   upperBoundNpv?: number | null;

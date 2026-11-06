@@ -7,6 +7,7 @@ FEATURES = ("deposit-statistics-guard", "learned-destination", "sliding-window-s
 def test_adversarial_proposals_remain_unimplemented_until_evidence_exists():
     sdd = (ROOT / "docs/design/SDD.md").read_text(encoding="utf-8")
     assert "The three feature designs are proposals" in sdd
+    assert "The frontier" in sdd and "policy direction is approved" in sdd
     for name in FEATURES:
         folder = ROOT / "docs/design/features" / name
         design = (folder / "design.md").read_text(encoding="utf-8").lower()

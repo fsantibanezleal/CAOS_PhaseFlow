@@ -85,7 +85,7 @@ on a Brazilian iron ore project was found only in secondary summaries and is **n
 <!-- generated:methods:bench-by-bench,nested-shells -->
 | case | bound | `bench-by-bench` | `nested-shells` | best plan of the case |
 | --- | --- | ---: | ---: | --- |
-| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 6.41% | 2.64% | `sliding-window` 1.40% |
+| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 6.41% | 2.64% | `cpitD-local-search` 2.49% |
 | [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | joint LP | 51.78% | 31.12% | `sliding-window` 1.98% |
 | [`kd-declared`](../cases/03_kd-declared.md) | Algorithm 4 | 36.60% | 36.12% | `sliding-window` 6.46% |
 | [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | joint LP | 54.09% | 44.15% | `sliding-window` 1.11% |

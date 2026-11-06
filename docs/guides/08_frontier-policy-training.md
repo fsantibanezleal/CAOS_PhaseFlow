@@ -10,7 +10,7 @@ passed. The current checkout is 0.11.000, so the full training command deliberat
 On Windows, choose an external virtual-environment root and install the exact CPU stack:
 
 ```powershell
-$venv = Join-Path $env:CAOS_VENVS_ROOT "phaseflow-frontier"
+$venv = Join-Path $env:CAOS_VENVS_ROOT "phaseflow\frontier"
 ./scripts/setup-frontier-training.ps1 -VenvPath $venv
 & "$venv\Scripts\python.exe" scripts/train_frontier_policy.py --check
 ```
@@ -18,8 +18,8 @@ $venv = Join-Path $env:CAOS_VENVS_ROOT "phaseflow-frontier"
 On Linux or macOS:
 
 ```bash
-./scripts/setup-frontier-training.sh "$CAOS_VENVS_ROOT/phaseflow-frontier"
-"$CAOS_VENVS_ROOT/phaseflow-frontier/bin/python" scripts/train_frontier_policy.py --check
+./scripts/setup-frontier-training.sh "$CAOS_VENVS_ROOT/phaseflow/frontier"
+"$CAOS_VENVS_ROOT/phaseflow/frontier/bin/python" scripts/train_frontier_policy.py --check
 ```
 
 The check validates the exact CPU PyTorch pin, OreBlocks pin, named feature order, current case index, split
@@ -49,7 +49,7 @@ checkpoints respectively; both roots must be outside the checkout.
 
 ```powershell
 $run = "frontier-0.12.000-r01"
-$venv = Join-Path $env:CAOS_VENVS_ROOT "phaseflow-frontier"
+$venv = Join-Path $env:CAOS_VENVS_ROOT "phaseflow\frontier"
 $baseline = Join-Path $env:CAOS_TEMP_ROOT "phaseflow-0.11.000-full-0.6.6-20261031\results"
 & "$venv\Scripts\python.exe" scripts/train_frontier_policy.py `
   --run-name $run `

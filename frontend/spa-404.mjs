@@ -39,9 +39,12 @@ writeFileSync(join(dist, 'build.json'), `${JSON.stringify({ sha: buildSha, versi
 // 1. the fallback, for anything not pre-rendered below (an old link, a typo, a future route)
 copyFileSync(indexHtml, join(dist, '404.html'));
 
-// 2. a real file per route. Keep in sync with `config.routes` in src/main.tsx; `/` is dist/index.html
-//    itself and needs no entry.
-const routes = ['/app', '/introduction', '/methodology', '/implementation', '/experiments', '/benchmark'];
+// 2. a real file per route. Keep shell routes in sync with `config.routes` in src/main.tsx and
+//    include every public story deep link; `/` is dist/index.html itself and needs no entry.
+const routes = [
+  '/app', '/introduction', '/methodology', '/implementation', '/experiments', '/benchmark',
+  '/story/deposit', '/story/method', '/story/constraints', '/story/compare',
+];
 
 // `/app` is not in config.routes (the App lives at `/`), but the nav and older shared links use it and
 // it falls through the router's `*` to the same page, so it gets a real file too.
