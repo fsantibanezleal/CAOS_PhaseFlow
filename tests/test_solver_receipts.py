@@ -21,4 +21,3 @@ def test_unknown_solver_node_count_is_null_and_negative_sentinel_is_rejected():
     assert reported_node_count(-1) is None
     assert reported_node_count(0) == 0
     assert reported_node_count(43) == 43
-
