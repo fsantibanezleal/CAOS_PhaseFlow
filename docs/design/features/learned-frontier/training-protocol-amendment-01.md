@@ -16,7 +16,7 @@ The 50,000-transition checkpoint was therefore not reached within the declared c
 
 ## Revised protocol for a new run
 
-Keep the model, optimizer, reward, data generator, disjoint split ledger, five member seeds, maximum transitions, 7,200-second per-member CPU cap, 24-hour total wall cap, and checkpoint-selection rule unchanged. Change only the validation interval from 50,000 to 32,768 transitions. Rollouts contain 4,096 decisions, so the first validation is scheduled at 32,768 transitions. This leaves eight rollout batches before the lowest observed cap completion at 45,056 transitions.
+Keep the model, optimizer, reward, data generator, disjoint split ledger, five member seeds, maximum transitions, 7,200-second per-member CPU cap, 24-hour total wall cap, and checkpoint-selection rule unchanged. Change only the validation interval from 50,000 to 32,768 transitions. Rollouts contain 4,096 decisions, so the first validation is scheduled at 32,768 transitions. The lowest observed cap completion was at 45,056 transitions, leaving three rollout batches after the first validation point.
 
 Validation is part of the member's fixed CPU and wall budgets. The validator checks the remaining budget before each validation case and each schedule action. If the budget expires, it discards that incomplete validation result, stops the member with the applicable cap reason, and does not select or write a checkpoint from the partial pass. A checkpoint is eligible only when its finite validation record is complete and its selected SHA-256 is present in the member receipt. The evaluator fails closed otherwise.
 
