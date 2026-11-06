@@ -11,6 +11,37 @@ COMMIT = re.compile(r"^[0-9a-f]{40}$")
 STATUSES = {"complete", "partial", "failed", "unavailable"}
 
 
+def validate_training_members(members: list[dict], expected_seeds: list[int]) -> None:
+    """Require every frozen member checkpoint to be named by an actual validation event."""
+    if not isinstance(members, list) or [row.get("seed") for row in members if isinstance(row, dict)] != expected_seeds:
+        raise ValueError("the frozen ensemble does not contain the expected reviewed member seeds in order")
+    if any(not isinstance(row, dict) for row in members):
+        raise ValueError("every frozen ensemble member must be an object")
+    for row in members:
+        if row.get("status") != "trained-to-stop-rule":
+            raise ValueError(f"seed {row['seed']}: member did not reach a valid training stop rule")
+        history = row.get("validation_history")
+        if not isinstance(history, list) or not history:
+            raise ValueError(f"seed {row['seed']}: no validation event selected this checkpoint")
+        previous_transitions = 0
+        for event in history:
+            if not isinstance(event, dict):
+                raise ValueError(f"seed {row['seed']}: validation history contains a malformed event")
+            transitions = event.get("transitions")
+            metric = event.get("mean_normalized_npv")
+            selected_hash = event.get("selected_checkpoint_sha256")
+            if (not isinstance(transitions, int) or isinstance(transitions, bool) or transitions <= previous_transitions
+                    or not isinstance(metric, (int, float)) or isinstance(metric, bool) or not np.isfinite(metric)
+                    or not isinstance(event.get("all_feasible"), bool)
+                    or not isinstance(selected_hash, str) or not SHA256.fullmatch(selected_hash)):
+                raise ValueError(f"seed {row['seed']}: validation history is incomplete or invalid")
+            previous_transitions = transitions
+        if row.get("checkpoint_sha256") != history[-1]["selected_checkpoint_sha256"]:
+            raise ValueError(f"seed {row['seed']}: checkpoint was not selected by the recorded validation history")
+        if not isinstance(row.get("checkpoint_sha256"), str) or not SHA256.fullmatch(row["checkpoint_sha256"]):
+            raise ValueError(f"seed {row['seed']}: selected checkpoint SHA-256 is missing or malformed")
+
+
 def validate_release_receipt(receipt: dict, expected_case_ids: list[str]) -> dict:
     """Reject mixed snapshots, omitted cases, malformed failures and untracked trace outputs."""
     if not isinstance(receipt, dict) or receipt.get("schema") != RECEIPT_SCHEMA:
