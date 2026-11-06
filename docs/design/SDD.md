@@ -27,7 +27,7 @@ The shell renders the industry problem frame as the first Introduction view. Thi
 
 ## Research basis
 
-The product model and claims are bounded to these primary sources and independent benchmark records:
+The product model and claims are bounded to these primary sources, authoritative implementation guidance, and independent benchmark records:
 
 - Chicoisne et al. (2012), multi-period open-pit planning and parametric maximum closures, https://doi.org/10.1287/opre.1120.1050
 - Jelvez et al. (2018), destination-aware open-pit scheduling, https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf
@@ -35,6 +35,9 @@ The product model and claims are bounded to these primary sources and independen
 - Cullenbine, Wood and Newman (2011), sliding time-window heuristic for open-pit block sequencing, https://doi.org/10.1007/s11590-011-0306-2
 - Teichteil-Königsbuch et al. (2023), graph policy with schedule generation for resource-constrained project scheduling, https://doi.org/10.1609/icaps.v33i1.27244
 - Huang and Ontañón (2022), state-dependent invalid-action masking and policy-gradient analysis in μRTS, https://doi.org/10.32473/flairs.v35i.130584
+- Roberts et al. (2017), cross-validation for spatial, hierarchical and other structured data, https://doi.org/10.1111/ecog.02881
+- Schulman et al. (2017), proximal policy optimization, https://arxiv.org/abs/1707.06347
+- scikit-learn, common pitfalls and train-only preprocessing guidance, https://scikit-learn.org/stable/common_pitfalls.html
 - PhaseFlow source repository, deterministic synthetic twins and derived case manifests (MIT project code): https://github.com/fsantibanezleal/CAOS_PhaseFlow
 - MineLib Newman1 CPIT benchmark, https://minelib.org/v1/Results.xhtml
 - Morales et al. (2015), production schedules and pit-profile visualisation, https://www.delphoslab.cl/Publicaciones/2015/Morales_et_al_APCOM2015.pdf
