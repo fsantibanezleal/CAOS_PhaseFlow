@@ -12,7 +12,6 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from evaluate_frontier_policy import seed_clustered_interval  # noqa: E402
 from evaluate_frontier_product_cases import (  # noqa: E402
     _baseline_cases,
     _baseline_version,
@@ -20,6 +19,7 @@ from evaluate_frontier_product_cases import (  # noqa: E402
     _published_reference,
     _validate_baseline_pairing,
 )
+from pipeline.model.frontier_evaluation import seed_clustered_interval  # noqa: E402
 from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
 
 
