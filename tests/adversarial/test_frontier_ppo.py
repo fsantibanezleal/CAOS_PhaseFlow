@@ -316,6 +316,39 @@ def test_member_stops_early_to_reserve_budget_for_checkpoint_finalization(tmp_pa
     }
 
 
+def test_member_stops_early_to_reserve_wall_budget_for_finalization(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(frontier_ppo.importlib.metadata, "version", lambda _name: "0.6.6")
+    elapsed = {"cpu": 0.0, "wall": 0.0}
+    monkeypatch.setattr(frontier_ppo.time, "process_time", lambda: elapsed["cpu"])
+    monkeypatch.setattr(frontier_ppo.time, "monotonic", lambda: elapsed["wall"])
+
+    def expire_rollout(*_args, budget_check, **_kwargs):
+        elapsed["wall"] = 115.0  # 120s cap minus the 6s small-budget reserve
+        assert not budget_check()
+        return []
+
+    monkeypatch.setattr(frontier_ppo, "collect_rollout", expire_rollout)
+    run = train_member(
+        MaskedGraphActorCritic(node_feature_count=2, state_feature_count=4),
+        lambda: FrontierPolicyEnv(_instance(), np.ones((3, 2))),
+        lambda _model, _budget_check: None,
+        seed=4409,
+        model_root=tmp_path / "device-models",
+        approved_model_root=tmp_path,
+        repository_root=ROOT,
+        max_transitions=100,
+        max_cpu_seconds=60,
+        max_wall_seconds=120,
+        validation_interval=1,
+        training_contract=_training_contract(),
+    )
+    receipt = json.loads((tmp_path / "device-models" / "seed-4409" / "receipt.json").read_text())
+    assert run.stop_reason == "wall-cap"
+    assert run.wall_seconds == 115.0
+    assert receipt["budget"]["wall_finalization_reserve_seconds"] == 6
+    assert receipt["budget"]["wall_training_deadline_seconds"] == 114
+
+
 def test_validation_member_returns_no_partial_report_when_budget_is_expired():
     model = MaskedGraphActorCritic(node_feature_count=2, state_feature_count=4)
     assert model.training
