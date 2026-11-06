@@ -21,6 +21,7 @@ from pipeline.model.frontier_policy import validate_split_manifest  # noqa: E402
 from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
 from pipeline.model.frontier_splits import build_split_manifest, manifest_sha256  # noqa: E402
 from pipeline.model.frontier_evaluation import RUN_NAME, seed_clustered_interval, target_version  # noqa: E402
+from pipeline.model.frontier_release import validate_training_members  # noqa: E402
 
 MANIFEST_PATH = ROOT / "docs/design/features/learned-frontier/split-manifest.json"
 CASE_INDEX = ROOT / "data/derived/manifests/index.json"
@@ -75,8 +76,7 @@ def _load_frozen_ensemble(model_run: Path, data_run: Path, *, source_commit: str
         raise ValueError("training receipt, standalone contract and normalizer disagree")
     expected_seeds = [1103, 2207, 3301, 4409, 5519]
     members = receipt.get("members")
-    if not isinstance(members, list) or [row.get("seed") for row in members] != expected_seeds:
-        raise ValueError("the frozen ensemble does not contain the five reviewed member seeds in order")
+    validate_training_members(members, expected_seeds)
     expected_root = model_run.resolve()
     loaded = []
     for row in members:

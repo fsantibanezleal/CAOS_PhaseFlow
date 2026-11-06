@@ -34,6 +34,7 @@ from pipeline.model.frontier_ppo import (  # noqa: E402
     train_member,
 )
 from pipeline.model.frontier_splits import build_split_manifest, manifest_sha256  # noqa: E402
+from pipeline.model.frontier_release import validate_training_members  # noqa: E402
 
 MANIFEST_PATH = ROOT / "docs/design/features/learned-frontier/split-manifest.json"
 CASE_INDEX = ROOT / "data/derived/manifests/index.json"
@@ -245,6 +246,7 @@ def train(args: argparse.Namespace) -> int:
                 "stop_reason": run.stop_reason, "checkpoint": run.selected_checkpoint,
                 "checkpoint_sha256": run.selected_checkpoint_sha256,
                 "final_checkpoint_sha256": run.final_checkpoint_sha256,
+                "validation_history": list(run.validation_history),
             })
         except Exception as exc:
             # Preserve the failed member and keep the frozen ensemble receipt auditable.
@@ -269,8 +271,13 @@ def train(args: argparse.Namespace) -> int:
         "ppo_config": asdict(config), "elapsed_wall_seconds": elapsed,
         "runtime": {"device": "cpu", "torch": torch.__version__, "numpy": np.__version__},
         "members": members,
-        "complete": len(members) == len(MEMBER_SEEDS) and all("checkpoint_sha256" in x for x in members),
+        "complete": False,
     }
+    try:
+        validate_training_members(members, list(MEMBER_SEEDS))
+        receipt["complete"] = True
+    except ValueError:
+        pass
     _atomic_json(data_run / "ensemble-receipt.json", receipt)
     print(f"frontier policy run recorded at {data_run}; complete={receipt['complete']}")
     return 0 if receipt["complete"] else 2

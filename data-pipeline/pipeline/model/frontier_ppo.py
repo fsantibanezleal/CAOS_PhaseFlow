@@ -626,7 +626,6 @@ def train_member(
             all_feasible = report.get("all_feasible") is True
             if not np.isfinite(metric):
                 raise ValueError("validation must report a finite mean_normalized_npv")
-            validation_history.append({"transitions": transitions, **report})
             step_path = run_dir / f"step-{transitions:09d}.pt"
             _atomic_checkpoint(model, step_path)
             if best_metric is None or metric > best_metric:
@@ -637,6 +636,10 @@ def train_member(
                 stale_checkpoints += 1
             else:
                 stale_checkpoints = 0
+            validation_history.append({
+                "transitions": transitions, **report,
+                "selected_checkpoint_sha256": best_hash,
+            })
             next_validation += validation_interval
             if all_feasible and stale_checkpoints >= patience:
                 stop_reason = "validation-plateau"

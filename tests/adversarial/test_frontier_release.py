@@ -9,7 +9,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
 
-from pipeline.model.frontier_release import RECEIPT_SCHEMA, validate_release_receipt  # noqa: E402
+from pipeline.model.frontier_release import RECEIPT_SCHEMA, validate_release_receipt, validate_training_members  # noqa: E402
 
 PRODUCT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 
@@ -56,3 +56,29 @@ def test_adversarial_release_receipt_keeps_failed_cases_and_checks_partial_cover
     partial["cases"][1]["tonnage_coverage"] = 1.1
     with pytest.raises(ValueError, match="tonnage_coverage"):
         validate_release_receipt(partial, ["case-a", "case-b"])
+
+
+def test_training_ensemble_requires_validation_selected_checkpoint_for_every_seed():
+    valid_hash = "b" * 64
+    members = [
+        {
+            "seed": seed, "status": "trained-to-stop-rule", "checkpoint_sha256": valid_hash,
+            "validation_history": [{
+                "transitions": 50_000, "mean_normalized_npv": 0.4, "all_feasible": True,
+                "selected_checkpoint_sha256": valid_hash,
+            }],
+        }
+        for seed in (1103, 2207, 3301, 4409, 5519)
+    ]
+    validate_training_members(members, [1103, 2207, 3301, 4409, 5519])
+
+    members[0]["validation_history"] = []
+    with pytest.raises(ValueError, match="no validation event"):
+        validate_training_members(members, [1103, 2207, 3301, 4409, 5519])
+
+    members[0]["validation_history"] = [{
+        "transitions": 50_000, "mean_normalized_npv": 0.4, "all_feasible": True,
+        "selected_checkpoint_sha256": "c" * 64,
+    }]
+    with pytest.raises(ValueError, match="not selected"):
+        validate_training_members(members, [1103, 2207, 3301, 4409, 5519])
