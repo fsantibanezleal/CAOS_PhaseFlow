@@ -36,7 +36,7 @@ receipt carries the matching hashes. Validation uses only the declared validatio
 loads the test rows or product cases.
 
 The SDD fixes five member seeds, one million environment transitions and two CPU-hours per member, validation
-every 50,000 transitions, five consecutive feasible validation checkpoints without improvement as a stop rule,
+every 32,768 transitions under [training protocol amendment 01](../design/features/learned-frontier/training-protocol-amendment-01.md), five consecutive feasible validation checkpoints without improvement as a stop rule,
 and a 24-hour wall-clock cap across all five members. No command-line override can silently change those values.
 An incomplete run preserves each successful member's checkpoint and receipt, marks failed members with their
 failure record, marks unstarted members, and writes an incomplete ensemble receipt. It is not a complete ensemble.

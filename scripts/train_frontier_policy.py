@@ -13,6 +13,7 @@ import re
 import subprocess
 import sys
 import time
+from typing import Callable
 
 import numpy as np
 import torch
@@ -42,7 +43,7 @@ MEMBER_SEEDS = (1103, 2207, 3301, 4409, 5519)
 MAX_TRANSITIONS = 1_000_000
 MAX_CPU_SECONDS = 7_200.0
 MAX_TOTAL_WALL_SECONDS = 86_400.0
-VALIDATION_INTERVAL = 50_000
+VALIDATION_INTERVAL = 32_768
 PATIENCE = 5
 RUN_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 
@@ -152,29 +153,39 @@ def _episode_factory(rows: list[dict]):
     return make
 
 
-def _validate_member(model: MaskedGraphActorCritic, rows: list[dict]) -> dict:
+def _validate_member(
+    model: MaskedGraphActorCritic, rows: list[dict], budget_check: Callable[[], bool],
+) -> dict | None:
     total = 0.0
     feasible = 0
     count = 0
     model.eval()
-    for row in rows:
-        graph = generate_graph(row["seed"], row["family"], row["size"])
-        env = FrontierPolicyEnv(graph.instance, graph.node_features)
-        observation = env.observation()
-        graph_embedding = model.encode_graph(observation)
-        while not env.terminated:
-            action, _, _ = model.select_action(
-                observation, deterministic=True, graph_embedding=graph_embedding,
-            )
-            observation, _, _, _ = env.step(action)
-            if observation is not None and observation.num_blocks != len(graph.instance.values):
-                raise ValueError("validation state graph changed within an episode")
-        result = env.result(graph.tonnage)
-        normalizer = max(float(np.abs(graph.instance.values).sum()), 1e-12)
-        total += result.npv / normalizer
-        feasible += int(np.isfinite(result.npv))
-        count += 1
-    model.train()
+    try:
+        for row in rows:
+            if not budget_check():
+                return None
+            graph = generate_graph(row["seed"], row["family"], row["size"])
+            env = FrontierPolicyEnv(graph.instance, graph.node_features)
+            observation = env.observation()
+            graph_embedding = model.encode_graph(observation)
+            while not env.terminated:
+                if not budget_check():
+                    return None
+                action, _, _ = model.select_action(
+                    observation, deterministic=True, graph_embedding=graph_embedding,
+                )
+                observation, _, _, _ = env.step(action)
+                if observation is not None and observation.num_blocks != len(graph.instance.values):
+                    raise ValueError("validation state graph changed within an episode")
+            result = env.result(graph.tonnage)
+            normalizer = max(float(np.abs(graph.instance.values).sum()), 1e-12)
+            total += result.npv / normalizer
+            feasible += int(np.isfinite(result.npv))
+            count += 1
+    finally:
+        model.train()
+    if not count or not budget_check():
+        return None
     return {"mean_normalized_npv": total / count, "all_feasible": feasible == count, "cases": count}
 
 
@@ -227,7 +238,7 @@ def train(args: argparse.Namespace) -> int:
             run = train_member(
                 model,
                 _episode_factory(manifest["train"]),
-                lambda candidate: _validate_member(candidate, manifest["validation"]),
+                lambda candidate, budget_check: _validate_member(candidate, manifest["validation"], budget_check),
                 seed=seed,
                 model_root=model_run,
                 approved_model_root=Path(args.approved_model_root).expanduser().resolve(),
