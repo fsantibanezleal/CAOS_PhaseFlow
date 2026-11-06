@@ -37,6 +37,7 @@ The evaluation separates deposits by seed, preserves the same schedule construct
 Expected-time TopoSort (ExTS) orders blocks by expected extraction times from a fractional relaxation; a precedence-safe constructor then assigns periods \cite{chicoisne,newman}. The relaxation incorporates discounting and resource constraints, but repeated solves can dominate interactive use. The learned policy replaces only the ordering signal; it retains the constructor and leaves mathematical bound certification separate.
 
 \section{Method}
+\label{sec:proposed-method}
 Let $B$ be the blocks in the ultimate pit, $T$ the number of periods, and $A$ the precedence arcs. For each block $b$, $x_{bt}$ indicates whether it has been extracted by the end of period $t$. A feasible schedule satisfies monotonic extraction, precedence, and per-period limits on mining and processing resource increments. The objective is discounted net present value. PhaseFlow's TopoSort constructor maintains the eligible frontier of the precedence directed acyclic graph, selects the next block by a weight, and places it in the earliest period that satisfies predecessor timing and all resource limits.
 
 The exact expected time $E_b$ is derived from a fractional schedule. If $x^*_{bt}$ is the cumulative fractional extraction level for block $b$ at the end of period $t$, then
