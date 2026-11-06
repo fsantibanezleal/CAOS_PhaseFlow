@@ -1,0 +1,26 @@
+% Generated from the hash-bound external expected-time ablation record.
+% record_sha256=9da3a73a242c4fac8f14fe4af00f2930ac987f6c004a33ba438fee7ae7504a66
+% train_cache_sha256=4913a4e3b1c2121bb404a05f5bb96323980c598d3b42f992e5662167505bfdb0
+% holdout_cache_sha256=bda9578d296fde51ac4862616cb07c531a99e06cf4e2e5e16a36b9746b7be69f
+\begin{table}[p]
+\centering
+\small
+\caption{Paired schedule-value ablations on all 432 deposit-disjoint cases, with deposit-seed cluster bootstrap intervals and training-set variants.}
+\label{tab:expected-time-ablations}
+\begin{tabular}{lrrrrl}
+\toprule
+Candidate & Mean [95\% interval] & Median & 10th percentile & Minimum & Below 0.90 \\
+\midrule
+Five-member ensemble & 0.940 [0.927, 0.957] & 0.941 & 0.836 & 0.710 & 145/432 (33.6\%) \\
+Member 1 & 0.939 [0.927, 0.955] & 0.933 & 0.836 & 0.709 & 154/432 (35.6\%) \\
+Member 2 & 0.929 [0.916, 0.944] & 0.931 & 0.820 & 0.689 & 164/432 (38.0\%) \\
+Member 3 & 0.940 [0.928, 0.957] & 0.940 & 0.834 & 0.719 & 142/432 (32.9\%) \\
+Member 4 & 0.934 [0.922, 0.949] & 0.933 & 0.825 & 0.707 & 155/432 (35.9\%) \\
+Member 5 & 0.931 [0.918, 0.948] & 0.932 & 0.818 & 0.700 & 163/432 (37.7\%) \\
+Remove recurrence features & 0.932 [0.919, 0.947] & 0.935 & 0.813 & 0.686 & 151/432 (35.0\%) \\
+Remove depth, grade, and radial features & 0.674 [0.668, 0.682] & 0.743 & 0.226 & -0.151 & 334/432 (77.3\%) \\
+Half of training deposits & 0.943 [0.930, 0.959] & 0.945 & 0.824 & 0.693 & 138/432 (31.9\%) \\
+\bottomrule
+\end{tabular}
+\end{table}
+% Intervals resample the six deposit-seed means, not the 432 scenario-grid cases.
