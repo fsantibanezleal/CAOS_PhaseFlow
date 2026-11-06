@@ -6,7 +6,7 @@ from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
-from pipeline.core.solver_receipts import reported_node_count
+from pipeline.core.solver_receipts import reported_node_count  # noqa: E402
 
 
 def test_unknown_solver_node_count_is_null_and_negative_sentinel_is_rejected():
