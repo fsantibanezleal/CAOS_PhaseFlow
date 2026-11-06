@@ -1,6 +1,6 @@
 \documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath,amssymb,array,booktabs,longtable,graphicx}
+\usepackage{amsmath,amssymb,array,booktabs,longtable,graphicx,algorithm,algpseudocode}
 \usepackage[hidelinks]{hyperref}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -44,6 +44,7 @@ The increment is the material extracted in period $t$; the cumulative variable i
 In the destination-choice problem, each block may be assigned to one of several destinations and the value and resource coefficients depend on that assignment. This is a different feasible region from fixed-destination CPIT. PhaseFlow therefore reports destination schedules against the destination-choice relaxation and does not score them with a CPIT bound. The distinction follows the MineLib problem definitions and the published OPBSP formulation; a destination decision is not merely a change in accounting. Stockpile inventory, rehandle, blending recourse, and equipment assignment are outside the current model.
 
 PhaseFlow focuses on algorithms and evidence around this decision. The static web application replays committed artifacts and re-solves selected synthetic cases in the browser. It is a research workbench, not a production mine-planning system. It does not claim full stochastic optimization, stockpile inventory, blending recourse, equipment assignment, or operational reconciliation.
+The report follows the path from problem definition to serialized evidence: each method is judged under its own feasible set, each result is linked to its case inputs, and unavailable measurements remain visible. The distinction between a schedule candidate and an upper-bound certificate governs the comparisons throughout.
 \input{foundations.tex}
 \section{Related work}
 Bench-by-bench extraction, nested-shell sequences, and value-weighted TopoSort provide constructive schedules. The successor-cone weight introduced by Gershon orders a block using the value it unlocks; expected-time TopoSort (ExTS) instead uses extraction times from a fractional relaxation \cite{gershon,chicoisne,newman}. TopoSort selects an eligible block and assigns it to the earliest period with enough resource capacity. Feasibility follows from construction when the input satisfies the scheduling constraints, while the ordering determines economic quality.
@@ -54,10 +55,11 @@ The CPIT relaxation provides expected extraction times and certified upper bound
 
 These algorithm families answer different questions. An upper bound limits what any feasible schedule can attain under the stated model. A feasible heuristic supplies a lower bound and a concrete extraction plan. The difference between them measures remaining optimization opportunity, not forecast error or operational risk. Bienstock--Zuckerberg is a scalable route to the LP relaxation; it does not produce a tighter mathematical bound than that relaxation. For one resource, the critical-multiplier construction obtains the CPIT relaxation through a sequence of maximum-closure problems. With two resources, Algorithm 4 solves each single-resource relaxation, uses their minimum as a valid upper bound, and keeps the best feasible schedule found from their expected-time orderings. These interpretations follow Chicoisne et al. and Mu\~noz et al.; the two-resource bound is not described as the joint two-resource LP optimum.
 
-The comparison set contains the following implemented schedule constructors and improvement methods. Each feasible result is checked against its own problem's constraints and bound before it enters the trace.
+The comparison set contains the following implemented schedule constructors and improvement methods. Table~\ref{tab:method-summary} describes their roles; each feasible result is checked against its own problem's constraints and bound before it enters the trace.
 {\small
 \setlength{\tabcolsep}{4pt}
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.34\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}}
+\caption{Implemented constructive, solver-based, destination-aware, re-planning, and learned methods and the meaning of their candidate schedules.}\label{tab:method-summary}\\
 \toprule
 \textbf{Method} & \textbf{Construction or search} & \textbf{Interpretation}\\
 \midrule
@@ -82,13 +84,30 @@ The comparison set contains the following implemented schedule constructors and 
 }
 Method names are retained in the computational records and notebooks so readers can trace reported values to their implementations. The table summarizes each method’s role; exact bounds, statuses, runtimes, and case-level outcomes come from the per-case records rather than from these descriptions.
 \section{Method}
-For each block, the proposed policy predicts expected extraction time as a fraction of the horizon from eleven non-constant features: normalized block value, depth fraction, two normalized predecessor-recurrence proxies, grade, radial position, ultimate-pit membership, discount rate, two capacity fractions, and normalized horizon. The serialized feature keys retain the word \texttt{cone}, but these linear-time recurrences over immediate predecessors are not exact transitive-cone statistics; shared ancestors may be counted along multiple paths. Five multilayer perceptrons with hidden widths 48 and 24 use fixed, distinct initialization seeds, training-only standardization, explicit Adam updates, and ten epochs \cite{kingma}. Inference averages the five outputs. A shared precedence-safe TopoSort constructor turns predictions into a feasible schedule without solving a linear program for those predictions.
-
-The hypothesis is that a policy trained on synthetic deposits separated by deposit seed can preserve useful schedule value on unseen deposits while avoiding the LP work of exact ExTS. Evaluation compares the learned schedule with exact ExTS on the same deposit and scenario; it also reports greedy wins, rank correlation, mean absolute target error, per-archetype failures, and minima. This is a schedule-quality hypothesis, not a claim that a neural model improves the global optimum. Failure is retained as an outcome.
+\input{methods.tex}
 \section{Experiments}
 Synthetic twins are generated by a deterministic, versioned pipeline. Four archetypes represent porphyry, vein, layered, and core-halo geometries. Training spans twelve deposit seeds; six disjoint seeds are used for holdout evaluation; a third disjoint set supports guard validation. Each deposit is crossed with nine scenarios spanning six to twelve periods, discount rates of five to twenty percent, and independently varied capacity fractions. Scenarios from one deposit never cross a split boundary. Two grid sizes, $12\times12\times7$ and $24\times24\times12$, test transfer across scale. The expected-time study contains 3,421,440 training rows and 1,710,720 held-out rows.
 
 Synthetic data permit controlled and repeatable experiments; they are not conditional simulations, drillhole data, or a substitute for a mine-specific geological model. The product also includes declared and published MineLib cases. MineLib source files remain external under their academic-download terms. Only derived results and permitted provenance are committed. A missing licensed source is unscored.
+
+The seed and scale design is summarized in Table~\ref{tab:study-splits}. Row counts describe generated block-feature examples; the independent grouping unit is the deposit seed. Reporting both quantities prevents a large row count from being mistaken for thousands of independent geological realizations. Each archetype and scenario appears under seed-disjoint partitions so the comparison tests transfer to held-out deposits from the generator's declared family, not to arbitrary field geology. The two grid sizes provide a controlled scale contrast but do not span the full range of operating mine models.
+
+\begin{table}[htbp]
+\centering
+\caption{Seed-disjoint generated study partitions, row counts, graph scales, and their distinct roles in model fitting and evaluation.}
+\label{tab:study-splits}
+\begin{tabular}{p{0.20\textwidth}p{0.22\textwidth}p{0.20\textwidth}p{0.28\textwidth}}
+\toprule
+Partition & Deposit seeds & Rows or cases & Purpose \\
+\midrule
+Training & 12 fixed seeds & 3,421,440 rows & Fit five members and train-only normalization \\
+Selection holdout & 6 disjoint seeds & 1,710,720 rows; 432 cases & Compare schedule values and characterize transfer within the generator \\
+Guard selection & 6 disjoint seeds & 432 cases & Select the declared archetype warning threshold \\
+Independent guard evaluation & 6 disjoint seeds & 432 cases & Evaluate the frozen warning rule without refitting \\
+Graph sizes & Two dimensions & $12\times12\times7$, $24\times24\times12$ & Measure two controlled scales \\
+\bottomrule
+\end{tabular}
+\end{table}
 \subsection{Evaluation protocol}
 Every case is validated against dimensions, units, sentinel values, precedence, and capacities before methods run. Feasible schedules are independently checked for precedence and per-period resource use. The pipeline records objectives, bounds, gaps, runtimes, method status, controls, and provenance in versioned traces and manifests. The browser TypeScript implementation is checked against Python fixtures; the five-member ONNX artifact is checked against its Python forward pass.
 
@@ -97,6 +116,21 @@ For a feasible value $V$ and a certified upper bound $U>0$, the reported bound g
 The experimental unit for the learned ordering study is a generated deposit-seed/scenario/size combination. All derived rows from a deposit remain in the same partition. Training, selection holdout, and third-split validation use disjoint seed sets. Paired ratios compare two schedules on the same scenario, so geology and capacity variation do not become between-method confounders. The six-seed held-out evaluation describes transfer across the generator's four archetypes; it does not estimate performance on a population of operating mines. The independent third split is reserved for evaluating the fixed warning rule and is not used to select its threshold.
 
 The primary measure is $V_{\mathrm{learned}}/V_{\mathrm{ExTS}}$ on paired held-out cases. A ratio below 0.90 is a descriptive failure threshold for this study, not a universal operational criterion. Spearman correlation diagnoses ranking; mean absolute error diagnoses target prediction; the greedy win rate provides a weaker comparator. These quantities answer different questions. The held-out set selects no features, epochs, or thresholds. The disjoint guard set is not used to train the model.
+
+The unit of uncertainty analysis must match the split design. Rows from one deposit share a graph generator, geometric profile, and seed, so an interval that resamples individual rows would be artificially narrow. For a summary interval, first compute a paired schedule ratio per case, aggregate cases within each deposit seed according to the declared weighting, and resample deposit seeds. If a reported interval is unavailable or unstable because only six holdout seeds are present, the manuscript gives the descriptive distribution and states the limited number of independent groups. It does not imply a precise population parameter from the generated suite.
+
+The ranking statistic is defined on paired block predictions and is calculated within each evaluation split:
+\begin{equation}
+ \rho_s=\operatorname{corr}\left(\operatorname{rank}(\hat\tau_i),\operatorname{rank}(\tau_i)\right).
+\end{equation}
+It diagnoses whether earlier predicted extraction times tend to agree with the relaxation target ordering. It is not a measure of discounted schedule quality, since the final constructor must resolve precedence and capacity interactions. The schedule ratio and ranking statistic are therefore reported together with prediction error and feasibility, rather than collapsed into one score.
+
+The descriptive failure count uses the predeclared ratio threshold:
+\begin{equation}
+ F_c=\mathbf 1\left\{r_c<0.90\right\},\qquad
+ \widehat p_{fail}=\frac{1}{|\mathcal C|}\sum_{c\in\mathcal C}F_c.
+\end{equation}
+This threshold is an analysis convention for the current experiment, not an operational acceptance limit. The failure share is accompanied by minimum and quantile ratios and family-specific counts, since two experiments with the same share can have different severity and concentration. No case is removed because its ratio is low, and the third-split warning evaluation remains separate from this holdout summary.
 \section{Results}
 The committed model report gives expected-time held-out Spearman correlation 0.8137 and mean absolute target error 0.0454. The median learned-to-exact-ExTS schedule ratio is 0.9405, the mean 0.9401, the tenth percentile 0.8364, and the minimum 0.7101. The learned method beats greedy in 92.13 percent of cases. The failure rate below 0.90 is 33.56 percent. The worst observed case is a vein deposit at the larger grid size.
 
@@ -104,12 +138,36 @@ On the six-seed selection holdout, an archetype warning had precision 0.7407 and
 
 The aggregate model report summarizes these measurements, while case-level traces and manifests hold the underlying results. Cases whose licensed input is unavailable are reported as unscored. Changes to methods, models, or data require a new experiment and refreshed analysis.
 \input{generated_results.tex}
+\input{validation.tex}
 \section{Discussion}
 The synthetic generator is not a geological simulator conditioned on drilling. The split supports transfer among its generated deposit families, not generalization to arbitrary mines. The classifier uses archetype information that may not be available for a real deposit. Small benchmark cases do not determine large-case computational cost. The expected-time prediction is not a bound, and its schedule is not a global optimum. The bound surrogate is visualization-only and cannot replace the exact bound at the selected point. Restricted neighborhood search and re-planning are heuristics. Re-planning uses one policy fixed before each draw and reports a lower bound on EVPI; it does not solve a two-stage stochastic program.
+The strongest current evidence is therefore comparative and conditional. The expected-time policy often produces a schedule close to exact expected-time ordering on the synthetic holdout, but its low tail remains material and its warning rule misses failures. This is not a reason to discard the result: the measured shortfall identifies the cases and features that a next study must explain. It is also not a basis for making an unconditional performance claim. A policy that performs well on three of four generated families can still fail on the fourth, and the aggregate median conceals that variation unless it is read with archetype and per-case results.
+
+The same discipline applies to method comparisons. A solver-based method may return a stronger feasible plan because it uses more computation or a richer local model. Runtime and proof status must accompany its objective, and a candidate is not ranked against a different formulation's bound. The application makes this distinction visible through case and method selection, while the traces preserve the underlying numbers. The comparison is useful to a researcher studying scheduling choices; it does not determine an operating plan without a site-specific model, engineering constraints, and independent professional review.
+
+The data pipeline, browser replay, and manuscripts form one evidence path with different responsibilities. The pipeline computes the case results, the contracts bind inputs to outputs, and the browser presents those committed results plus selected synthetic interactions. The manuscripts interpret the same evidence and record its assumptions. Changes to any one layer require the corresponding downstream checks: a new model can invalidate result tables; a changed schema can alter what the interface reads; and a new method changes the experiment and its publication. These dependencies explain why a stable web build alone cannot release a changed scientific result.
+
+\section{Limitations and threats to validity}
+\label{sec:limitations}
+The primary limitation is the relationship between the synthetic generator and real geological models. The generator creates controlled deposits with declared geometric families, grades, values, precedence graphs, capacities, discount rates, and horizons. It does not condition those variables on drillhole data, estimation uncertainty, geometallurgical domains, or mine-specific operating rules. Seed-disjoint evaluation limits leakage across generated deposits, but it tests generalization within this generator. The two MineLib results add independent benchmark context, yet two scored cases cannot estimate a distribution of performance across mines. Results for Newman1 and KD remain separate from the synthetic summary.
+
+The objective and constraints are also a deliberate abstraction. The fixed-destination CPIT model omits the operational decisions stated in the problem boundaries, including full stockpile inventory, reclaim and rehandle, blending recourse, fleet assignment, and uncertainty-aware production execution. The destination-choice extension covers a different but still bounded formulation; it does not add those omitted processes. A feasible schedule in the encoded model is not a field-ready production plan. Input quality, geological confidence, equipment availability, safety rules, precedence conventions, and downstream plant behavior can all change the set of acceptable decisions.
+
+The learned ordering result is sensitive to feature availability and experimental design. The model uses an archetype label for the warning study, and that label may not exist for a new deposit. The warning fails the independently evaluated thresholds and remains unavailable. The regression target is derived from a relaxation rather than an observed field extraction time. The model can therefore learn to approximate the generator's target while missing economics that matter to real scheduling. The holdout comprises six deposit seeds per evaluation partition; scenarios and grid sizes increase case coverage but do not increase the count of independent deposits. Intervals must respect the seed grouping and should be interpreted cautiously at this sample size.
+
+Solver comparisons carry computational limits. A windowed MILP or neighborhood re-solve is affected by candidate selection, solver limits, and termination. A feasible incumbent is a candidate; an optimal status applies to the encoded local problem. Re-planning evaluates a finite scenario catalogue and restricted recourse neighborhoods, so its reported value is only a lower bound on the ideal perfect-information value under the stated design. Upper bounds are valid only for their declared formulation. The report avoids transferring an exactness claim from one method's subproblem to the full scheduling problem.
+
+Finally, the current manuscript evidence package is still being completed. The report values and figures are generated from committed artifacts and compile successfully, but the measured content floors, complete bibliography, final ablations, independent manuscript review, and genuine publication records remain outstanding. The current results must not be described as a completed publication or as a deployed 0.11 release. This limitation concerns the readiness of the evidence package; it does not erase the existing numerical results or the negative guard finding. The next version must update the title and abstract from the final rebake rather than carry forward claims from this candidate.
 \section{Reproducibility and data availability}
 Source code, automated validations, model files, derived traces, notebooks, and data contracts are maintained at \href{https://github.com/fsantibanezleal/CAOS_PhaseFlow}{CAOS PhaseFlow}. Python and TypeScript parity fixtures specify the supported computational paths. Synthetic data can be regenerated from the repository. MineLib block files are not redistributed; users must obtain them under source terms and configure an external data directory. Each trace records method versions, scenario, case identity, controls, and result values.
+The synthetic experiment fixes its generator revision, family settings, seed partitions, capacity scenarios, grid dimensions, model architecture, training normalization, and learner seeds in versioned configuration and study reports. A rerun must start from the same repository revision and preserve the partition assignments. The expected-time model can then be retrained from the declared source package and compared with the stored report; the result builder regenerates figures and tables from the trace and study documents. Its hash manifest records the source inputs, output files, and plotting dependency versions, allowing a reader to detect a changed artifact rather than treating a previously generated figure as current.
+
+The case index points to manifests and traces; the catalog specifies how each document is produced and consumed; readiness binds the catalog digest and product version to the files on disk. A complete reproduction therefore checks the chain rather than opening one JSON file. Licensed block inputs remain in a configured external data root and are not copied into a public archive. Readers without those inputs can inspect the permitted derived results and rerun the synthetic study, but they cannot reconstruct restricted per-block benchmark data from the repository. This is an explicit access boundary rather than an implicit data-cleaning step.
 \section{Conclusions}
 PhaseFlow places feasible construction heuristics, published scheduling methods, mathematical bounds, and a learned policy within one traceable benchmark. The learned policy produces useful schedules on many held-out generated cases, but its lower tail and vein failures preclude a general performance claim. Exact ExTS remains the nearest schedule comparator, and certified bounds remain the reference for optimality gaps. The policy is a fast candidate generator for cases where its assumptions hold; it does not replace mathematical certificates or mine-specific validation.
+The report's main conclusion is consequently qualified: a learned expected-time ranker can generate feasible candidate schedules with competitive value on much of this controlled test suite, while substantial and family-concentrated losses remain. The fixed warning rule does not reliably identify those losses and must remain unavailable. The method's inference advantage does not remove the cost of training, the need for exact evaluation, or the limits of synthetic-to-field transfer.
+
+PhaseFlow's value is its explicit separation of formulation, candidate, certificate, evidence source, and validation outcome. That structure makes negative findings interpretable and gives future experiments a reproducible starting point. A completed release requires the remaining content and publication gates, current result-derived statements, independent review, and a new governed promotion only after all evidence matches the release candidate.
 \begin{thebibliography}{9}
 \bibitem{chicoisne} J. Chicoisne, D. Espinoza, M. Goycoolea, E. Moreno, and E. Rubio, ``A new algorithm for the open-pit mine production scheduling problem,'' \emph{Operations Research}, 60(3), 517--528, 2012. doi:10.1287/opre.1120.1050.
 \bibitem{gershon} M. Gershon, ``Heuristic approaches for mine planning and production scheduling,'' \emph{International Journal of Mining and Geological Engineering}, 5, 1--13, 1987. doi:10.1007/BF01553529.

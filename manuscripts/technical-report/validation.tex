@@ -1,0 +1,70 @@
+\section{Validation}
+\label{sec:validation}
+Validation checks the data, the returned schedule, the numerical implementation, the serialized evidence, and the reader-facing application as separate layers. Passing a structural schema check cannot establish scientific validity; a high objective cannot establish feasibility; a local compile cannot establish that the report's values match the traces. Table~\ref{tab:validation-paths} lists the independent evidence paths used for those different claims. This separation is particularly important for learned ordering because the model can produce finite predictions even when a feature was assembled incorrectly or a schedule decoder violates capacity.
+
+For a schedule $p$ assigning each block to a period or leaving it unmined, define the feasibility indicator as
+\begin{equation}
+ I_{feas}(p)=\mathbf 1\left\{\text{unique assignments, precedence, horizon, and every resource capacity hold}\right\}.
+\end{equation}
+The independent validator reconstructs these conditions from the emitted assignment and original case inputs. It does not reuse the priority rule, policy mask, solver objective, or precomputed figure. A result enters a comparison only if this check passes and its value is recomputed with the declared discount factors. If a solver returns no feasible incumbent, the method row retains its failure status rather than supplying a score from another method.
+
+The normalized bound gap uses only a bound for the same case formulation:
+\begin{equation}
+ g(p,U)=100\frac{U-V(p)}{U},\qquad U>0.
+\end{equation}
+This quantity is meaningful only if $U$ is a valid upper bound and $V(p)$ is feasible under the same model. Destination-choice candidates are not divided by a fixed-destination CPIT bound. The report retains the bound route, solver completion state, and any unavailable proof detail with the numerical gap. When two bound routes are present, agreement is checked against declared tolerances; disagreement triggers inspection rather than an automatic choice of the more favorable value.
+
+Paired learned schedule value is summarized as
+\begin{equation}
+ r_c=\frac{V_{learned,c}}{V_{ExTS,c}},\qquad c\in\mathcal C_{holdout},
+\end{equation}
+while absolute prediction error is
+\begin{equation}
+ MAE=\frac{1}{n}\sum_{i=1}^{n}|\hat\tau_i-\tau_i|.
+\end{equation}
+Rank association is computed on the same held-out block pairs using the usual correlation of rank values, not on schedule objectives. These measures answer different questions and are reported separately. For clustered uncertainty, if $m$ held-out deposit seeds produce seed-level summaries $q_1,\ldots,q_m$, a percentile interval is
+\begin{equation}
+ CI_{0.95}=\left[Q_{0.025}(q^*),Q_{0.975}(q^*)\right],
+\end{equation}
+where $q^*$ is obtained by resampling deposit seeds with replacement. The interval must state the seed as the resampling unit and the number of independent seeds; it cannot be computed by treating every block row as independent.
+
+Learned schedule value is evaluated on paired cases. For case $c$, $r_c=V_{learned,c}/V_{ExTS,c}$ compares two feasible plans for the same scenario, and the distribution is reported rather than only the mean. Prediction error is separately computed as $MAE=(1/n)\sum_i|\hat\tau_i-\tau_i|$ over held-out blocks, while Spearman correlation measures rank agreement. These quantities measure target fit and ordering behavior; neither proves NPV quality. The 432-case generated holdout has a median ratio of 0.9405 and a minimum of 0.7101, which is why its lower tail remains central to the conclusion.
+
+For the fixed warning rule, $TP$, $FP$, and $FN$ count correctly flagged failures, false warnings, and missed failures. Precision and recall are
+\begin{equation}
+ P=\frac{TP}{TP+FP},\qquad R=\frac{TP}{TP+FN},\qquad FNR=\frac{FN}{TP+FN}.
+\end{equation}
+On the independent split, $P=0.5278$, $R=0.4286$, and the worst unflagged schedule ratio is 0.7322; each misses its frozen acceptance threshold. Accordingly, no validation output turns that warning into an active safety filter. The negative result is retained and is distinct from the successful schema, parity, and browser checks.
+
+The serialized neural calculation has a separate parity condition. On a fixed fixture matrix $X$, its maximum absolute difference is $e_{max}=\max_{i,j}|Y^{Python}_{ij}-Y^{ONNX}_{ij}|$. The recorded maximum is $2.53\times10^{-7}$, below the configured parity tolerance. This verifies agreement between two implementations on their tested inputs; it does not show the model is accurate on new deposits. Similarly, fresh-kernel notebook execution proves that the lessons run from their declared environment and inputs, while the notebook content review determines whether they explain the method and interpret its results.
+
+Resource use can also be normalized to its period capacity for display, provided the numerator and denominator share units:
+\begin{equation}
+ u_{rt}=\frac{\sum_{b\in S_t}a_{rb}}{c_{rt}},\qquad c_{rt}>0.
+\end{equation}
+The utilization fraction helps locate tight periods but does not replace the absolute capacity check. Numerical parity uses a maximum absolute difference,
+\begin{equation}
+ e_{max}=\max_{i,j}|Y^{Python}_{ij}-Y^{ONNX}_{ij}|,
+\end{equation}
+and the acceptance decision compares it with a fixed tolerance $\epsilon_{parity}$. A small $e_{max}$ verifies consistency between the two evaluated paths; it does not certify that either path has a scientifically adequate target or a useful ranking.
+
+The 0.11 candidate's validation record includes the all-case artifact and contract checks for thirteen registered cases, readiness and SDD checks, 30 English and Spanish notebook executions, the focused application state gate, the shared-shell state gate, and the six-size Profile-and-plan height regression. Those gates protect software behavior and artifact consistency. The manuscript-depth and publication checks remain separate: the technical report must meet its full content bar, each proposed method must have a compliant manuscript, and each declared publication record must resolve to its actual archived files and version. A valid build or browser replay cannot substitute for those publication and scientific-content conditions.
+
+\begin{table}[htbp]
+\centering
+\caption{Independent validation paths, their evidence objects, and the specific claim each check can and cannot establish.}
+\label{tab:validation-paths}
+\begin{tabular}{p{0.22\textwidth}p{0.33\textwidth}p{0.37\textwidth}}
+\toprule
+Validation layer & Evidence & Claim supported \\
+\midrule
+Input contract & Schemas, case manifests, dimensions, sentinels & Inputs match declared structure and provenance \\
+Schedule feasibility & Independent precedence and capacity evaluator & Returned assignment obeys encoded hard constraints \\
+Objective and bound & Recomputed value and model-matched certificate & Gap is paired within its declared formulation \\
+Model parity & Python-to-ONNX fixed-fixture comparison & Exported inference matches the tested reference calculation \\
+Data and browser & Artifact checks, contract fixtures, application state gate & Committed replay consumes declared evidence correctly \\
+Teaching and content & Fresh kernels plus depth and voice checks & Lessons execute and manuscript prose meets measured rules \\
+Release publication & Repository record, version, files, and product declaration & Publication identity and release version are verifiable \\
+\bottomrule
+\end{tabular}
+\end{table}
