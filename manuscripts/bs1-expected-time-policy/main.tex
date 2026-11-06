@@ -1,6 +1,6 @@
 \documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath,amssymb,booktabs,array}
+\usepackage{amsmath,amssymb,booktabs,array,graphicx,longtable}
 \usepackage[hidelinks]{hyperref}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -18,7 +18,7 @@ Concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptd
 Not peer reviewed. Source code, data and computational records:\\
 \href{https://\docrepo}{\texttt{\docrepo}}
 }}\end{center}\vspace{4pt}}
-\title{An Expected-Time Ensemble for Feasible Open-Pit Block Scheduling}
+\title{Expected-Time Approximation for Open-Pit Scheduling: Deposit-Disjoint Synthetic Results and Two MineLib Cases}
 \author{Felipe Santibáñez-Leal\\ORCID: 0000-0002-0150-3246}
 \date{}
 \begin{document}
@@ -98,6 +98,7 @@ The median ratio indicates that the learned ordering often preserves most of the
 The warning rule flags synthetic vein cases. On the selected holdout, its measured precision is 0.7407 and recall 0.5517. The rule therefore misses a substantial fraction of failures and also flags some cases above the threshold. Its archetype input may be unavailable for real deposits; a missing classification must not be interpreted as safety.
 
 The two MineLib cases with exact expected-time schedules yield ratios 0.9989 for Newman1 and 0.8987 for KD. These are case-specific measurements; two benchmark cases do not characterize transfer across real deposits. MineLib block files remain under their source terms and are not redistributed with the repository.
+\input{generated_results.tex}
 \section{Discussion}
 The median learned-to-exact ratio summarizes a broad distribution: one third of the generated evaluation cases fall below 0.90, and the minimum is 0.7101. The policy can therefore produce a useful fast candidate on many generated cases while still losing material value on a substantial lower tail. The warning rule does not recover that tail reliably and remains unavailable for live plans.
 

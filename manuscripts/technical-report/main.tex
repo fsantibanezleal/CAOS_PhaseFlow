@@ -1,6 +1,6 @@
 \documentclass[11pt]{article}
 \usepackage[margin=1in]{geometry}
-\usepackage{amsmath,amssymb,array,booktabs,longtable}
+\usepackage{amsmath,amssymb,array,booktabs,longtable,graphicx}
 \usepackage[hidelinks]{hyperref}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -18,7 +18,7 @@ Concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptd
 Not peer reviewed. Source code, data and computational records:\\
 \href{https://\docrepo}{\texttt{\docrepo}}
 }}\end{center}\vspace{4pt}}
-\title{PhaseFlow: Methods and Evidence for Multi-Period Open-Pit Production Scheduling}
+\title{PhaseFlow: Methods and Results for Multi-Period Open-Pit Production Scheduling}
 \author{Felipe Santibáñez-Leal\\ORCID: 0000-0002-0150-3246}
 \date{}
 \begin{document}
@@ -102,6 +102,7 @@ The committed model report gives expected-time held-out Spearman correlation 0.8
 On the six-seed selection holdout, an archetype warning had precision 0.7407 and recall 0.5517. On the independent six-seed evaluation set, precision was 0.5278, recall 0.4286, and the worst unflagged ratio was 0.7322. The warning misses a substantial fraction of failures and fails the predeclared criteria for live use; the application therefore does not apply it to live plans. Its synthetic archetype input also may not be available for a real deposit. On the two real held-out cases, learned-to-exact ratios are 0.9989 for Newman1 and 0.8987 for KD. Their source status and fixed-destination CPIT interpretation remain separate from the synthetic holdout.
 
 The aggregate model report summarizes these measurements, while case-level traces and manifests hold the underlying results. Cases whose licensed input is unavailable are reported as unscored. Changes to methods, models, or data require a new experiment and refreshed analysis.
+\input{generated_results.tex}
 \section{Discussion}
 The synthetic generator is not a geological simulator conditioned on drilling. The split supports transfer among its generated deposit families, not generalization to arbitrary mines. The classifier uses archetype information that may not be available for a real deposit. Small benchmark cases do not determine large-case computational cost. The expected-time prediction is not a bound, and its schedule is not a global optimum. The bound surrogate is visualization-only and cannot replace the exact bound at the selected point. Restricted neighborhood search and re-planning are heuristics. Re-planning uses one policy fixed before each draw and reports a lower bound on EVPI; it does not solve a two-stage stochastic program.
 \section{Reproducibility and data availability}
