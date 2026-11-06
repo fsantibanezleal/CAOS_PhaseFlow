@@ -35,6 +35,19 @@ def configured_models() -> Path:
     from model_paths import external_model_root
     return external_model_root()
 
+
+def model_document(name: str) -> Path:
+    """Read staged model receipts, with committed standalone diagnostics as explicit fallback."""
+    candidate = MODELS / name
+    if candidate.is_file():
+        return candidate
+    # Preview timing is a dated browser benchmark, not a trained model receipt. Keep its committed
+    # source available while model-training artifacts are read from the external candidate bundle.
+    committed_diagnostic = ROOT / "models" / name
+    if name == "learned-preview-timing.json" and committed_diagnostic.is_file():
+        return committed_diagnostic
+    return candidate
+
 #: The order the argument is made in, and the order every case table follows.
 FAMILY_ORDER = ("published", "declared", "deposit", "regime", "control")
 DESTINATION = ("destination-toposort", "destination-sliding-window", "destination-local-search")
@@ -429,7 +442,7 @@ def k_learned_metrics(_ms, _arg, _here):
 
 
 def k_learned_preview(_ms, _arg, _here):
-    t = json.loads((MODELS / "learned-preview-timing.json").read_text(encoding="utf-8"))
+    t = json.loads(model_document("learned-preview-timing.json").read_text(encoding="utf-8"))
     rows = []
     for r in t["rows"]:
         rows.append([f"`{r['case']}`", f"{r['nBlocks']:,}", f"{r['previewMs']:,} ms", f"{r['exactMs']:,} ms",

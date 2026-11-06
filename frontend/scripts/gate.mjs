@@ -4,7 +4,7 @@
 //   npm run gate -- --sizes 1280x800 --themes light   (a quick pass while working)
 //   npm run gate -- --url https://<domain>           (the deployed origin, after a deploy)
 //
-// The App is what product.json says it is (WB-014, WB-015; shell 0.19.12):
+// The App is what product.json says it is (WB-014, WB-015; shell 0.20.0):
 //   "app": "workbench" (the default)  the case workbench: the gate measures it as such.
 //   "app": "surface"                  a hub, an explorer or a console (SurfacePage): the gate is told with `--workbench ''` and measures
 //                                     the App route's views, G18 walking every view that offers the Focus control.
@@ -103,7 +103,18 @@ if (problems.length) {
   for (const p of problems) console.error(`  - ${p}`);
   process.exit(1);
 }
-const redirects = product.focus === false ? [] : redirectProblems(product, process.argv.slice(2));
+const extra = process.argv.slice(2);
+if (extra.includes('--require-showcase')) {
+  const storyRoutes = ['/story/deposit', '/story/method', '/story/constraints', '/story/compare'];
+  const routeAt = extra.indexOf('--routes');
+  const declaredRoutes = routeAt >= 0
+    ? extra[routeAt + 1].split(',').map((route) => route.trim()).filter(Boolean)
+    // The shell runner appends a slash to every measured route when checking trailing-slash
+    // handling. A declared `/` therefore becomes `//`; `/app` is the canonical workbench route.
+    : ['/app', '/introduction', '/methodology', '/implementation', '/experiments', '/benchmark'];
+  extra.splice(...(routeAt >= 0 ? [routeAt, 2] : [extra.length, 0]), '--routes', [...new Set([...declaredRoutes, ...storyRoutes])].join(','));
+}
+const redirects = product.focus === false ? [] : redirectProblems(product, extra);
 if (redirects.length) {
   console.error('gate: an argument redirects what the Focus check measures, so no gate runs:');
   for (const p of redirects) console.error(`  - ${p}`);
@@ -114,7 +125,7 @@ const deploy = existsSync(targetPath) ? readFileSync(targetPath, 'utf8').trim() 
 const require = createRequire(import.meta.url);
 const bin = join(dirname(require.resolve('@fasl-work/caos-app-shell/package.json')), 'bin', 'caos-shell-gate.mjs');
 const args = gateArguments({
-  doc: product, deploy, extra: process.argv.slice(2), dist: join(here, '..', 'dist'), base: process.env.VITE_BASE, out: join(here, '..', 'gate-output'),
+  doc: product, deploy, extra, dist: join(here, '..', 'dist'), base: process.env.VITE_BASE, out: join(here, '..', 'gate-output'),
 });
 const run = spawnSync(process.execPath, [bin, ...args], { stdio: 'inherit' });
 process.exit(run.status ?? 1);

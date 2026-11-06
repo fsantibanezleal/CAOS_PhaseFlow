@@ -12,6 +12,7 @@ import product from '../../product.json';
 import { architecture } from './architecture/index.ts';
 import { APP_VERSION, loadIndex, loadManifest, loadPublicJSON } from './lib/artifacts.ts';
 const Tool = lazy(() => import('./pages/Tool.tsx'));
+const Story = lazy(() => import('./pages/Story.tsx'));
 const Focus = lazy(() => import('./pages/Focus.tsx'));
 const Introduction = lazy(() => import('./pages/Introduction.tsx'));
 const Methodology = lazy(() => import('./pages/Methodology.tsx'));
@@ -24,6 +25,7 @@ applyTheme(readTheme());
 const config: ShellConfig = {
   product: { name: product.name, mark: <CalendarClock size={18} aria-hidden="true" /> },
   routes: STANDARD_ROUTES,
+  immersiveRoutes: ['/story'],
   links: { github: product.repo },
   version: APP_VERSION,
   license: { en: `${product.license} license`, es: `Licencia ${product.license}` },
@@ -74,6 +76,7 @@ function renderApp() {
                 <Routes>
                   <Route path="/" element={<Landing />} />
                   <Route path="/app" element={<Tool />} />
+                  <Route path="/story/:step" element={<Story />} />
                   <Route path="/introduction" element={<Introduction />} />
                   <Route path="/methodology" element={<Methodology />} />
                   <Route path="/implementation" element={<Implementation />} />

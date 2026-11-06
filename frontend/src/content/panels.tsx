@@ -202,7 +202,7 @@ export function MethodCasesPanel({ lang, method, showNotes = false }: { lang: La
                   <td className="num">{fmtMoney(r.bound)}</td>
                   <td className="num">{`${dec(r.gap_pct, 2)}%`}</td>
                   <td className="num">{fmtDuration(r.runtime_ms)}</td>
-                  {showNotes && <td style={{ whiteSpace: 'normal', minWidth: '18rem' }}><EngineText text={r.notes} /></td>}
+                  {showNotes && <td style={{ whiteSpace: 'normal', minWidth: '18rem' }}><EngineText text={r.notes} lang={lang} /></td>}
                 </>
               ) : (
                 <td colSpan={showNotes ? 5 : 4} className="pfd-muted" style={{ whiteSpace: 'normal' }}>

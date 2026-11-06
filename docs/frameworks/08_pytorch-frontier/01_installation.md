@@ -3,11 +3,12 @@
 Use a dedicated virtual environment outside the repository and install the explicit CPU requirements:
 
 ```powershell
-./scripts/setup-frontier-training.ps1 -VenvPath E:/_venvs/CAOS_PhaseFlow-frontier
+$venv = Join-Path $env:CAOS_VENVS_ROOT "phaseflow\frontier"
+./scripts/setup-frontier-training.ps1 -VenvPath $venv
 ```
 
 ```bash
-./scripts/setup-frontier-training.sh /path/to/external/venvs/phaseflow-frontier
+./scripts/setup-frontier-training.sh "$CAOS_VENVS_ROOT/phaseflow/frontier"
 ```
 
 Both scripts reject a virtual-environment path inside the checkout. The requirements file pins the CPU build

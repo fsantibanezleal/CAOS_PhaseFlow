@@ -17,6 +17,7 @@ import time
 
 import oreblocks as ob
 from ..core.manifest import COMPARABLE_RUNGS, best_comparable
+from ..core.solver_receipts import reported_node_count
 
 
 def run_controls(instance, results) -> dict:
@@ -166,7 +167,7 @@ def run_ensemble(
                     "backend": item.backend,
                     "status": item.status,
                     "seconds": item.seconds,
-                    "nodes": item.nodes,
+                    "nodes": reported_node_count(item.nodes),
                     "mipGap": item.mip_gap,
                     "incumbentNpv": item.incumbent_npv,
                     "upperBoundNpv": item.upper_bound_npv,

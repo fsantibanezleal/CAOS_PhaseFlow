@@ -138,7 +138,15 @@ def test_adversarial_external_model_root_is_used_for_bake_and_training(
 
     monkeypatch.setattr(workflow, "generation_python", lambda *_: sys.executable)
     monkeypatch.setattr(workflow, "commands", fake_commands)
-    monkeypatch.setattr(workflow, "validate_stage", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        workflow,
+        "validate_stage",
+        lambda _root, _config, stage, _python, _env: {
+            "source": workflow.source_identity(ROOT, config),
+            "files": workflow.payload_hashes(stage, config),
+            "receipt_sha256": None,
+        },
+    )
     config["generation_modules"] = []
     temp_root = tmp_path / "external temporary"
     data_root = tmp_path / "external data"

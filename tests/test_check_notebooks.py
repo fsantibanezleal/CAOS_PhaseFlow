@@ -361,7 +361,7 @@ def test_ci_must_run_the_static_checks_and_never_the_notebooks(repo: Path) -> No
 def test_notebook_pins_are_exact_and_in_the_sdd_table(tmp_path: Path) -> None:
     """notebooks/requirements.txt is read by the technology-matrix guard: an unpinned line, or a pin the SDD does not hold, fails."""
     sandbox = tmp_path / "t"
-    for rel in ("scripts/check_tech_matrix.py", "docs/design/SDD.md", "requirements-precompute.txt", "requirements-dev.txt", "data-pipeline/requirements.txt",
+    for rel in ("scripts/check_tech_matrix.py", "docs/design/SDD.md", "requirements-precompute.txt", "requirements-dev.txt", "requirements-frontier-training.txt", "data-pipeline/requirements.txt",
                 "notebooks/requirements.txt", "frontend/package.json", "frontend/package-lock.json", "requirements-gpu.txt", "requirements-api.txt", "pyproject.toml"):
         if (ROOT / rel).is_file():
             (sandbox / rel).parent.mkdir(parents=True, exist_ok=True)

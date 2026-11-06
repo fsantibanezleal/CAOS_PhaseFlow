@@ -1,0 +1,119 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,array,booktabs,longtable}
+\usepackage[hidelinks]{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\newcommand{\doctype}{Technical report}
+\newcommand{\docversion}{v0.11.000}
+\newcommand{\docdate}{31 October 2026}
+\newcommand{\versiondoi}{10.5281/zenodo.NNNNNNNN}
+\newcommand{\conceptdoi}{10.5281/zenodo.NNNNNNNN}
+\newcommand{\docrepo}{github.com/fsantibanezleal/CAOS\_PhaseFlow}
+\newcommand{\headerblock}{\begin{center}\fbox{\parbox{0.94\textwidth}{\small\raggedright
+\textbf{\doctype}\quad$\cdot$\quad\docversion, \docdate\quad$\cdot$\quad Licence CC BY 4.0\\
+CAOS Research, PhaseFlow open-pit production scheduling\\
+Version DOI \href{https://doi.org/\versiondoi}{\texttt{\versiondoi}}\\[2pt]
+Concept DOI (always latest) \href{https://doi.org/\conceptdoi}{\texttt{\conceptdoi}}\\[2pt]
+Not peer reviewed. Source code, data and computational records:\\
+\href{https://\docrepo}{\texttt{\docrepo}}
+}}\end{center}\vspace{4pt}}
+\title{PhaseFlow: Methods and Evidence for Multi-Period Open-Pit Production Scheduling}
+\author{Felipe Santibáñez-Leal\\ORCID: 0000-0002-0150-3246}
+\date{}
+\begin{document}
+\maketitle
+\headerblock
+\begin{abstract}
+PhaseFlow is a research workbench for constrained pit-limit production scheduling (CPIT), destination-choice scheduling, and controlled studies of geological uncertainty. It compares feasible construction heuristics, published scheduling methods, mathematical bounds, and a learned ordering policy using machine-readable results. The policy predicts expected extraction-time fractions from block and scenario features with a five-member ensemble trained and evaluated on disjoint deposit seeds, then constructs a schedule with a precedence-safe topological ordering. In the current synthetic holdout, its median schedule value is 0.9405 of exact expected-time ordering; the minimum is 0.7101, and 33.56 percent of cases fall below 0.90. It beats the greedy comparator in 92.13 percent of cases. Performance varies across deposits, and these generated cases do not establish field-wide generalization. MineLib cases are evaluated separately. Learned estimates do not certify bounds.
+\end{abstract}
+\noindent\textbf{Keywords:} open-pit mine planning, production scheduling, CPIT, expected extraction time, learned heuristic, reproducible computation
+\section{Introduction}
+A block model gives each block a value, tonnage, grade, and slope-precedence relations. CPIT assigns selected blocks to $T$ periods, respects precedence, and stays within mining and processing capacities in each period while maximizing discounted value. Let $x_{bt}$ indicate that block $b$ has been extracted by the end of period $t$. Precedence requires $x_{bt}\leq x_{at}$ whenever $a$ precedes $b$. Resource limits constrain increments $x_{bt}-x_{b,t-1}$. The ultimate pit is the maximum-value closure under slope constraints; it bounds the blocks a schedule needs to consider.
+
+The distinction between a pit limit and a schedule is material. Let $B$ be the block set, $A$ the immediate precedence arcs, $R$ the resources, $a_{rb}$ the amount of resource $r$ consumed by extracting block $b$, $c_{rt}$ its availability in period $t$, $p_b$ the value under a destination fixed before scheduling, and $\eta$ the discount rate. Let $p_{bt}$ be the present-valued coefficient for extracting $b$ in period $t$ under the case's declared discount convention; the usual convention is $p_{bt}=p_b/(1+\eta)^t$. With $x_{b0}=0$, the cumulative CPIT formulation is
+\begin{align}
+ \max\quad & \sum_{b\in B}\sum_{t=1}^{T}p_{bt}(x_{bt}-x_{b,t-1}) \\
+ \text{s.t.}\quad & \sum_{b\in B}a_{rb}(x_{bt}-x_{b,t-1})\leq c_{rt} && r\in R,\ t=1,\ldots,T,\\
+ &x_{bt}\leq x_{at} && (a,b)\in A,\ t=1,\ldots,T,\\
+ &x_{bt}\leq x_{b,t+1} && b\in B,\ t=1,\ldots,T-1,\\
+ &x_{bt}\in\{0,1\} && b\in B,\ t=1,\ldots,T.
+\end{align}
+The increment is the material extracted in period $t$; the cumulative variable is the state at the end of that period. Both the per-period precedence inequalities and monotonicity are required: omitting either can yield numerically plausible but physically invalid schedules. The full matrix of resource use is retained, so mining and processing capacity are checked separately rather than combined into one scalar limit.
+
+In the destination-choice problem, each block may be assigned to one of several destinations and the value and resource coefficients depend on that assignment. This is a different feasible region from fixed-destination CPIT. PhaseFlow therefore reports destination schedules against the destination-choice relaxation and does not score them with a CPIT bound. The distinction follows the MineLib problem definitions and the published OPBSP formulation; a destination decision is not merely a change in accounting. Stockpile inventory, rehandle, blending recourse, and equipment assignment are outside the current model.
+
+PhaseFlow focuses on algorithms and evidence around this decision. The static web application replays committed artifacts and re-solves selected synthetic cases in the browser. It is a research workbench, not a production mine-planning system. It does not claim full stochastic optimization, stockpile inventory, blending recourse, equipment assignment, or operational reconciliation.
+\section{Related work}
+Bench-by-bench extraction, nested-shell sequences, and value-weighted TopoSort provide constructive schedules. The successor-cone weight introduced by Gershon orders a block using the value it unlocks; expected-time TopoSort (ExTS) instead uses extraction times from a fractional relaxation \cite{gershon,chicoisne,newman}. TopoSort selects an eligible block and assigns it to the earliest period with enough resource capacity. Feasibility follows from construction when the input satisfies the scheduling constraints, while the ordering determines economic quality.
+
+The comparisons also include restricted C-PIT[D] neighborhood search, sliding-window mixed-integer look-ahead, destination-choice formulations, and deterministic scenario re-planning \cite{blom,newman}. Each method is interpreted under its published problem definition. Comparisons share resources, discount rate, horizon, and precedence model. Destination schedules are evaluated against the destination-choice bound, outside the fixed-destination CPIT envelope. Restricted local search and re-planning produce feasible candidates; they do not prove global optimality.
+
+The CPIT relaxation provides expected extraction times and certified upper bounds. The critical multiplier method solves resource-specific relaxations; Algorithm 4 combines multiplier runs for two resources. The joint Bienstock--Zuckerberg formulation provides a bound for the joint resource system \cite{bienstock}. A bound is accepted only after dominance checks against every feasible schedule.
+
+These algorithm families answer different questions. An upper bound limits what any feasible schedule can attain under the stated model. A feasible heuristic supplies a lower bound and a concrete extraction plan. The difference between them measures remaining optimization opportunity, not forecast error or operational risk. Bienstock--Zuckerberg is a scalable route to the LP relaxation; it does not produce a tighter mathematical bound than that relaxation. For one resource, the critical-multiplier construction obtains the CPIT relaxation through a sequence of maximum-closure problems. With two resources, Algorithm 4 solves each single-resource relaxation, uses their minimum as a valid upper bound, and keeps the best feasible schedule found from their expected-time orderings. These interpretations follow Chicoisne et al. and Mu\~noz et al.; the two-resource bound is not described as the joint two-resource LP optimum.
+
+The comparison set contains the following implemented schedule constructors and improvement methods. Each feasible result is checked against its own problem's constraints and bound before it enters the trace.
+{\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.25\textwidth}>{\raggedright\arraybackslash}p{0.34\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}}
+\toprule
+\textbf{Method} & \textbf{Construction or search} & \textbf{Interpretation}\\
+\midrule
+\endfirsthead
+\toprule\textbf{Method} & \textbf{Construction or search} & \textbf{Interpretation}\\\midrule
+\endhead
+\texttt{bench-by-bench} & Deliberately simple bench sequence with earliest feasible period assignment. & A transparent construction baseline.\\
+\texttt{nested-shells} & Revenue-factor shells sequenced by shell order. & A common design sequence; it does not solve the period assignment jointly.\\
+\texttt{toposort-greedy} & Precedence-safe ordering by block value. & Greedy schedule baseline.\\
+\texttt{toposort-gershon} & Ordering by the value of the transitive successor cone. & Values blocks for the mining opportunities they unlock.\\
+\texttt{toposort-expected} & Ordering from LP expected extraction times. & Feasible rounding informed by the fractional relaxation.\\
+\texttt{exts-two-resource} & Separate resource relaxations, expected-time schedules, and the best feasible result. & A valid bound from the minimum relaxed objective plus a feasible schedule.\\
+\texttt{sliding-window} & Repeated window MILPs with a closed, LP-guided candidate prefix. & Look-ahead over a restricted portion of the remaining horizon.\\
+\texttt{cpitD-local-search} & Restricted exact C-PIT[D] re-solves around a feasible incumbent. & Neighborhood search; the incumbent remains a feasible floor.\\
+\texttt{learned-\allowbreak expected-\allowbreak time} & Ensemble-predicted extraction times followed by the shared precedence-safe constructor. & A schedule candidate; predictions do not certify a bound.\\
+\texttt{destination-toposort} & Destination choices from the destination model followed by precedence-safe scheduling. & Evaluated against the destination-choice bound.\\
+\texttt{destination-\allowbreak sliding-\allowbreak window} & Destination choices with a restricted-window scheduling improvement. & Destination-model heuristic with a distinct objective and bound.\\
+\texttt{destination-\allowbreak local-\allowbreak search} & Restricted destination-model neighborhood re-solves, lifted from the best feasible CPIT plan. & A feasible destination-choice improvement, not a proof of optimality.\\
+\texttt{min-width} & Capacity-feasible schedule moves that absorb narrow pushbacks. & An operability-oriented candidate, checked against the same bound.\\
+\bottomrule
+\end{longtable}
+}
+Method names are retained in the computational records and notebooks so readers can trace reported values to their implementations. The table summarizes each method’s role; exact bounds, statuses, runtimes, and case-level outcomes come from the per-case records rather than from these descriptions.
+\section{Method}
+For each block, the proposed policy predicts expected extraction time as a fraction of the horizon from eleven non-constant features: normalized block value, depth fraction, two normalized predecessor-recurrence proxies, grade, radial position, ultimate-pit membership, discount rate, two capacity fractions, and normalized horizon. The serialized feature keys retain the word \texttt{cone}, but these linear-time recurrences over immediate predecessors are not exact transitive-cone statistics; shared ancestors may be counted along multiple paths. Five multilayer perceptrons with hidden widths 48 and 24 use fixed, distinct initialization seeds, training-only standardization, explicit Adam updates, and ten epochs \cite{kingma}. Inference averages the five outputs. A shared precedence-safe TopoSort constructor turns predictions into a feasible schedule without solving a linear program for those predictions.
+
+The hypothesis is that a policy trained on synthetic deposits separated by deposit seed can preserve useful schedule value on unseen deposits while avoiding the LP work of exact ExTS. Evaluation compares the learned schedule with exact ExTS on the same deposit and scenario; it also reports greedy wins, rank correlation, mean absolute target error, per-archetype failures, and minima. This is a schedule-quality hypothesis, not a claim that a neural model improves the global optimum. Failure is retained as an outcome.
+\section{Experiments}
+Synthetic twins are generated by a deterministic, versioned pipeline. Four archetypes represent porphyry, vein, layered, and core-halo geometries. Training spans twelve deposit seeds; six disjoint seeds are used for holdout evaluation; a third disjoint set supports guard validation. Each deposit is crossed with nine scenarios spanning six to twelve periods, discount rates of five to twenty percent, and independently varied capacity fractions. Scenarios from one deposit never cross a split boundary. Two grid sizes, $12\times12\times7$ and $24\times24\times12$, test transfer across scale. The expected-time study contains 3,421,440 training rows and 1,710,720 held-out rows.
+
+Synthetic data permit controlled and repeatable experiments; they are not conditional simulations, drillhole data, or a substitute for a mine-specific geological model. The product also includes declared and published MineLib cases. MineLib source files remain external under their academic-download terms. Only derived results and permitted provenance are committed. A missing licensed source is unscored.
+\subsection{Evaluation protocol}
+Every case is validated against dimensions, units, sentinel values, precedence, and capacities before methods run. Feasible schedules are independently checked for precedence and per-period resource use. The pipeline records objectives, bounds, gaps, runtimes, method status, controls, and provenance in versioned traces and manifests. The browser TypeScript implementation is checked against Python fixtures; the five-member ONNX artifact is checked against its Python forward pass.
+
+For a feasible value $V$ and a certified upper bound $U>0$, the reported bound gap is $100(U-V)/U$ percent. It is a distance to the available certificate; it is not automatically the distance to the unknown integer optimum. When a method solves a different destination model, its $V$ and $U$ are paired within that model. External published objectives are shown only when the source problem, scenario, and denominator match; the Newman1 PCPSP/OPBSP reference and the separate CPIT result are therefore kept distinct. Degenerate and negative controls test that the pipeline can recover the maximum closure in the unlimited, undiscounted limit and can reject schedules that violate the declared economics or constraints.
+
+The experimental unit for the learned ordering study is a generated deposit-seed/scenario/size combination. All derived rows from a deposit remain in the same partition. Training, selection holdout, and third-split validation use disjoint seed sets. Paired ratios compare two schedules on the same scenario, so geology and capacity variation do not become between-method confounders. The six-seed held-out evaluation describes transfer across the generator's four archetypes; it does not estimate performance on a population of operating mines. The independent third split is reserved for evaluating the fixed warning rule and is not used to select its threshold.
+
+The primary measure is $V_{\mathrm{learned}}/V_{\mathrm{ExTS}}$ on paired held-out cases. A ratio below 0.90 is a descriptive failure threshold for this study, not a universal operational criterion. Spearman correlation diagnoses ranking; mean absolute error diagnoses target prediction; the greedy win rate provides a weaker comparator. These quantities answer different questions. The held-out set selects no features, epochs, or thresholds. The disjoint guard set is not used to train the model.
+\section{Results}
+The committed model report gives expected-time held-out Spearman correlation 0.8137 and mean absolute target error 0.0454. The median learned-to-exact-ExTS schedule ratio is 0.9405, the mean 0.9401, the tenth percentile 0.8364, and the minimum 0.7101. The learned method beats greedy in 92.13 percent of cases. The failure rate below 0.90 is 33.56 percent. The worst observed case is a vein deposit at the larger grid size.
+
+On the six-seed selection holdout, an archetype warning had precision 0.7407 and recall 0.5517. On the independent six-seed evaluation set, precision was 0.5278, recall 0.4286, and the worst unflagged ratio was 0.7322. The warning misses a substantial fraction of failures and fails the predeclared criteria for live use; the application therefore does not apply it to live plans. Its synthetic archetype input also may not be available for a real deposit. On the two real held-out cases, learned-to-exact ratios are 0.9989 for Newman1 and 0.8987 for KD. Their source status and fixed-destination CPIT interpretation remain separate from the synthetic holdout.
+
+The aggregate model report summarizes these measurements, while case-level traces and manifests hold the underlying results. Cases whose licensed input is unavailable are reported as unscored. Changes to methods, models, or data require a new experiment and refreshed analysis.
+\section{Discussion}
+The synthetic generator is not a geological simulator conditioned on drilling. The split supports transfer among its generated deposit families, not generalization to arbitrary mines. The classifier uses archetype information that may not be available for a real deposit. Small benchmark cases do not determine large-case computational cost. The expected-time prediction is not a bound, and its schedule is not a global optimum. The bound surrogate is visualization-only and cannot replace the exact bound at the selected point. Restricted neighborhood search and re-planning are heuristics. Re-planning uses one policy fixed before each draw and reports a lower bound on EVPI; it does not solve a two-stage stochastic program.
+\section{Reproducibility and data availability}
+Source code, automated validations, model files, derived traces, notebooks, and data contracts are maintained at \href{https://github.com/fsantibanezleal/CAOS_PhaseFlow}{CAOS PhaseFlow}. Python and TypeScript parity fixtures specify the supported computational paths. Synthetic data can be regenerated from the repository. MineLib block files are not redistributed; users must obtain them under source terms and configure an external data directory. Each trace records method versions, scenario, case identity, controls, and result values.
+\section{Conclusions}
+PhaseFlow places feasible construction heuristics, published scheduling methods, mathematical bounds, and a learned policy within one traceable benchmark. The learned policy produces useful schedules on many held-out generated cases, but its lower tail and vein failures preclude a general performance claim. Exact ExTS remains the nearest schedule comparator, and certified bounds remain the reference for optimality gaps. The policy is a fast candidate generator for cases where its assumptions hold; it does not replace mathematical certificates or mine-specific validation.
+\begin{thebibliography}{9}
+\bibitem{chicoisne} J. Chicoisne, D. Espinoza, M. Goycoolea, E. Moreno, and E. Rubio, ``A new algorithm for the open-pit mine production scheduling problem,'' \emph{Operations Research}, 60(3), 517--528, 2012. doi:10.1287/opre.1120.1050.
+\bibitem{gershon} M. Gershon, ``Heuristic approaches for mine planning and production scheduling,'' \emph{International Journal of Mining and Geological Engineering}, 5, 1--13, 1987. doi:10.1007/BF01553529.
+\bibitem{newman} W. B. Lambert, A. Brickey, A. M. Newman, and K. Eurek, ``Open-Pit Block-Sequencing Formulations: A Tutorial,'' \emph{Interfaces}, 44(2), 127--142, 2014. doi:10.1287/inte.2013.0731.
+\bibitem{bienstock} D. Bienstock and M. Zuckerberg, ``Solving LP Relaxations of Large-Scale Precedence Constrained Problems,'' in \emph{Integer Programming and Combinatorial Optimization}, IPCO 2010, pp. 1--14. doi:10.1007/978-3-642-13036-6\_1.
+\bibitem{blom} M. Blom, A. R. Pearce, and P. C\^ot\'e, ``Long-Term Open-Pit Mine Planning with Large Neighborhood Search,'' \emph{INFORMS Journal on Applied Analytics}, 56(2), 115--132, 2026. doi:10.1287/inte.2024.0152.
+\bibitem{kingma} D. P. Kingma and J. Ba, ``Adam: A Method for Stochastic Optimization,'' arXiv:1412.6980, 2014.
+\end{thebibliography}
+\end{document}

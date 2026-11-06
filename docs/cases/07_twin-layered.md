@@ -39,9 +39,9 @@ What the bake measured here:
 | bound | value | time | detail |
 | --- | ---: | ---: | --- |
 | ultimate pit (UPIT, exact, undiscounted) | 2,960,091,528 |  | 14,400 of 14,400 blocks; no time, no capacity |
-| Algorithm 4 (min over single-resource LPs) | 1,111,128,369 | 3.2 min | 129 maximum closures |
+| Algorithm 4 (min over single-resource LPs) | 1,111,128,369 | 2.4 min | 129 maximum closures |
 | joint LP (Bienstock-Zuckerberg) | not computed | - | time-expanded graph is 144,000 nodes and 1,291,200 edges, above the 130,000/1,400,000 budget. Pricing would be fast, but the bound is only worth reporting once it has been CERTIFIED by one exact solve, and that solve is the pure-Python max-flow. Algorithm 4's certified but looser bound is used |
-| PCPSP LP by its Lagrangian dual (destinations free) | 1,365,530,202 | 2.0 min | 1,435,220 rows, above the HiGHS budget; 109 closure iterations, converged; rounding slack 398,125 |
+| PCPSP LP by its Lagrangian dual (destinations free) | 1,365,530,202 | 93.2 s | 1,435,220 rows, above the HiGHS budget; 109 closure iterations, converged; rounding slack 398,125 |
 | used for every CPIT gap on this case | Algorithm 4 |  |  |
 <!-- /generated -->
 
@@ -54,20 +54,20 @@ the largest one.
 <!-- generated:case:twin-layered -->
 | method | family | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | Reference methods | 899,817,036 | Algorithm 4 | 19.02% | 291 ms | 2.0 / 85% |
-| `nested-shells` | Reference methods | 906,350,215 | Algorithm 4 | 18.43% | 277 ms | 1.0 / 100% |
-| `toposort-greedy` | Reference methods | 922,170,649 | Algorithm 4 | 17.01% | 288 ms | 16.1 / 72% |
-| `toposort-gershon` | Reference methods | 896,014,136 | Algorithm 4 | 19.36% | 1.5 s | 11.2 / 52% |
-| `toposort-expected` | Published methods | 1,071,675,842 | Algorithm 4 | 3.55% | 3.2 min | 2.6 / 92% |
-| `exts-two-resource` | Published methods | 1,071,675,842 | Algorithm 4 | 3.55% | 3.2 min | 2.6 / 92% |
-| `shift-local-search` | Published methods | 1,071,675,842 | Algorithm 4 | 3.55% | 469 ms | 2.6 / 92% |
-| `sliding-window` | Published methods | 1,043,154,180 | Algorithm 4 | 6.12% | 13.80 h | 8.5 / 88% |
-| `cpitD-local-search` **(best)** | Published methods | 1,071,699,061 | Algorithm 4 | 3.55% | 928 ms | 3.2 / 91% |
-| `learned-expected-time` | Learned methods | 933,372,664 | Algorithm 4 | 16.00% | 315 ms | 35.2 / 69% |
-| `destination-toposort` | Additional analyses | 1,199,918,922 | PCPSP LP | 12.13% | 48.8 s | 5.8 / 89% |
-| `destination-sliding-window` | Additional analyses | 1,212,945,739 | PCPSP LP | 11.17% | 4.93 h | 5.1 / 86% |
-| `destination-local-search` | Additional analyses | 1,225,030,048 | PCPSP LP | 10.29% | 3.5 s | 5.7 / 82% |
-| `min-width` | Additional analyses | 1,071,699,061 | Algorithm 4 | 3.55% | 416 ms | 3.2 / 91% |
+| `bench-by-bench` | Reference methods | 899,817,036 | Algorithm 4 | 19.02% | 278 ms | 2.0 / 85% |
+| `nested-shells` | Reference methods | 906,350,215 | Algorithm 4 | 18.43% | 268 ms | 1.0 / 100% |
+| `toposort-greedy` | Reference methods | 922,170,649 | Algorithm 4 | 17.01% | 267 ms | 16.1 / 72% |
+| `toposort-gershon` | Reference methods | 896,014,136 | Algorithm 4 | 19.36% | 960 ms | 11.2 / 52% |
+| `toposort-expected` | Published methods | 1,071,675,842 | Algorithm 4 | 3.55% | 2.4 min | 2.6 / 92% |
+| `exts-two-resource` | Published methods | 1,071,675,842 | Algorithm 4 | 3.55% | 2.4 min | 2.6 / 92% |
+| `shift-local-search` | Published methods | 1,071,675,842 | Algorithm 4 | 3.55% | 126 ms | 2.6 / 92% |
+| `sliding-window` | Published methods | 1,043,154,180 | Algorithm 4 | 6.12% | 17.03 h | 8.5 / 88% |
+| `cpitD-local-search` **(best)** | Published methods | 1,071,699,061 | Algorithm 4 | 3.55% | 1.5 s | 3.2 / 91% |
+| `learned-expected-time` | Learned methods | 943,692,072 | Algorithm 4 | 15.07% | 467 ms | 22.2 / 69% |
+| `destination-toposort` | Additional analyses | 1,199,918,922 | PCPSP LP | 12.13% | 102.2 s | 5.8 / 89% |
+| `destination-sliding-window` | Additional analyses | 1,218,078,183 | PCPSP LP | 10.80% | 7.47 h | 5.9 / 84% |
+| `destination-local-search` | Additional analyses | 1,223,250,862 | PCPSP LP | 10.42% | 16.0 s | 6.3 / 84% |
+| `min-width` | Additional analyses | 1,071,699,061 | Algorithm 4 | 3.55% | 483 ms | 3.2 / 91% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/twin-layered.json` by `scripts/docs_tables.py`.*

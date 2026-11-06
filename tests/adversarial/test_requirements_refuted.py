@@ -69,8 +69,10 @@ def test_a_build_without_route_source_fails_and_valid_routes_are_materialized(re
     (dist / "data" / "manifests").mkdir(parents=True)
     (dist / "data" / "manifests" / "index.json").write_text('{"cases":[{"case_id":"case-a"}]}', encoding="utf-8")
     r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=frontend, env=env)
-    assert r.returncode == 0 and "7 routes" in r.stdout, r.stderr
+    assert r.returncode == 0 and "11 routes" in r.stdout, r.stderr
     assert (dist / "404.html").is_file() and (dist / "focus" / "case-a" / "index.html").is_file()
+    for story in ("deposit", "method", "constraints", "compare"):
+        assert (dist / "story" / story / "index.html").is_file(), story
     assert json.loads((dist / "build.json").read_text(encoding="utf-8")) == {
         "sha": "0123456789abcdef0123456789abcdef01234567",
         "version": (repo / "VERSION").read_text(encoding="utf-8").strip(),

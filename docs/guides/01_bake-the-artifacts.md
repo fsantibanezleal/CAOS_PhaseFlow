@@ -1,12 +1,12 @@
 # 01 · Bake the artifacts
 
 ```bash
-export CAOS_TEMP_ROOT=/external/scratch CAOS_DATA_ROOT=/external/data
+export CAOS_VENVS_ROOT=/external/venvs CAOS_TEMP_ROOT=/external/scratch CAOS_DATA_ROOT=/external/data
 ./scripts/local/02_generate-data.sh                        # all thirteen cases -> external stage
 ./scripts/local/02_generate-data.sh --release --from-stage '<validated external stage>'
 ```
 
-PowerShell: set `$env:CAOS_TEMP_ROOT` and `$env:CAOS_DATA_ROOT`, then run
+PowerShell: set `$env:CAOS_VENVS_ROOT`, `$env:CAOS_TEMP_ROOT` and `$env:CAOS_DATA_ROOT`, then run
 `./scripts/local/02_generate-data.ps1` to create the full external candidate. Promotion requires
 `./scripts/local/02_generate-data.ps1 -Release -FromStage '<validated external stage>'`. The shared
 workflow records source and payload fingerprints, runs the complete registry and validators, and refuses

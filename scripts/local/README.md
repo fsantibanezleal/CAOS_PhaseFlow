@@ -1,7 +1,7 @@
 # Local workflow
 
 Run commands from any directory using the entrypoint's absolute path, or from the repository root as below.
-The numbered steps share workflow.py and the declarative workflow.json. Flat setup/dev/precompute scripts remain compatible.
+The numbered steps share workflow.py and the declarative workflow.json. The flat setup/dev/precompute entrypoints forward to the same helper. Flat precompute also stages externally; only --release/-Release requests local artifact replacement.
 
 ## 00: system prerequisites
 
@@ -22,7 +22,10 @@ Bash: bash scripts/local/01_init.sh
 
 Initialization copies nonsecret .env.example defaults only if .env is absent. Existing .env bytes are preserved;
 dotenv assignments are literal values, never shell commands. Exported process variables take precedence.
-Declared ignored venvs and locked frontend dependencies are provisioned. Recursive requirements and package-lock
+Set an absolute external CAOS_VENVS_ROOT in the process environment or an existing .env before initialization.
+Declared runtimes are provisioned at CAOS_VENVS_ROOT/environment_namespace/runtime. There is no repository or system-temp fallback. Missing, internal, redirected or non-directory targets refuse before .env creation or dependency installation. Runtime lookup creates nothing. Existing repository aliases are accepted only when they resolve to the exact declared external runtime. Historical internal environments must be preserved separately; initialization never moves or overwrites them.
+
+Declared external venvs and locked frontend dependencies are provisioned. Recursive requirements and package-lock
 fingerprints are stamped only after a successful install; a matching installation is reused. A failed native
 process is a failure, while successful native stderr warnings remain warnings.
 
@@ -72,7 +75,7 @@ workflow's process trees. It does not kill a pre-existing process or install dep
 
 Run the focused behavioral suite with the initialized pipeline interpreter:
 
-python -m pytest tests/test_local_bootstrap.py tests/test_bootstrap_regressions.py -q
+python -m pytest tests/test_local_bootstrap.py tests/test_bootstrap_regressions.py tests/test_bootstrap_admission.py -q
 
 The fixtures execute fake producers and local HTTP/frontend subprocesses in external temporary repositories,
 not training or release promotion in this checkout. Use the existing smoke scripts for the full product gates.
@@ -80,14 +83,14 @@ Actual installed app launch, API operations, release publication and deployment 
 
 ## PhaseFlow configuration
 
-The primary environment is `.venv-pipeline`, created from the pinned precompute and development requirements. The optional `.venv-notebooks` is created only with `-Notebooks` / `--notebooks`. The API remains dormant; this workflow starts only the static Vite site.
+The primary environment is `.venv-pipeline`, created from the pinned precompute and development requirements under `CAOS_VENVS_ROOT/phaseflow`. The optional `.venv-notebooks` is created only with `-Notebooks` / `--notebooks` under the same external namespace. Repository paths are aliases to those external runtimes; initialization refuses an internal or redirected environment. The API remains dormant; this workflow starts only the static Vite site.
 
 A full release stage copies the current trained model files, runs all thirteen registry cases against OreBlocks 0.6.6, rebuilds the index, computes the staged readiness record, then checks the complete inventory, every artifact, every catalogued document and readiness against the staged tree. The release-stage receipt binds recursive requirements, the catalog and schemas, producer and validator code, product metadata, model bytes and all generated artifact bytes. Any source or payload change invalidates the stage.
 
-Set `CAOS_DATA_ROOT` to an external data directory containing the MineLib cache and `CAOS_TEMP_ROOT` to an external scratch directory. The product maps `CAOS_DATA_ROOT` to its legacy `PHASEFLOW_DATA_DIR` reader when needed; an explicitly set `PHASEFLOW_DATA_DIR` retains precedence. Both roots must be outside this repository. Raw MineLib files and local generation candidates remain external. Compact, licensed aggregate release artifacts and catalogued trained models are the only generated payloads promoted into the repository.
+Set `CAOS_VENVS_ROOT` to an external runtime root, `CAOS_DATA_ROOT` to an external data directory containing the MineLib cache and `CAOS_TEMP_ROOT` to an external scratch directory. The product maps `CAOS_DATA_ROOT` to its legacy `PHASEFLOW_DATA_DIR` reader when needed; an explicitly set `PHASEFLOW_DATA_DIR` retains precedence. Both roots must be outside this repository. Raw MineLib files and local generation candidates remain external. Compact, licensed aggregate release artifacts and catalogued trained models are the only generated payloads promoted into the repository.
 
 The bootstrap regression suite exercises prerequisite checks, environment fingerprints, source-bound stage admission, complete readiness inventory, rollback recovery, executable shell entries and supervised process cleanup in isolated fixtures. It does not install dependencies, train models or promote the live product during those tests. Run it with the pinned pipeline interpreter:
 
-` .venv-pipeline/Scripts/python.exe -m pytest tests/test_local_bootstrap.py tests/test_bootstrap_regressions.py -q `
+` .venv-pipeline/Scripts/python.exe -m pytest tests/test_local_bootstrap.py tests/test_bootstrap_regressions.py tests/test_bootstrap_admission.py -q `
 
 The deployment workflow, release publication, manuscript publication and live browser verification remain separate release gates.

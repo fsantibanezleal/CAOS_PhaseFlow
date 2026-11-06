@@ -82,18 +82,18 @@ method label and cost are recorded in the trace; the result is not a global two-
 <!-- generated:ensemble -->
 | case | realisations | best by expected NPV | best by P10 | optimism of the single model (best plan) | value of re-planning | note |
 | --- | ---: | --- | --- | ---: | ---: | --- |
-| [`newman1-published`](../cases/01_newman1-published.md) | 12 | `sliding-window` | `sliding-window` | 403,215 | 0.000% |  |
-| [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | 12 | `sliding-window` | `sliding-window` | -1,689,916 | 0.000% |  |
-| [`kd-declared`](../cases/03_kd-declared.md) | 12 | `sliding-window` | `sliding-window` | -1,170,622 | 0.000% |  |
-| [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | 12 | `sliding-window` | `sliding-window` | 1,468,124 | 0.000% |  |
-| [`twin-porphyry-l`](../cases/05_twin-porphyry-l.md) | 12 | `sliding-window` | `sliding-window` | -1,859,010 | 0.000% |  |
-| [`twin-core-halo`](../cases/06_twin-core-halo.md) | 12 | `sliding-window` | `sliding-window` | -829,946 | 0.000% |  |
-| [`twin-layered`](../cases/07_twin-layered.md) | 12 | `cpitD-local-search` | `cpitD-local-search` | 1,245,862 | 0.000% |  |
-| [`twin-vein`](../cases/08_twin-vein.md) | 12 | `sliding-window` | `sliding-window` | -2,685,382 | 0.000% |  |
-| [`regime-high-discount`](../cases/09_regime-high-discount.md) | 12 | `sliding-window` | `sliding-window` | 1,186,350 | 0.000% |  |
-| [`regime-mill-bound`](../cases/10_regime-mill-bound.md) | 12 | `sliding-window` | `sliding-window` | 1,033,910 | 0.000% |  |
-| [`regime-mining-bound`](../cases/11_regime-mining-bound.md) | 12 | `sliding-window` | `sliding-window` | 1,010,480 | 0.000% |  |
-| [`ctrl-abundant`](../cases/12_ctrl-abundant.md) | 12 | `cpitD-local-search` | `cpitD-local-search` | 551,122 | 0.000% |  |
+| [`newman1-published`](../cases/01_newman1-published.md) | 12 | `cpitD-local-search` | `cpitD-local-search` | 399,922 | 0.010% |  |
+| [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | 12 | `sliding-window` | `sliding-window` | -1,689,916 | 0.087% |  |
+| [`kd-declared`](../cases/03_kd-declared.md) | 12 | `sliding-window` | `sliding-window` | -1,170,622 | 0.049% |  |
+| [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | 12 | `sliding-window` | `sliding-window` | 1,468,124 | 0.007% |  |
+| [`twin-porphyry-l`](../cases/05_twin-porphyry-l.md) | 12 | `sliding-window` | `sliding-window` | -1,859,010 | 0.005% |  |
+| [`twin-core-halo`](../cases/06_twin-core-halo.md) | 12 | `sliding-window` | `sliding-window` | -829,946 | 0.004% |  |
+| [`twin-layered`](../cases/07_twin-layered.md) | 12 | `cpitD-local-search` | `cpitD-local-search` | 1,245,862 | 0.178% |  |
+| [`twin-vein`](../cases/08_twin-vein.md) | 12 | `sliding-window` | `sliding-window` | -2,685,382 | 0.033% |  |
+| [`regime-high-discount`](../cases/09_regime-high-discount.md) | 12 | `sliding-window` | `sliding-window` | 1,186,350 | 0.013% |  |
+| [`regime-mill-bound`](../cases/10_regime-mill-bound.md) | 12 | `sliding-window` | `sliding-window` | 1,033,910 | 0.040% |  |
+| [`regime-mining-bound`](../cases/11_regime-mining-bound.md) | 12 | `sliding-window` | `sliding-window` | 1,010,480 | 0.231% |  |
+| [`ctrl-abundant`](../cases/12_ctrl-abundant.md) | 12 | `cpitD-local-search` | `cpitD-local-search` | 551,122 | 0.002% |  |
 | [`ctrl-degenerate`](../cases/13_ctrl-degenerate.md) | not run | - | - | - | - | a single-period scenario has no schedule to stress |
 <!-- /generated -->
 

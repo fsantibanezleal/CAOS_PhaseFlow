@@ -1,7 +1,8 @@
 // The App route: land on the tool. One selected case, the stage, the drawings a planner reads, and
 // the numbers that say how far this plan is from the certified bound.
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { Callout, CaseWorkbench, Cite, Readout, SubTabs, Tabs, useWorkbenchState, type CaseDef } from '@fasl-work/caos-app-shell';
 import { fmtDuration, fmtInt, fmtMoney, fmtTonnes, dec, exp, overrunText, resourceLabel } from '../lib/artifacts.ts';
 import { largestOverrun } from '../lib/feasibility.ts';
@@ -16,6 +17,7 @@ import { DegeneracyCollapse } from '../viz/Diagrams.tsx';
 import { Absent, PanelBoundary } from '../viz/PanelBoundary.tsx';
 import { SensitivitySurface } from '../viz/Sensitivity.tsx';
 import { EngineText } from '../lib/EngineText.tsx';
+import { resolveStorySelection } from '../lib/storySelection.ts';
 
 function SelectionReadout({ method, period, share, infeasible, provenance }: {
   method: { npv: number; gapPct: number; rung: string };
@@ -40,7 +42,19 @@ function SelectionReadout({ method, period, share, infeasible, provenance }: {
 }
 
 export default function Tool() {
-  const st = useCase();
+  const [params] = useSearchParams();
+  const queryCase = params.get('case') ?? undefined;
+  const st = useCase(queryCase);
+  const appliedSelection = useRef('');
+  useEffect(() => {
+    if (st.loading || !st.trace || (queryCase && st.caseId !== queryCase)) return;
+    const key = `${st.caseId}|${params.get('method') ?? ''}|${params.get('period') ?? ''}`;
+    if (key === appliedSelection.current) return;
+    appliedSelection.current = key;
+    const selection = resolveStorySelection(st.trace, params);
+    if (selection.methodId && st.methodId !== selection.methodId) st.setMethodId(selection.methodId);
+    if (selection.period != null && st.cursor !== selection.period) st.setCursor(selection.period);
+  }, [st.trace, st.loading, st.caseId, st.methodId, st.cursor, st.setMethodId, st.setCursor, queryCase, params]);
   const [mode, setMode] = useState<StageMode>('schedule');
   // null means "not chosen yet", so the defaults can come from the DATA once it lands. Starting both
   // at zero put the profile on the outermost slice and the bench plan on the deepest bench, which is
@@ -101,7 +115,7 @@ export default function Tool() {
       ? tabletChartHeight
     : viewportHeight >= 1200
       ? Math.min(900, Math.round(viewportHeight * 0.58))
-      : Math.min(600, Math.max(450, viewportHeight - 300));
+      : Math.min(900, Math.max(620, viewportHeight - 120));
 
   const dims = useMemo<[number, number, number]>(
     () => (st.trace ? [st.trace.instance.dims[0], st.trace.instance.dims[1], st.trace.instance.dims[2]] : [1, 1, 1]),
@@ -333,7 +347,7 @@ export default function Tool() {
                     <tr key={m.method} data-infeasible={over ? 'true' : undefined}>
                       <td>{m.method}</td><td>{fmtMoney(m.npv)}</td><td>{m.rung === 'beyond' ? '-' : fmtMoney(m.bound)}</td>
                       <td className={over ? 'pf-warn' : undefined}>{over ? overrunText(over, resources, true) : m.rung === 'beyond' ? '-' : `${dec(m.gapPct, 2)}%`}</td><td>{fmtDuration(m.runtimeMs)}</td><td>{m.minedBlocks}</td>
-                      <td style={{ textAlign: 'left' }} className="pf-cap pf-muted"><EngineText text={m.notes} /></td>
+                      <td style={{ textAlign: 'left' }} className="pf-cap pf-muted"><EngineText text={m.notes} lang={st.lang} /></td>
                     </tr>
                   );
                 })}
@@ -561,7 +575,7 @@ export default function Tool() {
       content: (
         <div className="pf-workbench-view">
           <div className="pf-diagnostics-tabs">
-            <Tabs ariaLabel={es ? 'Análisis y controles' : 'Analysis and controls'} tabs={[
+            <Tabs density="compact" ariaLabel={es ? 'Análisis y controles' : 'Analysis and controls'} tabs={[
               { id: analysisTab.id, label: labels.analysis[st.lang], content: analysisTab.content },
               { id: evidenceTab.id, label: labels.evidence[st.lang], content: evidenceTab.content },
             ]} />
@@ -570,8 +584,17 @@ export default function Tool() {
       ),
     },
   ];
-  const rail = (
-      <aside className="pf-rail">
+  const rail = [
+    {
+      id: 'period',
+      label: { en: 'Period', es: 'Período' },
+      content: (
+        <div className="pf-rail">
+        <div className="pf-group">
+          <Link className="pf-story-entry" to={`/story/deposit?case=${encodeURIComponent(st.caseId)}&method=${encodeURIComponent(st.methodId)}&period=${st.cursor}`}>
+            {es ? 'Recorrido guiado del caso' : 'Guided case story'}
+          </Link>
+        </div>
         <div className="pf-group">
           <h4>{es ? 'Reloj de períodos' : 'Period clock'}</h4>
           <label className="pf-ctl">
@@ -595,12 +618,20 @@ export default function Tool() {
           </p>
         </div>
 
+        </div>
+      ),
+    },
+    {
+      id: 'method',
+      label: { en: 'Method', es: 'Método' },
+      content: (
+        <div className="pf-rail">
         <div className="pf-group">
           <h4>{es ? 'Método' : 'Method'}</h4>
           <select value={st.methodId} onChange={(e) => st.setMethodId(e.target.value)} aria-label={es ? 'Método' : 'Method'} data-control="method">
             {trace.methods.map((m) => (
-              <option key={m.method} value={m.method}>
-                {m.unreliable ? '! ' : ''}{m.method}{optionSuffix(m)}
+              <option key={m.method} value={m.method} title={`${m.method}${optionSuffix(m)}`}>
+                {m.unreliable ? '! ' : ''}{m.method}
               </option>
             ))}
           </select>
@@ -655,6 +686,14 @@ export default function Tool() {
           <SelectionReadout method={method} period={p} share={p?.largestComponentShare ?? 0} infeasible={overrun?.pct ?? null} provenance={manifest.real_or_synthetic} />
         </div>
 
+        </div>
+      ),
+    },
+    {
+      id: 'scenario',
+      label: { en: 'Scenario', es: 'Escenario' },
+      content: (
+        <div className="pf-rail">
         <details className="pf-group pf-scenario" open={scenarioOpen}
           onToggle={(event) => setScenarioOpen(event.currentTarget.open)}>
           <summary>{es ? 'Escenario' : 'Scenario'}</summary>
@@ -684,8 +723,10 @@ export default function Tool() {
             </p>
           )}
         </details>
-      </aside>
-  );
+        </div>
+      ),
+    },
+  ];
   return (
     <CaseWorkbench
       caseId={st.caseId}
@@ -693,6 +734,8 @@ export default function Tool() {
       controls={{ period: st.cursor, method: st.methodId, stageMode: mode, northing: northingAt, bench: benchAt }}
       cases={{ cases: caseDefs, selectedId: st.caseId, onSelect: st.setCaseId, lang: st.lang, ariaLabel: es ? 'Selector de casos' : 'Case selector', layout: 'select', deepLink: true }}
       rail={rail}
+      railWidth={150}
+      tabDensity="compact"
       railLabel={{ en: 'Case controls', es: 'Controles del caso' }}
       groups={workbenchGroups}
       context={{

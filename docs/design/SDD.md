@@ -59,7 +59,7 @@ not redistribute per-block data or per-block schedules for MineLib instances.
 
 ## Repository workflow and data roots
 
-The product is instantiated from CAOS Product Template `0.14.003` and pins CAOS App Shell `0.19.12`.
+The product is instantiated from CAOS Product Template `0.14.006` and pins CAOS App Shell `0.22.0`.
 The numbered PowerShell and Bash entrypoints share the template's receipt-based `scripts/local/workflow.py`;
 the product-specific JSON plan invokes the actual PhaseFlow registry pipeline, stages the trained models,
 computes readiness from staged outputs, and runs PhaseFlow's artifact and document validators. A complete
@@ -91,7 +91,7 @@ The table records every pinned direct dependency of the scientific, development,
 | notebooks | `nbclient` | `0.11.0` | fresh-kernel notebook execution (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `nbformat` | `5.11.1` | notebook structure and deterministic serialization (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `ipykernel` | `7.4.0` | Python notebook kernel (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
-| frontend | `@fasl-work/caos-app-shell` | `0.19.12` | shared navigation, documentation, shell gate and workbench primitives (`frontend/package-lock.json`); release tag `v0.19.012` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
+| frontend | `@fasl-work/caos-app-shell` | `0.22.0` | shared navigation, documentation, compact tab density, shell gate and workbench/story primitives (`frontend/package-lock.json`); release tag `v0.22.000` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
 | frontend | `katex` | `0.19.1` | math rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `lucide-react` | `1.61.0` | interface icons (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `react` | `19.3.1` | component rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
@@ -126,8 +126,8 @@ PhaseFlow evaluates published scheduling methods and the proposed BS-1 expected-
 
 | stage | memory | disk | time | where it runs |
 |---|---|---|---|---|
-| bake | peak memory not yet instrumented; no fixed estimate claimed | clean candidate directory under the configured external data root | solver and case dependent; each manifest records method timings, while full-run elapsed time is recorded separately | isolated `.venv-pipeline`; MineLib source cache stays local |
-| tests | peak memory not yet instrumented | temporary solver files under the configured external temp root | OreBlocks 0.6.6 source: 88 tests passed in 610.10 seconds; PhaseFlow artifact-drift checks remain blocked on a fresh full rebake | isolated `.venv-notebooks` and `frontend/` Node environment |
+| bake | peak memory not yet instrumented; no fixed estimate claimed | clean candidate directory under the configured external data root | solver and case dependent; each manifest records method timings, while full-run elapsed time is recorded separately | external `CAOS_VENVS_ROOT/phaseflow/.venv-pipeline` with a repository alias; MineLib cache stays under external `CAOS_DATA_ROOT` |
+| tests | peak memory not yet instrumented | temporary solver files under the configured external temp root | OreBlocks 0.6.6 source: 88 tests passed in 610.10 seconds; PhaseFlow artifact-drift checks remain blocked on a fresh full rebake | external `CAOS_VENVS_ROOT/phaseflow/.venv-notebooks` with a repository alias and the locked `frontend/` Node environment |
 | build | peak memory not yet instrumented | `frontend/dist/` including committed replay artifacts | Vite build completed in under one second in the current local run; route materialisation followed | Vite production build |
 | deploy | no deployment in this change set | GitHub Pages workflow artifact | remote duration is recorded by Actions after a release | GitHub Pages at `https://phaseflow.fasl-work.com` |
 
@@ -162,16 +162,46 @@ already deployed in 0.07.002; the gate protects it.
 
 **BS-2, state-conditioned frontier policy.** A second learned scheduler is approved for design by Felipe (2026-11-01); the method remains unimplemented. An autoregressive graph-conditioned actor scores feasible blocks using the current partial schedule, period and remaining resources, with explicit stop-period and stop-schedule actions. Its masked PPO training return uses the same discounted-value objective as the CPIT evaluator, without a second discount. The independent validator, rather than the mask alone, certifies every output. Training, validation and test partitions are disjoint by generator seed and graph family; all 13 product cases remain sealed until the checkpoint/settings freeze. We report incomplete coverage and negative results and make no performance claim without paired evidence. The versioned SDD amendment fixes the compute cap and names the method/code/data/docs/browser gates. The active 0.11.000 baseline bake must finish unchanged; this result-changing method targets a separate full 0.12.000 bake.
 
-The product-quality backlog still has three open units: a deposit-statistics live
-guard, the newly approved second learned schedule policy, and a scalable sliding
-window on larger instances. Their requirements and design records live under
-`docs/design/features/`; implementation and empirical gates remain pending.
-Until those gates pass, the UI must not claim the features exist.
+The three feature designs are proposals: the deposit-statistics live guard, the
+learned destination policy, and a scalable sliding window on larger instances
+have not passed implementation or empirical gates. The separately approved
+state-conditioned scheduler has its own versioned 0.12.000 amendment; only
+isolated feasibility, replay and validation primitives are implemented so far.
+Until the corresponding gates pass, the UI must not claim these methods exist.
 
 The uncertainty re-planning estimate uses one fixed policy selected by expected
 NPV, then exact local search in restricted C-PIT[D] neighborhoods on each
 realisation. The outer neighborhood search remains heuristic and reports a
 lower bound on EVPI. It is distinct from the three open product-quality units.
+
+## Visualization catalog
+
+PhaseFlow applies the six visualization purposes from the universal CAOS visualization contract to open-pit scheduling.
+The selected case and method drive the App stage, story, readouts and linked panels. Every numeric headline and callout
+is derived from the current case manifest or schedule trace; the MineLib cases remain aggregate-only and never render
+block geometry that the licence does not permit us to redistribute.
+
+| ID | User question | Data contract | Kind | Interaction | Linked views and appearance |
+|---|---|---|---|---|---|
+| V1 | Where is the selected pit and what has the chosen schedule extracted? | `case-manifest`, `schedule-trace` | Physical system | Select case, method and period; rotate and zoom the pit; choose schedule, grade or mined-block colour | Links the 3D pit to the period profile, case readouts and the selected schedule. App stage and story step `deposit`. Geometry appears only for cases whose replay payload permits it. |
+| V2 | Which bench, section or predecessor neighborhood controls this part of the plan? | `schedule-trace`, `case-manifest` | Key component | Choose bench and section; select a block or bench; inspect its grade, value, period and immediate precedence context | Links the 2D bench/profile section to V1 and the selected-period panel. App sub-view and story step `constraints`. |
+| V3 | How do precedence and per-period capacities shape feasible extraction? | `schedule-trace`, `case-manifest` | Domain diagram | Scrub the period; compare mining and processing use with their limits; select a period to highlight the same blocks in V1 | Links the capacity profile and precedence explanation to V1, V2 and V4. App sub-view and story step `constraints`. |
+| V4 | How do production, discounted value and remaining capacity evolve over the horizon? | `schedule-trace` | State and dynamics | Scrub or play the period cursor; inspect tonnes, value, capacity and schedule completeness at that period | Links the time series to the period-coloured V1 scene and the selected-period readout. App sub-view and story step `schedule`. |
+| V5 | How does the selected method turn its ordering or search into a feasible schedule? | `schedule-trace`, `learned-model`, `learned-study` | Method at work | Select a method and period; advance through the schedule; inspect its inputs, constructor/search steps, feasibility and evidence state | Links the method explanation to the same blocks and period in V1 and the capacity/precedence views V2-V4. Methodology explanation, App panel and story step `method`. |
+| V6 | What changes when the same case is scheduled by another method, and what decision is supported? | `schedule-trace`, `case-manifest` | Comparison and decision | Compare methods on shared axes; select a result to load its schedule; read its matching bound, feasibility, runtime and limitations | Links the comparison to V1-V5 for that exact method and case. App comparison view, Benchmark and story step `compare`. |
+
+The guided story has four directly addressable steps: `/story/deposit`, `/story/method`, `/story/constraints` and
+`/story/compare`. Each step uses the selected case's evidence for a numbered finding, one primary stage, at least three
+callouts with units and a docked panel. Step changes pause on user interaction; browser history and the selected case
+remain synchronized. The story exits to `/app` with the same case, method and period. Reduced-motion preferences remove
+camera and value animation without removing state or labels.
+The `/story` route uses the Shell's `immersiveRoutes` framing so the scene and evidence panel use the desktop viewport
+without the ordinary site header and footer; the Shell retains product identity and returns phone layouts to document
+scrolling. This route-level framing is shared Shell behavior rather than product-owned shell CSS.
+
+Physical geometry is available only for the synthetic twins and product-owned controls. MineLib replay remains excluded
+because the academic source licence permits aggregate results only. The current source has no telemetry or operational
+mine feed: story verbs describe the computational workflow and never imply a live mine or field recommendation.
 
 ## Cases
 
@@ -226,6 +256,7 @@ No single HTTP 200 or green build substitutes for this chain.
 | P-24 | WHEN the frontier policy is exposed in the web app, THE browser SHALL replay the committed schedule and SHALL NOT load or execute the training checkpoint. | frontend trace/replay tests; no-live-model browser assertion |
 | P-25 | WHEN frontier training inputs or weights are persisted, THEY SHALL remain under the configured device data/training/model roots; CI and deployment SHALL never train. | `scripts/check_base_integrity.py`; training runner tests; `scripts/check_ci_budget.py` |
 | P-26 | WHEN the frontier method is taught, THE EN/ES notebooks SHALL execute the product observation, mask, training and frozen evaluation code and interpret numeric results and failures. | notebook content gate; fresh-kernel execution and byte-stable `--check` |
+| P-27 | WHEN the showcase is enabled, THE App SHALL implement the six-view catalog and four evidence-bound story routes with one case/method/period state, linked scene and panels, accessible controls and reduced-motion behavior. | `docs/design/features/showcase/validation.md`; `npm run verify:showcase`; installed shell G21; EN/ES desktop and mobile visual review |
 
 ## Deploy driver
 
