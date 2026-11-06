@@ -37,6 +37,12 @@
     "pipeline.model.frontier_policy.precedence_frontier",
     "pipeline.model.frontier_policy.feasible_frontier",
     "pipeline.model.frontier_policy.replay_frontier_policy",
-    "pipeline.model.frontier_policy.validate_schedule"
+    "pipeline.model.frontier_policy.validate_schedule",
+    "pipeline.model.frontier_policy.validate_split_manifest",
+    "pipeline.model.frontier_splits.build_split_manifest",
+    "pipeline.model.frontier_splits.manifest_sha256",
+    "pipeline.model.frontier_features.fit_training_normalizer",
+    "pipeline.model.frontier_features.normalizer_contract",
+    "pipeline.model.frontier_features.feature_contract_sha256"
   ]
 }

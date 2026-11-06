@@ -30,7 +30,8 @@
       "03-uncertainty/03-replanning-across-realisations.ipynb"
     ],
     "learned-model": [
-      "04-learned-surrogates/03-frontier-state-and-feasibility-mask.ipynb"
+      "04-learned-surrogates/03-frontier-state-and-feasibility-mask.ipynb",
+      "04-learned-surrogates/04-frontier-data-splits-and-normalization.ipynb"
     ],
     "learned-study": [
       "04-learned-surrogates/02-cross-case-validation.ipynb"
