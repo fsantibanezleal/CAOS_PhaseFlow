@@ -535,6 +535,7 @@ def train_member(
     max_cpu_seconds: float = 7_200.0,
     max_wall_seconds: float = 86_400.0,
     validation_interval: int = 32_768,
+    first_validation_after: int | None = None,
     patience: int = 5,
     config: PPOConfig = PPOConfig(),
     training_contract: dict,
@@ -544,8 +545,12 @@ def train_member(
     The caller supplies only a validation-split factory. Product test cases are loaded by a
     separate post-freeze evaluator and are not accepted by this training interface.
     """
-    if max_transitions < 1 or max_cpu_seconds <= 0 or max_wall_seconds <= 0 or validation_interval < 1 or patience < 1:
-        raise ValueError("training caps, validation interval and patience must be positive")
+    first_validation = validation_interval if first_validation_after is None else first_validation_after
+    if (max_transitions < 1 or max_cpu_seconds <= 0 or max_wall_seconds <= 0
+            or not isinstance(validation_interval, int) or isinstance(validation_interval, bool)
+            or validation_interval < 1 or not isinstance(first_validation, int)
+            or isinstance(first_validation, bool) or first_validation < 1 or patience < 1):
+        raise ValueError("training caps, validation schedule and patience must be positive")
     contract_fields = {
         "generator_version", "feature_names", "feature_contract_sha256", "training_split_sha256", "normalization",
     }
@@ -596,7 +601,7 @@ def train_member(
     cpu_training_deadline = max_cpu_seconds - cpu_reserve
     wall_training_deadline = max_wall_seconds - wall_reserve
     transitions = 0
-    next_validation = validation_interval
+    next_validation = first_validation
     best_metric: float | None = None
     best_path = run_dir / "best.pt"
     best_hash = ""
@@ -689,6 +694,7 @@ def train_member(
         "selected_checkpoint_sha256": receipt.selected_checkpoint_sha256,
         "final_checkpoint_sha256": receipt.final_checkpoint_sha256,
         "validation_history": list(receipt.validation_history), "last_update": receipt.final_update,
+        "first_validation_after": first_validation, "validation_interval": validation_interval,
         "ppo_config": config.__dict__,
         "budget": {
             "cpu_cap_seconds": max_cpu_seconds,

@@ -277,6 +277,37 @@ def test_budget_expiry_during_validation_does_not_select_partial_checkpoint(tmp_
     assert run.validation_history == ()
 
 
+def test_member_validates_early_then_uses_the_regular_validation_cadence(tmp_path: Path, monkeypatch):
+    monkeypatch.setattr(frontier_ppo.importlib.metadata, "version", lambda _name: "0.6.6")
+    monkeypatch.setattr(frontier_ppo, "collect_rollout", lambda *_args, **_kwargs: [object()])
+    monkeypatch.setattr(frontier_ppo, "update_policy", lambda *_args, **_kwargs: {})
+
+    def validate(_model, budget_check):
+        assert budget_check()
+        return {"mean_normalized_npv": 0.25, "all_feasible": True}
+
+    run = train_member(
+        MaskedGraphActorCritic(node_feature_count=2, state_feature_count=4),
+        lambda: FrontierPolicyEnv(_instance(), np.ones((3, 2))),
+        validate,
+        seed=3301,
+        model_root=tmp_path / "device-models",
+        approved_model_root=tmp_path,
+        repository_root=ROOT,
+        max_transitions=6,
+        max_cpu_seconds=60,
+        max_wall_seconds=120,
+        first_validation_after=2,
+        validation_interval=4,
+        training_contract=_training_contract(),
+    )
+    receipt = json.loads((tmp_path / "device-models" / "seed-3301" / "receipt.json").read_text())
+    assert run.transitions == 6
+    assert [row["transitions"] for row in run.validation_history] == [2, 6]
+    assert receipt["first_validation_after"] == 2
+    assert receipt["validation_interval"] == 4
+
+
 def test_member_stops_early_to_reserve_budget_for_checkpoint_finalization(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(frontier_ppo.importlib.metadata, "version", lambda _name: "0.6.6")
     elapsed = {"cpu": 0.0, "wall": 0.0}
