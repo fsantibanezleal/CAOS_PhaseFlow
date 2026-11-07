@@ -44,6 +44,7 @@ MAX_TRANSITIONS = 1_000_000
 MAX_CPU_SECONDS = 7_200.0
 MAX_TOTAL_WALL_SECONDS = 86_400.0
 VALIDATION_INTERVAL = 32_768
+FIRST_VALIDATION_AFTER = 8_192
 PATIENCE = 5
 RUN_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 
@@ -247,6 +248,7 @@ def train(args: argparse.Namespace) -> int:
                 max_cpu_seconds=MAX_CPU_SECONDS,
                 max_wall_seconds=remaining_wall,
                 validation_interval=VALIDATION_INTERVAL,
+                first_validation_after=FIRST_VALIDATION_AFTER,
                 patience=PATIENCE,
                 config=config,
                 training_contract=training_contract,
@@ -278,6 +280,7 @@ def train(args: argparse.Namespace) -> int:
         "seeds": list(MEMBER_SEEDS), "max_transitions_per_member": MAX_TRANSITIONS,
         "max_cpu_seconds_per_member": MAX_CPU_SECONDS,
         "max_wall_seconds_all_members": MAX_TOTAL_WALL_SECONDS,
+        "first_validation_after": FIRST_VALIDATION_AFTER,
         "validation_interval": VALIDATION_INTERVAL, "patience": PATIENCE,
         "ppo_config": asdict(config), "elapsed_wall_seconds": elapsed,
         "runtime": {"device": "cpu", "torch": torch.__version__, "numpy": np.__version__},
