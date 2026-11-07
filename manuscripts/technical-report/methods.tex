@@ -1,0 +1,210 @@
+\subsection{Precedence-safe constructive scheduling}
+\label{sec:method-construction}
+The constructive family makes a transparent separation between a priority rule and the schedule-feasibility mechanism. At any point, the eligible set contains unassigned blocks whose immediate predecessors have already been scheduled. A priority rule chooses the next eligible block; the period allocator places it in the earliest period that has capacity for all modeled resources. These two stages answer different questions. The score describes which available opportunity should be considered first, while the allocator ensures that the resulting plan obeys the period constraints. A high score cannot override an infeasible capacity decision, and a late block in the priority order is not evidence that the block is intrinsically low value.
+
+For an eligible block $b$, the greedy priority uses its declared economic value. The successor-cone variant adds value unlocked by descendants in the precedence graph. This is a reachability-inspired heuristic, not the exact contribution of every reachable descendant when paths share ancestors. The expected-time constructor orders blocks using fractional relaxation times and serves as the exact ExTS comparison when its relaxation completes. Bench-by-bench and nested-shell constructors provide additional schedule designs, but neither changes the feasibility rules. All these constructors pass their ordered blocks through a common period allocator and record the method-specific score, completion status, objective, runtime, and bound context in the trace.
+
+Let $q(b)$ be the priority score and $E(S)$ the current eligible set after the scheduled set $S$. At each step the next block is $b^*=\arg\max_{b\in E(S)}q(b)$, with deterministic tie-breaking by case block order. The earliest feasible period is
+\begin{equation}
+ t^*(b)=\min\left\{t:\;L_{rt}+a_{rb}\leq c_{rt}\quad\forall r\in R\right\},
+\end{equation}
+where $L_{rt}$ is resource use already assigned in period $t$. If no such period exists, the constructor records a refusal rather than silently exceeding capacity. When a block is placed, its successors may become eligible and every resource total is updated. Feasibility follows from the eligibility and capacity predicates only when the input precedence graph and resource fields have themselves passed validation.
+
+The naive implementation scans all unassigned blocks to rebuild eligibility and scans periods and resources for each candidate. Its bound is $O(|B|^2+|B||T||R|)$ before score construction; maintaining indegrees and a priority queue reduces graph traversal to $O((|B|+|A|)\log |B|)$, while period checks still depend on the assignment strategy. A successor-value recurrence over a DAG can be computed in reverse topological order in $O(|B|+|A|)$, but the recurrence's duplicate-path interpretation must remain explicit. These are operation-count descriptions, not wall-time promises across different graph sizes, Python versions, or solver environments.
+
+\begin{equation}
+ E(S)=\left\{b\in B\setminus S:\operatorname{pred}(b)\subseteq S\right\},\qquad
+ L_{rt}=\sum_{b\in S_t}a_{rb}.
+\end{equation}
+\begin{algorithm}
+\caption{Construct a feasible schedule from a block priority}
+\label{alg:constructive}
+\begin{algorithmic}[1]
+\Require Acyclic precedence graph, block values, resource coefficients, period capacities, priority $q$
+\State $S\gets\varnothing$; initialize period loads $L_{rt}\gets0$
+\While{$S\neq B$}
+  \State $E\gets\{b\notin S:\operatorname{pred}(b)\subseteq S\}$
+  \If{$E=\varnothing$} \State record invalid graph and stop \EndIf
+  \State choose highest-priority $b\in E$ with deterministic tie-breaking
+  \State find earliest $t$ with $L_{rt}+a_{rb}\leq c_{rt}$ for every $r$
+  \If{no such $t$} \State record infeasible remainder and stop \EndIf
+  \State assign $b$ to $t$; update $S$ and all $L_{rt}$
+\EndWhile
+\State independently validate precedence, uniqueness, resources, and objective
+\end{algorithmic}
+\end{algorithm}
+
+The method's deterministic tie-breaking is part of its reproducibility contract. Equal priorities are resolved using the input's stable block order; a runtime-dependent set iteration must not decide which block enters a tight period first. A method row distinguishes a complete schedule from a partial result and stores its status, objective, runtime, and bound pairing. The result should be interpreted alongside both feasibility and value: a valid schedule can be economically weak, while a high value computed from an invalid schedule is inadmissible. Baselines based on bench order, nested shells, raw value, successor recurrence, and exact expected times are useful precisely because their ordering rationale differs while the periodization and independent validator remain shared.
+
+The schedule objective recomputed after period assignment is
+\begin{equation}
+ V(S)=\sum_{t=1}^{H}\delta_t\sum_{b\in S_t}p_b,
+\end{equation}
+with resource feasibility checked separately for each $r,t$. The common evaluator is important for attribution: when two constructors differ in value, the difference comes from their ordering or period placement rather than a second implementation of discounting. The test suite exercises precedence chains, branching DAGs, zero and negative values, resource saturation, and malformed inputs. These controls establish software behavior on constructed fixtures; empirical quality still comes from the registered case and scenario results.
+
+Priority scores are not comparable on their raw scales. A normalized value score, a successor-cone estimate, and a fractional extraction time have different units and directions; the constructor consumes each score according to its named policy. The policy identifier must therefore travel with the trace row, and plots group by method identity rather than treating scores as one common quantity. This avoids an easy but invalid interpretation in which a larger heuristic number is assumed to mean a better schedule across all constructors.
+
+The basic approach also clarifies what the simple priority baseline can and cannot answer. It demonstrates a feasible construction under the encoded model and establishes a lower-bound candidate. It does not estimate uncertainty, optimize all period interactions jointly, or provide a proof of integer optimality. Its value as a comparator comes from transparent behavior and low overhead, not from a claim that a fixed priority is universally strong. A learned or solver-based method must be compared against the same case, value convention, capacities, and independent feasibility checks before any measured difference is attributed to the ordering rule.
+
+\subsection{Sliding-window mixed-integer look-ahead}
+\label{sec:method-sliding}
+The sliding-window method improves a feasible CPIT candidate by optimizing a bounded part of the planning horizon while holding the remainder to a controlled interface. A full-horizon mixed-integer model can become expensive as both the number of blocks and periods grow. The window method limits each exact solve to a selected period interval and a candidate block set, then advances the interval and transfers a feasible incumbent. Its role is look-ahead: it can revise local period assignments using interacting capacity and precedence constraints that a one-block priority rule cannot see. Its optimality claim is local to the bounded model that the solver actually receives.
+
+For a window $W=[t_0,t_1]$, define binary $z_{bt}$ for extraction of candidate block $b$ in period $t\in W$. The objective maximizes the discounted value of window decisions plus the fixed contribution of decisions already committed outside the window. The model enforces the same per-period resource capacities and precedence relations as CPIT. Arcs crossing the window boundary are represented using the fixed incumbent state at the boundary; a dependent block cannot be selected if a prerequisite is unavailable by its period. Candidate generation is bounded and recorded because omitted blocks are not considered by the local solve. The exact registered formulation and refusal conditions determine whether a given case is eligible for this method.
+
+One generic window objective, with boundary decisions represented by $\bar u_{bt}$, is
+\begin{equation}
+ \max_{z}\;\sum_{b\in C_W}\sum_{t\in W}\delta_t p_b z_{bt}+K_{\mathrm{fixed}},
+\end{equation}
+subject to one extraction period per selected candidate, resource limits, monotonicity, and precedence across both internal and boundary arcs. The local solver returns an incumbent and proof status; a time- or node-bounded feasible incumbent is not described as an optimum. To protect the incumbent schedule, the accepted result is
+\begin{equation}
+ V_{\mathrm{accepted}}=\max\{V_{\mathrm{seed}},V_{\mathrm{window}}\},
+\end{equation}
+where both values are independently evaluated under identical CPIT inputs. An infeasible, timed-out-without-incumbent, or refused window leaves the seed intact and is reported with its reason.
+
+The window width, overlap, candidate budget, solver budget, incumbent policy, and any LP-guided candidate cutoff affect the search. They are experiment parameters, not undocumented implementation details. Enlarging a window can improve access to interactions but can also enlarge the binary model sharply; the method therefore has explicit size and budget controls. Worst-case mixed-integer optimization remains exponential in the model size, and repeated windows do not change that guarantee. The reported runtime includes all attempted windows for a case, not only the final successful solve. A practical failure to accept a candidate is retained as a result rather than removed from the comparison.
+
+The method is useful when the reader asks whether bounded look-ahead can improve on a constructive schedule under the same capacities. It does not establish that the rest of the horizon is globally optimized, that a different window would produce the same result, or that a result transfers to larger deposits. Case-level traces expose the actual score, bound relation, runtime and solver state. The bilingual level-three lesson demonstrates how a reader can change the window and candidate controls on a product case and interpret both accepted and refused outcomes.
+
+Candidate truncation and the boundary state are potential sources of bias. A restricted set that excludes a prerequisite, a high-value block, or a competing use of a shared capacity can produce a locally optimal answer to a poor subproblem. The implementation therefore records candidate count, window extent and refusal reason, and the method is not compared as if every case solved the same full model. When a proposed window omits required predecessors, its model either fixes the boundary consistently or refuses the proposal; it cannot treat an unavailable prerequisite as already mined. The overlap policy also matters: a block moved in one window may affect a later capacity profile, so the next window starts from the accepted incumbent and recomputes remaining resources.
+
+The reporting unit is a case-level run, not one successful window. Total runtime includes candidate generation, solver setup, all window solves, incumbent checks, and final independent validation. This accounting allows the reader to compare the look-ahead expense with the improvement over its seed and to identify cases where no proposal was accepted. The educational analysis should inspect at least one accepted improvement and one refusal, trace the affected blocks across periods, and explain which exact capacity or precedence condition governs the change. Such a worked analysis teaches how to change the method's controls; a plot of the already committed trace alone would not explain the solver's decision boundary.
+
+\subsection{Destination-choice scheduling and restricted neighborhood search}
+\label{sec:method-destination}
+Destination choice changes both value and resource use. Let $D_b$ be the allowed destinations for block $b$, and let $y_{bd}$ indicate the destination selected for that block. A destination assignment determines block contribution $p_{bd}$ and resource consumption $a_{rbd}$. The formulation couples assignment with schedule periods: a block can be extracted at most once, a selected destination is consistent with its extraction decision, precedence is preserved, and period capacities use the coefficients for the assigned destination. It is therefore a different optimization model from fixed-destination CPIT. A schedule from this model is compared only with a bound and feasible candidates for the same destination-choice formulation.
+
+The destination-aware constructor first builds a permitted block-to-destination choice using the published binary model and then applies precedence-safe periodization. The selected destination and its economics are serialized so the realized value is auditable. The neighborhood-search stage takes a feasible incumbent and defines a restricted set of blocks and periods that may change. Variables outside that neighborhood remain fixed; the solver optimizes the local subproblem under the same destination and capacity rules. This is a C-PIT[D]-style restricted re-solve: its status describes that subproblem and does not certify a global optimum of the full destination-choice instance.
+
+For assignment variable $y_{bd}$ and period extraction variable $z_{bdt}$, the basic consistency relations are
+\begin{equation}
+ \sum_{d\in D_b}\sum_{t=1}^{H}z_{bdt}\leq1,\qquad
+ z_{bdt}\leq y_{bd},\qquad
+ \sum_{d\in D_b}y_{bd}\leq1.
+\end{equation}
+Resource and precedence constraints use the corresponding destination-specific coefficient and the extraction-period decisions. The schedule objective is
+\begin{equation}
+ \max\sum_{b\in B}\sum_{d\in D_b}\sum_{t=1}^{H}\delta_t p_{bd}z_{bdt}.
+\end{equation}
+These relations describe the model boundary; the package implementation and published formulation specify the complete coupling, admissibility, and accounting rules. The report does not substitute these compact relations for the actual solver model.
+
+Every neighborhood proposal is validated independently. The method accepts a solver result only if the returned assignments are unique, precedence holds, all capacities hold, and the objective recomputed from source block data agrees with the reported value within the numeric tolerance. Moreover, a restricted search may not degrade its incumbent: the accepted candidate is the better of the seed and a validated result. Solver refusal, time limit, node limit, infeasibility, and optimality status are distinct trace outcomes. This distinction is essential because “optimal” over a small neighborhood means only that the selected local subproblem was solved to proof.
+
+The search budget is governed by neighborhood size and solver limits. Repeated exact re-solves can be expensive, and worst-case complexity remains exponential. The acceptance rule protects result validity while bounding the claim: the method can demonstrate a feasible local improvement, but cannot certify that no better schedule exists outside the neighborhood. Evaluation also respects the source-data boundary. External MineLib files are not committed when their terms prohibit redistribution; only permitted instance identifiers, derived outputs, and provenance are retained. The notebook on destination strategies walks from one allowed block choice through formulation, local solve, independent schedule check, and interpretation of the measured difference.
+
+The predecessor relation and the destination assignment interact across time. A block's destination affects value and resource use, but it does not waive the requirement that the slope-precedence closure be mined first. During a neighborhood re-solve, fixed decisions form boundary conditions: an editable dependent block cannot be scheduled before a fixed prerequisite, and a fixed dependent block cannot be retained if its prerequisite is moved beyond its period. The validation path checks the extracted schedule from its decoded assignments, rather than accepting the solver's objective alone. This independent pass catches conversion defects between binary variables and trace rows as well as modeling mistakes in the local subproblem.
+
+There are three different claims to keep apart. A candidate constructor demonstrates that a destination assignment and a period schedule can be built. A restricted optimal status proves optimality only within the encoded neighborhood and solver tolerances. A global bound comparison measures the candidate against a valid upper bound for the full destination-choice model, if one is present. The report stores these claims separately, including bound provenance, node counts where available, and null when a count is unavailable. This separation prevents a node-limited solve from being described as an exact full-instance solution. It also makes negative results useful: a method that returns no better assignment still documents the tested neighborhood and cost of obtaining the incumbent.
+
+\subsection{Deterministic scenario re-planning}
+\label{sec:method-replanning}
+The re-planning experiment asks how a policy selected before uncertainty compares with a policy that can revise its schedule after a scenario is observed. Let $s\in\mathcal S$ index the finite scenario set with declared weights $\pi_s$. Before the draw, the selected policy is fixed using only the declared pre-draw candidate information. After observing $s$, the method performs an exact neighborhood search around the permitted incumbent within a bounded C-PIT[D] neighborhood. This is an information-timing comparison over the product's finite scenarios, not a two-stage stochastic program with globally optimal recourse.
+
+For a fixed policy $x$ and scenario score $V(x,s)$, the pre-draw value is $V_{\mathrm{pre}}=\sum_s\pi_sV(x,s)$. Scenario-specific search produces feasible values $\tilde V_s$ using the observed scenario. Since the neighborhood can restrict the scenario-specific search, its value is not the global perfect-information optimum $V_s^*$. A feasible schedule yields a lower bound on that scenario optimum. The empirical information-value estimate is therefore
+\begin{equation}
+ \underline{\mathrm{EVPI}}=\sum_{s\in\mathcal S}\pi_s\tilde V_s-V_{\mathrm{pre}},
+\end{equation}
+with paired draws using the same scenario definitions and weights on both sides. Any negative finite-sample estimate is retained; it can arise from policy selection and restricted search and is not clipped to zero for presentation.
+
+The scenario loop uses deterministic ordering and frozen inputs. Each draw records the policy identity, scenario identifier, starting incumbent, search neighborhood, solver budget and terminal status. The resulting schedule is validated and valued under that draw's economics. Failed or unavailable solves remain missing/failed records with reasons; they are never imputed with the fixed-policy value. Aggregate calculations operate only under a predeclared rule for incomplete draws and report the number of paired observations. This preserves the experimental unit and prevents a missing re-plan from looking like a zero-value plan.
+
+The procedure can be written as two nested steps. First, select the fixed policy using only pre-draw evidence. Second, solve each permitted scenario neighborhood independently after the draw. The scenario solve cannot inform the earlier policy choice. If it could, the experiment would leak information across the decision boundary and overstate the value of adaptation. The paired comparison requires identical case, capacity, discounting, and scenario weighting; otherwise its difference would mix information with a changed model.
+
+The finite-scenario estimate is limited in three ways. The scenario catalogue is not a probability model for all future geological and market outcomes. The local neighborhood is not exhaustive, so its value is only a lower bound on ideal recourse. The observed scenarios are the experiment's support, not a guarantee about unobserved conditions. Re-planning runtime includes the repeated neighborhood solves and is reported separately from one-time policy selection. The method does not relax precedence or capacity to create an artificial flexibility premium. Its purpose is to quantify the measured benefit available from the declared scenario set under the stated search budget, with the limitations visible beside the number.
+
+The pairing rule is essential to interpreting the difference. For each draw, the fixed-policy and re-planned plans use the same graph, period capacities, value realization, discount convention, and source interpretation. If one method receives a larger capacity or a different block-value realization, the value difference no longer isolates information timing. The scenario weights are normalized once from the frozen scenario definition and are not tuned to improve the observed estimate. The method also separates policy selection from outcome computation: the pre-draw policy is chosen without observing the scenario-specific re-plan values. This prevents a post hoc choice of the best fixed policy after seeing all outcomes from overstating the value of information.
+
+For $n$ paired draws, the estimate uses the fixed pre-declared weights and retains the paired contribution $d_s=\tilde V_s-V(x,s)$:
+\begin{equation}
+ \underline{\mathrm{EVPI}}=\sum_{s=1}^{n}\pi_s d_s,
+ \qquad \sum_{s=1}^{n}\pi_s=1.
+\end{equation}
+The empirical distribution of $d_s$ should accompany the aggregate, since a positive weighted mean can be driven by a small number of scenarios while most paired differences are negative. With few scenarios, the report describes that set and does not imply a precise estimate of a population-level expectation. A confidence interval would require a defensible sampling design; deterministic scenario enumeration alone is not a random sample from the world.
+
+\subsection{Expected-time ensemble ordering}
+\label{sec:method-expected-time}
+The expected-time policy replaces one exact expected-extraction-time ranking with an ensemble prediction and then reuses the constructive feasibility mechanism. For each block, eleven serialized features describe normalized economic value, depth, predecessor-recurrence proxies, grade, radial position, ultimate-pit membership, discount rate, two capacity fractions and normalized horizon. The two fields named with “cone” are linear recurrences over immediate predecessors, not exact transitive-cone statistics: shared ancestors may contribute through more than one path. That implementation detail affects interpretation of the learned inputs and is stated explicitly rather than inferred from feature names.
+
+Each neural member has input width eleven, hidden widths 48 and 24, and a scalar output for expected extraction-time fraction. Feature means and scales are learned on training rows only. Five frozen initialization seeds produce five models; the deployed output is their arithmetic mean. The train set contains 3,421,440 generated rows and the selected holdout contains 1,710,720 rows, with deposit seeds separated across partitions. The holdout case study has 432 deposit-scenario-size combinations. Ten epochs, squared-error loss, and explicit Adam updates are fixed by the committed experiment artifacts \cite{kingma}. The policy does not use the holdout to tune feature selection, epochs or warning thresholds.
+
+For feature vector $f_b$, member $m$ predicts $\hat\tau_{bm}=g_m((f_b-\mu)/\sigma)$, with train-only location $\mu$ and scale $\sigma$. The ensemble and precedence-safe schedule are
+\begin{equation}
+ \hat\tau_b=\frac{1}{5}\sum_{m=1}^{5}\hat\tau_{bm},\qquad
+ \hat S=\operatorname{TopoSchedule}(\hat\tau,a,c,A).
+\end{equation}
+The predictions determine only priority; feasibility comes from the common constructor. At inference, evaluating the five feed-forward networks costs a number of arithmetic operations proportional to $5|B|(11\cdot48+48\cdot24+24)$, followed by graph ordering and period assignment. This avoids an LP solve for the learned ranking, but training still depends on exact relaxation targets and the complete offline bake remains separate.
+
+\begin{algorithm}
+\caption{Expected-time ensemble construction}
+\label{alg:expected-time}
+\begin{algorithmic}[1]
+\Require Frozen model members, training means and scales, block features, precedence graph, capacities
+\ForAll{blocks $b$}
+  \State standardize $f_b$ using stored $\mu$ and $\sigma$
+  \State evaluate all five members and average their predictions
+\EndFor
+\State rank blocks by predicted extraction time with deterministic ties
+\State call the shared precedence-safe, capacity-aware constructor
+\State independently recompute feasibility and discounted value
+\State emit predictions, member outputs, schedule and validation outcome
+\end{algorithmic}
+\end{algorithm}
+
+The hypothesis is narrowly about schedule quality on unseen generated deposits while avoiding the exact LP ranking at inference. On the 432 synthetic holdout cases, the median ratio to exact ExTS is 0.9405, the mean is 0.9401, the tenth percentile 0.8364, and the minimum 0.7101; one third fall below 0.90. The learned schedule beats greedy in 92.13 percent of those cases. Two separately identified real benchmark cases yield ratios 0.9989 and 0.8987; two cases are not an estimate of transfer to a population of mines. The independent warning validation misses many failures and falls below the frozen precision, recall and worst-unflagged thresholds, so the warning remains unavailable.
+
+These are results of the current serialized experiment, not universal performance guarantees. A full ablation must isolate feature groups, ensemble size and training-data design under the same frozen seed partitions. Those ablation results are not yet part of this report and are not fabricated from aggregate metrics. The current values are also tied to the validated 0.11 baseline and must be recomputed if a new canonical bake changes the method or case artifacts. Python, ONNX and browser parity, failure rates by family, runtimes, and uncertainty intervals belong in the result table and notebook so the user can judge whether a fast ranker is useful for a particular task.
+
+The target is an extraction-time fraction produced by a relaxation, rather than a directly observed period in an operating mine. Its usefulness depends on how faithfully that ranking transfers to a feasible schedule after precedence and capacity repair. Regression error and schedule value are therefore distinct outcomes: a predictor can have a modest absolute time error but preserve a valuable ordering, or have a small average error while misordering a critical frontier. The study reports rank correlation and schedule-value ratios together, and evaluates every case through the same downstream constructor. No metric is interpreted as a substitute for the paired objective comparison.
+
+The experiment's controlled factors are deposit family, deposit seed, grid size, capacity scenario, discount rate and horizon. Deposit seeds, not individual block rows, define the split because thousands of rows from one graph share structure. The 432 holdout cases cross six held-out deposits, four generated families, nine declared scenarios and two grid sizes. The row-level training count is much larger, but it does not increase the number of independent deposit replicates. The uncertainty analysis must therefore cluster at the deposit seed or report descriptive case distributions without a false independent-row standard error.
+
+An informative ablation must preserve that split and retrain each candidate on the same train-only normalization. Planned contrasts include a single seeded member versus the five-member mean, removal of the predecessor-recurrence features, removal of grade and radial features, and a reduced training set matched by deposit family. For each contrast, the paired holdout ratio against the full model is computed per deposit seed and scenario; failure rate and worst-case ratio remain visible. These are not current measured results. The manuscript will include the ablation table only after the controlled runs complete and their configuration and outputs are checked against the frozen split. Until then the absent ablation is an explicit completeness defect, not a null finding or an assumed benefit of ensembling.
+
+For ablation candidate $k$, the paired change is normalized by the exact comparator on the same case:
+\begin{equation}
+ \Delta_{k,c}=\frac{V_{k,c}-V_{full,c}}{V_{\mathrm{ExTS},c}},
+ \qquad c\in\mathcal C_{holdout}.
+\end{equation}
+The distribution of $\Delta_{k,c}$ must be summarized by deposit seed before any interval is computed. This defines the estimand without claiming an effect before the ablation is run. The denominator is positive for the eligible study cases; if future cases admit nonpositive comparator values, this ratio is undefined and the report must switch to a paired value difference rather than clip or shift the denominator.
+
+\subsection{State-conditioned feasible-frontier policy}
+\label{sec:method-frontier}
+The frontier policy is a separately approved method design for a later product version. It is not a trained method result in the current 0.11.000 evidence set. Its decisions are conditioned on the partial schedule rather than being a static per-block ranking. The state contains the current period, assigned-period vector, residual resources, accumulated value, and the precedence frontier. At each decision, the actor scores only blocks that are both precedence-eligible and feasible under the remaining resources of that period. Separate stop-period and stop-schedule actions allow the policy to leave capacity unused or return a partial schedule; coverage is measured rather than hidden.
+
+Let $s_t$ be the partial schedule state and $\mathcal A(s_t)$ the feasible action mask. The masked policy is
+\begin{equation}
+ \pi_\theta(a\mid s_t)=\frac{\exp h_\theta(s_t,a)}{\sum_{a'\in\mathcal A(s_t)}\exp h_\theta(s_t,a')},\quad a\in\mathcal A(s_t),
+\end{equation}
+where unavailable actions receive zero probability. For a sequence of actions producing schedule $p$, the terminal return is the engine's discounted NPV $R(p)=\sum_{i:p_i\geq1}d_{p_i}v_i$. The training design uses masked PPO with an actor and critic; the evaluator's objective is reused directly without an extra discount factor. The mask constrains action sampling but does not certify the serialized schedule. An independent validator recomputes period assignments, precedence, resources, uniqueness and objective after inference.
+
+The frozen experimental design separates training, validation and synthetic testing by both seed and graph family, with respective seed counts 1,000, 200 and 500 and size strata extending beyond the training range. Five fixed learner seeds share the predeclared compute budget. Weights and training graphs remain outside the product repository; the repository stores small checksummed configuration and evaluation records. All thirteen product cases remain sealed until code, feature rules, seed-split manifest and checkpoint selection have been frozen. Evaluation compares paired results with the 0.11 baseline, expected-time ensemble and applicable published schedule methods, and reports feasibility, value coverage, NPV, comparable certified gap, inference time, peak memory and every failure.
+
+\begin{algorithm}
+\caption{Masked frontier schedule generation}
+\label{alg:frontier}
+\begin{algorithmic}[1]
+\Require Frozen graph policy, validated block graph, capacities, period horizon
+\State initialize empty partial schedule and resource residuals
+\While{a period remains and the policy has not stopped}
+  \State compute the precedence-eligible frontier from the current partial schedule
+  \State mask blocks that exceed any current-period resource residual
+  \State score admissible blocks and the explicit stop actions
+  \State apply the selected action and update the partial state
+\EndWhile
+\State independently validate all assignments and recompute objective and coverage
+\State preserve feasible partial, failed, and complete outcomes as distinct results
+\end{algorithmic}
+\end{algorithm}
+
+At the present state, policy training has not been accepted as complete, no frozen checkpoint has been validated, and no all-case 0.12 bake exists. The method therefore has no measured superiority, runtime, memory or coverage result. The web application must not present it as an available schedule selector. The report documents the method design and evidence required so that the later implementation can be audited against the approved scope; it does not convert isolated graph generation, masking or replay primitives into a trained outcome. Release remains contingent on the full paired synthetic study, one-shot product-case evaluation, trace-backed replay, bilingual training and evaluation lessons, independent review, and all gates specified by the versioned amendment.
+
+PPO updates operate on frozen batches of policy transitions. For each sampled action, the importance ratio compares the current and behavior policies; clipping limits the surrogate policy improvement, while the critic estimates the return and an entropy term can encourage exploration. The ratio and clipped objective are
+\begin{equation}
+ r_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{old}}(a_t\mid s_t)},\qquad
+ L^{clip}(\theta)=\mathbb E_t\left[\min\left(r_t(\theta)\hat A_t,\operatorname{clip}(r_t(\theta),1-\epsilon,1+\epsilon)\hat A_t\right)\right].
+\end{equation}
+This objective describes the policy update used by the approved design; it does not establish convergence or schedule quality under the chosen budget. The evaluation still uses the mining objective and independent feasibility checks, not the PPO surrogate. The five members use predeclared seeds and caps. A member that reaches the cap without improving the validation criterion remains a negative or incomplete result instead of being silently retrained until it wins.
+
+State conditioning should be tested directly rather than inferred from a graph-network architecture name. A state-mutation test changes residual capacity, current period or frontier membership while holding static block features fixed, then verifies that the feasible action set or actor scores respond. Adversarial tests include a dependent block whose prerequisite is unscheduled, a block that exceeds one resource by a small amount, duplicate selection, period overflow, and a stop action with no feasible block. The independent validator recomputes every constraint from the emitted schedule. A policy that has a correct mask but a faulty decoder must fail the same validator and retain the failure in the output set.
+
+Because incomplete schedules can be feasible, validity and usefulness require separate measures. Feasibility is binary over the declared hard constraints; completion is the fraction of required positive-value or total tonnage coverage as defined by the experiment; NPV is recomputed only for actually assigned blocks. A policy may be perfectly feasible and still return negligible coverage. The report must therefore show the distribution of coverage with NPV and cannot exclude stopped policies from the failure count. If a checkpoint or feature digest does not match the frozen configuration, evaluation is unavailable rather than run on a convenient replacement. These acceptance rules keep an experimental learned policy from being presented as an operational plan.

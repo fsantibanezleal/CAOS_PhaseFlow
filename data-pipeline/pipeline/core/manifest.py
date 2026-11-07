@@ -160,17 +160,19 @@ def build_case_manifest(
             key: en.get(key)
             for key in (
                 "ran", "reason", "nRealisations", "sigma", "methods", "expected", "p10", "p90", "meanModel",
-                "optimism", "bestByExpected", "bestByP10", "valueOfReplanningPct",
+                "optimism", "bestByExpected", "bestByP10", "valueOfReplanningPct", "resolveMethod",
+                "fixedPolicy", "fixedPolicyExpectedNpv", "replannedExpectedNpv", "replanningElapsedSeconds",
+                "replanningSettings",
             )
         },
         "best": None if best is None else {"method": best.method, "gap_pct": round(best.gap_pct, 4)},
     }
 
 
-def build_index(entries: list[dict]) -> dict:
+def build_index(entries: list[dict], *, engine_version: str | None = None) -> dict:
     return {
         "schema": INDEX_SCHEMA,
-        "engine_version": __version__,
+        "engine_version": engine_version or __version__,
         "n_cases": len(entries),
         "cases": sorted(entries, key=lambda e: e["case_id"]),
     }

@@ -13,12 +13,14 @@ Output: ``models/surrogate-parity.json`` with
 - ``features``: for one committed twin case, the block features Python computes from the trace's own
   arrays, so the browser's feature builder is checked against the definition, not against itself.
 
-Run after training (``scripts/train_learned.py``) or after a rebake of the fixture case. It reads
-committed files only and writes one file.
+Run after training (``scripts/train_learned.py``) or after a rebake of the fixture case. It reads the
+selected external model bundle and committed fixture trace, then writes the fixture into that bundle.
 """
 from __future__ import annotations
 
+import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -32,6 +34,7 @@ import oreblocks as ob  # noqa: E402
 from pipeline.io.schema import Scenario  # noqa: E402
 from pipeline.model.features import block_feature_matrix  # noqa: E402
 from pipeline.model.learned import Mlp  # noqa: E402
+from model_paths import external_model_root  # noqa: E402
 
 FIXTURE_CASE = "twin-porphyry-s"
 
@@ -43,14 +46,23 @@ def _samples(model: Mlp, n: int, seed: int) -> list[list[float]]:
 
 
 def main() -> int:
-    models = ROOT / "models"
+    parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
+    parser.add_argument(
+        "--derived-root",
+        type=Path,
+        default=Path(os.environ.get("PHASEFLOW_DERIVED_ROOT", ROOT / "data" / "derived")),
+        help="artifact tree containing the current twin-porphyry-s feature fixture",
+    )
+    args = parser.parse_args()
+    models = external_model_root()
     bound = Mlp.from_json(json.loads((models / "bound.json").read_text(encoding="utf-8")))
     etime = Mlp.from_json(json.loads((models / "expected-time.json").read_text(encoding="utf-8")))
 
     xb = _samples(bound, 64, 5)
     xe = _samples(etime, 64, 6)
 
-    trace = json.loads((ROOT / "data" / "derived" / FIXTURE_CASE / "trace.json").read_text(encoding="utf-8"))
+    derived_root = args.derived_root.expanduser().resolve()
+    trace = json.loads((derived_root / FIXTURE_CASE / "trace.json").read_text(encoding="utf-8"))
     blk = trace["blocks"]
     dims = tuple(trace["instance"]["dims"])
     grid = ob.BlockGrid(*dims)
@@ -68,7 +80,7 @@ def main() -> int:
     sc = Scenario(periods=int(trace["scenario"]["periods"]), discount_rate=float(trace["scenario"]["discountRate"]),
                   capacity_fraction=tuple(fracs), resource_names=tuple(r["name"] for r in res))
     feats = block_feature_matrix(
-        values=value, tonnage=tonnage, grade=np.asarray(blk["grade"], dtype=np.float64),
+        values=value, grade=np.asarray(blk["grade"], dtype=np.float64),
         level=np.asarray(blk["level"]), x=np.asarray(blk["x"]), y=np.asarray(blk["y"]),
         in_pit=in_pit, prec=prec, scenario=sc, dims=dims,
     ).astype(np.float64)
@@ -89,7 +101,7 @@ def main() -> int:
     }
     path = models / "surrogate-parity.json"
     path.write_text(json.dumps(out, indent=1) + "\n", encoding="utf-8", newline="\n")
-    print(f"wrote {path.relative_to(ROOT)}: 64 bound, 64 expected-time, {rows.size} feature rows of {FIXTURE_CASE}")
+    print(f"wrote {path}: 64 bound, 64 expected-time, {rows.size} feature rows of {FIXTURE_CASE}")
     return 0
 
 

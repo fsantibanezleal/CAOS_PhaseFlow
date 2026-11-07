@@ -1,16 +1,17 @@
 {
   "name": "phaseflow-frontend",
   "private": true,
-  "version": "0.10.0",
+  "version": "0.12.0",
   "type": "module",
   "scripts": {
-    "predev": "node copy-data.mjs",
+    "predev": "node scripts/copy-data.mjs",
     "dev": "vite",
-    "prebuild": "node copy-data.mjs",
+    "prebuild": "node scripts/copy-data.mjs",
     "build": "tsc --noEmit && vite build",
     "postbuild": "node spa-404.mjs",
     "preview": "vite preview",
-    "test": "node --import tsx --test && node --import tsx scripts/check-arch-bounds.mjs",
+    "test": "node --import tsx --test && node --import tsx scripts/check-arch-bounds.mjs && node scripts/check-method-language.mjs",
+    "check:method-language": "node scripts/check-method-language.mjs",
     "gate": "node scripts/gate.mjs",
     "check:arch": "node --import tsx scripts/check-arch-bounds.mjs",
     "verify:profile": "node scripts/verify-profile-size.mjs",
@@ -18,10 +19,11 @@
     "verify:focus": "node scripts/verify-focus-capacity.mjs",
     "verify:theme": "node scripts/verify-theme.mjs",
     "verify:infeasible": "node scripts/verify-infeasible.mjs",
-    "verify:stage": "node scripts/verify-stage.mjs"
+    "verify:stage": "node scripts/verify-stage.mjs",
+    "verify:showcase": "node scripts/verify-showcase.mjs"
   },
   "dependencies": {
-    "@fasl-work/caos-app-shell": "0.19.6",
+    "@fasl-work/caos-app-shell": "0.23.0",
     "katex": "0.19.1",
     "lucide-react": "^1.52.0",
     "react": "^19.3.0",
@@ -41,5 +43,8 @@
     "tsx": "^4.19.2",
     "typescript": "~5.9.3",
     "vite": "8.3.5"
+  },
+  "engines": {
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
   }
 }

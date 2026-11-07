@@ -115,38 +115,42 @@ test('the learned rung carries a MEASUREMENT of this case, not a prediction abou
   assert.ok(seen > 0, 'no case was baked with the learned lane');
 });
 
-test('the shipped rule is recorded on every learned row, whatever the rule currently is', () => {
-  // Read from the model's own metrics, never restated here. This assertion has been rewritten twice
-  // already, because the study moved twice: a scenario rule chosen on a five-point sweep that ran
-  // rate and capacity together, then an orebody rule once the sweep was crossed. A test that hardcodes
-  // one of them stops testing the moment the science improves, which is exactly when it matters.
+test('only a rule that passes the independent third-split gate can flag a learned row', () => {
   const metrics = JSON.parse(
     readFileSync(join(process.cwd(), '..', 'models', 'expected-time.json'), 'utf8'),
   ).metrics as Record<string, string>;
   const rule = String(metrics.failure_rule ?? '');
   assert.ok(rule.length > 0, 'the model carries no failure rule');
+  const validation = JSON.parse(
+    readFileSync(join(process.cwd(), '..', 'models', 'guard-validation.json'), 'utf8'),
+  ) as Record<string, number | string>;
+  const eligible = validation.rule === rule
+    && validation.failure_below === 0.90
+    && Number(validation.recall) >= 0.818
+    && Number(validation.precision) >= 0.667
+    && Number(validation.worst_unflagged) >= 0.7852;
 
   for (const t of traces()) {
     const learned = t.methods.filter((m) => m.rung === 'learned');
     if (!learned.length) continue;
-    let expected: boolean;
+    let matches: boolean;
     if (rule.startsWith('archetype ==')) {
       // the rule needs a label the artifact does not carry, so the case id is the only handle here;
       // the pipeline reads the real one off the instance
       const want = rule.split('==')[1].trim();
-      expected = t.caseId.includes(want.replace('_', '-')) || t.caseId.includes(want);
+      matches = t.caseId.includes(want.replace('_', '-')) || t.caseId.includes(want);
     } else if (rule.includes('discount rate >=')) {
       const at = Number(rule.split('>=')[1].split(',')[0]);
-      expected = (t.scenario.discountRate ?? 0) >= at;
+      matches = (t.scenario.discountRate ?? 0) >= at;
     } else {
-      // an unknown rule shape must FAIL rather than silently pass every case
+      // an unknown rule shape must FAIL rather than silently permit rule use
       assert.fail(`the gate does not know how to apply the shipped rule: ${rule}`);
     }
     for (const m of learned) {
       assert.equal(
         Boolean(m.flaggedByRule),
-        expected,
-        `${t.caseId}: rule ${rule} should ${expected ? '' : 'not '}flag ${m.method}`,
+        eligible && matches,
+        `${t.caseId}: ${eligible ? `validated rule ${rule}` : 'unavailable guard'} should ${eligible && matches ? '' : 'not '}flag ${m.method}`,
       );
     }
   }

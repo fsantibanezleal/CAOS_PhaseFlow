@@ -1,0 +1,56 @@
+{
+  "methods": {
+    "M-1": [
+      "01-problem/02-bound-and-feasible-plan.ipynb"
+    ],
+    "M-2": [
+      "01-problem/03-sliding-window-and-expected-ordering.ipynb"
+    ],
+    "M-3": [
+      "02-destination-choice/03-published-binary-formulation.ipynb"
+    ],
+    "M-4": [
+      "03-uncertainty/03-replanning-across-realisations.ipynb"
+    ],
+    "BS-1": [
+      "03-uncertainty/04-learned-expected-time-ensemble.ipynb"
+    ],
+    "BS-2": [
+      "04-learned-surrogates/03-frontier-state-and-feasibility-mask.ipynb"
+    ]
+  },
+  "contracts": {
+    "case-index": [
+      "01-problem/01-problem-and-published-data.ipynb"
+    ],
+    "case-manifest": [
+      "01-problem/01-problem-and-published-data.ipynb"
+    ],
+    "schedule-trace": [
+      "03-uncertainty/03-replanning-across-realisations.ipynb"
+    ],
+    "learned-model": [
+      "04-learned-surrogates/03-frontier-state-and-feasibility-mask.ipynb",
+      "04-learned-surrogates/04-frontier-data-splits-and-normalization.ipynb"
+    ],
+    "learned-study": [
+      "04-learned-surrogates/02-cross-case-validation.ipynb"
+    ],
+    "readiness": [
+      "05-operability/01-coherence-and-width.ipynb"
+    ]
+  },
+  "stages": {
+    "evaluate": [
+      "01-problem/02-bound-and-feasible-plan.ipynb"
+    ],
+    "solve": [
+      "01-problem/01-problem-and-published-data.ipynb"
+    ]
+  },
+  "packages": {
+    "oreblocks": [
+      "02-destination-choice/03-published-binary-formulation.ipynb"
+    ]
+  }
+}

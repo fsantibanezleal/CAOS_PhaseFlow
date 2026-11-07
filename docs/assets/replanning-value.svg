@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 390" role="img" aria-labelledby="title desc">
+  <title id="title">Paired value of deterministic re-planning</title>
+  <desc id="desc">Before observing outcomes, choose one fixed schedule by its mean value over the shared draws. For every draw, start a node-bounded local search from that same schedule, score the fixed and re-planned schedules on the same draw, then average their paired gains. The feasible mean is a lower bound on EVPI, not a global optimum.</desc>
+  <style>
+    :root { --bg:#ffffff; --card:#f6f8fa; --ink:#1f2328; --muted:#59636e; --line:#d0d7de;
+            --a:#0969da; --b:#8250df; --c:#1a7f37; --d:#9a6700; --e:#cf222e;
+            --a2:#ddf4ff; --b2:#fbefff; --c2:#dafbe1; --d2:#fff8c5; --e2:#ffebe9; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#0d1117; --card:#151b23; --ink:#f0f6fc; --muted:#aab4c0; --line:#3d444d;
+              --a:#58a6ff; --b:#bc8cff; --c:#3fb950; --d:#e3b341; --e:#ff7b72;
+              --a2:#0c2d6b; --b2:#3c1e70; --c2:#04260f; --d2:#3b2300; --e2:#490202; }
+    }
+    .bg { fill:var(--bg); }
+    .card { fill:var(--card); stroke:var(--line); stroke-width:1.2; }
+    .a { fill:var(--a2); stroke:var(--a); stroke-width:1.4; }
+    .b { fill:var(--b2); stroke:var(--b); stroke-width:1.4; }
+    .c { fill:var(--c2); stroke:var(--c); stroke-width:1.4; }
+    .d { fill:var(--d2); stroke:var(--d); stroke-width:1.4; }
+    .title { fill:var(--ink); font:600 17px system-ui,-apple-system,Segoe UI,sans-serif; }
+    .head { fill:var(--ink); font:600 14px system-ui,-apple-system,Segoe UI,sans-serif; }
+    .body { fill:var(--muted); font:12px system-ui,-apple-system,Segoe UI,sans-serif; }
+    .math { fill:var(--ink); font:12px ui-monospace,Consolas,monospace; }
+    .arrow { fill:none; stroke:var(--muted); stroke-width:1.7; marker-end:url(#arrow); }
+    .bridge { fill:none; stroke:var(--a); stroke-width:1.6; stroke-dasharray:5 4; marker-end:url(#blue-arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--muted)"/>
+    </marker>
+    <marker id="blue-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" style="fill:var(--a)"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1000" height="390" rx="12"/>
+  <text class="title" x="500" y="31" text-anchor="middle">One fixed baseline, paired with every value draw</text>
+  <text class="body" x="30" y="57">BEFORE OBSERVING OUTCOMES</text>
+
+  <rect class="card" x="30" y="72" width="260" height="84" rx="9"/>
+  <text class="head" x="160" y="99" text-anchor="middle">Fixed schedule menu</text>
+  <text class="body" x="160" y="122" text-anchor="middle">forecast · Gershon · greedy</text>
+  <text class="body" x="160" y="140" text-anchor="middle">same case and draw set</text>
+
+  <rect class="a" x="370" y="72" width="260" height="84" rx="9"/>
+  <text class="head" x="500" y="99" text-anchor="middle">Score every fixed schedule</text>
+  <text class="math" x="500" y="123" text-anchor="middle">meanₖ V(schedule, vₖ)</text>
+  <text class="body" x="500" y="141" text-anchor="middle">retain paired scores by draw</text>
+
+  <rect class="b" x="710" y="72" width="260" height="84" rx="9"/>
+  <text class="head" x="840" y="99" text-anchor="middle">Choose one policy P*</text>
+  <text class="math" x="840" y="123" text-anchor="middle">argmaxₘ meanₖ V(Pₘ, vₖ)</text>
+  <text class="body" x="840" y="141" text-anchor="middle">selection happens before each draw</text>
+
+  <path class="arrow" d="M292 114 H366"/>
+  <path class="arrow" d="M632 114 H706"/>
+  <path class="bridge" d="M840 158 V185 H135 V220"/>
+  <text class="body" x="500" y="181" text-anchor="middle">the same P* is copied into every realization-specific solve</text>
+
+  <text class="body" x="500" y="218" text-anchor="middle">AFTER OBSERVING EACH VALUE DRAW k</text>
+  <rect class="b" x="30" y="232" width="220" height="88" rx="9"/>
+  <text class="head" x="140" y="258" text-anchor="middle">Common starting point</text>
+  <text class="math" x="140" y="281" text-anchor="middle">P* + values vₖ</text>
+  <text class="body" x="140" y="301" text-anchor="middle">never a new menu winner</text>
+
+  <rect class="a" x="270" y="232" width="220" height="88" rx="9"/>
+  <text class="head" x="380" y="258" text-anchor="middle">Restricted local search</text>
+  <text class="body" x="380" y="281" text-anchor="middle">node-bounded C-PIT[D] MILPs</text>
+  <text class="body" x="380" y="301" text-anchor="middle">feasible incumbent is retained</text>
+
+  <rect class="card" x="510" y="232" width="220" height="88" rx="9"/>
+  <text class="head" x="620" y="258" text-anchor="middle">Paired comparison</text>
+  <text class="math" x="620" y="281" text-anchor="middle">Δₖ = V(replanₖ,vₖ)</text>
+  <text class="math" x="620" y="301" text-anchor="middle">− V(P*,vₖ)</text>
+
+  <rect class="c" x="750" y="232" width="220" height="88" rx="9"/>
+  <text class="head" x="860" y="258" text-anchor="middle">Report the mean gain</text>
+  <text class="math" x="860" y="281" text-anchor="middle">meanₖ Δₖ ≥ 0</text>
+  <text class="body" x="860" y="301" text-anchor="middle">feasible lower bound on EVPI</text>
+
+  <path class="arrow" d="M252 276 H266"/>
+  <path class="arrow" d="M492 276 H506"/>
+  <path class="arrow" d="M732 276 H746"/>
+  <rect class="card" x="30" y="340" width="940" height="32" rx="8"/>
+  <text class="body" x="500" y="361" text-anchor="middle">The restricted solves are exact within each neighborhood; randomized neighborhood selection is heuristic and does not certify global EVPI.</text>
+</svg>

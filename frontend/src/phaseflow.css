@@ -1,6 +1,6 @@
 /* PhaseFlow layout.
  *
- * ADR-0071, the UI floor, is the minimum and it is measured rather than judged: the page IS the
+ * the measured UI floor, is the minimum and it is measured rather than judged: the page IS the
  * viewport, the workbench uses the full width, every ancestor of a scrollable row carries
  * min-width: 0, navigation chrome gets ONE row, and the instrument owns at least half the App route
  * and at least 80 percent of the focus route. The prose routes are legitimately taller than the
@@ -13,14 +13,6 @@
   --pf-gap: 12px;
 }
 
-/* The workbench reads these shared sizing tokens from its shell-owned frame. */
-@media (min-width: 901px) {
-  :root:has(.caos-wb) {
-    --rail-w: clamp(236px, 18.5vw, 320px);
-    --space-4: 0.5rem;
-  }
-}
-
 /* ---------- the workbench route ---------- */
 
 /* Keep the Focus affordance on the tab row instead of reserving a second navigation row.
@@ -29,7 +21,7 @@
   .caos-wb-main > .caos-cw > .tabs > .tabs-slot .pf-focus-enter { margin: 0; }
 }
 
-/* ADR-0071 rule 8: the instrument gets at least half an App route.
+/* Layout rule: the instrument gets at least half an App route.
  *
  * MEASURED, because guessing at this is how it stayed broken through two attempts. The chain above
  * the stage is  pf-main (flex column, 804px)  >  .tabs (the SHELL's wrapper)  >  .tabpanel  >
@@ -94,6 +86,36 @@
 }
 
 .pf-stage3d canvas { display: block; }
+
+.pf-story-stage,
+.pf-story-aggregate {
+  position: relative;
+  width: 100%;
+  height: clamp(380px, 62vh, 720px);
+  min-height: 340px;
+}
+.pf-story-stage > .pf-stage3d { height: 100%; min-height: 340px; }
+.pf-story-aggregate { display: flex; flex-direction: column; justify-content: flex-end; padding: 5rem 1rem 1rem; }
+.pf-story-panel { height: 100%; overflow: auto; }
+.pf-story-links { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
+.pf-story-link { position: absolute; transform: translate(-50%, -50%); width: 2rem; min-height: 2rem !important; padding: 0 !important; border-radius: 50% !important; border: 2px solid var(--color-bg) !important; background: var(--color-accent) !important; color: white !important; font-weight: 800; box-shadow: 0 0 0 2px var(--color-accent); pointer-events: auto; }
+.pf-story-link.is-selected { box-shadow: 0 0 0 4px var(--color-warn); }
+.pf-story-cursor { position: absolute; right: 12px; bottom: 12px; padding: .3rem .55rem; border-radius: 999px; color: var(--color-fg); background: var(--color-surface); border: 1px solid var(--color-border); font-size: .78rem; }
+.pf-story-linked { display: grid; gap: .45rem; margin: 0 0 .75rem; padding: 0 0 .75rem; border-bottom: 1px solid var(--color-border); }
+.pf-story-linked h3 { margin: 0; font-size: .9rem; }
+.pf-story-linked-list { display: flex; flex-wrap: wrap; gap: .35rem; }
+.pf-story-linked-list button { min-height: 30px; padding: .25rem .45rem; font-size: .72rem; white-space: normal; }
+.pf-story-linked-list button[data-linked-selected="true"] { border-color: var(--color-accent); box-shadow: inset 3px 0 var(--color-accent); }
+.pf-story-linked-value { margin: 0; font-size: .82rem; }
+.pf-story-scrubber { display: grid; gap: .2rem; font-size: .75rem; }
+.pf-story-scrubber input { width: 100%; }
+.pf-story-chart { position: relative; min-height: 170px; overflow: hidden; }
+.pf-story-chart-cursor { position: absolute; z-index: 2; top: 12px; bottom: 33px; width: 2px; background: var(--color-warn); pointer-events: none; }
+.pf-story-panel dl { display: grid; grid-template-columns: minmax(130px, 0.7fr) 1.3fr; gap: 0.45rem 0.8rem; }
+.pf-story-panel dd { margin: 0; overflow-wrap: anywhere; }
+.pf-story-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.pf-story-table th, .pf-story-table td { padding: 0.5rem; border-bottom: 1px solid rgba(120, 130, 140, 0.45); text-align: start; }
+.pf-story-entry { display: inline-flex; min-height: 40px; align-items: center; font-weight: 650; }
 
 
 
@@ -160,6 +182,14 @@
   gap: 12px;
 }
 
+@media (min-width: 861px) and (max-height: 900px) {
+  .pf-focus-rail { padding: 8px; gap: 8px; }
+  .pf-focus-rail .pf-group { padding: 6px 8px; gap: 4px; }
+  .pf-focus-rail .pf-ctl { gap: 2px; }
+  .pf-focus-rail .pf-cap { line-height: 1.25; }
+  .pf-focus-rail .pf-chips { gap: 3px; }
+}
+
 .pf-focus-exit {
   position: absolute;
   right: 12px;
@@ -193,7 +223,8 @@
 }
 .pf-chip.on { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg); }
 
-.pf-legend { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.72rem; color: var(--color-fg-subtle); }
+.pf-legend { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px 6px; font-size: 0.72rem; color: var(--color-fg-subtle); }
+.pf-legend > span { white-space: nowrap; }
 .pf-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin-right: 3px; }
 
 /* ---------- readouts ---------- */
@@ -206,8 +237,8 @@
  * in-flow canvas fed the host its own height back and the pit profile grew to 1216px, leaving the
  * drawing a thin line at the bottom of an empty panel. The host takes a definite height from the
  * viewport and the canvas sits out of flow inside it. */
-.pf-canvas-host { position: relative; width: 100%; height: clamp(260px, 50vh, 480px); overflow: hidden; }
-.tabpanel[data-panel="diagnostics"] .pf-canvas-host { height: clamp(550px, 75vh, 720px); }
+.pf-canvas-host { position: relative; width: 100%; height: clamp(280px, 56vh, 720px); overflow: hidden; }
+.tabpanel[data-panel="diagnostics"] .pf-canvas-host { height: clamp(620px, 85vh, 900px); }
 .pf-canvas-host > canvas { position: absolute; inset: 0; }
 .pf-split--wide:has(.pf-canvas-host) > .pf-panel:has(.pf-canvas-host) { grid-column: 1 / -1; order: -1; }
 .tabpanel[data-panel="production"] .pf-split--wide > .pf-panel:first-child { grid-column: 1 / -1; }
@@ -321,7 +352,7 @@
 .pf-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 12px; min-width: 0; }
 /* Four charts across a 1220px stage leaves each one 290px wide and 130px of plot, with 250px of
  * empty page underneath. Two columns give each chart 600x300 and use the height the tab already
- * has. ADR-0071 rule 8 is about the INSTRUMENT filling its route, and a row of postage stamps above
+ * has. the sizing target is the instrument filling its route, and a row of postage stamps above
  * an empty half-page satisfies the letter of it and none of the point. */
 .pf-split--wide { grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
 @media (max-width: 1200px) { .pf-split--wide { grid-template-columns: minmax(0, 1fr); } }
@@ -366,7 +397,7 @@
 .pf-warn strong { color: inherit; }
 
 /* =============================================================================================
-   ADR-0071 UI FLOOR v2 (applied by tools/ui-floor/apply_ui_floor.py). Measured minimum, not styling.
+   Measured UI floor v2. Measured minimum, not styling.
    Every rule is here because its absence was a shipped defect somewhere in this line.
    ============================================================================================= */
 
@@ -394,7 +425,7 @@ html, body { overflow-x: clip; }
       PitForge /experiments hid 1055px of 1955px (54% of the page), /benchmark hid the MineLib
       reproduction table that is the product's headline evidence, and ChancaDEM /benchmark hid 3700px.
       No inner scroller existed on any of those routes, and no user gesture could reach the content.
-      ADR-0071 rule 1 says scrolling belongs INSIDE the container that owns long content: v1
+      The layout rule says scrolling belongs INSIDE the container that owns long content: v1
       implemented the "not on the document" half and skipped the "inside the container" half.
       A prose route is any page-body that is NOT the app layout, so it gets the inner scroll. */
 
@@ -410,10 +441,8 @@ html, body { overflow-x: clip; }
       and every extra row is vertical space taken from the instrument on every render, forever.
       NOTE: the row must NOT carry `overflow-x` if it hosts dropdown menus. In CSS a box cannot keep
       `overflow-y: visible` when the other axis is anything else, so the declared value computes to
-      `auto` and the row clips its own menu. Group the tabs instead (ADR-0071 rule 5). */
-.tablist button { flex: 0 0 auto; white-space: nowrap; }
-
-/* ADR-0071 rules 4+5: ONE row of tabs; a tab combining several views reveals its list on hover and
+      `auto` and the row clips its own menu. Group the tabs instead.  */
+/* Navigation rules 4+5: ONE row of tabs; a tab combining several views reveals its list on hover and
    you choose from the same tab. Two rows of chrome is the thing this replaces. */
 .pf-tabrow { display: flex; flex-wrap: nowrap; gap: 0.3rem; align-items: center; min-width: 0;
   max-width: 100%; overflow: visible; flex: 0 0 auto;
@@ -435,9 +464,23 @@ html, body { overflow-x: clip; }
 .pf-tabpanel { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 4px; }
 @media (min-width: 901px) {
   .caos-wb-main .tabpanel .pf-tabpanel:not([hidden]) { flex: 0 0 auto; min-height: 0; overflow: visible; }
+  /* The production workbench has two navigation rows (shell view + product subview) before its
+     primary chart. Keep both rows readable, but reclaim their surplus spacing at short desktop
+     heights so the drawn chart remains visible above the fixed provenance footer. */
+  .caos-wb-main .tabpanel[data-panel="production"] .pf-tabrow {
+    padding-bottom: 0.2rem;
+    margin-bottom: 0.15rem;
+  }
+  .caos-wb-main .tabpanel[data-panel="production"] .pf-tab {
+    padding-block: 0.3rem;
+  }
+  .caos-wb-main .tabpanel[data-panel="production"] .pf-panel {
+    gap: 4px;
+    padding-top: 4px;
+  }
 }
 
-/* ADR-0070 entry control. Without a visible control in the App the focus route is an orphan: it
+/* Focus entry control. Without a visible control in the App the focus route is an orphan: it
    passes route tests, ships in the CHANGELOG, and no user ever reaches it. */
 .pf-focus-enter { display: block; text-decoration: none; border: 1px solid var(--color-accent);
   border-radius: 10px; padding: 0.55rem 0.75rem; margin-bottom: 0.9rem;
@@ -446,14 +489,14 @@ html, body { overflow-x: clip; }
 .pf-focus-enter-t { display: block; font-size: 0.86rem; font-weight: 700; color: var(--color-accent); }
 .pf-focus-enter-d { display: block; font-size: 0.72rem; color: var(--color-fg-subtle); margin-top: 0.15rem; line-height: 1.4; }
 
-/* The footer carried a full paragraph of ADR-0016 provenance and measured 263px against a 900px
+/* The footer carried a full paragraph of provenance requirement and measured 263px against a 900px
    viewport: 29% of the screen, permanently, on every route. The provenance is required and must not be
    deleted, so the footer is CAPPED and scrolls its own overflow. Nothing is lost, everything stays
    reachable, and the instrument gets the screen back. */
 /* The footer no longer needs a height cap. The cap was treating the symptom: a 174-word footer was
  * squeezed into 96px with an inner scrollbar, so the provenance was present in the DOM and unreadable on
  * the screen, cut mid-citation. The text is now the one-line provenance and one-line disclaimer that
- * ADR-0016 asks for, and it fits. A max-height here would only hide the next overrun the same way. */
+ * the footer requirement asks for, and it fits. A max-height here would only hide the next overrun the same way. */
 
 /* Figures on the content pages. Measured before these existed: every content page carried text,
    equations and DOIs and NOT ONE diagram, on a product whose subject is geometry. A figure is bounded
@@ -595,7 +638,16 @@ html, body { overflow-x: clip; }
 /* The case blurb is orientation, not reading matter: it should not out-weigh the control under it. */
 .caos-wb-rail .pf-group > .pf-cap { line-height: 1.4; }
 
-/* The footer content is now the one-line provenance and one-line disclaimer ADR-0016 asks for, and it
+/* The same product-owned control groups appear inside the shell's Focus rail. Keep their content
+ * intact while reducing only inter-control whitespace at short desktop heights. */
+@media (min-width: 861px) and (max-height: 900px) {
+  .pf-rail { gap: 4px; }
+  .pf-rail .pf-group { gap: 4px; padding-bottom: 6px; }
+  .pf-rail .pf-ctl { gap: 2px; }
+  .pf-rail .pf-cap { line-height: 1.22; }
+}
+
+/* The footer content is now the one-line provenance and one-line disclaimer the footer requirement asks for, and it
  * is fully readable with nothing hidden. What was left was pure chrome: 24px of padding on every side
  * and a 21px line box for four short rows, which spent 178px of a 900px viewport on the footer and
  * took that height straight out of the rail beside the stage. Tightened to the same content in about
@@ -605,7 +657,7 @@ html, body { overflow-x: clip; }
 /* .footer-meta is a wrapping flex row of spans. Two things were spending rows: a 1.5 line-height on
  * seven line-boxes, and `margin-left: auto` on the version chip, which opened a 271px gap and pushed
  * everything after it onto a fresh row. The version keeps its own line here instead of stealing one. */
-/* One line at desktop widths: the items are already the minimum ADR-0016 asks for (name, line,
+/* One line at desktop widths: the items are already the minimum the footer requirement asks for (name, line,
  * version, attribution, provenance, source, licence, disclaimer); a slightly smaller face fits them in
  * the 1200px band instead of wrapping the last one onto a second row. */
 
@@ -757,8 +809,8 @@ html, body { overflow-x: clip; }
 
 /* NATIVE CONTROLS FOLLOW THE THEME
  *
- * The shell (0.5.0) declares no `color-scheme` (CAOS_MANAGE conventions/shell-known-defects.md entry 13;
- * upstream CAOS_APP_SHELL #29), so the browser draws native controls with their light face in both
+ * The shared shell leaves native control colors to browser defaults, so the browser draws controls with
+ * a light face in both
  * themes. In the dark theme the Case and Method selectors rendered as white boxes. Declaring the scheme
  * per theme fixes the popup list and the scrollbars; the explicit tokens fix the closed control, which
  * some engines still paint light. Gate: `npm run verify:theme` measures text against background on
@@ -788,24 +840,36 @@ select option { color: var(--color-fg); background: var(--color-surface); }
 }
 /* Charts and the 3D stage scale with desktop viewports but have finite ceilings. */
 @media (min-width: 901px) {
+  .pf-workbench-view { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
   .caos-wb-main .pf-panel {
     gap: 6px;
     padding: 8px;
   }
   .caos-wb-main [data-panel="sections"] .pf-panel {
-    gap: 4px;
-    padding: 6px;
+    gap: 2px;
+    padding: 2px 6px 6px;
   }
+  .caos-wb-main [data-panel="sections"] .pf-panel > h4 { font-size: 0.7rem; line-height: 1; }
+  .caos-wb-main [data-panel="sections"] .pf-ctl { gap: 2px; font-size: 0.75rem; }
+  .caos-wb-main [data-panel="sections"] .pf-ctl > span { line-height: 1; }
   .caos-wb .pf-stage3d {
     flex: 1 1 0 !important;
     width: 100% !important;
-    height: clamp(550px, 70vh, 900px) !important;
-    min-height: clamp(550px, 70vh, 900px) !important;
+    height: clamp(590px, 77vh, 1080px) !important;
+    min-height: clamp(590px, 77vh, 1080px) !important;
   }
-  .pf-canvas-host { height: clamp(320px, 75vh, 900px); }
+  .pf-canvas-host { height: clamp(320px, 75vh, 1080px); }
+  .caos-wb-main .tabpanel[data-panel="evidence"] .pf-fig { padding-inline: 0.5rem; }
 }
 @media (min-width: 901px) and (max-width: 1350px) {
   .caos-wb .pf-rail { gap: 4px; }
+  .caos-wb-rail .pf-group { gap: 4px; padding-bottom: 6px; }
+  .caos-wb-rail .pf-group > .pf-cap { font-size: 0.68rem; line-height: 1.22; }
+  .caos-wb-rail .pf-legend { gap: 3px; font-size: 0.68rem; }
+  .caos-wb-rail .pf-legend i { width: 9px; height: 9px; margin-right: 2px; }
+  .caos-wb-rail .pf-kpi { padding: 4px 7px; }
+  .caos-wb-rail .pf-row { gap: 4px; }
+  .caos-wb-rail .pf-chip { padding: 2px 7px; font-size: 0.7rem; }
 }
 /* The replay heading stays compact so its bounded chart keeps the space needed to read values. */
 .pf-replay-summary > h3 { margin: 0 0 0.45rem; }

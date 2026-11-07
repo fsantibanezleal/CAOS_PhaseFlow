@@ -48,7 +48,7 @@ were inspected. Engine-authored English method notes remain visibly tagged as
 source text in the Spanish UI. The bound surrogate in the learned lane still
 uses its historical positive-net-value tonnage proxy; its sensitivity surface
 is explicitly exploratory. New learned destination, deposit-statistics and
-sliding-window features are specified in `docs/design/` and await the ADR-0075
+sliding-window features are specified in `docs/design/` and await an independent design
 design review; this release does not claim those features.
 
 `min-width` is an operability illustration that does not reimpose capacity. The

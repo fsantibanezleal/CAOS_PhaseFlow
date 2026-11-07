@@ -1,0 +1,10 @@
+{
+  "kind": "manuscript",
+  "title_support": [
+    "tab:learned-by-archetype",
+    "fig:bs1-holdout"
+  ],
+  "claims": {
+    "BS-1": "sec:proposed-method"
+  }
+}

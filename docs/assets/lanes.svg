@@ -41,7 +41,7 @@
   <rect x="30" y="70" width="250" height="90" rx="8" class="fa"/>
   <text x="155.0" y="90.5" class="h" text-anchor="middle">offline bake (Python)</text>
   <text x="155.0" y="107.5" class="s" text-anchor="middle">oreblocks, HiGHS, numpy</text>
-  <text x="155.0" y="122.5" class="s" text-anchor="middle">all rungs, bounds, controls</text>
+  <text x="155.0" y="122.5" class="s" text-anchor="middle">all methods, bounds, controls</text>
   <text x="155.0" y="137.5" class="s" text-anchor="middle">hours per release</text>
   <rect x="325" y="70" width="250" height="90" rx="8" class="fc"/>
   <text x="450.0" y="90.5" class="h" text-anchor="middle">committed artifact</text>

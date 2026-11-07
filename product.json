@@ -26,11 +26,23 @@
     "oreblocks.pcpsp_lp_bound",
     "oreblocks.enforce_min_width",
     "oreblocks.improve_schedule",
+    "oreblocks.exact_local_search",
     "oreblocks.evaluate_across",
     "oreblocks.perturb_values",
     "oreblocks.run_controls",
     "pipeline.model.learned.LearnedBundle",
     "oreblocks.pcpsp_schedule_value",
-    "oreblocks.schedule_coherence"
+    "oreblocks.schedule_coherence",
+    "pipeline.model.frontier_data.generate_graph",
+    "pipeline.model.frontier_policy.precedence_frontier",
+    "pipeline.model.frontier_policy.feasible_frontier",
+    "pipeline.model.frontier_policy.replay_frontier_policy",
+    "pipeline.model.frontier_policy.validate_schedule",
+    "pipeline.model.frontier_policy.validate_split_manifest",
+    "pipeline.model.frontier_splits.build_split_manifest",
+    "pipeline.model.frontier_splits.manifest_sha256",
+    "pipeline.model.frontier_features.fit_training_normalizer",
+    "pipeline.model.frontier_features.normalizer_contract",
+    "pipeline.model.frontier_features.feature_contract_sha256"
   ]
 }

@@ -6,9 +6,9 @@
   "default": false,
   "engine": {
     "product": "phaseflow",
-    "version": "0.10.000",
+    "version": "0.11.000",
     "solver": "oreblocks CPIT: critical multiplier bound + TopoSort rounding + shift local search",
-    "oreblocks": "0.6.3",
+    "oreblocks": "0.6.6",
     "numpy": "2.5.1"
   },
   "scenario": {
@@ -40,22 +40,22 @@
     "path": "twin-vein/trace.json",
     "format": "json",
     "trace_schema": "phaseflow.schedule-trace/v1",
-    "bytes": 1145671
+    "bytes": 1196475
   },
   "lane": "live",
   "gate": {
     "lane": "live",
     "n_blocks": 14400,
     "n_arcs": 116160,
-    "trace_bytes": 1145671,
-    "offline_ms": 6472612.2,
+    "trace_bytes": 1196475,
+    "offline_ms": 7317381.3,
     "budgets": {
       "blocks": 30000,
       "arcs": 300000,
       "trace_bytes": 6291456
     },
     "reasons": [
-      "offline solve took 6472612 ms, above the 60000 ms note"
+      "offline solve took 7317381 ms, above the 60000 ms note"
     ]
   },
   "flags": [
@@ -82,7 +82,7 @@
       "npv": 172734791.93,
       "bound": 285385073.56,
       "gap_pct": 39.4731,
-      "runtime_ms": 206.8,
+      "runtime_ms": 231.7,
       "notes": "top bench out completely before the next",
       "measured_vs_exact": null,
       "components_mean": 7.8,
@@ -121,7 +121,7 @@
       "npv": 165147496.81,
       "bound": 285385073.56,
       "gap_pct": 42.1317,
-      "runtime_ms": 461.6,
+      "runtime_ms": 222.7,
       "notes": "12 revenue-factor shells, inner shells first",
       "measured_vs_exact": null,
       "components_mean": 5.8,
@@ -160,7 +160,7 @@
       "npv": 181068401.86,
       "bound": 285385073.56,
       "gap_pct": 36.553,
-      "runtime_ms": 213.6,
+      "runtime_ms": 217.9,
       "notes": "",
       "measured_vs_exact": null,
       "components_mean": 7.9,
@@ -199,7 +199,7 @@
       "npv": 22428664.26,
       "bound": 285385073.56,
       "gap_pct": 92.1409,
-      "runtime_ms": 981.0,
+      "runtime_ms": 1024.9,
       "notes": "",
       "measured_vs_exact": null,
       "components_mean": 24.6,
@@ -238,7 +238,7 @@
       "npv": 280993395.08,
       "bound": 285385073.56,
       "gap_pct": 1.5389,
-      "runtime_ms": 142968.9,
+      "runtime_ms": 93387.5,
       "notes": "seeded by the LP expected times; 167 closure solves for the bound",
       "measured_vs_exact": null,
       "components_mean": 9.1,
@@ -277,7 +277,7 @@
       "npv": 280993395.08,
       "bound": 285385073.56,
       "gap_pct": 1.5389,
-      "runtime_ms": 143445.4,
+      "runtime_ms": 93610.0,
       "notes": "Algorithm 4: one relaxation per resource, best feasible, min bound",
       "measured_vs_exact": null,
       "components_mean": 9.1,
@@ -316,7 +316,7 @@
       "npv": 283568073.89,
       "bound": 285385073.56,
       "gap_pct": 0.6367,
-      "runtime_ms": 329.2,
+      "runtime_ms": 147.9,
       "notes": "1294 shift moves accepted",
       "measured_vs_exact": null,
       "components_mean": 5.3,
@@ -355,7 +355,7 @@
       "npv": 285108029.53,
       "bound": 285385073.56,
       "gap_pct": 0.0971,
-      "runtime_ms": 1978213.4,
+      "runtime_ms": 2062209.0,
       "notes": "window 3, 1 period(s) fixed per slide, horizon beyond the window aggregated into one optimistic tail; candidate set capped at 6000 blocks per slide; each window solved by highspy 1.15.1 with a feasible floor, which was the answer on 2 of 10 windows",
       "measured_vs_exact": null,
       "components_mean": 4.7,
@@ -394,8 +394,8 @@
       "npv": 283628430.36,
       "bound": 285385073.56,
       "gap_pct": 0.6155,
-      "runtime_ms": 740.4,
-      "notes": "2 of 10 exact C-PIT[D] re-solves improved the incumbent; highspy 1.15.1, each re-solve started from the incumbent",
+      "runtime_ms": 985.4,
+      "notes": "2 of 10 C-PIT[D] neighborhood MILPs improved the incumbent; 10 were proven optimal, node limit 2000; highspy 1.15.1, each solve started from the incumbent",
       "measured_vs_exact": null,
       "components_mean": 5.6,
       "largest_share_mean": 0.8798,
@@ -425,31 +425,173 @@
           0.999
         ]
       ],
-      "extra": {}
+      "extra": {
+        "localSearchReceipt": {
+          "requestedRounds": 10,
+          "attemptedRounds": 10,
+          "skippedRounds": 0,
+          "mipGapTarget": 0.0001,
+          "timeLimitSeconds": null,
+          "nodeLimit": 2000,
+          "certifiedOptimal": true,
+          "neighborhoods": [
+            {
+              "round": 1,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.07044699999096338,
+              "nodes": 0,
+              "mipGap": 0.0,
+              "incumbentNpv": -802544.5400273142,
+              "upperBoundNpv": -802544.5400273199,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 2,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.2614022999914596,
+              "nodes": 1,
+              "mipGap": 0.0,
+              "incumbentNpv": 15347798.14578853,
+              "upperBoundNpv": 15347798.145788528,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 3,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.06789489999937359,
+              "nodes": 0,
+              "mipGap": 0.0,
+              "incumbentNpv": 5317975.4078460885,
+              "upperBoundNpv": 5317975.407846089,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 4,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.005822599996463396,
+              "nodes": 0,
+              "mipGap": 0.0,
+              "incumbentNpv": -44426.92066488253,
+              "upperBoundNpv": -44426.92066488256,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 5,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.01078909999341704,
+              "nodes": 0,
+              "mipGap": 0.0,
+              "incumbentNpv": -154033.664580046,
+              "upperBoundNpv": -154033.66458004582,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 6,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.057737299997825176,
+              "nodes": 1,
+              "mipGap": 0.0,
+              "incumbentNpv": 11936583.832681216,
+              "upperBoundNpv": 11936583.832681222,
+              "usedStart": false,
+              "improved": true,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 7,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.07271229999605566,
+              "nodes": 1,
+              "mipGap": 1.5682096158756034e-15,
+              "incumbentNpv": 8314268.64917971,
+              "upperBoundNpv": 8314268.649179732,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 8,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.010859600006369874,
+              "nodes": 0,
+              "mipGap": 0.0,
+              "incumbentNpv": -184334.13675115615,
+              "upperBoundNpv": -184334.13675115592,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 9,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.009789100004127249,
+              "nodes": 0,
+              "mipGap": 0.0,
+              "incumbentNpv": 2306644.7275507585,
+              "upperBoundNpv": 2306644.7275507585,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 10,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.05206919999909587,
+              "nodes": 1,
+              "mipGap": 0.0,
+              "incumbentNpv": 5867153.475865014,
+              "upperBoundNpv": 5867153.475865017,
+              "usedStart": false,
+              "improved": true,
+              "certifiedOptimal": true
+            }
+          ]
+        }
+      }
     },
     {
       "method": "learned-expected-time",
       "rung": "learned",
-      "npv": 233269757.36,
+      "npv": 229200036.05,
       "bound": 285385073.56,
-      "gap_pct": 18.2614,
-      "runtime_ms": 372.7,
-      "notes": "the ExTS ordering with no LP solve: the expected extraction times are predicted from block and scenario features by a surrogate trained on other deposits (held-out Spearman 0.807), so its plan is only as good as that ordering. MEASURED on this case: 83.0 percent of the exact ExTS plan it approximates (toposort-expected)",
-      "measured_vs_exact": 0.830161,
-      "components_mean": 43.3,
-      "largest_share_mean": 0.5231,
+      "gap_pct": 19.6874,
+      "runtime_ms": 407.9,
+      "notes": "the ExTS ordering with no LP solve: the expected extraction times are predicted from block and scenario features by a surrogate trained on other deposits (held-out Spearman 0.814), so its plan is only as good as that ordering. GUARD UNAVAILABLE: third-split recall 0.429 is below the required 0.8180; third-split precision 0.528 is below the required 0.6670; third-split worst_unflagged 0.732 is below the required 0.7852; no safety classification is made. MEASURED on this case: 81.6 percent of the exact ExTS plan it approximates (toposort-expected)",
+      "measured_vs_exact": 0.815678,
+      "components_mean": 44.2,
+      "largest_share_mean": 0.4333,
       "utilization": [
         [
           0.9996,
           0.9996,
           0.9996,
-          0.9176,
-          0.6886,
-          0.5354,
-          0.5617,
-          0.4317,
-          0.537,
-          0.4054
+          0.9687,
+          0.6298,
+          0.6221,
+          0.5106,
+          0.4998,
+          0.4782,
+          0.4859
         ],
         [
           0.999,
@@ -472,7 +614,7 @@
       "npv": 299979371.52,
       "bound": 370316500.73,
       "gap_pct": 18.9938,
-      "runtime_ms": 167380.1,
+      "runtime_ms": 357718.2,
       "notes": "ExTS on the re-cut: each block fixed at the destination the PCPSP LP sends it to (5952 routed to the plant if mined), then scheduled as a CPIT. PCPSP from seeded synthetic mining and processing economics: 2040 blocks to the plant, 2964 to the dump, effective cutoff 0.0011 to 0.0113 across periods. Started from sliding-window read as a PCPSP plan (285,108,030); a fixed-destination plan with every block at its a-priori best destination; 551 blocks changed destination against the fixed cutoff, worth 14,871,342. Scored against the PCPSP LP bound, not the CPIT one",
       "measured_vs_exact": null,
       "components_mean": 6.5,
@@ -532,7 +674,7 @@
       "npv": 299142002.02,
       "bound": 370316500.73,
       "gap_pct": 19.2199,
-      "runtime_ms": 3126442.4,
+      "runtime_ms": 3689975.7,
       "notes": "the sliding window on the re-cut: each block fixed at the destination the PCPSP LP sends it to (5952 routed to the plant if mined), then scheduled as a CPIT. PCPSP from seeded synthetic mining and processing economics: 1736 blocks to the plant, 2531 to the dump, effective cutoff 0.0011 to 0.0116 across periods. Started from sliding-window read as a PCPSP plan (285,108,030); a fixed-destination plan with every block at its a-priori best destination; 551 blocks changed destination against the fixed cutoff, worth 14,033,972. Scored against the PCPSP LP bound, not the CPIT one",
       "measured_vs_exact": null,
       "components_mean": 7.222,
@@ -592,8 +734,8 @@
       "npv": 300153975.44,
       "bound": 370316500.73,
       "gap_pct": 18.9466,
-      "runtime_ms": 5036.9,
-      "notes": "from destination-toposort (299,979,372). PCPSP from seeded synthetic mining and processing economics: 2040 blocks to the plant, 2964 to the dump, effective cutoff 0.0011 to 0.0113 across periods. Started from sliding-window read as a PCPSP plan (285,108,030); 4 of 10 exact OPBSP-[D] re-solves improved the incumbent; highspy 1.15.1, each re-solve started from the incumbent; 551 blocks changed destination against the fixed cutoff, worth 15,045,946. Scored against the PCPSP LP bound, not the CPIT one",
+      "runtime_ms": 8967.0,
+      "notes": "from destination-toposort (299,979,372). PCPSP from seeded synthetic mining and processing economics: 2040 blocks to the plant, 2964 to the dump, effective cutoff 0.0011 to 0.0113 across periods. Started from sliding-window read as a PCPSP plan (285,108,030); 4 of 8 OPBSP-[D] neighborhood MILPs improved the incumbent; 8 were proven optimal, node limit 2000; highspy 1.15.1, each solve started from the incumbent; 551 blocks changed destination against the fixed cutoff, worth 15,045,946. Scored against the PCPSP LP bound, not the CPIT one",
       "measured_vs_exact": null,
       "components_mean": 7.6,
       "largest_share_mean": 0.8321,
@@ -644,7 +786,122 @@
         "start_npv": 285108029.52510995,
         "moved_vs_fixed": 551,
         "gain_vs_cpit": 15045945.918480277,
-        "start": "destination-toposort"
+        "start": "destination-toposort",
+        "localSearchReceipt": {
+          "requestedRounds": 10,
+          "attemptedRounds": 8,
+          "skippedRounds": 2,
+          "mipGapTarget": 0.0001,
+          "timeLimitSeconds": null,
+          "nodeLimit": 2000,
+          "certifiedOptimal": false,
+          "neighborhoods": [
+            {
+              "round": 1,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.06959930001175962,
+              "nodes": 0,
+              "mipGap": 0.0,
+              "incumbentNpv": -777628.9081475056,
+              "upperBoundNpv": -777628.9081475063,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 2,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 3.697559399995953,
+              "nodes": 1,
+              "mipGap": 0.0,
+              "incumbentNpv": 21315038.4351978,
+              "upperBoundNpv": 21315038.435197797,
+              "usedStart": false,
+              "improved": true,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 3,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.25122859999828506,
+              "nodes": 1,
+              "mipGap": 0.0,
+              "incumbentNpv": 5757272.496893413,
+              "upperBoundNpv": 5757272.496893413,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 4,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.004034300000057556,
+              "nodes": 0,
+              "mipGap": 0.0,
+              "incumbentNpv": -67500.0,
+              "upperBoundNpv": -67499.99999999999,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 5,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.024593099995399825,
+              "nodes": 0,
+              "mipGap": 0.0,
+              "incumbentNpv": -510824.3801652891,
+              "upperBoundNpv": -510824.38016528974,
+              "usedStart": false,
+              "improved": false,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 6,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.04284470000129659,
+              "nodes": 1,
+              "mipGap": 0.0,
+              "incumbentNpv": 12686349.921529025,
+              "upperBoundNpv": 12686349.921529027,
+              "usedStart": false,
+              "improved": true,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 7,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 3.6143851000088034,
+              "nodes": 1,
+              "mipGap": 4.0346707280051037e-07,
+              "incumbentNpv": 19204861.51529547,
+              "upperBoundNpv": 19204869.26382478,
+              "usedStart": false,
+              "improved": true,
+              "certifiedOptimal": true
+            },
+            {
+              "round": 8,
+              "backend": "highspy 1.15.1",
+              "status": "Optimal",
+              "seconds": 0.11030290000780951,
+              "nodes": 0,
+              "mipGap": 0.0,
+              "incumbentNpv": -909710.6681621464,
+              "upperBoundNpv": -909710.6681621444,
+              "usedStart": false,
+              "improved": true,
+              "certifiedOptimal": true
+            }
+          ]
+        }
       }
     },
     {
@@ -653,7 +910,7 @@
       "npv": 285102255.15,
       "bound": 285385073.56,
       "gap_pct": 0.0991,
-      "runtime_ms": 786.7,
+      "runtime_ms": 690.8,
       "notes": "from sliding-window: 1983 to 1967 blocks in a run narrower than 3 (1% fewer), 11 moved, 164 refused for capacity, at 0.00% of NPV; capacity and precedence kept, so the plan is feasible",
       "measured_vs_exact": null,
       "components_mean": 4.7,
@@ -697,7 +954,7 @@
   ],
   "bound_summary": {
     "algorithm4": 285385073.5601653,
-    "algorithm4_ms": 142741.0,
+    "algorithm4_ms": 93169.9,
     "closure_solves": 286,
     "joint": null,
     "joint_ms": null,
@@ -710,7 +967,7 @@
     "joint_skipped": "time-expanded graph is 144,000 nodes and 1,291,200 edges, above the 130,000/1,400,000 budget. Pricing would be fast, but the bound is only worth reporting once it has been CERTIFIED by one exact solve, and that solve is the pure-Python max-flow. Algorithm 4's certified but looser bound is used",
     "joint_note": null,
     "pcpsp_lp": 370316500.7320914,
-    "pcpsp_lp_ms": 1167895.8,
+    "pcpsp_lp_ms": 1385504.9,
     "pcpsp_lp_rows": 1435220,
     "pcpsp_lp_status": "converged",
     "pcpsp_lp_method": "lagrangian",
@@ -748,7 +1005,7 @@
       286236729.17,
       287793411.8,
       286302188.36,
-      235066417.9
+      231133950.16
     ],
     "p10": [
       164530624.6,
@@ -760,7 +1017,7 @@
       273167753.17,
       274717591.63,
       273228373.43,
-      223354383.81
+      218448842.86
     ],
     "p90": [
       182068106.11,
@@ -772,7 +1029,7 @@
       298282495.2,
       299761024.37,
       298352415.17,
-      244901804.41
+      240988753.58
     ],
     "meanModel": [
       172734791.93,
@@ -784,7 +1041,7 @@
       283568073.89,
       285108029.53,
       283628430.36,
-      233269757.36
+      229200036.05
     ],
     "optimism": [
       -1571718.13,
@@ -796,11 +1053,24 @@
       -2668655.28,
       -2685382.27,
       -2673758.0,
-      -1796660.54
+      -1933914.1
     ],
     "bestByExpected": "sliding-window",
     "bestByP10": "sliding-window",
-    "valueOfReplanningPct": 0.0
+    "valueOfReplanningPct": 0.033,
+    "resolveMethod": "cpitD-local-search",
+    "fixedPolicy": "sliding-window",
+    "fixedPolicyExpectedNpv": 287793411.8,
+    "replannedExpectedNpv": 287888769.06,
+    "replanningElapsedSeconds": 29.956,
+    "replanningSettings": {
+      "dMax": 180,
+      "rounds": 16,
+      "mipGap": 1e-05,
+      "timeLimitSecondsPerNeighborhood": null,
+      "nodeLimitPerNeighborhood": 2000,
+      "seedBase": 62
+    }
   },
   "best": {
     "method": "sliding-window",
