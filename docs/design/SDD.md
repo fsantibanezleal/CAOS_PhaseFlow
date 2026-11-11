@@ -63,7 +63,7 @@ not redistribute per-block data or per-block schedules for MineLib instances.
 
 ## Repository workflow and data roots
 
-The product is instantiated from CAOS Product Template `0.15.007` and pins the current published CAOS App Shell `0.25.0`.
+The product adopts released CAOS Product Template `0.15.006` and pins the current published CAOS App Shell `0.25.0`.
 The numbered PowerShell and Bash entrypoints share the template's receipt-based `scripts/local/workflow.py`;
 the product-specific JSON plan invokes the actual PhaseFlow registry pipeline, stages the trained models,
 computes readiness from staged outputs, and runs PhaseFlow's artifact and document validators. A complete
