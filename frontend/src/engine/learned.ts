@@ -184,7 +184,7 @@ export function learnedSchedule(
 let cached: Promise<MlpModel> | null = null;
 
 export function loadExpectedTimeSurrogate(version: string): Promise<MlpModel> {
-  cached ??= fetch(`/models/expected-time.json?v=${version}`).then((r) => {
+  cached ??= fetch(`/data/models/expected-time.json?v=${version}`).then((r) => {
     if (!r.ok) throw new Error(`expected-time surrogate: HTTP ${r.status}`);
     return r.json() as Promise<MlpModel>;
   }).then((model) => {

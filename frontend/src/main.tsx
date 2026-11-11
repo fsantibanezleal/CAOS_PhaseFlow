@@ -95,9 +95,10 @@ function renderApp() {
   );
 }
 
-// Both model records affect the learned preview. Read their bodies before mounting routes so a fast
-// route/tab change cannot cancel the first requests while consumers are still sharing them.
+// Warm the public model records without blocking the route tree. Pages keep their own loading state,
+// so direct routes remain readable while these shared responses are fetched.
 void Promise.allSettled([
-  loadPublicJSON('/models/expected-time.json'),
-  loadPublicJSON('/models/guard-validation.json'),
-]).finally(renderApp);
+  loadPublicJSON('/data/models/expected-time.json'),
+  loadPublicJSON('/data/models/guard-validation.json'),
+]);
+renderApp();

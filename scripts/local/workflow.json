@@ -2,20 +2,7 @@
   "readiness_excludes": [
     "readiness"
   ],
-  "stage_inputs": [
-    "models/bound.json",
-    "models/bound.onnx",
-    "models/expected-time.json",
-    "models/expected-time.onnx",
-    "models/guard-validation.json",
-    "models/learned-failure-modes.json",
-    "models/learned-preview-timing.json",
-    "models/surrogate-parity.json",
-    "models/training-report.json"
-  ],
-  "stage_input_roots": {
-    "models/": "CAOS_MODEL_SOURCE_ROOT"
-  },
+  "stage_inputs": [],
   "model_stage_directory": "models",
   "readiness_check": "scripts/check_readiness.py",
   "primary_environment": ".venv-pipeline",
@@ -86,6 +73,14 @@
   ],
   "generation": [
     {
+      "script": "scripts/train_learned.py",
+      "args": []
+    },
+    {
+      "script": "scripts/validate_guard.py",
+      "args": []
+    },
+    {
       "script": "data-pipeline/run.py",
       "args": [
         "all",
@@ -95,6 +90,16 @@
         "--output",
         "{derived}"
       ]
+    },
+    {
+      "script": "scripts/export_surrogate_parity.py",
+      "args": ["--derived-root", "{derived}"]
+    },
+    {
+      "script": "frontend/scripts/measure-learned-preview.mjs",
+      "runtime": "node",
+      "runtime_args": ["--import", "tsx"],
+      "args": ["--models-root", "{models}", "--derived-root", "{derived}"]
     },
     {
       "script": "scripts/local/producer_bridge.py",

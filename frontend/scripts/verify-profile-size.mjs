@@ -46,7 +46,7 @@ function check(rows, viewportWidth, viewportHeight, label) {
 try {
   let base = baseOverride;
   if (!base) {
-    execFileSync(process.execPath, ['copy-data.mjs'], { stdio: 'inherit' });
+    execFileSync(process.execPath, ['scripts/copy-data-entry.mjs'], { stdio: 'inherit' });
     server = await createServer({ server: { host: '127.0.0.1', port: 0 } });
     await server.listen();
     base = server.resolvedUrls.local[0];

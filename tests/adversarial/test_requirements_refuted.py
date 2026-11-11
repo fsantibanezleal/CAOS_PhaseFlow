@@ -9,41 +9,41 @@ from __future__ import annotations
 
 import json
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
-from planting import NODE, NODE_MODULES, edit, guard
+from planting import NODE, NODE_MODULES, copy_node_modules, edit, guard, link_node_modules, unlink_node_modules
 
-ROOT = Path(__file__).resolve().parents[2]
 needs_web = pytest.mark.skipif(NODE is None or not (NODE_MODULES / "@fasl-work").is_dir(),
                                reason="needs node and `npm ci` in frontend/")
 
 
-def test_a_test_that_writes_a_committed_artifact_fails_the_session(tmp_path: Path) -> None:
+def test_a_test_that_writes_a_committed_artifact_fails_the_session(repo: Path) -> None:
     pytest.importorskip("numpy")
-    pytest.importorskip("oreblocks")
-    # The full `repo` fixture copies every release trace into each adversarial sandbox. This
-    # guard only needs the real tests/conftest.py plus one small artifact; keeping this fixture
-    # minimal tests the same session hook without copying gigabytes or timing out under load.
-    repo = tmp_path / "repo"
-    (repo / "tests").mkdir(parents=True)
-    (repo / "data" / "derived").mkdir(parents=True)
-    (repo / "models").mkdir()
-    shutil.copy2(ROOT / "tests" / "conftest.py", repo / "tests" / "conftest.py")
-    shutil.copytree(ROOT / "data-pipeline", repo / "data-pipeline", ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
-    shutil.copy2(ROOT / "VERSION", repo / "VERSION")
-    (repo / "data" / "derived" / "baseline.json").write_text("{}", encoding="utf-8")
     plant = repo / "tests" / "test_plant_writes_data.py"
     plant.write_text("from pathlib import Path\n\n\ndef test_writes():\n"
                      "    Path(__file__).resolve().parents[1].joinpath('data', 'derived', 'planted.txt').write_text('x')\n",
                      encoding="utf-8")
-    r = subprocess.run([sys.executable, "-m", "pytest", "tests/test_plant_writes_data.py", "-v", "-p", "no:cacheprovider"],
-                       capture_output=True, encoding="utf-8", errors="replace", cwd=repo, timeout=120)
+    env = os.environ.copy()
+    env.pop("PYTEST_ADDOPTS", None)
+    env.pop("PYTEST_CURRENT_TEST", None)
+    child_temp = repo.parent / "artifact-child-temp"
+    assert not child_temp.resolve().is_relative_to(repo.resolve()) and not repo.resolve().is_relative_to(child_temp.resolve())
+    control = repo / "tests/test_plant_clean.py"
+    control.write_text("def test_clean():\n    assert True\n", encoding="utf-8")
+    clean = subprocess.run([sys.executable, "-m", "pytest", "tests/test_plant_clean.py", "-v", "-p", "no:cacheprovider",
+                            "--basetemp", str(repo.parent / "artifact-clean-temp")],
+                           capture_output=True, encoding="utf-8", errors="replace", cwd=repo, env=env, timeout=120)
+    assert clean.returncode == 0 and "1 passed" in clean.stdout, clean.stdout + clean.stderr
+    assert not (repo / "data/derived/planted.txt").exists()
+    r = subprocess.run([sys.executable, "-m", "pytest", "tests/test_plant_writes_data.py", "-v", "-p", "no:cacheprovider",
+                        "--basetemp", str(child_temp)],
+                       capture_output=True, encoding="utf-8", errors="replace", cwd=repo, env=env, timeout=120)
     assert "1 passed" in r.stdout, r.stdout  # the planted test itself passes: only the session guard can fail the run
-    assert r.returncode != 0 and "changed committed artifacts" in r.stdout and "data/derived/planted.txt" in r.stdout, r.stdout
+    assert r.returncode == 1 and "changed committed artifacts" in r.stdout and "data/derived/planted.txt" in r.stdout, r.stdout
+    assert (repo / "data/derived/planted.txt").read_text(encoding="utf-8") == "x"
 
 
 def test_a_version_stated_twice_and_disagreeing_fails_the_coherence_guard(repo: Path) -> None:
@@ -56,37 +56,72 @@ def test_a_version_stated_twice_and_disagreeing_fails_the_coherence_guard(repo: 
     assert r.returncode == 1 and "9.9.9" in r.stdout and r.stdout != before, r.stdout
 
 
-@pytest.mark.skipif(NODE is None, reason="needs node")
-def test_a_build_without_route_source_fails_and_valid_routes_are_materialized(repo: Path) -> None:
-    frontend = repo / "frontend"
-    dist = frontend / "dist"
-    script = frontend / "spa-404.mjs"
-    env = {**os.environ, "GITHUB_SHA": "0123456789abcdef0123456789abcdef01234567"}
-    r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=frontend, env=env)
-    assert r.returncode == 1 and "dist/index.html missing" in r.stderr, r.stderr
-    dist.mkdir()
-    (dist / "index.html").write_text('<html><body>built app</body></html>', encoding="utf-8")
-    (dist / "data" / "manifests").mkdir(parents=True)
-    (dist / "data" / "manifests" / "index.json").write_text('{"cases":[{"case_id":"case-a"}]}', encoding="utf-8")
-    r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=frontend, env=env)
-    assert r.returncode == 0 and "11 routes" in r.stdout, r.stderr
-    assert (dist / "404.html").is_file() and (dist / "focus" / "case-a" / "index.html").is_file()
-    for story in ("deposit", "method", "constraints", "compare"):
-        assert (dist / "story" / story / "index.html").is_file(), story
-    assert json.loads((dist / "build.json").read_text(encoding="utf-8")) == {
-        "sha": "0123456789abcdef0123456789abcdef01234567",
-        "version": (repo / "VERSION").read_text(encoding="utf-8").strip(),
-    }
+@needs_web
+def test_a_build_without_the_routes_or_the_theme_script_fails(repo: Path) -> None:
+    link_node_modules(repo / "frontend")
+    try:
+        dist = repo / "frontend" / "dist"
+        script = repo / "frontend" / "scripts" / "materialize-routes.mjs"
+        r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=repo / "frontend")
+        assert r.returncode == 1 and "dist/index.html is missing" in r.stderr, r.stderr
+        dist.mkdir()
+        (dist / "build.json").write_text("{}", encoding="utf-8")
+        (dist / "index.html").write_text("<html><body>no theme script</body></html>", encoding="utf-8")
+        r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=repo / "frontend")
+        assert r.returncode == 1 and "no pre-paint theme script" in r.stderr, r.stderr
+        (dist / "index.html").write_text('<html data-theme="light"><body>app</body></html>', encoding="utf-8")
+        r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=repo / "frontend")
+        assert r.returncode == 0 and "routes and 404.html written" in r.stdout, r.stderr
+        routes = sorted(p.parent.name for p in dist.glob("*/index.html"))
+        assert routes and (dist / "404.html").is_file(), "every standard route is its own page and 404.html is the app"
+    finally:
+        unlink_node_modules(repo / "frontend")
 
 
-def test_a_schema_change_that_breaks_committed_documents_fails_contract_gate(repo: Path) -> None:
+@needs_web
+def test_the_story_pages_are_the_routes_the_product_declares(repo: Path) -> None:
+    """#102 (ChancaDEM, 2026-11-07): the postbuild wrote the example's four story pages whatever the product declared, so a
+    product's own steps fell back to the Introduction on a direct load (G4). A product declaring two other steps gets exactly
+    those pages; a malformed declaration stops the build."""
+    link_node_modules(repo / "frontend")
+    try:
+        dist = repo / "frontend" / "dist"
+        dist.mkdir()
+        (dist / "build.json").write_text("{}", encoding="utf-8")
+        (dist / "index.html").write_text('<html data-theme="light"><body>app</body></html>', encoding="utf-8")
+        script = repo / "frontend" / "scripts" / "materialize-routes.mjs"
+        product = json.loads((repo / "product.json").read_text(encoding="utf-8"))
+        product["showcase"] = {"story_routes": ["/story/measure", "/story/solve"]}
+        (repo / "product.json").write_text(json.dumps(product, indent=2), encoding="utf-8")
+        r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=repo / "frontend")
+        assert r.returncode == 0, r.stderr
+        story = sorted(p.parent.name for p in (dist / "story").glob("*/index.html"))
+        assert story == ["measure", "solve"], story
+        product["showcase"] = {"story_routes": "/story/measure"}
+        (repo / "product.json").write_text(json.dumps(product, indent=2), encoding="utf-8")
+        r = subprocess.run([NODE, str(script)], capture_output=True, encoding="utf-8", errors="replace", cwd=repo / "frontend")
+        assert r.returncode == 1 and "showcase.story_routes" in r.stderr, r.stderr
+    finally:
+        unlink_node_modules(repo / "frontend")
+
+
+@needs_web
+def test_a_schema_change_without_regenerated_types_fails_the_build_check(repo: Path) -> None:
+    copy_node_modules(repo / "frontend")
+    generated = repo / "frontend/src/lib/contract.gen.ts"
+    before = generated.read_bytes()
+    script = repo / "frontend" / "scripts" / "gen-contract-types.mjs"
+    clean = subprocess.run([NODE, str(script), "--check"], capture_output=True, encoding="utf-8", errors="replace",
+                           cwd=repo / "frontend", timeout=120)
+    assert clean.returncode == 0 and "contract types: current" in clean.stdout, clean.stderr
     schema = repo / "docs" / "contracts" / "schemas" / "trace.schema.json"
     doc = json.loads(schema.read_text(encoding="utf-8"))
-    doc["required"].append("planted_field")
-    schema.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
-    r = subprocess.run([sys.executable, str(repo / "scripts" / "check_documents.py"), str(repo)],
-                       capture_output=True, encoding="utf-8", errors="replace", cwd=repo, timeout=120)
-    assert r.returncode == 1 and "planted_field" in r.stdout, r.stdout
+    doc["properties"]["planted_field"] = {"type": "number"}
+    schema.write_text(json.dumps(doc, indent=2), encoding="utf-8")
+    r = subprocess.run([NODE, str(script), "--check"], capture_output=True, encoding="utf-8", errors="replace",
+                       cwd=repo / "frontend", timeout=120)
+    assert r.returncode == 1 and "contract.gen.ts is not current" in r.stderr, r.stderr
+    assert generated.read_bytes() == before, "the currency check must never regenerate the committed fixture types"
 
 
 @pytest.mark.skipif(NODE is None, reason="needs node")

@@ -3,7 +3,8 @@
 This experiment has a separate CPU environment and separate external roots. It is not installed in CI, the
 normal pipeline environment, the notebook environment, or the web deployment. Training belongs to the approved
 0.12.000 source only, after the complete baseline is frozen and the product requirements for that version have
-passed. The current checkout is 0.11.000, so the full training command deliberately refuses to run here.
+passed. The 0.11.000 results remain the comparison baseline; the 0.12.000 training command requires a clean,
+committed source revision and refuses a dirty checkout.
 
 ## Prepare the isolated environment
 
@@ -35,8 +36,10 @@ feature order are hashed. Each checkpoint carries its own mean and scale as mode
 receipt carries the matching hashes. Validation uses only the declared validation partition. The trainer never
 loads the test rows or product cases.
 
-The SDD fixes five member seeds, one million environment transitions and two CPU-hours per member, validation
-every 32,768 transitions under [training protocol amendment 01](../design/features/learned-frontier/training-protocol-amendment-01.md), five consecutive feasible validation checkpoints without improvement as a stop rule,
+The SDD fixes five member seeds, one million environment transitions and two CPU-hours per member. Under
+[training protocol amendment 02](../design/features/learned-frontier/training-protocol-amendment-02.md), the first
+full validation is due after 8,192 transitions and later validations every 32,768 transitions. Five consecutive
+feasible validation checkpoints without improvement trigger the stop rule,
 and a 24-hour wall-clock cap across all five members. No command-line override can silently change those values.
 An incomplete run preserves each successful member's checkpoint and receipt, marks failed members with their
 failure record, marks unstarted members, and writes an incomplete ensemble receipt. It is not a complete ensemble.

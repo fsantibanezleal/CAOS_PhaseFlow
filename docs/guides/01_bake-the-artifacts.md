@@ -13,18 +13,19 @@ workflow records source and payload fingerprints, runs the complete registry and
 partial, stale or modified stages. Direct `data-pipeline/run.py <case>` calls remain available for
 isolated experiments but cannot create a release candidate.
 
-Train a model candidate into an external directory, then use that same directory as the immutable
-model input for a separate artifact bake:
+The official staged generation trains both learned models inside the external candidate stage, then
+bakes the thirteen cases against those exact outputs. This keeps version-stamped model reports and
+artifacts generated together instead of carrying old release documents into a new stage. The model
+training step is expensive and belongs to a full rebake:
 
 ```bash
-export CAOS_MODELS_ROOT=/external/model-candidate
-python scripts/train_learned.py
-export CAOS_MODEL_SOURCE_ROOT="$CAOS_MODELS_ROOT"
 ./scripts/local/02_generate-data.sh
 ```
 
 The local workflow binds every staged model byte into its source receipt, runs the bake and artifact
-checks against that exact bundle, and promotes models only with the validated artifact stage.
+checks against that exact bundle, and promotes models only with the validated artifact stage. A model
+report carrying `engine_version` or `product_version` is generated in the stage and cannot be declared
+as an authored `stage_input`.
 
 Outputs: `<root>/<case>/trace.json`, `<root>/manifests/<case>.json` and `<root>/manifests/index.json`
 ([data-contract/03](../data-contract/03_trace-and-manifest.md)). Scientific outputs are deterministic for

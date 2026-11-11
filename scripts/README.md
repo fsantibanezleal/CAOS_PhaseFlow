@@ -10,7 +10,7 @@ interpreter. Running the product from a fresh clone is [`local/`](local/README.m
 |---|---|
 | `00_install-prereqs` | checks python, node and git against the versions CI pins |
 | `01_init` | one virtualenv, the requirements, `npm ci`, `.env` from `.env.example`, a sandbox bake if `data/derived/` is empty |
-| `02_generate-data` | creates the complete source-bound artifact/model stage under external `CAOS_TEMP_ROOT`; `--release --from-stage` explicitly validates and promotes that exact stage |
+| `02_generate-data` | trains the learned models and creates the complete source-bound artifact/model stage under external `CAOS_TEMP_ROOT`; `--release --from-stage` explicitly validates and promotes that exact stage |
 | `03_dev` | overlays `data/derived` into the frontend and starts Vite |
 
 ## Guards: run in CI and before deploy (cheap, never train; ADR-0074)
@@ -37,7 +37,7 @@ interpreter. Running the product from a fresh clone is [`local/`](local/README.m
 
 | script | what it does |
 |---|---|
-| `train_learned.py` | trains both models by deposit seed into required external `CAOS_MODELS_ROOT` (hours); set `CAOS_MODEL_SOURCE_ROOT` to that bundle for the next staged bake |
+| `train_learned.py` | trains both models by deposit seed into the selected external `CAOS_MODELS_ROOT` (hours); the staged bake invokes it before artifact generation |
 | `rescore_guard.py` | re-scores the guard rules from the committed study, without retraining |
 | `validate_guard.py` | measures the shipped rule on a third disjoint seed set |
 | `export_surrogate_parity.py` | writes the fixture that holds the browser's forward pass and features to the Python models |

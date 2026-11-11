@@ -45,6 +45,10 @@ jobs:
         run: python scripts/check_sdd.py
       - name: Static notebook structure and measured quality bar
         run: python scripts/check_notebooks.py
+      - name: Notebook topic depth, evidence and bilingual parity
+        run: python scripts/check_notebook_depth.py .
+      - name: Manuscript research depth, title support and method coverage
+        run: python scripts/check_manuscript_depth.py . --report
       - name: Internal method names stay out of reader-facing content
         run: python scripts/check_internal_names.py .
       - name: Product manuscripts are declared and versioned

@@ -63,7 +63,7 @@ not redistribute per-block data or per-block schedules for MineLib instances.
 
 ## Repository workflow and data roots
 
-The product is instantiated from CAOS Product Template `0.15.000` and pins CAOS App Shell `0.23.0`.
+The product is instantiated from CAOS Product Template `0.15.007` and pins the current published CAOS App Shell `0.25.0`.
 The numbered PowerShell and Bash entrypoints share the template's receipt-based `scripts/local/workflow.py`;
 the product-specific JSON plan invokes the actual PhaseFlow registry pipeline, stages the trained models,
 computes readiness from staged outputs, and runs PhaseFlow's artifact and document validators. A complete
@@ -95,7 +95,10 @@ The table records every pinned direct dependency of the scientific, development,
 | notebooks | `nbclient` | `0.11.0` | fresh-kernel notebook execution (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `nbformat` | `5.11.1` | notebook structure and deterministic serialization (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | notebooks | `ipykernel` | `7.4.0` | Python notebook kernel (`notebooks/requirements.txt`) | No substitute is retained; changing this pin requires the named contract and release gates. |
-| frontend | `@fasl-work/caos-app-shell` | `0.23.0` | shared navigation, documentation, compact tab density, bounded mobile story stage, shell gate and workbench/story primitives (`frontend/package-lock.json`); release tag `v0.23.000` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
+| frontend | `@fasl-work/caos-app-shell` | `0.25.0` | shared navigation, documentation, compact tab density, measured callout header band, bounded mobile story stage, shell gate and workbench/story primitives (`frontend/package-lock.json`); release tag `v0.25.000` | Product-owned shell primitives would fork shared accessibility and layout fixes. |
+| frontend | `openapi-typescript` | `7.13.0` | generate browser contract types from the versioned JSON Schemas (`frontend/package-lock.json`) | Handwritten TypeScript copies drift from Python-validated artifact schemas. |
+| frontend override | `@redocly/openapi-core` | `1.34.22` | byte-pinned transitive parser used by the contract type generator (`frontend/package.json`) | The generator's compatibility adapter is tested against this exact parser output. |
+| frontend override | `minimatch` | `11.0.1` | byte-pinned transitive path matcher used by the contract type generator (`frontend/package.json`) | The generator's compatibility adapter is tested against this exact matcher output. |
 | frontend | `katex` | `0.19.1` | math rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `lucide-react` | `1.61.0` | interface icons (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `react` | `19.3.1` | component rendering (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
@@ -109,6 +112,7 @@ The table records every pinned direct dependency of the scientific, development,
 | frontend | `@types/react-dom` | `19.3.0` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `@types/three` | `0.171.0` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `@vitejs/plugin-react` | `6.1.1` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
+| frontend tests | `vitest` | `5.1.0` | runs the template-owned TypeScript copier regression tests (`frontend/package-lock.json`) | The pinned runner matches the template test source; Node’s built-in runner owns the product `node:test` suite. |
 | frontend | `playwright` | `1.64.1` | browser verification (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `tsx` | `4.23.11` | direct application or build dependency; see its imports and named gates (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
 | frontend | `typescript` | `5.9.3` | static type checking (`frontend/package-lock.json`) | No substitute is retained; changing this pin requires the named contract and release gates. |
@@ -289,6 +293,7 @@ The product template's CI runs static and scientific contract checks on every ch
 |---|---|
 | Bilingual content | EN/ES page content follows the shell language control; both languages are checked on rendered pages. |
 | Theme | Light/dark tokens are used by product-owned drawings and charts. |
+| ADR-0070 | Focus mode opens the active PhaseFlow case in the full viewport and returns to the same workbench state. | Shell Focus mode and PhaseFlow workbench state restoration; verified by the frontend gate with `--require-focus`. |
 | Shared application shell | The shell supplies the six routes, page structure, workbench, architecture modal and navigation. |
 | Full scientific workflow | Offline processing, evaluation, export and replay/live separation are documented and gated. |
 | Focus simulation | The Focus route preserves state when returning to the workbench and recomputes from its controls. |

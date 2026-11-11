@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -21,10 +22,6 @@ from test_local_bootstrap import ROOT, free_port, present, write
 from test_local_bootstrap import fixture_repo as fixture_repo
 from test_local_bootstrap import workflow as workflow
 
-TEMPLATE_ONLY = pytest.mark.skipif(
-    not (ROOT / ".template-source").is_file(), reason="requires the uninstantiated product template"
-)
-
 
 def stamp(root, config, module, name=".venv"):
     item = next(row for row in config["environments"] if row["path"] == name)
@@ -36,6 +33,25 @@ def stamp(root, config, module, name=".venv"):
 def metadata(root, stage):
     shutil.copyfile(root / "VERSION", stage / "VERSION")
     shutil.copytree(root / "docs/contracts", stage / "docs/contracts", dirs_exist_ok=True)
+
+
+DIALECT = "https://json-schema.org/draft/2020-12/schema"
+
+
+def reads_data_selector(copy_data):
+    """Whether a copy-data script reads the CAOS_DATA_ROOT selector from its environment (code, not a comment)."""
+    code = re.sub(r"/\*.*?\*/|//[^\n]*", "", copy_data.read_text(encoding="utf-8"), flags=re.S)
+    return re.search(r"process\.env(?:\.CAOS_DATA_ROOT\b|\[\s*['\"]CAOS_DATA_ROOT['\"]\s*\])", code) is not None
+
+
+def catalog_ids(root):
+    """The row ids of ``docs/contracts/catalog.md`` (a row of 13 or more cells whose first cell is not the header)."""
+    ids = set()
+    for line in (root / "docs/contracts/catalog.md").read_text(encoding="utf-8").splitlines():
+        cells = [part.strip() for part in line.strip().strip("|").split("|")]
+        if line.startswith("|") and len(cells) >= 13 and cells[0] != "id" and set(cells[0]) - {"-", ":"}:
+            ids.add(cells[0])
+    return ids
 
 
 def seal(module, root, config, stage):
@@ -62,9 +78,11 @@ def test_adversarial_receipt_current_contract_and_recursive_pins(workflow, fixtu
         write(root / name, (ROOT / name).read_text(encoding="utf-8"))
     write(root / "docs/contracts/api.openapi.json", "{}")
     for name, required in (("lenient", []), ("strict", ["NEW_CONTRACT_FIELD"])):
+        # each fixture schema names its own $id and dialect, as the catalog's schemas do: a product registry that admits a
+        # schema only at its own $id and dialect admits these too (#89)
         write(
             root / f"docs/contracts/schemas/{name}.schema.json",
-            json.dumps({"type": "object", "required": required}),
+            json.dumps({"$schema": DIALECT, "$id": f"{name}.schema.json", "type": "object", "required": required}),
         )
     header = (
         "id",
@@ -110,7 +128,8 @@ def test_adversarial_receipt_current_contract_and_recursive_pins(workflow, fixtu
     ready = {
         "product_version": (root / "VERSION").read_text().strip(),
         "catalog_sha256": hashlib.sha256(catalog.encode()).hexdigest(),
-        "contracts": [{"id": f"doc{i}", "state": "available"} for i in range(4)],
+        # one readiness row per catalog row: the catalog has one row per required path, however many the product declares (#89)
+        "contracts": [{"id": f"doc{i}", "state": "available"} for i in range(len(paths))],
     }
     write(stage / "data/derived/readiness.json", json.dumps(ready))
     metadata(root, stage)
@@ -191,11 +210,12 @@ def test_adversarial_actual_readiness_inventory(workflow, tmp_path):
     ready = json.loads(result.stdout)
     config = workflow.settings(ROOT)
     workflow.check_readiness_inventory(ROOT, config, ready)
-    is_template = (ROOT / ".template-source").is_file()
-    has_local_registry = (ROOT / "data-pipeline/pipeline/registry.py").is_file()
-    expected_count = 6 if is_template else (5 if has_local_registry else 17)
-    assert len(ready["contracts"]) == expected_count
-    assert ("readiness" not in {row["id"] for row in ready["contracts"]}) == (is_template or has_local_registry)
+    # the inventory is the product's own catalog less its declared exclusions, never a count of the template's or another
+    # product's, and never inferred from an optional pipeline module (#89, #102: ChancaDEM has a registry and 12 rows)
+    expected = catalog_ids(ROOT) - set(config.get("readiness_excludes", []))
+    ids = [row["id"] for row in ready["contracts"]]
+    assert len(ids) == len(expected) and set(ids) == expected, (sorted(ids), sorted(expected))
+    assert ("readiness" in ids) == ("readiness" in expected)
     for bad_rows in (
         ready["contracts"][:-1],
         ready["contracts"] + [ready["contracts"][0]],
@@ -207,13 +227,12 @@ def test_adversarial_actual_readiness_inventory(workflow, tmp_path):
         workflow.check_readiness_inventory(ROOT, config, {**ready, "catalog_sha256": "0" * 64})
 
 
-def test_adversarial_actual_product_registry(tmp_path):
+def test_adversarial_actual_template_registry(tmp_path):
     bridge = ROOT / "scripts/local/producer_bridge.py"
-    if not (ROOT / ".template-source").is_file():
+    if not (ROOT / "data-pipeline/pipeline/registry.py").is_file():
         config = json.loads((ROOT / "scripts/local/workflow.json").read_text())
-        operation = config["validators"][0]["args"][0]
-    else:
-        operation = "template-validate"
+        assert all("template-validate" not in row.get("args", []) for row in config["validators"])
+        return
     result = subprocess.run(
         [
             sys.executable,
@@ -229,19 +248,10 @@ def test_adversarial_actual_product_registry(tmp_path):
     ids = json.loads(result.stdout)
     assert ids
     index = tmp_path / "data/derived/manifests/index.json"
-    write(tmp_path / "VERSION", (ROOT / "VERSION").read_text())
     for cases, expected in ((ids, 0), (ids[:-1], 1), (ids + [ids[0]], 1)):
-        write(
-            index,
-            json.dumps(
-                {
-                    "engine_version": (ROOT / "VERSION").read_text().strip(),
-                    "cases": [{"case_id": name} for name in cases],
-                }
-            ),
-        )
+        write(index, json.dumps({"cases": [{"case_id": name} for name in cases]}))
         checked = subprocess.run(
-            [sys.executable, bridge, operation, tmp_path],
+            [sys.executable, bridge, "template-validate", tmp_path],
             cwd=ROOT,
             capture_output=True,
             text=True,
@@ -249,7 +259,7 @@ def test_adversarial_actual_product_registry(tmp_path):
         )
         assert checked.returncode == expected, checked.stderr
         if expected:
-            assert "case inventory" in checked.stderr
+            assert "Partial case inventory" in checked.stderr
 
 
 def test_adversarial_rollback_continues_and_preserves_recovery(workflow, fixture_repo, monkeypatch):
@@ -568,11 +578,17 @@ def test_adversarial_locked_node_engines(workflow, tmp_path, monkeypatch, capsys
         workflow.compatible_node(tmp_path, (24, 14, 1))
 
 
-def test_phaseflow_readiness_contract_admission(workflow):
+def test_adversarial_real_product_generation_admission(workflow):
+    if (ROOT / ".template-source").is_file():
+        pytest.skip("The template example has a separate actual five-case generation control")
     config = workflow.settings(ROOT)
     ready = json.loads((ROOT / "data/derived/readiness.json").read_text(encoding="utf-8"))
     workflow.check_readiness_inventory(ROOT, config, ready)
-    workflow.check_readiness_states(ROOT, config, ready, ROOT)
+    # This checkout has advanced to 0.12.000 but its committed case index is
+    # still the immutable 0.11.000 baseline. Stale readiness must remain a
+    # release blocker until the full external 0.12.000 rebake completes.
+    with pytest.raises(workflow.Failure, match="Partial readiness"):
+        workflow.check_readiness_states(ROOT, config, ready, ROOT)
     available = next(row["id"] for row in ready["contracts"] if row["state"] == "available")
     for state in ("missing", None, "dormant", "partial"):
         bad = json.loads(json.dumps(ready))
@@ -585,10 +601,13 @@ def test_phaseflow_readiness_contract_admission(workflow):
     assert all((ROOT / name).is_file() for name in config.get("stage_inputs", []))
 
 
+TEMPLATE_ONLY = pytest.mark.skipif(not (ROOT / ".template-source").is_file(),
+                                   reason="This integration control requires the template's actual five-case sources")
+
+
 @TEMPLATE_ONLY
 def test_adversarial_real_template_generation_admission(workflow, tmp_path, monkeypatch):
     config = workflow.settings(ROOT)
-
     python = workflow.venv_python(ROOT, config["primary_environment"])
     root = tmp_path / "real template sources with spaces"
     # Production sources and authored inputs, unchanged; no fixture producer/validator substitutes.
@@ -753,7 +772,7 @@ def test_adversarial_frontend_environment_isolation(workflow, fixture_repo, monk
         ),
     )
     write(root / "data/derived/manifests/a.json", json.dumps({"artifact": {"path": "cases/a.json"}}))
-    for name in ("copy-data.mjs", "declared.mjs"):
+    for name in ("copy-data-entry.mjs", "copy-data.mjs", "declared.mjs"):
         target = root / "frontend/scripts" / name
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(ROOT / "frontend/scripts" / name, target)
@@ -798,14 +817,14 @@ HTTPServer(('127.0.0.1',int(sys.argv[1])),Handler).serve_forever()
         """import json,os,sys,urllib.request
 from pathlib import Path
 api=json.loads(urllib.request.urlopen('http://127.0.0.1:'+sys.argv[1]+'/health').read())
-front={k:os.environ.get(k) for k in ('CAOS_DATA_ROOT','PHASEFLOW_DERIVED_ROOT','CAOS_MODELS_ROOT','CAOS_TEMP_ROOT')}
+front={k:os.environ.get(k) for k in ('CAOS_DATA_ROOT','CAOS_MODELS_ROOT','CAOS_TEMP_ROOT','PHASEFLOW_DERIVED_ROOT')}
 Path('frontend-env.json').write_text(json.dumps({'frontend':front,'api':api}))
 """,
     )
-    overlay = {"PHASEFLOW_DERIVED_ROOT": "{root}/data/derived"}
+    overlay = workflow.settings(ROOT).get("frontend_environment") or {}
     config.update(
         frontend_environment=overlay,
-        frontend_prepare=[["node", "scripts/copy-data.mjs"]],
+        frontend_prepare=[["node", "scripts/copy-data-entry.mjs"]],
         frontend_command=["{python}", "frontend-env.py", "{port}"],
     )
     config["api"].update(
@@ -819,35 +838,167 @@ Path('frontend-env.json').write_text(json.dumps({'frontend':front,'api':api}))
     assert Path(generated["CAOS_MODELS_ROOT"]) == stage / "checkpoints"
     assert baseline == workflow.environment(root), "generation must not mutate caller storage settings"
 
+    baseline["APP_PORT"] = str(api_port)
+    monkeypatch.setattr(workflow, "environment", lambda _root: baseline)
     workflow.development(root, config)
     recorded = root / "frontend/frontend-env.json"
     observed = json.loads(recorded.read_text())
-    assert observed["frontend"]["CAOS_DATA_ROOT"] == stores["CAOS_DATA_ROOT"]
-    assert Path(observed["frontend"]["PHASEFLOW_DERIVED_ROOT"]).resolve() == (
-        root / "data/derived"
-    ).resolve()
+    # The product may explicitly bind a PhaseFlow data root through its
+    # workflow overlay. Without that opt-in, the product adapter keeps its
+    # own-bake default and does not inject an unrelated global selector.
+    overlay = workflow.settings(root).get("frontend_environment") or {}
+    if "PHASEFLOW_DERIVED_ROOT" in overlay:
+        expected_root = overlay["PHASEFLOW_DERIVED_ROOT"].replace("{root}", str(root))
+        assert Path(observed["frontend"]["PHASEFLOW_DERIVED_ROOT"]).resolve() == Path(expected_root).resolve()
+    else:
+        assert observed["frontend"]["PHASEFLOW_DERIVED_ROOT"] is None
     assert observed["api"] == stores
     assert all(observed["frontend"][key] == stores[key] for key in ("CAOS_MODELS_ROOT", "CAOS_TEMP_ROOT"))
     assert (root / "frontend/public/data/cases/a.json").read_bytes() == (
         root / "data/derived/cases/a.json"
     ).read_bytes()
     assert baseline == workflow.environment(root)
-    assert workflow.settings(ROOT)["frontend_environment"] == overlay
+    # a product that declares the overlay declares this one; a product without it is still tested on the fixture's (#89)
+    declared = workflow.settings(ROOT).get("frontend_environment") or {}
+    for key, value in declared.items():
+        assert observed["frontend"].get(key) == value.replace("{root}", str(root)), (key, declared, observed["frontend"])
 
-    # Without the app-specific override, use the repository-relative compact-tree default.
+    # Without the opt-in, the actual consumer keeps its own behavior: one that reads the global selector fails on the empty
+    # global store; one that reads only its own bake (CAOS_Contraste's copy-data.mjs) is untouched by the selector (#89).
     config.pop("frontend_environment")
     recorded.unlink()
-    workflow.development(root, config)
-    observed = json.loads(recorded.read_text())
-    assert observed["frontend"]["CAOS_DATA_ROOT"] == stores["CAOS_DATA_ROOT"]
-    assert observed["frontend"]["PHASEFLOW_DERIVED_ROOT"] is None
-    assert observed["api"] == stores
+    if (root / "frontend/scripts/copy-data-entry.mjs").is_file():
+        # PhaseFlow's adapter intentionally falls back to the product's own bake
+        # when its product-specific selector is absent, regardless of the global
+        # CAOS_DATA_ROOT inherited by the shell.
+        workflow.development(root, config)
+        assert (root / "frontend/public/data/cases/a.json").read_bytes() == (root / "data/derived/cases/a.json").read_bytes()
+    elif reads_data_selector(root / "frontend/scripts/copy-data.mjs"):
+        with pytest.raises(workflow.Failure, match="Command failed"):
+            workflow.development(root, config)
+        assert not recorded.exists()
+        with pytest.raises(OSError):
+            urllib.request.urlopen(f"http://127.0.0.1:{api_port}/health", timeout=0.2)
+    else:
+        workflow.development(root, config)
+        assert (root / "frontend/public/data/cases/a.json").read_bytes() == (root / "data/derived/cases/a.json").read_bytes()
     assert baseline == workflow.environment(root)
 
-    # With no explicit global selector, the repository-relative compact-tree default still works.
+    # With no explicit global selector and no overlay, copy-data's existing local default still works.
     monkeypatch.delenv("CAOS_DATA_ROOT")
+    baseline.pop("CAOS_DATA_ROOT", None)
     workflow.development(root, config)
     observed = json.loads(recorded.read_text())
     assert observed["frontend"]["CAOS_DATA_ROOT"] is None and observed["api"]["CAOS_DATA_ROOT"] is None
     for key in ("CAOS_MODELS_ROOT", "CAOS_TEMP_ROOT"):
         assert observed["frontend"][key] == observed["api"][key] == stores[key]
+
+
+# ---- #89 / #102: the three regression tests above, run against a planted product (no template identity, its own counts)
+
+def planted_product(base, extra_rows=6, copy_data=None):
+    """A product made from this base: its pipeline, contracts and workflow, no .template-source, and a catalog with
+    ``extra_rows`` more rows than this repository's (ChancaDEM: a registry and 12 readiness rows)."""
+    product = base / "planted product"
+    for directory in ("data-pipeline", "docs/contracts", "scripts/local", "frontend/scripts"):
+        shutil.copytree(ROOT / directory, product / directory,
+                        ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "node_modules"))
+    shutil.copyfile(ROOT / "VERSION", product / "VERSION")
+    catalog = product / "docs/contracts/catalog.md"
+    lines = catalog.read_text(encoding="utf-8").splitlines()
+    first = next(i for i, line in enumerate(lines) if line.startswith("|") and len(line.strip("|").split("|")) >= 13
+                 and line.split("|")[1].strip() not in ("id", "") and set(line.split("|")[1].strip()) - {"-", ":"})
+    cells = lines[first].split("|")
+    for n in range(extra_rows):
+        row = list(cells)
+        row[1] = f" planted-{n} "
+        lines.insert(first + 1 + n, "|".join(row))
+    catalog.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    if copy_data is not None:
+        (product / "frontend/scripts/copy-data.mjs").write_text(copy_data, encoding="utf-8")
+    config = json.loads((product / "scripts/local/workflow.json").read_text(encoding="utf-8"))
+    config.pop("frontend_environment", None)
+    (product / "scripts/local/workflow.json").write_text(json.dumps(config), encoding="utf-8")
+    assert not (product / ".template-source").exists()
+    return product
+
+
+def test_adversarial_inventory_count_comes_from_the_products_catalog(workflow, tmp_path, monkeypatch):
+    product = planted_product(tmp_path)
+    expected = catalog_ids(product) - set(workflow.settings(product).get("readiness_excludes", []))
+    assert len(expected) == len(catalog_ids(ROOT) - set(workflow.settings(ROOT).get("readiness_excludes", []))) + 6
+    monkeypatch.setattr(sys.modules[__name__], "ROOT", product)
+    test_adversarial_actual_readiness_inventory(workflow, tmp_path / "derived")
+
+
+def test_adversarial_receipt_follows_the_number_of_required_paths(workflow, fixture_repo):
+    root, config, env = fixture_repo
+    config["required"] = [*config["required"], "data/derived/cases/b.json"]
+    test_adversarial_receipt_current_contract_and_recursive_pins(workflow, (root, config, env))
+    for schema in sorted((root / "docs/contracts/schemas").glob("*.schema.json")):
+        doc = json.loads(schema.read_text(encoding="utf-8"))
+        assert doc.get("$id") == schema.name and doc.get("$schema") == DIALECT, (schema.name, doc)
+
+
+COPY_OWN_BAKE = """// a consumer that reads only its own bake, as CAOS_Contraste's does
+import { cpSync, mkdirSync, rmSync } from 'node:fs';
+rmSync('public/data', { recursive: true, force: true });
+mkdirSync('public', { recursive: true });
+cpSync('../data/derived', 'public/data', { recursive: true });
+"""
+
+
+def test_adversarial_frontend_isolation_for_a_consumer_of_its_own_bake(workflow, fixture_repo, monkeypatch, tmp_path):
+    product = planted_product(tmp_path, extra_rows=0, copy_data=COPY_OWN_BAKE)
+    assert not reads_data_selector(product / "frontend/scripts/copy-data.mjs")
+    assert reads_data_selector(ROOT / "frontend/scripts/copy-data.mjs") or "CAOS_DATA_ROOT" not in (
+        ROOT / "frontend/scripts/copy-data.mjs").read_text(encoding="utf-8")
+    monkeypatch.setattr(sys.modules[__name__], "ROOT", product)
+    test_adversarial_frontend_environment_isolation(workflow, fixture_repo, monkeypatch)
+
+
+# ---- BD-10: the readiness checker runs in the generation environment, not in the bootstrap interpreter
+
+def generation_only_environment(base):
+    """A real, empty venv (no pip) whose site-packages holds one module the interpreter running the tests lacks: a stand-in
+    for a generation environment with numpy or jsonschema that the bootstrap interpreter does not have."""
+    import venv
+
+    env = base / "generation env"
+    venv.EnvBuilder(with_pip=False).create(env)
+    python = next(p for p in (env / "Scripts" / "python.exe", env / "bin" / "python") if p.is_file())
+    site = subprocess.run([str(python), "-c", "import sysconfig;print(sysconfig.get_paths()['purelib'])"],
+                          capture_output=True, text=True, check=True).stdout.strip()
+    write(Path(site) / "generation_only_dependency.py", "VALUE = 1\n")
+    return python
+
+
+def provider_product(root):
+    """A product whose declared provider imports a package of its generation environment only."""
+    write(root / "scripts/check_readiness.py", (ROOT / "scripts/check_readiness.py").read_text(encoding="utf-8"))
+    write(root / "scripts/local/provider.py",
+          "import generation_only_dependency\n\ndef validate(root):\n    return generation_only_dependency.VALUE == 1\n")
+    return {"readiness_provider": "scripts/local/provider.py", "readiness_check": "scripts/check_readiness.py",
+            "generation_environments": [".venv-pipeline"]}
+
+
+def test_adversarial_a_provider_with_generation_packages_is_admitted_by_the_bootstrap(workflow, tmp_path, monkeypatch):
+    import importlib.util as util
+
+    assert util.find_spec("generation_only_dependency") is None, "the bootstrap interpreter must lack the planted module"
+    root = tmp_path / "product"
+    config = provider_product(root)
+    write(root / "scripts/local/workflow.json", json.dumps(config))
+    python = generation_only_environment(tmp_path)
+    monkeypatch.setattr(workflow, "venv_python", lambda *_: python)
+    ready = {"contracts": [{"id": "a", "state": "available"}]}
+    workflow.check_readiness_states(root, config, ready, root)          # the generation interpreter resolved by the helper
+    workflow.check_readiness_states(root, config, ready, root, python)  # the interpreter a stage admission passes
+    # the bootstrap interpreter alone cannot run this provider: the guard is not stdlib-only
+    bootstrap = subprocess.run([sys.executable, "-B", str(root / "scripts/check_readiness.py"), str(root)], capture_output=True,
+                               text=True, cwd=root)
+    assert bootstrap.returncode == 1 and "generation_only_dependency" in bootstrap.stdout, bootstrap.stdout
+    # and a provider that fails in the generation environment still refuses
+    write(root / "scripts/local/provider.py", "import generation_only_dependency\n\ndef validate(root):\n    return False\n")
+    with pytest.raises(workflow.Failure, match="Command failed"):
+        workflow.check_readiness_states(root, config, ready, root)

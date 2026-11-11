@@ -10,7 +10,7 @@ from pathlib import Path
 
 def main() -> int:
     if len(sys.argv) != 3:
-        raise SystemExit("usage: producer_bridge.py phaseflow-{finalize|validate} STAGE")
+        raise SystemExit("usage: producer_bridge.py {phaseflow-finalize|phaseflow-validate|template-validate} STAGE")
     mode, raw_stage = sys.argv[1:]
     root = Path(__file__).resolve().parents[2]
     stage = Path(raw_stage).resolve()
@@ -30,7 +30,7 @@ def main() -> int:
         write(stage / "data/derived", readiness)
         return 0
 
-    if mode == "phaseflow-validate":
+    if mode in {"phaseflow-validate", "template-validate"}:
         sys.path.insert(0, str(root / "data-pipeline"))
         from pipeline import registry
 
@@ -42,12 +42,11 @@ def main() -> int:
             raise ValueError("The case index has no case list.")
         actual = [row.get("case_id") for row in rows if isinstance(row, dict)]
         if len(actual) != len(rows) or set(actual) != expected or len(actual) != len(set(actual)):
-            raise ValueError(
-                f"Incomplete or duplicate case inventory: expected {len(expected)}, found {len(actual)}."
-            )
-        version = (stage / "VERSION").read_text(encoding="utf-8").strip()
-        if index.get("engine_version") != version:
-            raise ValueError("The case index engine version differs from the staged product version.")
+            raise ValueError(f"Partial case inventory: expected {len(expected)}, found {len(actual)}.")
+        if mode == "phaseflow-validate":
+            version = (stage / "VERSION").read_text(encoding="utf-8").strip()
+            if index.get("engine_version") != version:
+                raise ValueError("The case index engine version differs from the staged product version.")
         return 0
 
     raise ValueError(f"Unknown producer bridge operation: {mode}")

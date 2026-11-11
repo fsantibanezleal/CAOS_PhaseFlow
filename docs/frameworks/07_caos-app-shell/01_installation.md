@@ -1,7 +1,7 @@
 # App shell · 01 · Installation
 
 ```bash
-cd frontend && npm ci      # @fasl-work/caos-app-shell@0.23.0 from the lockfile
+cd frontend && npm ci      # @fasl-work/caos-app-shell@0.25.0 from the lockfile
 ```
 
 ```ts

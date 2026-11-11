@@ -54,9 +54,9 @@ const ARCH: Record<string, { en: string; es: string }> = {
 /** The expected-time surrogate's held-out study, by archetype and by grid size, and the guard. */
 export function LearnedStudyPanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
-  const model = useJson<ModelFile>('/models/expected-time.json');
-  const study = useJson<FailureStudy>('/models/learned-failure-modes.json');
-  const guard = useJson<GuardValidation>('/models/guard-validation.json');
+  const model = useJson<ModelFile>('/data/models/expected-time.json');
+  const study = useJson<FailureStudy>('/data/models/learned-failure-modes.json');
+  const guard = useJson<GuardValidation>('/data/models/guard-validation.json');
   if (!model || model === 'error') return <Pending lang={lang} state={model as null | 'error'} />;
   const m = model.metrics as Record<string, number | string>;
   const rows: Array<[string, string]> = [
@@ -126,7 +126,7 @@ export function LearnedStudyPanel({ lang }: { lang: Lang }) {
 /** The bound surrogate's held-out error and its two monotonicity checks. */
 export function BoundSurrogatePanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
-  const model = useJson<ModelFile>('/models/bound.json');
+  const model = useJson<ModelFile>('/data/models/bound.json');
   if (!model || model === 'error') return <Pending lang={lang} state={model as null | 'error'} />;
   const m = model.metrics as Record<string, number>;
   return (

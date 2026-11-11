@@ -94,11 +94,16 @@
   height: clamp(380px, 62vh, 720px);
   min-height: 340px;
 }
-.pf-story-stage > .pf-stage3d { height: 100%; min-height: 340px; }
-.pf-story-aggregate { display: flex; flex-direction: column; justify-content: flex-end; padding: 5rem 1rem 1rem; }
+.pf-story-drawing { position: relative; width: 100%; height: 100%; min-height: 340px; }
+.pf-story-drawing > .pf-stage3d { height: 100%; min-height: 340px; }
+.pf-story-render-parking { display: none; }
+.pf-story-stage-slot, .pf-story-stage-portal { position: relative; width: 100%; height: 100%; min-height: 340px; contain: layout paint; }
+.pf-tool-loading { display: grid; min-height: 10rem; place-items: center; padding: 1rem; }
+/* StoryFrame owns its eased stage and panel motion; the product styles only its own stage slot. */
+.pf-story-aggregate .pf-story-drawing { display: flex; flex-direction: column; justify-content: flex-end; padding: 5rem 1rem 1rem; }
 .pf-story-panel { height: 100%; overflow: auto; }
 .pf-story-links { position: absolute; z-index: 5; inset: 0; pointer-events: none; }
-.pf-story-link { position: absolute; transform: translate(-50%, -50%); width: 2rem; min-height: 2rem !important; padding: 0 !important; border-radius: 50% !important; border: 2px solid var(--color-bg) !important; background: var(--color-accent) !important; color: white !important; font-weight: 800; box-shadow: 0 0 0 2px var(--color-accent); pointer-events: auto; }
+.pf-story-link { position: absolute; transform: translate(-50%, -50%); width: 2rem; min-height: 2rem !important; padding: 0 !important; border-radius: 50% !important; border: 2px solid var(--color-bg) !important; background: var(--color-accent) !important; color: var(--color-bg) !important; font-weight: 800; box-shadow: 0 0 0 2px var(--color-accent); pointer-events: auto; }
 .pf-story-link.is-selected { box-shadow: 0 0 0 4px var(--color-warn); }
 .pf-story-cursor { position: absolute; right: 12px; bottom: 12px; padding: .3rem .55rem; border-radius: 999px; color: var(--color-fg); background: var(--color-surface); border: 1px solid var(--color-border); font-size: .78rem; }
 .pf-story-linked { display: grid; gap: .45rem; margin: 0 0 .75rem; padding: 0 0 .75rem; border-bottom: 1px solid var(--color-border); }

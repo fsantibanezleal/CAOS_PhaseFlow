@@ -2,8 +2,10 @@
 
 All of this is offline; CI never trains. Install the precompute requirements first
 (`pip install -r requirements-precompute.txt`). Set `CAOS_MODELS_ROOT` to an external model candidate before
-running any command that writes or reads newly generated models. Set `CAOS_MODEL_SOURCE_ROOT` to that bundle
-when preparing the next staged bake. Candidate commands never write model files into the checkout.
+running standalone commands that write or read newly generated models. Candidate commands never write
+model files into the checkout. The official staged bake trains the model bundle in its external stage,
+measures the third-split guard, bakes all cases, then writes the parity and preview receipts against those
+same staged models and traces. Do not use a prior version-stamped model report as a staged input.
 
 | want | run | cost |
 |---|---|---|

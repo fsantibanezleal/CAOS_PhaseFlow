@@ -16,11 +16,12 @@ as a local release gate (ADR-0074). It fails, naming the file and the rule, on
   index does not list;
 - **beyond the state of the art**: a ``BS-`` identifier of the SDD section ``## Beyond the state of the art`` that no level 4
   notebook covers in each language, or a notebook claiming one the SDD does not list;
-- **the method tiers** (template 0.14.000; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): a method of tier ``sota`` in
+- **the method tiers** (template 0.13.000; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): a method of tier ``sota`` in
   the SDD's ``## Method ladder`` table (``| id | tier | method | acceptance criterion | gate |``) that no level 3 notebook names in
   ``caos.methods``, in each language; a level 3 notebook that names none, or a method that is no ``sota`` row; ``caos.methods`` on
   another level. A tree whose SDD has no readable ladder is left to ``scripts/check_sdd.py``, which owns that table;
-- **anatomy**: the second-level sections of the tree's language, in order, as the level requires; a first cell that is not
+- **anatomy**: the second-level sections of the tree's language, in order, as the level requires (from template 0.14.000 the
+  sections of levels 3 and 4 are ``Comparison`` and ``Evidence``: the tier names never title a notebook); a first cell that is not
   markdown; a code cell not directly preceded by a markdown cell, or without a comment;
 - **metadata**: the ``caos`` block (language, topic, level, title, packages, data, sources, beyond) must agree with the
   tree, the folder, ``notebooks/requirements.txt`` (each package an exact line of it, ``name==version`` or
@@ -67,6 +68,7 @@ import sys
 import tokenize
 import urllib.error
 import urllib.request
+from html.parser import HTMLParser
 from pathlib import Path
 
 # the size limits of a committed notebook: the whole file (outputs included) and each embedded image, so the set stays
@@ -95,7 +97,10 @@ OPTIONAL_KEYS = ("methods",)  # level 3 only: the ids of the SDD's sota methods 
 LADDER_SECTION = "Method ladder"
 LADDER_HEAD = ["id", "tier", "method", "acceptance criterion", "gate"]
 RULE = "CAOS_MANAGE conventions/method-tiers-and-manuscripts.md"
-BEYOND_SECTION = "Beyond the state of the art"
+BEYOND_SECTION = "Beyond the state of the art"  # the SDD's section: an internal record, never a notebook heading
+# the notebook sections of levels 3 and 4 (template 0.14.000): the tier names are internal and never a heading a reader
+# sees (CAOS_MANAGE conventions/method-tiers-and-manuscripts.md section 0); scripts/check_internal_names.py holds the rest
+COMPARISON_SECTION = "Comparison"
 EVIDENCE_SECTION = "Evidence"
 SLUG = re.compile(r"^(\d{2})-([a-z0-9]+(?:-[a-z0-9]+)*)$")
 NOTEBOOK = re.compile(r"^(\d{2})-([a-z0-9]+(?:-[a-z0-9]+)*)\.ipynb$")
@@ -112,9 +117,6 @@ MACHINE_PATH = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]:(?:\\{1,2}|/(?!/))|/home/|/
 RUNS_PIP = re.compile(r"^\s*[%!]\s*(?:pip|conda|mamba)\b|-m['\"]?\s*,?\s*['\"]?pip\b|\bpip\s+install\b", re.M)
 TRACEBACK = "Traceback (most recent call last)"
 NOTEBOOK_PATH = "notebooks/<language>/<topic>/<notebook>.ipynb"
-SPANISH_ENGLISH_READER_METADATA = re.compile(
-    r"(?im)^\s*(?:[-*]\s*)?\*{0,2}(?:level|prerequisites|reading time)\*{0,2}\s*:|\b\d+\s+minutes\b"
-)
 TOKENS = (
     re.compile(r"\bghp_[A-Za-z0-9]{20,}"), re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}"),
     re.compile(r"\bsk-[A-Za-z0-9_-]{20,}"), re.compile(r"\bAKIA[0-9A-Z]{16}\b"), re.compile(r"\bxox[abprs]-[A-Za-z0-9-]{10,}"),
@@ -913,11 +915,114 @@ def parse_code(code: str) -> ast.Module | None:
         return None
 
 
+class _VisibleHTML(HTMLParser):
+    """Static visible content; hidden HTML cannot pad the notebook's teaching prose."""
+
+    VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.stack: list[tuple[str, bool]] = []
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        style = re.sub(r"/\*.*?\*/", "", attributes.get("style") or "", flags=re.S)
+        effective: dict[str, tuple[str, bool]] = {}
+        displays = {"none", "block", "inline", "inline-block", "flex", "inline-flex", "grid", "inline-grid",
+                    "contents", "flow-root", "table", "inline-table", "table-row", "table-cell", "table-caption",
+                    "table-row-group", "table-header-group", "table-footer-group", "table-column", "table-column-group",
+                    "list-item", "inherit", "initial", "unset", "revert", "revert-layer"}
+        for declaration in style.split(";"):
+            property_name, separator, value = declaration.partition(":")
+            if not separator:
+                continue
+            property_name = property_name.strip().lower()
+            important = bool(re.search(r"!important\s*$", value, re.I))
+            value = re.sub(r"\s*!important\s*$", "", value, flags=re.I).strip().lower()
+            if property_name == "display" and value not in displays:
+                continue
+            if property_name == "visibility" and value not in {"hidden", "collapse", "visible", "inherit", "initial", "unset", "revert", "revert-layer"}:
+                continue
+            if property_name == "opacity":
+                try:
+                    float(value.rstrip("%"))
+                except ValueError:
+                    continue  # A CSS expression is not statically resolved to hidden.
+            if effective.get(property_name, ("", False))[1] and not important:
+                continue
+            effective[property_name] = value, important
+        hidden_style = (effective.get("display", ("", False))[0] == "none"
+                        or effective.get("visibility", ("", False))[0] in {"hidden", "collapse"}
+                        or ("opacity" in effective and float(effective["opacity"][0].rstrip("%")) <= 0))
+        hidden = (bool(self.stack and self.stack[-1][1]) or "hidden" in attributes
+                  or tag in {"script", "style", "template", "pre", "code"}
+                  or hidden_style)
+        if tag not in self.VOID:
+            self.stack.append((tag, hidden))
+        elif tag in {"br", "hr"} and not hidden:
+            self.parts.append("\n")
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in self.VOID:
+            self.handle_endtag(tag)
+
+    def handle_endtag(self, tag):
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index][0] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, data):
+        if not self.stack or not self.stack[-1][1]:
+            self.parts.append(data)
+
+    def handle_entityref(self, name):
+        self.handle_data(f"&{name};")
+
+    def handle_charref(self, name):
+        self.handle_data(f"&#{name};")
+
+
+# CommonMark raw HTML (spec 0.31.2, section 6.6): an open tag with its attributes, a closing tag, a comment, a processing instruction,
+# a declaration or CDATA. Any other `<` is text (`sum_{k<n}`, `i<j`, `x <y`) and never reaches the HTML parser, whose handling of
+# an unterminated "tag" changed in Python 3.12.11 and 3.13.4 (it hid the rest of the document: ChancaDEM's SDD, 0.15.000, #102).
+_HTML_ATTRIBUTE = r"""\s+[A-Za-z_:][A-Za-z0-9_.:-]*(?:\s*=\s*(?:[^\s"'=<>`]+|'[^']*'|"[^"]*"))?"""
+RAW_HTML = re.compile(rf"<(?:[A-Za-z][A-Za-z0-9-]*(?:{_HTML_ATTRIBUTE})*\s*/?>|/[A-Za-z][A-Za-z0-9-]*\s*>|!--|\?|![A-Za-z]|!\[CDATA\[)")
+
+
+def visible_markdown(text: str) -> str:
+    """Remove hidden DOM and complete or unterminated HTML comments; preserve visible Markdown. Only real markup (``RAW_HTML``) is
+    parsed: a `<` that starts no tag is prose, on every Python release."""
+    protected: dict[str, str] = {}
+
+    def protect(match):
+        token = f"\x00{len(protected)}\x00"
+        protected[token] = match[0]
+        return token
+
+    # Literal code/math is not HTML: a quoted hidden tag must not swallow later prose.
+    text = re.sub(r"(?ms)^\s*(`{3,}|~{3,})[^\n]*\n.*?^\s*\1[^\n]*(?:\n|$)", protect, text)
+    text = re.sub(r"<(?:https?://|mailto:)[^\s<>]+>", protect, text, flags=re.I)
+    text = re.sub(r"(`+)[^`\n]*\1|\$\$.*?\$\$|\$[^$\n]*\$|\\\[.*?\\\]|"
+                  r"\\begin\{(?P<environment>(?:equation|align)\*?)\}.*?\\end\{(?P=environment)\}",
+                  protect, text, flags=re.S)
+    text = re.sub(r"<", lambda m: m[0] if RAW_HTML.match(m.string, m.start()) else protect(m), text)
+    parser = _VisibleHTML()
+    parser.feed(re.sub(r"<!--.*?(?:-->|$)", "", text, flags=re.S))
+    parser.close()
+    result = "".join(parser.parts)
+    for token, value in protected.items():
+        result = result.replace(token, value)
+    return result
+
+
 def strip_markup(text: str) -> str:
     """Markdown without what a reader does not read as prose: fenced and indented code, HTML comments, tables, display and inline math."""
     kept: list[str] = []
     fenced = False
-    for line in text.splitlines():
+    for line in visible_markdown(text).splitlines():
         if FENCE.match(line):
             fenced = not fenced
         elif not fenced:
@@ -1535,7 +1640,7 @@ class Reading:
         for i, c in enumerate(self.cells):
             if c["cell_type"] == "markdown":
                 fenced = False
-                for line in text_of(c["source"]).splitlines():
+                for line in visible_markdown(text_of(c["source"])).splitlines():
                     if FENCE.match(line):
                         fenced = not fenced
                     elif not fenced and (m := HEADING2.match(line)):
@@ -1697,6 +1802,14 @@ def reading_findings(rel: str, r: Reading, bar: dict) -> list[str]:
         if value > floor:
             out.append(f"{rel}: bar: {measure} {value}, the floor is at most {floor} ({why})")
 
+    opening = text_of(r.cells[0].get("source", "")) if r.cells else ""
+    foreign_labels = (r"(?im)^\s*[-*]\s*(?:Nivel|Tiempo de lectura)\s*:", r"\bminutos\b") if r.lang == "en" else (
+        r"(?im)^\s*[-*]\s*(?:Level|Reading time)\s*:", r"\bminutes\b")
+    if any(re.search(pattern, opening) for pattern in foreign_labels):
+        language = "English" if r.lang == "en" else "Spanish"
+        other = "Spanish" if r.lang == "en" else "English"
+        out.append(f"{rel}: language: {language} reader metadata uses {other} labels or time units")
+
     below("method cells", len(r.method_cells), floor_at(bar, "method_cells", level))
     if r.level == 3:
         below("method cells that call the product's own method (package or pipeline)", len(r.product_cells), f["level3_product_cells_min"])
@@ -1733,10 +1846,10 @@ def reading_findings(rel: str, r: Reading, bar: dict) -> list[str]:
             out.append(f"{rel}: bar: the answer quotes no number that appears in an output of the notebook, at the precision the answer writes it "
                        f"(numbers in the answer: {quoted[:6]})")
     if r.level == 3:
-        if not [i for i in r.method_cells if r.section[i] == "Comparison"]:
-            out.append(f"{rel}: bar: no method cell under Comparison: a level 3 notebook runs a published method")
-        if not sum(n for i, n in r.fig_cells if r.section[i] == "Comparison"):
-            out.append(f"{rel}: bar: no figure under Comparison: a level 3 notebook compares it with a figure")
+        if not [i for i in r.method_cells if r.section[i] == COMPARISON_SECTION]:
+            out.append(f"{rel}: bar: no method cell under {COMPARISON_SECTION}: a level 3 notebook runs the published method it compares")
+        if not sum(n for i, n in r.fig_cells if r.section[i] == COMPARISON_SECTION):
+            out.append(f"{rel}: bar: no figure under {COMPARISON_SECTION}: a level 3 notebook compares the methods with a figure")
     if r.level == 4:
         shown_beyond = sum(n for i, n in r.fig_cells if r.section[i] == EVIDENCE_SECTION) \
             + sum(1 for i, c in enumerate(r.cells) if r.section[i] == EVIDENCE_SECTION and has_table(c))
@@ -1783,11 +1896,6 @@ def bar_findings(root: Path, docs: dict[str, dict[str, dict]], bar: dict | None 
     for lang in LANGS:
         readings = {key: Reading(doc, lang, root, bar) for key, doc in docs.get(lang, {}).items()}
         for key, r in readings.items():
-            if lang == "es":
-                opening = next((text_of(c["source"]) for c in docs[lang][key]["cells"]
-                                if c["cell_type"] == "markdown"), "")
-                if SPANISH_ENGLISH_READER_METADATA.search(opening):
-                    out.append(f"notebooks/es/{key}: bar: the Spanish reader metadata uses English labels or time units")
             out.extend(reading_findings(f"notebooks/{lang}/{key}", r, bar))
         owners: dict[str, set[str]] = {}
         for key, r in readings.items():

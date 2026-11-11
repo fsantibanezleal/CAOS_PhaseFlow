@@ -175,8 +175,10 @@ def test_destination_rungs_never_end_below_cpit_and_stay_under_the_pcpsp_lp():
     from pipeline.core.trace import build_trace
 
     trace_case = _tiny_case(role_en="Tiny test case", role_es="Caso de prueba pequeño")
-    trace = build_trace(case=trace_case, instance=inst, results=results, controls={"allPass": True},
-                        published={}, bound_report=rep)
+    from pipeline.stages.evaluate import run_controls
+
+    trace = build_trace(case=trace_case, instance=inst, results=results, controls=run_controls(inst, results),
+                        published={}, bound_report=rep, ensemble={"ran": False})
     from jsonschema import Draft202012Validator
 
     schema = json.loads((ROOT / "docs/contracts/schemas/trace.schema.json").read_text(encoding="utf-8"))

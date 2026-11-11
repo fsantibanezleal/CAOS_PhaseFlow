@@ -135,8 +135,8 @@ export default function Tool() {
     return best;
   }, [st.method, st.trace, dims]);
 
-  if (st.error) return <Callout variant="honest" title="Data">{st.error}</Callout>;
-  if (!st.trace || !st.manifest || !st.method) return <p className="pf-muted">{es ? 'Cargando...' : 'Loading...'}</p>;
+  if (st.error) return <div data-instrument="" className="pf-tool-loading"><Callout variant="honest" title="Data">{st.error}</Callout></div>;
+  if (!st.trace || !st.manifest || !st.method) return <div data-instrument="" className="pf-tool-loading" role="status">{es ? 'Cargando...' : 'Loading...'}</div>;
 
   const { trace, manifest, method } = st;
   const guardAvailable = trace.learned?.guard?.live_available === true;

@@ -54,8 +54,8 @@ export async function loadTrace(caseId: string): Promise<ScheduleTrace> {
   expect(t.schema, TRACE_SCHEMA, `trace ${caseId}`);
   try {
     const [model, receipt] = await Promise.all([
-      loadPublicJSON<{ metrics?: Record<string, unknown> }>('/models/expected-time.json'),
-      loadPublicJSON<GuardReceipt>('/models/guard-validation.json'),
+      loadPublicJSON<{ metrics?: Record<string, unknown> }>('/data/models/expected-time.json'),
+      loadPublicJSON<GuardReceipt>('/data/models/guard-validation.json'),
     ]);
     const rule = String(model.metrics?.failure_rule ?? '');
     const status = evaluateGuardEligibility(rule, receipt);

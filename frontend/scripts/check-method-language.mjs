@@ -60,6 +60,10 @@ function contentFiles(directory, extensions, skip = () => false) {
 }
 
 for (const file of sourceFiles(join(frontend, 'src'))) {
+  // Generated schema types contain machine keys such as `MethodRung`; they are not app copy and
+  // are already guarded by the exact-schema codegen check. Reader-facing code remains scanned.
+  const normalizedFile = file.replaceAll('\\', '/');
+  if (normalizedFile.endsWith('/src/lib/contract.gen.ts') || normalizedFile.endsWith('/src/lib/contract.types.ts')) continue;
   const code = readFileSync(file, 'utf8');
   const kind = file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   const tree = ts.createSourceFile(file, code, ts.ScriptTarget.Latest, true, kind);

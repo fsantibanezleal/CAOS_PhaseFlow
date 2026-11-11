@@ -44,5 +44,23 @@
     "pipeline.model.frontier_features.fit_training_normalizer",
     "pipeline.model.frontier_features.normalizer_contract",
     "pipeline.model.frontier_features.feature_contract_sha256"
+  ],
+  "showcase": {
+    "story_routes": [
+      "/story/deposit",
+      "/story/method",
+      "/story/constraints",
+      "/story/compare"
+    ]
+  },
+  "manuscripts": [
+    {
+      "title": "PhaseFlow: Methods and Results for Multi-Period Open-Pit Production Scheduling",
+      "kind": "technical-report"
+    },
+    {
+      "title": "Expected-Time Approximation for Open-Pit Scheduling: Deposit-Disjoint Synthetic Results and Two MineLib Cases",
+      "kind": "manuscript"
+    }
   ]
 }

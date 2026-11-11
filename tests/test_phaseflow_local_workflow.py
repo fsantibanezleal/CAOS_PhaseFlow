@@ -32,16 +32,7 @@ def test_adversarial_phaseflow_bridge_stages_models_and_computes_readiness(tmp_p
     shutil.copytree(ROOT / "docs/contracts", stage / "docs/contracts")
     shutil.copy2(ROOT / "VERSION", stage / "VERSION")
     config = json.loads((ROOT / "scripts/local/workflow.json").read_text(encoding="utf-8"))
-    for name in config["stage_inputs"]:
-        destination = stage / name
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ROOT / name, destination)
-        assert destination.read_bytes() == (ROOT / name).read_bytes()
-    assert set(config["stage_inputs"]) == {
-        f"models/{path.name}"
-        for path in (ROOT / "models").iterdir()
-        if path.is_file() and path.name != ".gitkeep"
-    }
+    assert config["stage_inputs"] == [], "model bundles are regenerated inside each external candidate stage"
 
     finalized = invoke("phaseflow-finalize", stage)
     assert finalized.returncode == 0, finalized.stderr
@@ -110,28 +101,24 @@ def test_adversarial_external_model_root_is_used_for_bake_and_training(
     model_root = tmp_path / "external model bundle"
     model_root.mkdir()
     config = json.loads((ROOT / "scripts/local/workflow.json").read_text(encoding="utf-8"))
-    for name in config["stage_inputs"]:
-        target = model_root / Path(name).relative_to("models")
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes((ROOT / name).read_bytes())
     monkeypatch.setenv("CAOS_MODEL_SOURCE_ROOT", str(model_root))
     spec = importlib.util.spec_from_file_location("phaseflow_workflow_model_source", ROOT / "scripts/local/workflow.py")
     assert spec and spec.loader
     workflow = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(workflow)
     inputs = workflow.authored_inputs(ROOT, config)
-    assert all(path.is_relative_to(model_root) for path in inputs.values())
+    assert not any(path.is_relative_to(ROOT / "models") for path in inputs.values())
     original_identity = workflow.source_identity(ROOT, config)
-    report = model_root / "training-report.json"
-    report.write_text(report.read_text(encoding="utf-8") + "\n", encoding="utf-8")
-    assert workflow.source_identity(ROOT, config) != original_identity
-    assert report.read_bytes() != (ROOT / "models/training-report.json").read_bytes()
+    assert workflow.source_identity(ROOT, config) == original_identity
 
     observed: dict[str, str] = {}
 
     def fake_commands(_root, rows, values, child_env):
         assert rows == config["generation"]
         observed.update(child_env)
+        model_report = Path(values["models"]) / "training-report.json"
+        model_report.parent.mkdir(parents=True, exist_ok=True)
+        model_report.write_text("generated in stage", encoding="utf-8")
         index = Path(values["derived"]) / "manifests/index.json"
         index.parent.mkdir(parents=True)
         index.write_text("{}", encoding="utf-8")
@@ -162,7 +149,7 @@ def test_adversarial_external_model_root_is_used_for_bake_and_training(
         },
     )
     assert Path(observed["CAOS_MODELS_ROOT"]) == stage / "models"
-    assert (stage / "models/training-report.json").read_bytes() == report.read_bytes()
+    assert (stage / "models/training-report.json").read_text(encoding="utf-8") == "generated in stage"
 
     env = {**os.environ, "CAOS_MODELS_ROOT": str(model_root)}
     probe = subprocess.run(

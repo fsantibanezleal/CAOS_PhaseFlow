@@ -295,8 +295,16 @@ def install_frontend(root, config, env):
         stamp.write_text(fingerprint + "\n", encoding="ascii")
 
 
+NOT_SHIPPED = ("training", "missing")
+
+
 def required_paths(root, config):
+    """The documents a shipped or staged tree must hold: ``required`` of the config plus every document the catalog names under
+    ``data/derived/`` or ``models/``. Since 0.15.004 the documents of a contract that ``readiness_exceptions`` declares not shipped
+    (state ``training`` or ``missing``) are not required: the slot is answered by the product's declared fallback, as the readiness
+    checks already admit. A ``partial`` or undeclared contract still requires its documents."""
     result = set(config["required"])
+    exceptions = config.get("readiness_exceptions", {})
     catalog = root / "docs/contracts/catalog.md"
     if catalog.is_file():
         header = None
@@ -307,6 +315,9 @@ def required_paths(root, config):
             if "documents" in cells:
                 header = cells
             elif header and len(cells) == len(header):
+                contract = cells[header.index("id")] if "id" in header else cells[0]
+                if exceptions.get(contract) in NOT_SHIPPED:
+                    continue
                 for name in cells[header.index("documents")].split(","):
                     name = name.strip().strip(chr(96))
                     if name.startswith(("data/derived/", "models/")):
@@ -327,14 +338,17 @@ def check_shipped(root, config):
             "then explicitly promote with --release before 03_dev."
         )
     check_readiness_inventory(root, config, ready)
-    check_readiness_states(root, config, ready, root)
     if config.get("readiness_check"):
+        python = generation_python(root, config)
+        check_readiness_states(root, config, ready, root, python)
         commands(
             root,
             config["validators"],
-            substitutions(root, root, generation_python(root, config)),
+            substitutions(root, root, python),
             environment(root),
         )
+    else:
+        check_readiness_states(root, config, ready, root)
     if config.get("requires_validation"):
         validation = json_read(root / "data/derived/validation.json")
         if (
@@ -406,6 +420,7 @@ def substitutions(root, stage, python):
         "models": str(stage / "models"),
         "checkpoints": str(stage / "checkpoints"),
         "python": str(python),
+        "node": shutil.which("node") or "node",
         "npm": shutil.which("npm") or "npm",
     }
 
@@ -413,7 +428,15 @@ def substitutions(root, stage, python):
 def commands(root, rows, values, env):
     for item in rows:
         script = relative(root, item["script"])
-        run([values["python"], script, *[arg.format_map(values) for arg in item.get("args", [])]], root, env)
+        runtime = item.get("runtime", "python")
+        args = [arg.format_map(values) for arg in item.get("args", [])]
+        if runtime == "node":
+            runtime_args = [arg.format_map(values) for arg in item.get("runtime_args", [])]
+            run([values["node"], *runtime_args, script, *args], root / "frontend", env)
+        elif runtime == "python":
+            run([values["python"], script, *args], root, env)
+        else:
+            raise Failure(f"Unsupported workflow command runtime: {runtime}")
 
 
 def source_identity(root, config):
@@ -461,6 +484,20 @@ def payload_hashes(stage, config, *, directories=None):
     return result
 
 
+VERSION_KEYS = ("engine_version", "product_version")
+
+
+def stamped_input(path):
+    """Whether a JSON file carries a top-level product or engine version."""
+    if path.suffix != ".json":
+        return False
+    try:
+        value = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return False
+    return isinstance(value, dict) and any(key in value for key in VERSION_KEYS)
+
+
 def authored_inputs(root, config):
     inputs = {}
     for name in config.get("stage_inputs", []):
@@ -478,6 +515,12 @@ def authored_inputs(root, config):
                 break
         if not source.is_file() or source.is_symlink():
             raise Failure(f"Missing or unsafe authored stage input: {name}")
+        if stamped_input(source):
+            raise Failure(
+                f"Stage input {name} is a version-stamped document ({' or '.join(VERSION_KEYS)}): such a document is "
+                "produced by the generation and never carried. Remove it from stage_inputs and produce it in a "
+                "generation step (for example the models step before the bake)."
+            )
         inputs[name] = source
     return inputs
 
@@ -524,8 +567,11 @@ def check_readiness_inventory(root, config, ready):
         raise Failure("Readiness is bound to a stale admission catalog.")
 
 
-def check_readiness_states(root, config, ready, view):
-    """Declared input/API outcomes are admitted only with the real recomputation guard."""
+def check_readiness_states(root, config, ready, view, python=None):
+    """Declared input/API outcomes are admitted only with the real recomputation guard, run with the product's generation
+    interpreter (``python``, default ``generation_python``): since 0.15.001 the checker loads the product's declared provider and
+    pipeline from the product root, and a real provider needs the generation packages (numpy, jsonschema) that the bootstrap
+    interpreter running this helper does not have (BD-10)."""
     exceptions = config.get("readiness_exceptions", {})
     checker = config.get("readiness_check")
     if exceptions and not checker:
@@ -537,8 +583,10 @@ def check_readiness_states(root, config, ready, view):
     ):
         raise Failure("Partial readiness outside the declared input/API outcomes cannot be admitted.")
     if checker:
-        # This existing guard is stdlib-only and recomputes source facts, reasons and exact bytes.
-        run([sys.executable, "-B", relative(root, checker), view], root)
+        # The guard recomputes source facts, reasons and exact bytes with the product's own provider and engine, so it runs in
+        # the generation environment, never in whatever interpreter started the bootstrap.
+        interpreter = python if python is not None else generation_python(root, config)
+        run([interpreter, "-B", relative(root, checker), view], root)
 
 
 def check_admission_identity(root, config, stage, admitted):
@@ -574,7 +622,7 @@ def validate_stage(root, config, stage, python, env, receipt=False):
                         raise Failure(f"Mixed/stale version in {name}.")
     ready = json_read(stage / "data/derived/readiness.json")
     check_readiness_inventory(root, config, ready)
-    check_readiness_states(root, config, ready, stage)
+    check_readiness_states(root, config, ready, stage, python)
     validation = stage / "data/derived/validation.json"
     if config.get("requires_validation") and (
         not validation.is_file() or not json_read(validation).get("passed")

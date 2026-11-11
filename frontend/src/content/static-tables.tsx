@@ -12,7 +12,7 @@ interface PreviewTiming {
 /** The learned plan against the exact live solve, per twin, from the committed measurement. */
 export function PreviewTimingTable({ lang }: { lang: Lang }) {
   const es = lang === 'es';
-  const data = useJson<PreviewTiming>('/models/learned-preview-timing.json');
+  const data = useJson<PreviewTiming>('/data/models/learned-preview-timing.json');
   if (!data || data === 'error') return <Pending lang={lang} state={data as null | 'error'} />;
   return (
     <div className="pfd-scroll">

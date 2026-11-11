@@ -11,8 +11,13 @@ deployment evidence yet.
 
 - Require each ensemble member to carry finite validation history and the matching selected-checkpoint hash;
   incomplete or mismatched receipts fail closed.
-- For a separately frozen run, set validation at 32,768 transitions, stop validation inside each member's
-  compute budget, and reserve up to 30 CPU seconds and 60 wall seconds for final checkpoint and receipt writes.
+- Adopt Product Template 0.15.007 and the current published App Shell 0.25.0. The staged generation produces its versioned model documents before the bake; the guided case story reserves the measured callout
+  band, remaps linked markers into the reduced drawing, and keeps the phone drawing floor; the template's
+  declared-data copier and product hook now deliver case artifacts and released model metadata through one
+  clean public-data overlay.
+- For a separately frozen run, validate first at 8,192 transitions and every 32,768 thereafter, stop validation
+  inside each member's compute budget, and reserve up to 30 CPU seconds and 60 wall seconds for final checkpoint
+  and receipt writes.
   The original 50,000-transition run remains unchanged and is not eligible for selection.
 
 ## [0.11.000] - 2026-10-29

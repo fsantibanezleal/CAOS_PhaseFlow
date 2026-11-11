@@ -282,6 +282,10 @@ def test_declared_producer_plan_keeps_all_outputs_external(workflow, fixture_rep
     config = workflow.settings(ROOT)
     config["generation_modules"] = []
     config["generation_environments"] = [".venv"]
+    # Exercise output routing with one declared producer. The product's actual
+    # training/preview pipeline has its own integration tests and is deliberately
+    # not copied into this generic fixture repository.
+    config["generation"] = [{"script": "data-pipeline/run.py", "args": ["all", "--output", "{derived}"]}]
     config["readiness_excludes"] = []  # This output-routing fixture has no contract table.
     config["stage_inputs"] = []  # Actual authored input/admission is covered by the real-pipeline test.
     config.pop("readiness_check", None)
