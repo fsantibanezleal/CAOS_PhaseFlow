@@ -44,7 +44,7 @@ Expected-time TopoSort (ExTS) orders blocks by expected extraction times from a 
 
 Open-pit scheduling has a long connection to precedence-constrained optimization. Lerchs and Grossmann formulate pit design as a graph-closure problem, while Picard formalizes maximum closure and its network-flow solution; Hochbaum surveys the closure structure and its algorithmic consequences \cite{lerchs1965,picard1976,hochbaum2004}. These foundations support pit-limit selection and single-resource relaxations, but they do not by themselves settle the multi-period schedule with discounting and multiple capacities. The distinction between a pit shell, a feasible schedule, and an upper bound is central to interpretation: a closure optimum is not a period-by-period operational schedule.
 
-Exact and relaxation-based approaches provide reference values and optimality information. Branch-and-cut methods address the direct mixed-integer formulation, and the critical-multiplier method connects open-pit scheduling relaxations to repeated maximum-closure subproblems \cite{caccetta2003,chicoisne}. The Bienstock--Zuckerberg algorithm is a scalable LP-relaxation method for precedence-constrained problems; later computational studies examine it in mining and resource-constrained project scheduling \cite{bienstock,munoz2017}. LP-based disaggregation, aggregation heuristics, and large-scale mixed-integer models offer different balances between relaxation strength, solution time, and formulation size \cite{boland2009,jelvez2016,askari2010}. None makes a learned ranker interchangeable with an exact relaxation: each method has its own mathematical object and evidentiary claim.
+Exact and relaxation-based approaches provide reference values and optimality information. Branch-and-cut treats the integer model, while critical-multiplier methods use maximum-closure subproblems \cite{caccetta2003,chicoisne}. The Bienstock--Zuckerberg algorithm scales LP relaxations for precedence models, and later studies examine its use in mining and project scheduling \cite{bienstock,munoz2017}. Disaggregation, aggregation heuristics, and large mixed-integer models trade relaxation strength against solution time and formulation size \cite{boland2009,jelvez2016,askari2010}. These approaches do not make a learned ranker interchangeable with a certificate: each addresses a different mathematical object.
 
 Constructive heuristics occupy a different role. ExTS converts fractional expected extraction times into a priority order, and a topological schedule builder turns that order into a feasible plan \cite{chicoisne}. Sliding-window heuristics optimize restricted time horizons and may improve the schedule at substantially higher computational cost; they remain distinct from one-pass priority ranking \cite{cullenbine2011}. The formulations and trade-offs are reviewed by Lambert et al., while Newman et al. survey broader operations-research methods in mine planning \cite{lambert2014,newman2010}. MineLib supplies benchmark instances for computational comparison, and subsequent work documents corrections and improvements to several library problems \cite{espinoza2013,jelvez2018}. These benchmarks enable reproducible case studies but cannot turn a small number of real instances into a representative sample of operating mines.
 
@@ -52,45 +52,9 @@ Production scheduling also incorporates planning layers absent from the present 
 
 Learning-based work provides methods for ranking and sequencing under large state spaces. Reinforcement learning has been applied to industrial mine complexes, integrated fleet management, and resource-constrained project scheduling; graph neural policies have also been proposed for resource-constrained scheduling \cite{kumar2021,carvalho2023,zhao2022,teichteil2023}. Large-neighborhood search and other metaheuristics supply additional non-learning baselines for long-term mine planning \cite{blom,gershon}. These approaches differ in state representation, action space, objective, and feasibility mechanism. In particular, the present model is supervised regression on relaxation-derived targets, not a learned sequential decision policy. Adam is used only as the optimizer for that regression problem \cite{kingma}; PPO and other policy-gradient objectives are outside the evaluated method \cite{schulman2017}. Our comparison therefore concerns one narrow question: whether predicting a useful ordering signal can reduce the cost of constructing a feasible schedule while retaining acceptable value on unseen generated deposits.
 
-\section{Problem formulation and method}
-\label{sec:proposed-method}
+\section{Problem formulation}
+\label{sec:problem-formulation}
 Let $B$ be the blocks in the ultimate pit, $T$ the number of periods, and $A$ the precedence arcs. For each block $b$, $x_{bt}$ indicates whether it has been extracted by the end of period $t$. A feasible schedule satisfies monotonic extraction, precedence, and per-period limits on mining and processing resource increments. The objective is discounted net present value. PhaseFlow's TopoSort constructor maintains the eligible frontier of the precedence directed acyclic graph, selects the next block by a weight, and places it in the earliest period that satisfies predecessor timing and all resource limits.
-
-The exact expected time $E_b$ is derived from a fractional schedule. If $x^*_{bt}$ is the cumulative fractional extraction level for block $b$ at the end of period $t$, then
-\[
-E_b=\sum_{t=1}^{T} t(x^*_{bt}-x^*_{b,t-1})+(T+1)(1-x^*_{bT}),\qquad x^*_{b0}=0.
-\]
-This assigns each fractional extraction increment to its period and assigns the unmined fraction to the sentinel period $T+1$. The learned model approximates $E_b/(T+1)$ using eleven features:
-\[
-f_b=(v_b^{\rm norm}, d_b, s_b^{\rm norm}, q_b^{\rm norm}, g_b^{\rm norm}, r_b, I_b, \eta, \kappa_1, \kappa_2, T^{\rm norm}),
-\]
-where the terms encode normalized value, depth, two predecessor-recurrence proxies, normalized grade, radial position, ultimate-pit membership, discount rate, two resource-capacity fractions, and normalized horizon. The serialized contract keys for the two recurrence features retain the historical names \texttt{cone\_size\_norm} and \texttt{cone\_value\_norm}; their values are not exact transitive-cone cardinality or value. The feature definitions are:
-\begin{center}
-\small
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.64\textwidth}}\toprule
-Feature & Definition \\\midrule
-\texttt{value\_norm} & $p_b/\max(1,\max_j|p_j|)$ \\
-\texttt{depth\_frac} & $1-\ell_b/\max(1,n_z-1)$, with level $\ell_b=0$ at the surface \\
-\texttt{cone\_size\_norm} & $s_b/\max(1,\max_j s_j)$, where $s_b=|P(b)|+\max_{a\in P(b)}s_a$, and $s_b=0$ when $P(b)$ is empty \\
-\texttt{cone\_value\_norm} & $q_b/[v_{\max}\max(1,\max_j s_j)]$, where $q_b=\sum_{a\in P(b)}p_a+\max(0,\max_{a\in P(b)}q_a)$, $q_b=0$ for an empty predecessor set, and $v_{\max}=\max(1,\max_j|p_j|)$ \\
-\texttt{grade\_norm} & $g_b/\max(10^{-9},\max_j g_j)$ \\
-\texttt{radial\_frac} & The block's normalized distance from the horizontal grid center, clipped to $[0,2]$ and divided by 2 \\
-\texttt{in\_pit} & Indicator that block $b$ belongs to the ultimate pit \\
-\texttt{rate} & Scenario discount rate $\eta$ \\
-\texttt{capacity\_frac\_0}, \texttt{capacity\_frac\_1} & Each resource fraction clipped at 3 and divided by 3 \\
-\texttt{periods\_norm} & $T/20$ \\\bottomrule
-\end{tabular}
-\end{center}
-Here $P(b)$ is the set of immediate predecessors. The recurrence aggregates immediate-predecessor summaries in a topological sweep; a shared ancestor can be counted along multiple paths. These are linear-time ranking features, not graph-closure constraints or exact cone statistics. This distinction matters because the model uses them as predictors, while the schedule constructor enforces precedence exactly. Tonnage is deliberately omitted because it had no spread in the synthetic training design and therefore no training gradient. Eleven feature names and their order are checked by both offline and browser loaders.
-
-Each ensemble member is a two-hidden-layer multilayer perceptron with 48 and 24 ReLU units and a sigmoid output. For training-only mean $\mu$ and standard deviation $\sigma$, the standardized input is $z_b=(f_b-\mu)/\sigma$. Member $m$ computes $h^{(m)}_1=\operatorname{ReLU}(W^{(m)}_1z_b+a^{(m)}_1)$, $h^{(m)}_2=\operatorname{ReLU}(W^{(m)}_2h^{(m)}_1+a^{(m)}_2)$, and $\hat{\tau}^{(m)}_b=\operatorname{sigmoid}(W^{(m)}_3h^{(m)}_2+a^{(m)}_3)$. The ensemble output is $\hat{\tau}_b=\frac{1}{5}\sum_{m=1}^{5}\hat{\tau}^{(m)}_b$.
-
-Members share training rows and training-only standardization but use distinct initialization and shuffle seeds $17,29,41,53,67$. The bounded target and sigmoid head keep predictions in $[0,1]$. Each member minimizes $L_m=n^{-1}\sum_b(\hat{\tau}^{(m)}_b-\tau_b)^2$ with shuffled mini-batches of 2,048 rows, ten epochs, and learning rate $0.004$ using explicit Adam updates \cite{kingma}. Non-finite or constant training features are rejected. Inference rescales the averaged fraction by $T+1$ to obtain expected periods. The ordering weight is the negative predicted expected time. The inference path solves no relaxation to produce these learned weights, and the output is not a dual bound.
-\begin{equation}
-\mathcal{L}_m=\frac{1}{n}\sum_{b=1}^{n}(\hat{\tau}^{(m)}_b-\tau_b)^2,
-\qquad \hat E_b=(T+1)\hat{\tau}_b,\qquad w_b=-\hat E_b.
-\label{eq:training-loss-order}
-\end{equation}
 
 \subsection{Scheduling model and objective}
 For a block $b$, let $v_b$ be its undiscounted net value and let $a_{rb}$ denote its contribution to resource $r$. Define $x_{bt}\in\{0,1\}$ as the cumulative extraction decision by the end of period $t$, and $y_{bt}=x_{bt}-x_{b,t-1}$ as the period assignment indicator. The finite-horizon discounted model is
@@ -118,6 +82,78 @@ The target $\tau_b=E_b/(T+1)$ rescales that quantity to a bounded interval. This
 \tau_b=\frac{E_b}{T+1},\qquad 0\leq\tau_b\leq1.
 \label{eq:normalized-target}
 \end{equation}
+
+\section{Proposed method}
+\label{sec:proposed-method}
+The prediction target is the normalized fractional expected extraction time $\tau_b=E_b/(T+1)$ defined in Equation~\ref{eq:normalized-target}. The method replaces one expensive relaxation-derived block-priority signal with a learned estimate, while retaining the existing deterministic constructor. That separation gives the approximation a narrow role: it changes the order in which eligible blocks are considered, not the legal schedule space. The feature vector is
+\begin{equation}
+f_b=(v_b^{\rm norm}, d_b, s_b^{\rm norm}, q_b^{\rm norm}, g_b^{\rm norm}, r_b, I_b, \eta, \kappa_1, \kappa_2, T^{\rm norm}),
+\label{eq:features}
+\end{equation}
+where the terms encode normalized value, depth, two predecessor-recurrence proxies, normalized grade, radial position, ultimate-pit membership, discount rate, two resource-capacity fractions, and normalized horizon. The serialized contract keys for the recurrence features retain the historical names \texttt{cone\_size\_norm} and \texttt{cone\_value\_norm}; they are not exact transitive-cone cardinality or value. The feature definitions are:
+\begin{center}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.24\textwidth}>{\raggedright\arraybackslash}p{0.64\textwidth}}\toprule
+Feature & Definition \\\midrule
+\texttt{value\_norm} & $p_b/\max(1,\max_j|p_j|)$ \\
+\texttt{depth\_frac} & $1-\ell_b/\max(1,n_z-1)$, with level $\ell_b=0$ at the surface \\
+\texttt{cone\_size\_norm} & $s_b/\max(1,\max_j s_j)$, where $s_b=|P(b)|+\max_{a\in P(b)}s_a$, and $s_b=0$ when $P(b)$ is empty \\
+\texttt{cone\_value\_norm} & $q_b/[v_{\max}\max(1,\max_j s_j)]$, where $q_b=\sum_{a\in P(b)}p_a+\max(0,\max_{a\in P(b)}q_a)$, $q_b=0$ for an empty predecessor set, and $v_{\max}=\max(1,\max_j|p_j|)$ \\
+\texttt{grade\_norm} & $g_b/\max(10^{-9},\max_j g_j)$ \\
+\texttt{radial\_frac} & The block's normalized distance from the horizontal grid center, clipped to $[0,2]$ and divided by 2 \\
+\texttt{in\_pit} & Indicator that block $b$ belongs to the ultimate pit \\
+\texttt{rate} & Scenario discount rate $\eta$ \\
+\texttt{capacity\_frac\_0}, \texttt{capacity\_frac\_1} & Each resource fraction clipped at 3 and divided by 3 \\
+\texttt{periods\_norm} & $T/20$ \\\bottomrule
+\end{tabular}
+\end{center}
+Here $P(b)$ is the set of immediate predecessors. The recurrence aggregates predecessor summaries in a topological sweep; a shared ancestor may be counted through several paths. Its cost is linear in the number of arcs because each immediate predecessor is visited during one topological pass. The recurrence is deliberately not a closure computation and is not used to decide whether a block is eligible. Tonnage is omitted because it had no spread in the training design and therefore no gradient signal. The eleven feature names and their order are checked in both offline and browser loaders.
+
+For each ensemble member, standardization uses training-only means $\mu$ and positive scales $\sigma$; inference computes $z_b=(f_b-\mu)/\sigma$. Member $m$ has two hidden layers of 48 and 24 ReLU units and a sigmoid output: $h^{(m)}_1=\operatorname{ReLU}(W^{(m)}_1z_b+a^{(m)}_1)$, $h^{(m)}_2=\operatorname{ReLU}(W^{(m)}_2h^{(m)}_1+a^{(m)}_2)$, and $\hat{\tau}^{(m)}_b=\operatorname{sigmoid}(W^{(m)}_3h^{(m)}_2+a^{(m)}_3)$. The released score averages five independently initialized members, with seeds 17, 29, 41, 53, and 67. These are the fixed seeds of the supervised study, distinct from those of the later frontier-policy experiment.
+
+Training minimizes the mean squared discrepancy from the relaxation-derived target, using shuffled batches of 2,048 examples, ten epochs, learning rate 0.004, and explicit Adam updates \cite{kingma}. A non-finite feature or a constant training feature is rejected rather than assigned a fabricated scale. This choice makes the normalization reproducible and exposes unsupported inputs instead of silently altering their meaning. The objective is a regression loss; it is not the downstream economic objective, and optimizing it does not guarantee a good block ordering. The link between the loss and schedule value is an empirical question addressed by paired inference on the same held-out cases.
+\begin{equation}
+\mathcal{L}_m=\frac{1}{n}\sum_{b=1}^{n}(\hat{\tau}^{(m)}_b-\tau_b)^2,
+\qquad \hat E_b=(T+1)\frac{1}{5}\sum_{m=1}^{5}\hat{\tau}^{(m)}_b,
+\qquad w_b=-\hat E_b.
+\label{eq:training-loss-order}
+\end{equation}
+The forward pass requires a fixed number of dense operations per block and member; its arithmetic cost is linear in the block count for this fixed architecture. Feature construction adds one graph traversal, $O(|B|+|A|)$, and does not solve the LP. The topological constructor separately maintains the eligible frontier and updates resource use as each block is placed. The total procedure therefore includes graph traversal, dense inference, priority selection, and period-fit checks; a neural-network operation count alone is not presented as a runtime guarantee. Sorting scores costs $O(|B|\log |B|)$ in the batch-ranking path, while the eligible-frontier implementation must also update successors as predecessors are removed.
+
+The exported JSON and ONNX artifacts bind layer dimensions, feature order, normalization, member seeds, and model digests. The ONNX graph is checked against the Python forward pass, and the browser implementation is checked against fixed Python fixtures. These tests establish that deployed code evaluates the intended function. They do not validate a target on unseen deposits, certify feasibility, or establish a performance interval. The schedule validator and paired experiments supply those separate forms of evidence. For reproducibility, every evaluation records the code revision, feature-contract version, case identifier, scenario, checkpoint digest, constructor, status, and objective; failure and incomplete coverage remain explicit outcomes rather than being omitted from the comparison.
+
+The fitted standardizer is applied independently to each feature coordinate. Its statistics are estimated from training rows only, then frozen for selection, test, and product-case evaluation:
+\begin{equation}
+z_{bk}=\frac{f_{bk}-\mu_k}{\sigma_k},\qquad
+\mu_k=\frac{1}{n_{\rm tr}}\sum_{i\in D_{\rm tr}}f_{ik},\qquad
+\sigma_k^2=\frac{1}{n_{\rm tr}}\sum_{i\in D_{\rm tr}}(f_{ik}-\mu_k)^2.
+\label{eq:train-standardization}
+\end{equation}
+The population-scale denominator is part of the serialized model contract. Re-estimating $\mu_k$ or $\sigma_k$ on an evaluation partition would change the predictor and leak information about the distribution being measured. The checks reject a zero scale, non-finite values, or a feature-order mismatch before the network receives an input. The contract therefore binds a vector's meaning as well as its dimension.
+
+For a standardized block vector, the two hidden transformations and bounded output are
+\begin{equation}
+\begin{aligned}
+h^{(m)}_{b,1}&=\max(0,W^{(m)}_1z_b+a^{(m)}_1),\\
+h^{(m)}_{b,2}&=\max(0,W^{(m)}_2h^{(m)}_{b,1}+a^{(m)}_2),\\
+\hat\tau^{(m)}_b&=\left(1+\exp[-(W^{(m)}_3h^{(m)}_{b,2}+a^{(m)}_3)]\right)^{-1}.
+\end{aligned}
+\label{eq:member-forward}
+\end{equation}
+The ensemble reduction is an arithmetic mean over members, not an uncertainty interval:
+\begin{equation}
+\hat\tau_b=\frac{1}{5}\sum_{m=1}^{5}\hat\tau^{(m)}_b,\qquad
+\hat E_b=(T+1)\hat\tau_b.
+\label{eq:ensemble-output}
+\end{equation}
+Member disagreement can diagnose sensitivity to initialization, but five fitted weights do not calibrate epistemic uncertainty or create independent geological replications. Statistical uncertainty in the study is estimated across the deposit-seed groups, not across network members or blocks. The ensemble is retained as the frozen prediction rule because the comparison evaluates that exact aggregation procedure.
+
+At each construction step, the score is consulted only among blocks whose precedence requirements have been satisfied. If $\mathcal{F}_k$ denotes that eligible frontier after $k$ assignments, the selected candidate is
+\begin{equation}
+b_{k+1}\in\arg\min_{b\in\mathcal{F}_k}\hat E_b,
+\label{eq:frontier-selection}
+\end{equation}
+with the implementation's stable tie rule, followed by the declared period-capacity check. The candidate can be deferred or rejected by the constructor if no allowed period can accept its resource use. This keeps priority ranking and feasibility enforcement separate and makes the source of any failure inspectable.
 
 \subsection{Why the prediction is evaluated through a schedule}
 Squared error is a training loss, not the decision objective. The downstream ranking uses only relative order, so a uniform change in predicted scale would leave most decisions unchanged, while a small prediction error near a ranking tie can exchange two blocks and alter downstream eligibility. Conversely, a numerically imperfect prediction can still produce the same ordering and the same plan. We therefore retain block-level rank correlation and target error as diagnostics, but evaluate utility with the paired schedule value
@@ -200,7 +236,7 @@ Blocks within a deposit are not independent replicates. Their values, coordinate
 This preserves the seed as the resampling unit rather than treating 432 correlated scenario-grid cases as 432 independent deposits. The interval describes variation across the finite synthetic seed design under this bootstrap procedure; it does not cover generator misspecification or arbitrary geological transfer. We report the number of seeds and cases with any interval so the reader can distinguish repeated scenarios from independent deposits.
 
 The bootstrap is applied to paired differences as well as individual model ratios when candidate ablations are compared. Resampling the same seed indices for both candidates preserves the paired structure: each selected seed contributes outcomes under the same scenarios and both grid sizes. The resulting interval reflects between-seed variation in those paired outcomes. With only six holdout seeds, the empirical cluster distribution is coarse; the bootstrap does not manufacture additional independent deposits. We therefore present the interval beside the number of seeds and the case-level distribution and avoid interpreting a narrow interval as evidence of broad geological coverage.
-\section{Experiments}
+\section{Experimental design}
 The generator spans porphyry, vein, layered, and core-halo deposit archetypes. Twelve deposit seeds supply training data, six disjoint seeds form the selection holdout, and another six disjoint seeds support evaluation of the fixed warning rule. The split is by deposit, not by block row. Multiple scenarios for a deposit share geometry and many features; assigning different scenarios of one deposit to training and holdout would create leakage through near-duplicate block rows. The five-member expected-time ensemble is trained on 3,421,440 block rows; the selection holdout contains 1,710,720 rows.
 
 Nine crossed scenarios vary horizon from six to twelve periods, discount rate from five to twenty percent, and mining and processing capacity fractions separately. Two grid sizes, 1,008 and 6,912 blocks, evaluate scale transfer. The expected-time study contains 3,421,440 training block rows and 1,710,720 selection-holdout rows. The synthetic deposits are controlled generated instances. They are not conditional geological simulations and do not include drillhole conditioning.
@@ -272,7 +308,7 @@ These measures are shown because a warning that rarely raises an alert may appea
 
 The two MineLib cases with exact expected-time schedules yield ratios 0.9989 for Newman1 and 0.8987 for KD. These are case-specific measurements; two benchmark cases do not characterize transfer across real deposits. MineLib block files remain under their source terms and are not redistributed with the repository.
 \input{generated_results.tex}
-\section{Ablation analysis}
+\section{Ablation}
 The ablation study is designed to test which parts of the expected-time predictor contribute to its paired schedule value on the fixed deposit-disjoint holdout. Every candidate receives the same train and holdout cache, the same seed partition, the same target definition, the same MLP architecture, the same optimizer schedule, and the same schedule constructor. No candidate is selected using the holdout outcome; the study is descriptive and reports each declared candidate rather than choosing a winner after inspection.
 
 The full five-member model is the reference. Five single-member predictions use the component weights already present in that ensemble and show the degree to which the average depends on seed-specific variation. Two retrained feature-set ablations remove, respectively, the two predecessor-recurrence proxies and the depth, grade, and radial features. A data-volume ablation trains on the first six frozen training seeds, preserving whole deposit groups, and compares them with the full twelve-seed training set. The ablations do not alter the holdout, case order, or candidate constructor. This design tests the marginal contribution of feature groups and training-set size within the declared generator; it does not identify a universal causal effect of those features in real mines.
@@ -307,7 +343,7 @@ Every learned schedule is checked for precedence and capacity and is scored agai
 The exported JSON and ONNX models carry identical feature names and training-only standardization parameters. The ONNX graph is executed on a sample and checked against the NumPy implementation before export; browser-side fixtures then compare the TypeScript inference path with predictions from the Python model. The tested parity tolerance is a software equivalence condition, not a scientific error bound. A model can be serialized and executed consistently while remaining biased on a shifted deposit. This separation is important for interpreting the implementation tests: they establish that the reported model artifact is the model that the UI consumes, while only held-out schedule comparisons bear on performance in the generated design.
 
 The evaluation code retains failed cases and case identifiers rather than reducing every run to one scalar. It hashes both frozen caches and the candidate model artifacts, and it stores per-seed summaries so the resampling unit is auditable. The candidate models remain in the external data directory; the product's committed model is not replaced by an ablation candidate. A future model change therefore requires a separately reviewed promotion that rebuilds downstream model exports, schedules, figures, and app artifacts before any release claim is changed.
-\subsection{Limitations}
+\section{Limitations}
 The generated study permits repeatable controlled comparisons, but it does not represent a mine-specific conditional simulation. Holdout separation addresses deposit leakage within the generator, not domain shift to arbitrary geology. The failure warning depends on synthetic archetype information and has imperfect recall. Only two real held-out cases are reported here. The MLP is an ordering aid, not a schedule optimizer or certificate.
 
 The design omits drillhole-conditioned grade uncertainty, geotechnical restrictions, equipment assignment, haulage networks, stockpile inventories, blending targets, mine-complex interactions, and changing operational policies. These omissions define the problem that was measured; they are not represented by a caution coefficient or a widened error bar. Training on one generator cannot establish robustness to those factors. The four synthetic archetypes are templates for repeatable test cases, not a probability distribution over the world's deposits, and the selection of cases from MineLib is constrained by the available inputs and license terms.
@@ -316,12 +352,19 @@ Only six seeds are in each synthetic evaluation split. The 432 scenarios and siz
 
 Finally, NPV ratios are conditional on the value, discounting, resource, and precedence model used to create each case. They do not translate directly to currency, reserve confidence, safety, or an operational schedule. A high ratio means relative value preservation against the paired ExTS heuristic under the modeled scenario, not a guarantee of realized performance. A low ratio means the learned schedule lost value against that comparator; it does not alone identify the cause. Additional conditioned deposits, broader constraints, and independently specified evaluation protocols are needed before making stronger external claims.
 
+The study's threshold of 0.90 is a descriptive convention for locating a lower tail, not a universal safety boundary. The warning model's misses show that these summaries cannot substitute for case-level review. With six independent evaluation seeds, the confidence interval remains conditional on this generator and these seeds. Evidence from conditioned deposits could change the interpretation and the title supported by a future analysis.
+
+\section{Reproducibility}
+The experiment is reconstructed from the repository revision, the seed and split manifests, the declared generator and feature contracts, the training configuration, and the case-level evaluation records. The run command and dependency versions are recorded with the model record. Training-only rows and model checkpoints remain outside the public repository; the committed model contract contains the permitted feature, normalization, architecture, digest, and aggregate evidence required to interpret the released traces. Rebuilding the figures and tables uses the checked-in artifact-generation script and the source records named by the build manifest.
+
+The comparison is deterministic conditional on its inputs, implementation, and solver/runtime behavior. Reproduction first validates source and artifact hashes, then reconstructs the training-only normalization, loads the frozen ensemble, replays the ordering, applies the same feasibility-preserving constructor, and recomputes schedule values. The paired comparator must use the identical case, scenario, horizon, resources, and discount convention. Missing licensed MineLib source is reported as unavailable rather than replaced; a run without that input cannot reproduce its result. Reproduction confirms a computational record, not generalization to a different deposit population.
+
 \section{Conclusions}
 The five-member expected-time policy produces feasible schedules and retains a median ratio of 0.9405 on the generated holdout. Its lower tail and archetype failures are part of the result. The appropriate use is a fast candidate that can be measured against exact ExTS or replaced by a conservative method when exact comparison is unavailable. Broader use requires additional conditioned datasets and independently specified operational constraints.
 
 The ablations show that removing depth, grade, and radial position together substantially reduces paired schedule value, while the recurrence-feature and half-training-seed variants remain closer to the full model on this holdout. The ensemble members also vary: no single member dominates every summary statistic. These measurements support retaining the full feature contract and ensemble for the reported candidate, while preserving the large degradation and lower-tail failures as central findings rather than optimizing them away. They do not establish that every feature is necessary on a real deposit or that fewer training seeds are generally sufficient.
 
-The contribution is a measurable surrogate for one ordering heuristic, with a feasibility-preserving constructor and an evaluation that keeps deposit separation, schedule value, and failed warnings distinct. The evidence supports a conditional research workbench use: propose and inspect a schedule, compare it with exact expected-time scheduling when available, and retain the option to use a conservative alternative. It does not support using the predictor as an upper bound, as an optimal schedule, as an operational control, or as evidence that the synthetic generator represents a particular mine. Future studies should expand conditioned external cases, control end-to-end timing, and test feature ablations over more independent deposits before extending this claim.
+The contribution is a learned proxy for one ordering signal, used with the same constructor and assessed on seed-disjoint cases. The evidence supports a conditional research-workbench use: propose and inspect a schedule, compare it with exact expected-time scheduling when available, and keep a conservative alternative available. The predictor is not an upper bound, an optimal schedule, or an operational control; the synthetic generator is not shown to represent a particular mine. Further study needs conditioned external cases, controlled end-to-end timing, and ablations across more independent deposits.
 \begin{thebibliography}{35}
 \bibitem{lerchs1965} H. Lerchs and I. F. Grossmann, ``Optimum design of open-pit mines,'' \emph{Transactions of the Canadian Institute of Mining and Metallurgy}, 58, 47--54, 1965.
 \bibitem{picard1976} J.-C. Picard, ``Maximal closure of a graph and applications to combinatorial problems,'' \emph{Management Science}, 22(11), 1268--1272, 1976. doi:10.1287/mnsc.22.11.1268.

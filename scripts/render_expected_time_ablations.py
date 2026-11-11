@@ -113,7 +113,7 @@ def render(record: dict[str, Any], record_hash: str) -> str:
         r"\begin{table}[!htbp]",
         r"\centering",
         r"\footnotesize",
-        r"\setlength{\tabcolsep}{3pt}",
+        r"\setlength{\tabcolsep}{2pt}",
         r"\caption{Paired schedule-value ablations on all 432 deposit-disjoint cases, with deposit-seed cluster bootstrap intervals and training-set variants.}",
         r"\label{tab:expected-time-ablations}",
         r"\begin{tabular}{lrrrrl}",

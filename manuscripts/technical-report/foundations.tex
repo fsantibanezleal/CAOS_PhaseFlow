@@ -1,4 +1,4 @@
-\section{Problem formulation and notation}
+\section{Problem formulation}
 \label{sec:decision-model}
 \subsection{Block graph, periods, and resources}
 Let $B$ denote the blocks admitted to a case and let $A\subseteq B\times B$ contain immediate slope-precedence arcs. An arc $(a,b)$ means that block $a$ must be removed no later than block $b$. The relation is directed from prerequisite to dependent block; implementations may store the reverse adjacency for traversal, but the contract and feasibility check must preserve this meaning. Let $T=\{1,\ldots,H\}$ be the planning periods and $R$ the modeled resources. In the current two-resource cases, these resources represent total material movement and processing feed. For each block $b$, $a_{rb}$ is its consumption of resource $r$, and $c_{rt}$ is the period-specific capacity. Units, resource order, and scaling are part of the case instance, rather than assumptions inferred from a chart.
@@ -6,29 +6,6 @@ Let $B$ denote the blocks admitted to a case and let $A\subseteq B\times B$ cont
 The binary variable $x_{bt}$ is cumulative: it is one when block $b$ has been extracted by the end of period $t$. Its period increment $u_{bt}=x_{bt}-x_{b,t-1}$ identifies extraction during period $t$, with $x_{b0}=0$. A valid schedule has $u_{bt}\in\{0,1\}$, at most one extraction period per block, and nondecreasing cumulative state. Feasibility requires $x_{bt}\leq x_{at}$ for every precedence arc and period, and $\sum_b a_{rb}u_{bt}\leq c_{rt}$ for each resource and period. These checks are performed on the resulting schedule, not inferred from the method label or its construction order. The distinction matters because an ordering can be precedence-safe and still fail a capacity check if period assignment is implemented incorrectly.
 
 The case boundary also records whether a block is admissible to the ultimate pit, the source dimensions, scenario values, sentinel treatment, and any controls. A schedule score is meaningful only when those inputs and the resource units match the score's denominator. Missing values do not become zero-valued blocks by default; invalid sentinels are rejected or handled under the case-specific import rule. The current web workbench applies these constraints to committed research cases. It does not ingest a live mine block model, perform mine-specific reconciliation, or certify that a field plan is operationally executable.
-
-Table~\ref{tab:notation} collects the notation used in the fixed-destination formulation and its interpretation at the data boundary. The same symbol names are used consistently in the equations, code descriptions, and result discussions.
-
-\begin{table}[htbp]
-\centering
-\caption{Core sets, indices, decisions, economic inputs, and resource quantities used to define the multi-period scheduling formulation.}
-\label{tab:notation}
-\begin{tabular}{p{0.20\textwidth}p{0.72\textwidth}}
-\toprule
-Symbol & Meaning \\
-\midrule
-$B$, $b$ & Block set and a block index \\
-$A$, $(a,b)$ & Directed immediate-precedence arcs from prerequisite $a$ to dependent $b$ \\
-$R$, $r$ & Modeled resource set and a resource index \\
-$T$, $t$, $H$ & Period set, period index, and planning-horizon length \\
-$a_{rb}$, $c_{rt}$ & Resource use of block $b$ and available resource capacity in period $t$ \\
-$p_b$, $\delta_t$ & Fixed-destination block value and period discount multiplier \\
-$x_{bt}$ & Cumulative extraction indicator by the end of period $t$ \\
-$u_{bt}$ & Extraction increment indicating block $b$ is mined during period $t$ \\
-$V$, $U$ & Feasible schedule value and a valid upper bound for the same model \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \subsection{Fixed-destination economics and schedule value}
 In fixed-destination CPIT, the destination decision is resolved before scheduling. Write $p_b$ for the resulting block value and let $\delta_t$ be the declared discount multiplier for period $t$. The objective is $\max \sum_{b\in B}\sum_{t\in T}\delta_t p_b u_{bt}$. The repository's scenarios record the discount rate and horizon; implementations and reports must use the same period indexing when constructing $\delta_t$. A rate alone is insufficient to reproduce a value if one implementation discounts at the beginning of the period and another at its end. PhaseFlow compares candidates only within the case's declared convention and keeps this convention in the serialized scenario.
@@ -57,7 +34,40 @@ Several bound routes in this study have distinct meanings. Expected extraction t
 
 Heuristics such as greedy TopoSort, nested-shell sequencing, sliding-window MILP, restricted neighborhood search, and scenario re-planning can improve candidate quality without proving global optimality. Their runtime and solver status are recorded beside objective values. If a local neighborhood limit stops search, the feasible incumbent remains interpretable, but the stop does not imply that the neighborhood is exhausted. If an exact solver reports a node count unavailable under the current trace schema, the count is represented as null, not as a negative sentinel. These rules keep absent evidence distinct from a measured zero and prevent an implementation detail from being mistaken for a mathematical certificate.
 
-\section{Data contracts and provenance}
+\section{Notation}
+\label{sec:notation}
+Table~\ref{tab:notation} collects the symbols used in the fixed-destination formulation and the reported certificate gap. Sets and indices are distinguished from measured quantities: $B$ identifies the block universe, while $b$ selects one block; $R$ identifies the resource types, while $r$ selects one type. The horizon is denoted by $H$, and $T=\{1,\ldots,H\}$ is its period set. This convention prevents a horizon length from being confused with an individual period when formulas are translated into code or read beside a case trace.
+
+The resource coefficients $a_{rb}$ and capacities $c_{rt}$ carry the same units for each fixed resource $r$. They are not summed across different resource types: tonnes of movement and tonnes of processing feed are separate constraints even when each is measured in tonnes. The case manifest supplies the concrete dimensions and scale. Values $p_b$ and $V$ use the case's economic unit, while $\delta_t$ is dimensionless. A discounted objective cannot be reproduced from a rate alone because period indexing and the placement of the cash flow determine the multiplier.
+
+The decision variables also encode distinct objects. $x_{bt}$ is a cumulative state at the end of a period, whereas $u_{bt}$ is the period increment that consumes capacity and receives the corresponding discounted value. $U$ is reserved for a certificate that upper-bounds the same feasible region as $V$; it is not a prediction or a benchmark number from a different destination model. The reported percentage gap therefore has meaning only for a matched pair of schedule and certificate.
+
+Learned-study notation is introduced where the model is derived and is not overloaded onto the deterministic schedule variables. In particular, a predicted extraction-time score affects a priority order but does not alter $A$, $a_{rb}$, $c_{rt}$, or the feasible set. The same symbol discipline is used in the serialized contracts: feature names, value units, horizon indexing, destination identity, and the source status of an input remain explicit in the machine-readable records. The table is a compact reference; the following data-contract sections specify the field-level types, ranges, provenance, and missing-data rules.
+
+Resource index order is part of a case contract, not an intrinsic property of the symbol $r$. When two resources are used, the catalog and instance manifest identify which row represents material movement and which represents processing; changing that order without changing the coefficients would invalidate the capacity interpretation. Block value may be positive or negative, and the extraction decision is not required merely because a block lies inside the ultimate pit. Thus $V$ can reflect both selected positive-value blocks and any negative-value material needed to satisfy precedence, while $U$ must remain a valid upper bound under the same admissibility and economic rules. This is why the table separates inputs, decisions, and outcome measures instead of placing them in one undifferentiated list.
+
+\begin{table}[htbp]
+\centering
+\caption{Core sets, indices, decisions, economic inputs, and resource quantities used to define the multi-period scheduling formulation.}
+\label{tab:notation}
+\begin{tabular}{p{0.20\textwidth}p{0.72\textwidth}}
+\toprule
+Symbol & Meaning \\
+\midrule
+$B$, $b$ & Block set and a block index \\
+$A$, $(a,b)$ & Directed immediate-precedence arcs from prerequisite $a$ to dependent $b$ \\
+$R$, $r$ & Modeled resource set and a resource index \\
+$T$, $t$, $H$ & Period set, period index, and planning-horizon length \\
+$a_{rb}$, $c_{rt}$ & Resource use of block $b$ and available resource capacity in period $t$ \\
+$p_b$, $\delta_t$ & Fixed-destination block value and period discount multiplier \\
+$x_{bt}$ & Cumulative extraction indicator by the end of period $t$ \\
+$u_{bt}$ & Extraction increment indicating block $b$ is mined during period $t$ \\
+$V$, $U$ & Feasible schedule value and a valid upper bound for the same model \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Data and data contracts}
 \label{sec:data-contracts}
 \subsection{Case index}
 \label{sec:data-case-index}
@@ -95,7 +105,7 @@ The readiness document records the product version, digest of the contract catal
 
 The catalog also pins schema versions, owners, example documents, producer and consumer checks, missing-data behavior, model inputs and outputs, and swap-test status. A schema change must be reflected in the catalog and readiness digest. This makes the boundary auditable across the Python bake, stored JSON, and TypeScript replay. A catalog mismatch or stale digest blocks the gate rather than being silently accepted. The snapshot's available state means the listed artifact exists and meets its contract; scientific interpretation still depends on the study design, provenance, and limitations stated in this report.
 
-\section{Software and analysis architecture}
+\section{System architecture}
 \label{sec:software-architecture}
 \subsection{Deterministic case pipeline}
 The data pipeline turns a declared instance and scenario into a case manifest, a schedule trace, and supporting model or study evidence. The manifest and trace have separate schemas because provenance and result detail evolve for different reasons. The pipeline validates dimensions, units, precedence, sentinel handling, and resource capacities before method results are written. Feasibility checks are applied to constructed schedules, and reported method values are paired with a bound appropriate to their formulation. The committed case index enumerates the traces, while readiness records whether the complete contract set is present and current.

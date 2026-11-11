@@ -25,6 +25,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import PercentFormatter
 
 
 STYLE = {
@@ -356,10 +357,11 @@ def build(root: Path) -> None:
         grouped_failures.append(sum(r["vs_true"] < 0.9 for r in rows) / len(rows))
     fig, ax = plt.subplots(figsize=(7.1, 3.8))
     bars = ax.bar(archetypes, grouped_failures, color=STYLE["gray"], edgecolor=STYLE["ink"], linewidth=0.7)
-    ax.set_ylabel("Holdout cases below 0.90")
+    ax.set_ylabel("Share of holdout cases below 0.90")
     ax.set_xlabel("Deposit archetype")
-    ax.set_ylim(0, max(grouped_failures) * 1.22)
-    ax.bar_label(bars, fmt="%.1%", padding=3, fontsize=8)
+    ax.set_ylim(0, 1)
+    ax.yaxis.set_major_formatter(PercentFormatter(xmax=1))
+    ax.bar_label(bars, fmt="{:.1%}", padding=3, fontsize=8)
     ax.spines[["top", "right"]].set_visible(False)
     ax.grid(axis="y", color=STYLE["light"], linewidth=0.6)
     ax.set_axisbelow(True)
@@ -426,7 +428,7 @@ def build(root: Path) -> None:
     rows = [
         r"\begingroup\small\setlength{\tabcolsep}{3pt}",
         r"\begin{longtable}{>{\raggedright\arraybackslash}p{0.34\textwidth}rrrr}",
-        r"\caption{Registered case traces report method-specific gaps and runtimes; absent rows are not imputed as zero.}\label{tab:method-summary}\\",
+        r"\caption{Registered case traces report method-specific gaps and runtimes; absent rows are not imputed as zero.}\label{tab:method-result-summary}\\",
         r"\toprule Method & Cases & Median gap (\%) & Median ms & Maximum ms \\ \midrule\endfirsthead",
         r"\toprule Method & Cases & Median gap (\%) & Median ms & Maximum ms \\ \midrule\endhead",
     ]
