@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from pipeline.model.frontier_cases import adapt_product_case, validate_product_result
+from pipeline.model.frontier_cases import adapt_product_case, product_period_aggregates, validate_product_result
 from pipeline.model.frontier_policy import Assignment
 
 
@@ -74,3 +74,37 @@ def test_product_result_recomputes_objective_and_reports_partial_coverage():
     assert result.positive_value_coverage == pytest.approx(10.0 / 16.0)
     with pytest.raises(ValueError, match="independent product CPIT"):
         validate_product_result(adapted, assignments, expected_npv=8.1)
+
+
+def test_product_period_aggregates_reconcile_without_exporting_block_schedule(monkeypatch):
+    from types import SimpleNamespace
+
+    import oreblocks
+
+    case = _case()
+    case.x = np.array([0, 1, 2])
+    case.y = np.array([0, 0, 0])
+    case.level = np.array([0, 0, 0])
+    case.cpit.discount_factors = lambda: np.array([1.0, 1 / 1.1])
+    monkeypatch.setattr(
+        oreblocks,
+        "schedule_coherence",
+        lambda *_args: [
+            SimpleNamespace(components=1, largest_share=1.0, min_width_blocks=1),
+            SimpleNamespace(components=1, largest_share=1.0, min_width_blocks=1),
+        ],
+    )
+    adapted = adapt_product_case(case)
+    assignments = (Assignment(0, 0), Assignment(1, 0), Assignment(2, 1))
+    rows = product_period_aggregates(case, adapted, assignments)
+
+    assert len(rows) == 2
+    assert sum(row["discCashFlow"] for row in rows) == pytest.approx(8 + 6 / 1.1)
+    assert rows[0]["oreTonnes"] == pytest.approx(2.0)
+    assert rows[0]["wasteTonnes"] == pytest.approx(1.0)
+    assert rows[1]["resourceUse"] == pytest.approx([3.0, 1.0])
+    assert rows[-1]["cumNpv"] == pytest.approx(8 + 6 / 1.1)
+    assert all("periodOfBlock" not in row for row in rows)
+
+    with pytest.raises(ValueError, match="duplicate block assignments"):
+        product_period_aggregates(case, adapted, (*assignments, Assignment(2, 1)))

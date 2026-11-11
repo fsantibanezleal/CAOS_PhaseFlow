@@ -18,10 +18,18 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
 
 from pipeline import registry  # noqa: E402
-from pipeline.model.frontier_cases import adapt_product_case, validate_product_result  # noqa: E402
+from pipeline.model.frontier_cases import (  # noqa: E402
+    adapt_product_case,
+    product_period_aggregates,
+    validate_product_result,
+)
 from pipeline.model.frontier_data import GENERATOR_VERSION  # noqa: E402
 from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
-from evaluate_frontier_policy import _frozen_manifest, _load_frozen_ensemble  # noqa: E402
+from evaluate_frontier_policy import (  # noqa: E402
+    _frozen_manifest,
+    _load_frozen_ensemble,
+    _validate_frozen_method_source,
+)
 from pipeline.model.frontier_evaluation import RUN_NAME, target_version as read_target_version  # noqa: E402
 
 CASE_INDEX = ROOT / "data/derived/manifests/index.json"
@@ -242,15 +250,23 @@ def evaluate(args: argparse.Namespace) -> int:
         raise ValueError("the sealed synthetic test evaluation must be recorded before product cases open")
     if output.exists():
         raise ValueError("the 13 product cases may be evaluated only once per frozen training run")
+    training_receipt_path = data_run / "ensemble-receipt.json"
+    if not training_receipt_path.is_file():
+        raise ValueError("the complete frozen training receipt is required before product-case evaluation")
+    training_source_commit = json.loads(training_receipt_path.read_text(encoding="utf-8")).get("source_commit")
+    if not isinstance(training_source_commit, str) or len(training_source_commit) != 40:
+        raise ValueError("the training receipt must identify its full source commit")
+    _validate_frozen_method_source(training_source_commit, source_commit)
     synthetic_receipt = json.loads(synthetic_receipt_path.read_text(encoding="utf-8"))
     if (synthetic_receipt.get("source_commit") != source_commit
+            or synthetic_receipt.get("training_source_commit") != training_source_commit
             or synthetic_receipt.get("split_sha256") != split_hash
             or synthetic_receipt.get("summary", {}).get("cases") != 500
             or synthetic_receipt.get("summary", {}).get("failed") != 0
             or synthetic_receipt.get("summary", {}).get("unavailable") != 0):
         raise ValueError("synthetic test receipt is incomplete, failed or belongs to another frozen source")
     models, training_receipt, contract = _load_frozen_ensemble(
-        model_run, data_run, source_commit=source_commit, split_hash=split_hash,
+        model_run, data_run, source_commit=training_source_commit, split_hash=split_hash,
     )
     os.environ["CAOS_DATA_ROOT"] = str(case_data_root)
     build_instance = importlib.import_module("pipeline.model.instances").build_instance
@@ -282,6 +298,7 @@ def evaluate(args: argparse.Namespace) -> int:
                 "failure_reason": None,
                 "npv": checked.npv,
                 "assignments": len(checked.assignments),
+                "periods": product_period_aggregates(source_instance, adapted, checked.assignments),
                 "tonnage_coverage": checked.tonnage_coverage,
                 "positive_value_coverage": checked.positive_value_coverage,
                 "stop_reason": result.stopped,
@@ -339,6 +356,7 @@ def evaluate(args: argparse.Namespace) -> int:
         "evaluation": "held-out-phaseflow-product-cases",
         "evaluated_at_utc": datetime.now(timezone.utc).isoformat(),
         "product_version": target_version, "source_commit": source_commit,
+        "training_source_commit": training_source_commit,
         "engine_version": "oreblocks==0.6.6", "generator_version": GENERATOR_VERSION,
         "case_index_sha256": index_hash, "split_sha256": split_hash,
         "baseline": {

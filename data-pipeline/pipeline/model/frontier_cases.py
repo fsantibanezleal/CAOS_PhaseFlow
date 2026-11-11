@@ -153,3 +153,64 @@ def validate_product_result(
         tonnage_coverage=float(by_period.sum() / total_tonnage) if total_tonnage else 0.0,
         positive_value_coverage=float(scheduled_positive / total_positive) if total_positive else 0.0,
     )
+
+
+def product_period_aggregates(source: Any, adapted: ProductFrontierCase, assignments: tuple[Assignment, ...]) -> list[dict]:
+    """Build trace-safe period aggregates while the validated schedule is still in memory.
+
+    The returned rows have the same public shape as ``pipeline.core.trace``. No block-level
+    assignment is returned here; callers may persist that vector only for redistributable twins.
+    """
+    import oreblocks as ob
+
+    cpit = source.cpit
+    n_blocks = int(cpit.n_blocks)
+    n_periods = int(cpit.n_periods)
+    period_of_block = np.full(n_blocks, -1, dtype=np.int64)
+    for assignment in assignments:
+        if not (0 <= assignment.block < n_blocks and 0 <= assignment.period < n_periods):
+            raise ValueError("period aggregates require in-range assignments")
+        if period_of_block[assignment.block] >= 0:
+            raise ValueError("period aggregates reject duplicate block assignments")
+        period_of_block[assignment.block] = assignment.period
+
+    values = np.asarray(cpit.value, dtype=np.float64).reshape(-1)
+    grade = np.asarray(source.grade, dtype=np.float64).reshape(-1)
+    tonnage = np.asarray(source.tonnage, dtype=np.float64).reshape(-1)
+    ore = np.asarray(cpit.coef, dtype=np.float64).reshape(int(cpit.n_resources), n_blocks)[1] > 0
+    discounts = np.asarray(cpit.discount_factors(), dtype=np.float64).reshape(-1)
+    coherence = ob.schedule_coherence(period_of_block, source.x, source.y, source.level, n_periods)
+    capacities = adapted.instance.capacities
+    resources = adapted.instance.resources
+    rows: list[dict] = []
+    cumulative = 0.0
+    for period in range(n_periods):
+        selected = period_of_block == period
+        mined = float(tonnage[selected].sum())
+        ore_tonnes = float(tonnage[selected & ore].sum())
+        period_value = float(values[selected].sum())
+        discounted = float(discounts[period] * period_value)
+        cumulative += discounted
+        resource_use = resources[selected].sum(axis=0) if selected.any() else np.zeros(resources.shape[1])
+        metal = float((tonnage[selected & ore] * grade[selected & ore]).sum())
+        rows.append({
+            "t": period + 1,
+            "minedTonnes": mined,
+            "oreTonnes": ore_tonnes,
+            "wasteTonnes": mined - ore_tonnes,
+            "headGrade": metal / ore_tonnes if ore_tonnes > 0 else 0.0,
+            "metal": metal,
+            "value": period_value,
+            "discCashFlow": discounted,
+            "cumNpv": cumulative,
+            "stripRatio": (mined - ore_tonnes) / ore_tonnes if ore_tonnes > 0 else 0.0,
+            "resourceUse": [float(v) for v in resource_use],
+            "resourceLimit": [float(v) for v in capacities[period]],
+            "components": int(coherence[period].components),
+            "largestComponentShare": float(coherence[period].largest_share),
+            "minWidthBlocks": int(coherence[period].min_width_blocks),
+            "blocks": int(selected.sum()),
+        })
+    if abs(cumulative - validate_schedule(adapted.instance, assignments)) > 0.02:
+        raise ValueError("period aggregates do not reconcile to the independently validated objective")
+    return rows

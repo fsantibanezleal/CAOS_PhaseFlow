@@ -19,6 +19,7 @@ from evaluate_frontier_product_cases import (  # noqa: E402
     _published_reference,
     _validate_baseline_pairing,
 )
+import evaluate_frontier_policy as frontier_evaluator  # noqa: E402
 from pipeline.model.frontier_evaluation import seed_clustered_interval  # noqa: E402
 from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
 
@@ -105,6 +106,25 @@ def test_synthetic_interval_bootstraps_seed_clusters_and_excludes_failures():
     assert interval["unit"] == "seed-cluster"
     assert interval["lower"] == pytest.approx(0.3)
     assert interval["upper"] == pytest.approx(0.8)
+
+
+def test_frozen_training_commit_may_have_result_only_evaluation_revision(monkeypatch):
+    monkeypatch.setattr(
+        frontier_evaluator.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(stdout="", returncode=0),
+    )
+    frontier_evaluator._validate_frozen_method_source("a" * 40, "b" * 40)
+
+    monkeypatch.setattr(
+        frontier_evaluator.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            stdout="data-pipeline/pipeline/model/frontier_ppo.py\n", returncode=0,
+        ),
+    )
+    with pytest.raises(ValueError, match="frozen training method"):
+        frontier_evaluator._validate_frozen_method_source("a" * 40, "b" * 40)
 
 
 def test_expected_time_comparison_requires_its_completed_bound():

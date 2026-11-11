@@ -59,6 +59,30 @@ def _source_commit() -> str:
     ).stdout.strip()
 
 
+def _validate_frozen_method_source(training_commit: str, evaluation_commit: str) -> None:
+    """Allow result/reporting changes while proving the trained policy contract stayed frozen."""
+    protected = [
+        "data-pipeline/pipeline/model/frontier_data.py",
+        "data-pipeline/pipeline/model/frontier_features.py",
+        "data-pipeline/pipeline/model/frontier_policy.py",
+        "data-pipeline/pipeline/model/frontier_ppo.py",
+        "data-pipeline/pipeline/model/frontier_release.py",
+        "data-pipeline/pipeline/model/frontier_splits.py",
+        "requirements-frontier-training.txt",
+        "scripts/train_frontier_policy.py",
+        "data-pipeline/pipeline/model/frontier_evaluation.py",
+        "docs/design/features/learned-frontier/split-manifest.json",
+        "docs/design/features/learned-frontier/training-protocol-amendment-01.md",
+        "docs/design/features/learned-frontier/training-protocol-amendment-02.md",
+    ]
+    changed = subprocess.run(
+        ["git", "diff", "--name-only", training_commit, evaluation_commit, "--", *protected],
+        cwd=ROOT, capture_output=True, text=True, check=True,
+    ).stdout.splitlines()
+    if changed:
+        raise ValueError("frozen training method, data or protocol changed before evaluation: " + ", ".join(changed))
+
+
 def _load_frozen_ensemble(model_run: Path, data_run: Path, *, source_commit: str, split_hash: str):
     receipt_path = data_run / "ensemble-receipt.json"
     contract_path = data_run / "training-contract.json"
@@ -71,7 +95,7 @@ def _load_frozen_ensemble(model_run: Path, data_run: Path, *, source_commit: str
     if receipt.get("complete") is not True or receipt.get("method") != "frontier-policy":
         raise ValueError("the five-member frontier training run is incomplete")
     if receipt.get("source_commit") != source_commit or receipt.get("split_sha256") != split_hash:
-        raise ValueError("training receipt source commit or split ledger differs from this frozen evaluator")
+        raise ValueError("training receipt source commit or split ledger differs from the declared frozen training source")
     if receipt.get("training_contract") != contract or receipt.get("normalization") != normalization:
         raise ValueError("training receipt, standalone contract and normalizer disagree")
     expected_seeds = [1103, 2207, 3301, 4409, 5519]
@@ -106,7 +130,7 @@ def evaluate(args: argparse.Namespace) -> int:
     dirty = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True, check=True)
     if dirty.stdout.strip():
         raise ValueError("synthetic test evaluation requires the clean frozen product source")
-    source_commit = _source_commit()
+    evaluation_commit = _source_commit()
     manifest, split_hash = _frozen_manifest()
     model_root = Path(args.model_root).expanduser().resolve()
     approved_model_root = Path(args.approved_model_root).expanduser().resolve()
@@ -126,8 +150,15 @@ def evaluate(args: argparse.Namespace) -> int:
     output = data_run / "synthetic-test-evaluation.json"
     if output.exists():
         raise ValueError("the sealed synthetic test partition may be evaluated only once per frozen run")
+    training_receipt_path = data_run / "ensemble-receipt.json"
+    if not training_receipt_path.is_file():
+        raise ValueError("the complete frozen training receipt is required before evaluation")
+    training_source_commit = json.loads(training_receipt_path.read_text(encoding="utf-8")).get("source_commit")
+    if not isinstance(training_source_commit, str) or len(training_source_commit) != 40:
+        raise ValueError("the training receipt must identify its full source commit")
+    _validate_frozen_method_source(training_source_commit, evaluation_commit)
     models, receipt, contract = _load_frozen_ensemble(
-        model_run, data_run, source_commit=source_commit, split_hash=split_hash,
+        model_run, data_run, source_commit=training_source_commit, split_hash=split_hash,
     )
 
     cases: list[dict] = []
@@ -183,7 +214,8 @@ def evaluate(args: argparse.Namespace) -> int:
     result = {
         "schema_version": "1.0.0", "method": "frontier-policy", "evaluation": "sealed-synthetic-test",
         "evaluated_at_utc": datetime.now(timezone.utc).isoformat(), "product_version": target_version,
-        "source_commit": source_commit, "engine_version": "oreblocks==0.6.6",
+        "source_commit": evaluation_commit, "training_source_commit": training_source_commit,
+        "engine_version": "oreblocks==0.6.6",
         "generator_version": GENERATOR_VERSION, "split_sha256": split_hash,
         "training_data_sha256": contract["training_data_sha256"],
         "feature_contract_sha256": contract["feature_contract_sha256"],
