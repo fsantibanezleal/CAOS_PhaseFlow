@@ -65,6 +65,11 @@ jobs:
         run: |
           base="$BEFORE"
           if [ -z "${base//0/}" ]; then base=origin/develop; fi
+          # A full-depth checkout does not guarantee that an event's previous
+          # commit is reachable from the fetched refs (for example after a
+          # branch rewrite). Fetch the release and integration refs explicitly
+          # before asking the contract migration checker to resolve the base.
+          git fetch --no-tags origin main develop
           python scripts/check_contract_versions.py --base "$base"
       - name: Adversarial guard tests
         run: pip install pytest==9.1.1 && python -m pytest tests/adversarial -q
