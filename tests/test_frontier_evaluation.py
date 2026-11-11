@@ -21,6 +21,7 @@ from evaluate_frontier_product_cases import (  # noqa: E402
 )
 import evaluate_frontier_policy as frontier_evaluator  # noqa: E402
 from pipeline.model.frontier_evaluation import seed_clustered_interval  # noqa: E402
+from pipeline.model.frontier_data import generate_graph  # noqa: E402
 from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
 
 
@@ -106,6 +107,17 @@ def test_synthetic_interval_bootstraps_seed_clusters_and_excludes_failures():
     assert interval["unit"] == "seed-cluster"
     assert interval["lower"] == pytest.approx(0.3)
     assert interval["upper"] == pytest.approx(0.8)
+
+
+def test_synthetic_heldout_uses_the_real_classical_toposort_baseline():
+    graph = generate_graph(901, "benched", 32)
+    baseline = frontier_evaluator._classical_greedy_baseline(graph)
+    assert baseline["method"] == "toposort-greedy"
+    assert baseline["feasible"] is True
+    assert 0 <= baseline["tonnage_coverage"] <= 1
+    assert 0 <= baseline["positive_value_coverage"] <= 1
+    assert np.isfinite(baseline["npv"])
+    assert baseline["runtime_seconds"] >= 0
 
 
 def test_frozen_training_commit_may_have_result_only_evaluation_revision(monkeypatch):

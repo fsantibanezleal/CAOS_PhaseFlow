@@ -1,0 +1,143 @@
+from __future__ import annotations
+
+import json
+import hashlib
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from build_frontier_release_candidate import build_candidate  # noqa: E402
+
+
+def _evaluation(case_ids: list[str]) -> dict:
+    return {
+        "product_version": "0.12.000", "engine_version": "oreblocks==0.6.6",
+        "source_commit": "a" * 40, "training_source_commit": "b" * 40,
+        "feature_contract_sha256": "c" * 64, "case_index_sha256": "d" * 64,
+        "split_sha256": "e" * 64, "training_receipt_sha256": "f" * 64,
+        "checkpoint_sha256": ["1" * 64, "2" * 64, "3" * 64, "4" * 64, "5" * 64],
+        "baseline": {"product_version": "0.11.000", "engine_version": "oreblocks==0.6.6", "index_sha256": ""},
+        "summary": {"cases": 13, "complete": 13, "partial": 0, "failed": 0, "unavailable": 0},
+        "cases": [
+            {
+                "case_id": case_id, "status": "complete", "failure_reason": None,
+                "npv": 9.5, "assignments": 2, "inference_seconds": 0.01,
+                "tonnage_coverage": 0.5, "positive_value_coverage": 0.5,
+                "stop_reason": "horizon-complete", "peak_memory_bytes": 1024,
+                "periods": [
+                    {"t": 1, "minedTonnes": 1.0, "oreTonnes": 1.0, "wasteTonnes": 0.0,
+                     "headGrade": 0.1, "metal": 0.1, "value": 5.0, "discCashFlow": 5.0,
+                     "cumNpv": 5.0, "stripRatio": 0.0, "resourceUse": [1.0, 1.0],
+                     "resourceLimit": [10.0, 10.0], "components": 1,
+                     "largestComponentShare": 1.0, "minWidthBlocks": 1, "blocks": 1},
+                    {"t": 2, "minedTonnes": 1.0, "oreTonnes": 1.0, "wasteTonnes": 0.0,
+                     "headGrade": 0.1, "metal": 0.1, "value": 4.5, "discCashFlow": 4.5,
+                     "cumNpv": 9.5, "stripRatio": 0.0, "resourceUse": [1.0, 1.0],
+                     "resourceLimit": [10.0, 10.0], "components": 1,
+                     "largestComponentShare": 1.0, "minWidthBlocks": 1, "blocks": 1},
+                ],
+                "period_of_block": [0, 1, -1] if case_id != "licensed" else None,
+            }
+            for case_id in case_ids
+        ],
+    }
+
+
+def _bind_baseline(evaluation: dict, baseline: Path) -> None:
+    index_path = baseline / "manifests" / "index.json"
+    evaluation["baseline"]["index_sha256"] = hashlib.sha256(index_path.read_bytes()).hexdigest()
+    for result in evaluation["cases"]:
+        trace_path = baseline / result["case_id"] / "trace.json"
+        result["baseline_trace_sha256"] = hashlib.sha256(trace_path.read_bytes()).hexdigest()
+
+
+def test_candidate_assembles_receipts_and_keeps_licensed_schedules_aggregate_only(tmp_path):
+    baseline = tmp_path / "baseline"
+    manifests = baseline / "manifests"
+    manifests.mkdir(parents=True)
+    ids = [f"case-{index:02d}" for index in range(12)] + ["licensed"]
+    entries = []
+    for case_id in ids:
+        case_dir = baseline / case_id
+        case_dir.mkdir()
+        trace_path = case_dir / "trace.json"
+        trace = {
+            "schema": "phaseflow.schedule-trace/v1", "caseId": case_id,
+            "scenario": {"periods": 2, "resources": [
+                {"limitPerPeriod": [10.0, 10.0]}, {"limitPerPeriod": [10.0, 10.0]},
+            ]},
+            "instance": {"nBlocks": 3, "synthetic": case_id != "licensed"},
+            "bound": {"used": "algorithm4", "algorithm4": 20.0},
+            "methods": [], "learned": {},
+        }
+        trace_path.write_text(json.dumps(trace), encoding="utf-8")
+        manifest_path = manifests / f"{case_id}.json"
+        manifest = {
+            "case_id": case_id,
+            "engine": {"version": "0.11.000", "oreblocks": "0.6.6"},
+            "artifact": {"path": f"{case_id}/trace.json", "bytes": trace_path.stat().st_size},
+            "scoreboard": [],
+        }
+        manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+        entries.append({"case_id": case_id, "manifest_path": f"manifests/{case_id}.json"})
+    (manifests / "index.json").write_text(json.dumps({
+        "schema": "phaseflow.index/v1", "engine_version": "0.11.000", "n_cases": 13, "cases": entries,
+    }), encoding="utf-8")
+    evaluation = _evaluation(ids)
+    _bind_baseline(evaluation, baseline)
+    evaluation_path = tmp_path / "evaluation.json"
+    evaluation_path.write_text(json.dumps(evaluation), encoding="utf-8")
+
+    candidate = tmp_path / "candidate"
+    receipt = build_candidate(baseline, candidate, evaluation_path)
+
+    assert receipt["summary"] == {"cases": 13, "complete": 13, "partial": 0, "failed": 0, "unavailable": 0}
+    synthetic_trace = json.loads((candidate / "case-00/trace.json").read_text(encoding="utf-8"))
+    assert synthetic_trace["methods"][-1]["method"] == "frontier-policy"
+    assert synthetic_trace["methods"][-1]["periodOfBlock"] == [0, 1, -1]
+    licensed_trace = json.loads((candidate / "licensed/trace.json").read_text(encoding="utf-8"))
+    assert "periodOfBlock" not in licensed_trace["methods"][-1]
+    assert json.loads((candidate / "manifests/index.json").read_text(encoding="utf-8"))["engine_version"] == "0.12.000"
+    assert (candidate / "readiness.json").is_file()
+    assert (candidate / "frontier-release-receipt.json").is_file()
+    from jsonschema import Draft202012Validator
+
+    schema = json.loads((ROOT / "docs/contracts/schemas/frontier-release.schema.json").read_text(encoding="utf-8"))
+    assert not list(Draft202012Validator(schema).iter_errors(receipt))
+
+
+def test_candidate_rejects_unreconciled_period_cashflow(tmp_path):
+    baseline = tmp_path / "baseline"
+    manifests = baseline / "manifests"
+    manifests.mkdir(parents=True)
+    ids = [f"case-{index:02d}" for index in range(12)] + ["licensed"]
+    entries = []
+    for case_id in ids:
+        (baseline / case_id).mkdir()
+        (baseline / case_id / "trace.json").write_text(json.dumps({
+            "caseId": case_id, "scenario": {"periods": 2, "resources": [
+                {"limitPerPeriod": [10.0, 10.0]}, {"limitPerPeriod": [10.0, 10.0]},
+            ]},
+            "instance": {"nBlocks": 3, "synthetic": case_id != "licensed"},
+            "bound": {"used": "algorithm4", "algorithm4": 20.0}, "methods": [],
+        }), encoding="utf-8")
+        (manifests / f"{case_id}.json").write_text(json.dumps({
+            "case_id": case_id, "engine": {"version": "0.11.000"},
+            "artifact": {"path": f"{case_id}/trace.json", "bytes": 1}, "scoreboard": [],
+        }), encoding="utf-8")
+        entries.append({"case_id": case_id, "manifest_path": f"manifests/{case_id}.json"})
+    (manifests / "index.json").write_text(json.dumps({
+        "schema": "phaseflow.index/v1", "engine_version": "0.11.000", "n_cases": 13, "cases": entries,
+    }), encoding="utf-8")
+    evaluation = _evaluation(ids)
+    _bind_baseline(evaluation, baseline)
+    evaluation["cases"][0]["periods"][0]["discCashFlow"] = 3.0
+    evaluation_path = tmp_path / "evaluation.json"
+    evaluation_path.write_text(json.dumps(evaluation), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="cumulative NPV"):
+        build_candidate(baseline, tmp_path / "candidate", evaluation_path)

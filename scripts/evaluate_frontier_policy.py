@@ -22,6 +22,7 @@ from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
 from pipeline.model.frontier_splits import build_split_manifest, manifest_sha256  # noqa: E402
 from pipeline.model.frontier_evaluation import RUN_NAME, seed_clustered_interval, target_version  # noqa: E402
 from pipeline.model.frontier_release import validate_training_members  # noqa: E402
+from pipeline.model.frontier_policy import Assignment, validate_schedule  # noqa: E402
 
 MANIFEST_PATH = ROOT / "docs/design/features/learned-frontier/split-manifest.json"
 CASE_INDEX = ROOT / "data/derived/manifests/index.json"
@@ -119,6 +120,58 @@ def _load_frozen_ensemble(model_run: Path, data_run: Path, *, source_commit: str
     return loaded, receipt, contract
 
 
+def _classical_greedy_baseline(graph) -> dict:
+    """Run PhaseFlow's real feasible TopoSort baseline on the exact generated CPIT instance."""
+    import oreblocks as ob
+
+    instance = graph.instance
+    n_blocks = len(instance.values)
+    pstart = [0]
+    plist: list[int] = []
+    for predecessors in instance.predecessors:
+        plist.extend(predecessors)
+        pstart.append(len(plist))
+    precedence = ob.Precedence(
+        pstart=np.asarray(pstart, dtype=np.int64), plist=np.asarray(plist, dtype=np.int64),
+    )
+    cpit = ob.Cpit(
+        name=f"synthetic-{graph.family}-{graph.seed}",
+        n_blocks=n_blocks,
+        n_periods=instance.capacities.shape[0],
+        discount_rate=instance.discount_rate,
+        value=instance.values.copy(),
+        limit=instance.capacities.T.copy(),
+        sense=np.full(instance.capacities.T.shape, "L", dtype="<U1"),
+        coef=instance.resources.T.copy(),
+        resource_names=("mining", "processing"),
+    )
+    started = time.monotonic()
+    schedule = ob.toposort_schedule(
+        cpit, precedence, weight="greedy", allowed=np.ones(n_blocks, dtype=bool),
+    )
+    runtime_seconds = time.monotonic() - started
+    assignments = tuple(
+        Assignment(block, int(period)) for block, period in enumerate(schedule.period_of_block) if period >= 0
+    )
+    independently_checked_npv = validate_schedule(instance, assignments)
+    if not np.isclose(schedule.npv, independently_checked_npv, rtol=1e-10, atol=1e-8):
+        raise ValueError("classical TopoSort objective differs from independent CPIT recomputation")
+    positive = np.maximum(instance.values, 0.0)
+    selected = np.fromiter((assignment.block for assignment in assignments), dtype=np.int64)
+    selected_tonnage = float(graph.tonnage[selected].sum()) if selected.size else 0.0
+    total_tonnage = float(graph.tonnage.sum())
+    selected_positive = float(positive[selected].sum()) if selected.size else 0.0
+    total_positive = float(positive.sum())
+    return {
+        "method": "toposort-greedy", "npv": independently_checked_npv,
+        "normalized_npv": independently_checked_npv / max(float(np.abs(instance.values).sum()), 1e-12),
+        "feasible": True, "assignments": len(assignments), "all_blocks_scheduled": len(assignments) == n_blocks,
+        "tonnage_coverage": selected_tonnage / total_tonnage if total_tonnage else 0.0,
+        "positive_value_coverage": selected_positive / total_positive if total_positive else 0.0,
+        "runtime_seconds": runtime_seconds,
+    }
+
+
 def evaluate(args: argparse.Namespace) -> int:
     from pipeline.model.frontier_ppo import INFERENCE_CAP_SECONDS, replay_frontier_ensemble
     from train_frontier_policy import _check_environment
@@ -168,9 +221,11 @@ def evaluate(args: argparse.Namespace) -> int:
         memory = PeakRSS()
         inference_seconds = 0.0
         inference_started: float | None = None
+        baseline: dict | None = None
         try:
             with memory:
                 graph = generate_graph(row["seed"], row["family"], row["size"])
+                baseline = _classical_greedy_baseline(graph)
                 inference_started = time.monotonic()
                 result = replay_frontier_ensemble(
                     graph.instance, graph.node_features, models, tonnage=graph.tonnage,
@@ -185,6 +240,10 @@ def evaluate(args: argparse.Namespace) -> int:
                 "normalized_npv": result.npv / max(float(np.abs(graph.instance.values).sum()), 1e-12),
                 "tonnage_coverage": result.tonnage_coverage,
                 "positive_value_coverage": result.positive_value_coverage,
+                "classical_baseline": baseline,
+                "classical_normalized_npv": baseline["normalized_npv"],
+                "frontier_minus_classical_normalized_npv": result.npv
+                / max(float(np.abs(graph.instance.values).sum()), 1e-12) - baseline["normalized_npv"],
                 "case_seconds": elapsed, "inference_seconds": inference_seconds,
                 "peak_memory_bytes": memory.peak_bytes,
                 "stop_reason": result.stopped,
@@ -192,21 +251,29 @@ def evaluate(args: argparse.Namespace) -> int:
         except TimeoutError as exc:
             if inference_started is not None:
                 inference_seconds = time.monotonic() - inference_started
-            cases.append({
+            failed_case = {
                 "case_id": case_id, "seed": row["seed"], "family": row["family"], "size": row["size"],
                 "status": "unavailable", "failure_reason": str(exc),
                 "case_seconds": time.monotonic() - started, "inference_seconds": inference_seconds,
                 "peak_memory_bytes": memory.peak_bytes,
-            })
+            }
+            if baseline is not None:
+                failed_case["classical_baseline"] = baseline
+                failed_case["classical_normalized_npv"] = baseline["normalized_npv"]
+            cases.append(failed_case)
         except (ValueError, RuntimeError, FloatingPointError) as exc:
             if inference_started is not None:
                 inference_seconds = time.monotonic() - inference_started
-            cases.append({
+            failed_case = {
                 "case_id": case_id, "seed": row["seed"], "family": row["family"], "size": row["size"],
                 "status": "failed", "failure_reason": f"{type(exc).__name__}: {exc}",
                 "case_seconds": time.monotonic() - started, "inference_seconds": inference_seconds,
                 "peak_memory_bytes": memory.peak_bytes,
-            })
+            }
+            if baseline is not None:
+                failed_case["classical_baseline"] = baseline
+                failed_case["classical_normalized_npv"] = baseline["normalized_npv"]
+            cases.append(failed_case)
 
     counts = {status: sum(row["status"] == status for row in cases)
               for status in ("complete", "partial", "failed", "unavailable")}
@@ -231,6 +298,12 @@ def evaluate(args: argparse.Namespace) -> int:
             "mean_normalized_npv_feasible": float(np.mean(numeric)) if numeric else None,
             "median_normalized_npv_feasible": float(np.median(numeric)) if numeric else None,
             "normalized_npv_seed_clustered_interval": seed_clustered_interval(cases),
+            "classical_normalized_npv_seed_clustered_interval": seed_clustered_interval(
+                cases, metric="classical_normalized_npv",
+            ),
+            "frontier_minus_classical_normalized_npv_seed_clustered_interval": seed_clustered_interval(
+                cases, metric="frontier_minus_classical_normalized_npv",
+            ),
         },
         "interpretation": "Synthetic held-out schedules only; no product-case or operating-mine claim.",
     }

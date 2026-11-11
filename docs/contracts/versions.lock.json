@@ -14,6 +14,11 @@
     "schema": "docs/contracts/schemas/trace.schema.json",
     "sha256": "b6f82ef6fe25418ac4613e739fdab5df9097126ddc2d754490fc3faf87bdce65"
   },
+  "frontier-release": {
+    "version": "1.0.0",
+    "schema": "docs/contracts/schemas/frontier-release.schema.json",
+    "sha256": "893e5d6d76211135fce8970271b36ec5f936af74871f6aa187eca101dedfd188"
+  },
   "learned-model": {
     "version": "1.0.0",
     "schema": "docs/contracts/schemas/learned-model.schema.json",

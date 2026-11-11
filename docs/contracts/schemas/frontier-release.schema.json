@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "phaseflow.frontier-release/v1",
+  "title": "PhaseFlow frozen frontier evaluation and replay receipt",
+  "description": "One source-bound record of the frozen model, all thirteen product cases, retained failures, and trace hashes.",
+  "type": "object",
+  "required": [
+    "schema",
+    "created_at_utc",
+    "product_version",
+    "engine_version",
+    "source_commit",
+    "training_source_commit",
+    "checkpoint_sha256",
+    "checkpoint_members_sha256",
+    "feature_contract_sha256",
+    "split_sha256",
+    "case_index_sha256",
+    "baseline",
+    "cases",
+    "summary",
+    "redistribution"
+  ],
+  "properties": {
+    "schema": { "const": "phaseflow.frontier-release/v1" },
+    "created_at_utc": { "type": "string", "format": "date-time" },
+    "product_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]{2}\\.[0-9]{3}$" },
+    "engine_version": { "type": "string", "minLength": 1 },
+    "source_commit": { "$ref": "#/$defs/commit" },
+    "training_source_commit": { "$ref": "#/$defs/commit" },
+    "checkpoint_sha256": { "$ref": "#/$defs/sha256" },
+    "checkpoint_members_sha256": {
+      "type": "array", "minItems": 5, "maxItems": 5,
+      "items": { "$ref": "#/$defs/sha256" }
+    },
+    "feature_contract_sha256": { "$ref": "#/$defs/sha256" },
+    "split_sha256": { "$ref": "#/$defs/sha256" },
+    "case_index_sha256": { "$ref": "#/$defs/sha256" },
+    "baseline": {
+      "type": "object",
+      "required": ["product_version", "engine_version", "index_sha256"],
+      "properties": {
+        "product_version": { "type": "string" },
+        "engine_version": { "type": "string" },
+        "index_sha256": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "cases": {
+      "type": "array", "minItems": 13, "maxItems": 13,
+      "items": { "$ref": "#/$defs/case" }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["cases", "complete", "partial", "failed", "unavailable"],
+      "properties": {
+        "cases": { "const": 13 },
+        "complete": { "type": "integer", "minimum": 0 },
+        "partial": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "unavailable": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "redistribution": { "type": "string", "minLength": 20 }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "case": {
+      "type": "object",
+      "required": [
+        "case_id", "product_version", "engine_version", "source_commit",
+        "checkpoint_sha256", "feature_contract_sha256", "status", "failure_reason"
+      ],
+      "properties": {
+        "case_id": { "type": "string", "minLength": 1 },
+        "product_version": { "type": "string" },
+        "engine_version": { "type": "string" },
+        "source_commit": { "$ref": "#/$defs/commit" },
+        "checkpoint_sha256": { "$ref": "#/$defs/sha256" },
+        "feature_contract_sha256": { "$ref": "#/$defs/sha256" },
+        "status": { "enum": ["complete", "partial", "failed", "unavailable"] },
+        "trace_sha256": { "$ref": "#/$defs/sha256" },
+        "failure_reason": { "type": ["string", "null"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "enum": ["complete", "partial"] } } },
+          "then": { "required": ["trace_sha256"] }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["failed", "unavailable"] } } },
+          "then": { "properties": { "failure_reason": { "type": "string", "minLength": 12 } } }
+        }
+      ],
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
