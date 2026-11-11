@@ -11,7 +11,7 @@ deployment evidence yet.
 
 - Require each ensemble member to carry finite validation history and the matching selected-checkpoint hash;
   incomplete or mismatched receipts fail closed.
-- Adopt the released Product Template 0.15.007 and the current published App Shell 0.25.0. The PhaseFlow workflow rejects version-stamped authored stage inputs and produces its versioned model documents before the bake; the guided case story reserves the measured callout
+- Adopt Product Template 0.15.008 and published App Shell 0.26.0. The PhaseFlow workflow rejects version-stamped authored stage inputs and produces its versioned model documents before the bake; the guided case story reserves the settled callout band
   band, remaps linked markers into the reduced drawing, and keeps the phone drawing floor; the template's
   declared-data copier and product hook now deliver case artifacts and released model metadata through one
   clean public-data overlay.

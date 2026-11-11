@@ -180,7 +180,10 @@ export default function Story() {
     const label = stageLabel(trace, method, st.cursor, st.lang);
     const linkedMarkers = [
       { id: 'blocks', label: bilingual('Case blocks', 'Bloques del caso'), x: 24, y: 48 },
-      { id: 'period-tonnes', label: bilingual('Period movement', 'Movimiento del período'), x: 52, y: 34 },
+      // Aggregate-only cases use an interactive production chart in the stage. Put this linked
+      // target in the chart's clear right margin so it cannot intercept plot input or cover the
+      // period legend; the scientific callout remains anchored to the plotted value above.
+      { id: 'period-tonnes', label: bilingual('Period movement', 'Movimiento del período'), x: replayable ? 52 : 94, y: replayable ? 34 : 58 },
       { id: 'capacity', label: bilingual('Capacity use', 'Uso de capacidad'), x: 76, y: 58 },
     ];
     const linkMarkers = (band = 0, height = 0) => <div className="pf-story-links" aria-label={es ? 'Objetos vinculados de la escena' : 'Linked scene objects'}>
