@@ -168,14 +168,15 @@ already deployed in 0.07.002; the gate protects it.
 
 **BS-1, expected-time ensemble policy.** Hypothesis: a five-member ensemble trained on deposit-disjoint synthetic instances can rank blocks by expected extraction time and produce a feasible precedence-safe CPIT schedule whose discounted NPV is competitive with exact expected-time ordering, while avoiding an LP solve at inference. Method: train each member on the same train-only normalization with frozen, distinct seeds; average predictions; run the shared TopoSort constructor; compare against the classical constructor, sliding-window look-ahead, exact expected-time ordering and exact local-search results under identical deposits and constraints. Evaluation: use seed-disjoint holdout deposits, retain each case and seed, report NPV ratios, feasibility, timing and uncertainty, and test the ONNX and browser implementations against Python. The claim is limited to this benchmark and does not imply a field-wide performance improvement. A result that misses the hypothesis remains in the report and notebook.
 
-**BS-2, state-conditioned frontier policy.** A second learned scheduler is approved for design by Felipe (2026-11-01); the method remains unimplemented. An autoregressive graph-conditioned actor scores feasible blocks using the current partial schedule, period and remaining resources, with explicit stop-period and stop-schedule actions. Its masked PPO training return uses the same discounted-value objective as the CPIT evaluator, without a second discount. The independent validator, rather than the mask alone, certifies every output. Training, validation and test partitions are disjoint by generator seed and graph family; all 13 product cases remain sealed until the checkpoint/settings freeze. We report incomplete coverage and negative results and make no performance claim without paired evidence. The versioned SDD amendment fixes the compute cap and names the method/code/data/docs/browser gates. The active 0.11.000 baseline bake must finish unchanged; this result-changing method targets a separate full 0.12.000 bake.
+**BS-2, state-conditioned frontier policy.** Felipe approved the design direction on 2026-11-01. The graph-conditioned PPO actor, feasible-action mask, independent validator, frozen split, external training receipts, and one-shot synthetic and product-case evaluators are implemented. Run `20261111-bs2-ppo-v4` completed its five validation-selected members under the frozen cap. The synthetic test partition was then opened once; all 500 cases were processed, but the run failed at final JSON serialization before writing the result or any case journal. The split-wide external ledger now records the test outputs as lost and prohibits a repeat. No synthetic test metrics were retained, and none of the 13 product cases has been opened. The policy therefore has no valid held-out evaluation, app replay, or release claim. Recovering empirical evidence requires a separately reviewed, versioned protocol and a new disjoint split; the consumed split cannot be reused. The existing 0.11.000 artifacts remain unchanged while that release path is unresolved.
 
 The three feature designs are proposals: the deposit-statistics live guard, the
 learned destination policy, and a scalable sliding window on larger instances
 have not passed implementation or empirical gates. The separately approved
-state-conditioned scheduler has its own versioned 0.12.000 amendment; only
-isolated feasibility, replay and validation primitives are implemented so far.
-Until the corresponding gates pass, the UI must not claim these methods exist.
+state-conditioned scheduler has its own versioned 0.12.000 amendment and a
+partial vertical implementation, including completed capped training. Its
+one-shot held-out output is unavailable, so the UI must not claim a measured
+result or expose a replay until new disjoint evidence passes the release gates.
 
 The uncertainty re-planning estimate uses one fixed policy selected by expected
 NPV, then exact local search in restricted C-PIT[D] neighborhoods on each
@@ -300,13 +301,15 @@ The product template's CI runs static and scientific contract checks on every ch
 | Responsive behavior | Route sizes, charts and navigation are measured across supported viewports. |
 | Design before new work | New feature designs name requirements, implementation boundaries and adversarial verification gates. |
 | Shared base adoption | Shell behavior comes from an exact released package pin; defects are resolved in that shared package. |
-| Frontier scheduler | Offline actor training, feasible-action masking, independent validation and committed replay are specified by `features/learned-frontier/SDD-amendment-0.12.000.md`; isolated mask/replay/validator primitives have partial implementation, while training, pipeline integration and release evidence remain pending. |
+| Frontier scheduler | Offline actor training, feasible-action masking, independent validation and committed replay are specified by `features/learned-frontier/SDD-amendment-0.12.000.md`; training and evaluator code are implemented, five v4 members have validation-selected checkpoints, and the first held-out split was consumed without durable outputs. Product-case evaluation, replay, app exposure and release evidence remain unavailable. |
 
 ## Convergence record
 
 This SDD backfills a shipped product and is awaiting independent review.
 The existing requirements are checked by the named gates above.
 Feature records name their approval and implementation state individually. The frontier
-policy direction is approved, its reviewed SDD amendment fixes the implementation and
-evaluation boundary, and its code/results remain pending until the full 0.12.000 vertical
-and convergence gates pass. No design proposal is evidence of a measured result.
+policy direction is approved, its SDD amendment fixes the implementation and evaluation
+boundary, and the code and training are present. Its one-shot synthetic outputs were not
+persisted, so the empirical, product-case, manuscript, notebook, app replay and release
+gates remain open. No training or validation-selected checkpoint is evidence of a held-out
+result.

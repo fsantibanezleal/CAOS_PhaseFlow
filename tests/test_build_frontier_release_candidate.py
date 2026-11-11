@@ -8,6 +8,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+PRODUCT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+BASELINE_VERSION = json.loads((ROOT / "data/derived/manifests/index.json").read_text(encoding="utf-8"))["engine_version"]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from build_frontier_release_candidate import build_candidate  # noqa: E402
@@ -15,12 +17,12 @@ from build_frontier_release_candidate import build_candidate  # noqa: E402
 
 def _evaluation(case_ids: list[str]) -> dict:
     return {
-        "product_version": "0.12.000", "engine_version": "oreblocks==0.6.6",
+        "product_version": PRODUCT_VERSION, "engine_version": "oreblocks==0.6.6",
         "source_commit": "a" * 40, "training_source_commit": "b" * 40,
         "feature_contract_sha256": "c" * 64, "case_index_sha256": "d" * 64,
         "split_sha256": "e" * 64, "training_receipt_sha256": "f" * 64,
         "checkpoint_sha256": ["1" * 64, "2" * 64, "3" * 64, "4" * 64, "5" * 64],
-        "baseline": {"product_version": "0.11.000", "engine_version": "oreblocks==0.6.6", "index_sha256": ""},
+        "baseline": {"product_version": BASELINE_VERSION, "engine_version": "oreblocks==0.6.6", "index_sha256": ""},
         "summary": {"cases": 13, "complete": 13, "partial": 0, "failed": 0, "unavailable": 0},
         "cases": [
             {
@@ -78,14 +80,14 @@ def test_candidate_assembles_receipts_and_keeps_licensed_schedules_aggregate_onl
         manifest_path = manifests / f"{case_id}.json"
         manifest = {
             "case_id": case_id,
-            "engine": {"version": "0.11.000", "oreblocks": "0.6.6"},
+            "engine": {"version": BASELINE_VERSION, "oreblocks": "0.6.6"},
             "artifact": {"path": f"{case_id}/trace.json", "bytes": trace_path.stat().st_size},
             "scoreboard": [],
         }
         manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
         entries.append({"case_id": case_id, "manifest_path": f"manifests/{case_id}.json"})
     (manifests / "index.json").write_text(json.dumps({
-        "schema": "phaseflow.index/v1", "engine_version": "0.11.000", "n_cases": 13, "cases": entries,
+        "schema": "phaseflow.index/v1", "engine_version": BASELINE_VERSION, "n_cases": 13, "cases": entries,
     }), encoding="utf-8")
     evaluation = _evaluation(ids)
     _bind_baseline(evaluation, baseline)
@@ -101,7 +103,7 @@ def test_candidate_assembles_receipts_and_keeps_licensed_schedules_aggregate_onl
     assert synthetic_trace["methods"][-1]["periodOfBlock"] == [0, 1, -1]
     licensed_trace = json.loads((candidate / "licensed/trace.json").read_text(encoding="utf-8"))
     assert "periodOfBlock" not in licensed_trace["methods"][-1]
-    assert json.loads((candidate / "manifests/index.json").read_text(encoding="utf-8"))["engine_version"] == "0.12.000"
+    assert json.loads((candidate / "manifests/index.json").read_text(encoding="utf-8"))["engine_version"] == PRODUCT_VERSION
     assert (candidate / "readiness.json").is_file()
     assert (candidate / "frontier-release-receipt.json").is_file()
     from jsonschema import Draft202012Validator
@@ -126,12 +128,12 @@ def test_candidate_rejects_unreconciled_period_cashflow(tmp_path):
             "bound": {"used": "algorithm4", "algorithm4": 20.0}, "methods": [],
         }), encoding="utf-8")
         (manifests / f"{case_id}.json").write_text(json.dumps({
-            "case_id": case_id, "engine": {"version": "0.11.000"},
+            "case_id": case_id, "engine": {"version": BASELINE_VERSION},
             "artifact": {"path": f"{case_id}/trace.json", "bytes": 1}, "scoreboard": [],
         }), encoding="utf-8")
         entries.append({"case_id": case_id, "manifest_path": f"manifests/{case_id}.json"})
     (manifests / "index.json").write_text(json.dumps({
-        "schema": "phaseflow.index/v1", "engine_version": "0.11.000", "n_cases": 13, "cases": entries,
+        "schema": "phaseflow.index/v1", "engine_version": BASELINE_VERSION, "n_cases": 13, "cases": entries,
     }), encoding="utf-8")
     evaluation = _evaluation(ids)
     _bind_baseline(evaluation, baseline)

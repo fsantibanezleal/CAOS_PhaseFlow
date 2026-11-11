@@ -36,6 +36,9 @@
     "learned-study": [
       "04-learned-surrogates/02-cross-case-validation.ipynb"
     ],
+    "frontier-release": [
+      "04-learned-surrogates/04-frontier-data-splits-and-normalization.ipynb"
+    ],
     "readiness": [
       "05-operability/01-coherence-and-width.ipynb"
     ]

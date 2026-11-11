@@ -51,6 +51,10 @@ The state-conditioned frontier policy has its own, external CPU training environ
 `train_frontier_policy.py`; `--check` validates its contract without training. Run
 `evaluate_frontier_policy.py` once on the sealed synthetic test partition, then
 `evaluate_frontier_product_cases.py` once on all 13 held-out PhaseFlow cases using external `CAOS_DATA_ROOT`
-inputs and the complete 0.11.000/OreBlocks 0.6.6 baseline under external `CAOS_TEMP_ROOT`. Product-case rows
-carry an assembled-instance SHA-256 and paired per-method NPV/runtime evidence; only synthetic twins retain
-per-block schedules. Neither evaluation exports any MineLib block schedule to the repository.
+inputs and the complete 0.11.000/OreBlocks 0.6.6 baseline under external `CAOS_TEMP_ROOT`. The synthetic
+evaluator writes a split-wide ledger under external `CAOS_DATA_ROOT` before opening each case and persists
+each case result before continuing. Completed rows can be reused to assemble a receipt after an interruption;
+a case whose output was lost is marked unavailable and is never rerun. The ledger is keyed by the frozen split,
+training receipt, checkpoints, and source commits, so a different run name cannot reopen the same partition.
+Product-case rows carry an assembled-instance SHA-256 and paired per-method NPV/runtime evidence; only
+synthetic twins retain per-block schedules. Neither evaluation exports any MineLib block schedule to the repository.

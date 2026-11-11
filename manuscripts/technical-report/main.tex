@@ -5,8 +5,8 @@
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
 \newcommand{\doctype}{Technical report}
-\newcommand{\docversion}{v0.11.000}
-\newcommand{\docdate}{31 October 2026}
+\newcommand{\docversion}{v0.12.000}
+\newcommand{\docdate}{11 November 2026}
 \newcommand{\versiondoi}{not assigned}
 \newcommand{\conceptdoi}{not assigned}
 \newcommand{\docrepo}{github.com/fsantibanezleal/CAOS\_PhaseFlow}
@@ -26,7 +26,7 @@ Not peer reviewed. Source code, data and computational records:\\
 \maketitle
 \headerblock
 \begin{abstract}
-PhaseFlow is a research workbench for constrained pit-limit production scheduling (CPIT), destination-choice scheduling, and controlled studies of geological uncertainty. It compares feasible construction heuristics, published scheduling methods, mathematical bounds, and a learned ordering policy using machine-readable results. The policy predicts expected extraction-time fractions from block and scenario features with a five-member ensemble trained and evaluated on disjoint deposit seeds, then constructs a schedule with a precedence-safe topological ordering. In the current synthetic holdout, its median schedule value is 0.9405 of exact expected-time ordering; the minimum is 0.7101, and 33.56 percent of cases fall below 0.90. It beats the greedy comparator in 92.13 percent of cases. Performance varies across deposits, and these generated cases do not establish field-wide generalization. MineLib cases are evaluated separately. Learned estimates do not certify bounds.
+PhaseFlow is a research workbench for constrained pit-limit production scheduling (CPIT), destination-choice scheduling, and controlled studies of geological uncertainty. It compares feasible construction heuristics, published scheduling methods, mathematical bounds, and learned policies using machine-readable results. The expected-time ensemble predicts extraction-time fractions from block and scenario features, then constructs schedules with a precedence-safe topological ordering. In its synthetic holdout, median schedule value is 0.9405 of exact expected-time ordering; the minimum is 0.7101, 33.56 percent of cases fall below 0.90, and it beats the greedy comparator in 92.13 percent of cases. These generated results do not establish field-wide generalization. A second state-conditioned policy has completed capped training, but its one-shot 500-case test run failed during final serialization before preserving results. The split is recorded as consumed; no held-out metric or product-case result is claimed for that policy. MineLib cases remain separately evaluated, and learned estimates do not certify bounds.
 \end{abstract}
 \noindent\textbf{Keywords:} open-pit mine planning, production scheduling, CPIT, expected extraction time, learned heuristic, reproducible computation
 \section{Introduction}

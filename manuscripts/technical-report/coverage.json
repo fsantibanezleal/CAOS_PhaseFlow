@@ -19,6 +19,7 @@
     "schedule-trace": "sec:data-trace",
     "learned-model": "sec:data-model",
     "learned-study": "sec:data-study",
-    "readiness": "sec:data-readiness"
+    "readiness": "sec:data-readiness",
+    "frontier-release": "sec:data-frontier-release"
   }
 }

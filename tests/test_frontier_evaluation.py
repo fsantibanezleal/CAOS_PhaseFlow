@@ -120,7 +120,7 @@ def test_synthetic_heldout_uses_the_real_classical_toposort_baseline():
     assert baseline["runtime_seconds"] >= 0
 
 
-def test_frozen_training_commit_may_have_result_only_evaluation_revision(monkeypatch):
+def test_adversarial_frozen_training_commit_may_have_result_only_evaluation_revision(monkeypatch):
     monkeypatch.setattr(
         frontier_evaluator.subprocess,
         "run",
@@ -137,6 +137,30 @@ def test_frozen_training_commit_may_have_result_only_evaluation_revision(monkeyp
     )
     with pytest.raises(ValueError, match="frozen training method"):
         frontier_evaluator._validate_frozen_method_source("a" * 40, "b" * 40)
+
+
+def test_adversarial_synthetic_test_ledger_recovers_completed_cases_without_repeating_started_cases(tmp_path):
+    manifest = {"test": [{"case_id": "synthetic-benched-4", "family": "benched", "seed": 4, "size": 32}]}
+    identity = {"split_sha256": "a" * 64, "evaluation_source_commit": "b" * 40}
+    path = frontier_evaluator._test_ledger_path(tmp_path, identity["split_sha256"])
+    ledger = frontier_evaluator._open_test_ledger(path, identity, manifest)
+    ledger["cases"]["synthetic-benched-4"] = {"status": "started", "result": None}
+    frontier_evaluator._atomic_json(path, ledger)
+
+    resumed = frontier_evaluator._open_test_ledger(path, identity, manifest)
+    state = resumed["cases"]["synthetic-benched-4"]
+    assert state["status"] == "unavailable"
+    assert "not rerun" in state["result"]["failure_reason"]
+
+
+def test_adversarial_synthetic_test_ledger_refuses_consumed_split_and_nonfinite_json(tmp_path):
+    identity = {"split_sha256": "c" * 64}
+    path = frontier_evaluator._test_ledger_path(tmp_path, identity["split_sha256"])
+    path.write_text(json.dumps({"identity": identity, "status": "consumed-results-lost"}), encoding="utf-8")
+    with pytest.raises(ValueError, match="consumed-results-lost"):
+        frontier_evaluator._open_test_ledger(path, identity, {"test": []})
+    with pytest.raises(ValueError, match="Out of range"):
+        frontier_evaluator._atomic_json(tmp_path / "nonfinite.json", {"value": float("nan")})
 
 
 def test_expected_time_comparison_requires_its_completed_bound():

@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
 
 from pipeline.model.frontier_release import RECEIPT_SCHEMA, validate_release_receipt, validate_training_members  # noqa: E402
+from build_frontier_release_candidate import _periods  # noqa: E402
 
 PRODUCT_VERSION = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
 
@@ -82,3 +83,19 @@ def test_training_ensemble_requires_validation_selected_checkpoint_for_every_see
     }]
     with pytest.raises(ValueError, match="not selected"):
         validate_training_members(members, [1103, 2207, 3301, 4409, 5519])
+
+
+def test_adversarial_release_rejects_period_cashflow_that_does_not_reconcile_to_npv():
+    trace = {
+        "caseId": "release-period-reconciliation",
+        "scenario": {"periods": 1, "resources": [{"limitPerPeriod": [10]}]},
+    }
+    row = {
+        "t": 1, "minedTonnes": 1.0, "oreTonnes": 1.0, "wasteTonnes": 0.0,
+        "headGrade": 0.5, "metal": 0.5, "value": 10.0, "discCashFlow": 10.0,
+        "cumNpv": 10.0, "stripRatio": 0.0, "resourceUse": [1.0],
+        "resourceLimit": [10.0], "components": 1, "largestComponentShare": 1.0,
+        "minWidthBlocks": 1, "blocks": 1,
+    }
+    with pytest.raises(ValueError, match="discounted period cash flow does not reconcile to NPV"):
+        _periods(trace, {"periods": [row], "npv": 9.0})

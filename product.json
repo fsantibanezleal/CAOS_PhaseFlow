@@ -56,11 +56,15 @@
   "manuscripts": [
     {
       "title": "PhaseFlow: Methods and Results for Multi-Period Open-Pit Production Scheduling",
-      "kind": "technical-report"
+      "kind": "technical-report",
+      "version": "0.12.000",
+      "covers": ["BS-1", "BS-2"]
     },
     {
       "title": "Expected-Time Approximation for Open-Pit Scheduling: Deposit-Disjoint Synthetic Results and Two MineLib Cases",
-      "kind": "manuscript"
+      "kind": "manuscript",
+      "version": "0.01",
+      "covers": ["BS-1"]
     }
   ]
 }

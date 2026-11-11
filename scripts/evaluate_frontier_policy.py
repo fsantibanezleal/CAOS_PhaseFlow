@@ -37,8 +37,60 @@ def _under(path: Path, parent: Path) -> bool:
 def _atomic_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".pending")
-    temporary.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+    temporary.write_text(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
     os.replace(temporary, path)
+
+
+def _test_ledger_path(data_root: Path, split_hash: str) -> Path:
+    return data_root / f"synthetic-test-{split_hash}.ledger.json"
+
+
+def _open_test_ledger(path: Path, identity: dict, manifest: dict) -> dict:
+    """Create or resume the split-wide ledger without repeating a started case."""
+    if path.exists():
+        ledger = json.loads(path.read_text(encoding="utf-8"))
+        if ledger.get("identity") != identity:
+            raise ValueError("the sealed synthetic test split was already opened by a different evaluation")
+        if ledger.get("status") in {"complete", "consumed-results-lost"}:
+            raise ValueError(f"the sealed synthetic test split is {ledger['status']} and cannot be evaluated again")
+        if ledger.get("status") != "started" or not isinstance(ledger.get("cases"), dict):
+            raise ValueError("the synthetic test ledger is malformed or in an unknown state")
+        rows = {row["case_id"]: row for row in manifest["test"]}
+        for case_id, state in ledger["cases"].items():
+            if (case_id not in rows or not isinstance(state, dict)
+                    or state.get("status") not in {"started", "complete", "partial", "failed", "unavailable"}):
+                raise ValueError("the synthetic test ledger contains an unknown case or state")
+            if state["status"] == "started":
+                row = rows[case_id]
+                ledger["cases"][case_id] = {
+                    "status": "unavailable",
+                    "result": {
+                        "case_id": case_id, "seed": row["seed"], "family": row["family"],
+                        "size": row["size"], "status": "unavailable",
+                        "failure_reason": "previous process stopped after opening this case; it was not rerun",
+                    },
+                }
+            elif (not isinstance(state.get("result"), dict)
+                    or state["result"].get("case_id") != case_id
+                    or state["result"].get("status") != state["status"]):
+                raise ValueError("the synthetic test ledger contains an incomplete or mismatched case result")
+        _atomic_json(path, ledger)
+        return ledger
+    ledger = {
+        "schema_version": "1.0.0", "status": "started", "identity": identity,
+        "cases": {}, "started_at_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    _atomic_json(path, ledger)
+    return ledger
+
+
+def _record_case(path: Path, ledger: dict, case_id: str, result: dict) -> None:
+    json.dumps(result, ensure_ascii=False, allow_nan=False)
+    ledger["cases"][case_id] = {"status": result["status"], "result": result}
+    _atomic_json(path, ledger)
 
 
 def _frozen_manifest() -> tuple[dict, str]:
@@ -210,6 +262,20 @@ def evaluate(args: argparse.Namespace) -> int:
     if not isinstance(training_source_commit, str) or len(training_source_commit) != 40:
         raise ValueError("the training receipt must identify its full source commit")
     _validate_frozen_method_source(training_source_commit, evaluation_commit)
+    training_receipt_sha256 = hashlib.sha256(training_receipt_path.read_bytes()).hexdigest()
+    training_receipt = json.loads(training_receipt_path.read_text(encoding="utf-8"))
+    identity = {
+        "run_name": args.run_name,
+        "product_version": frozen_version,
+        "training_source_commit": training_source_commit,
+        "evaluation_source_commit": evaluation_commit,
+        "training_receipt_sha256": training_receipt_sha256,
+        "checkpoint_sha256": [row["checkpoint_sha256"] for row in training_receipt["members"]],
+        "split_sha256": split_hash,
+        "generator_version": GENERATOR_VERSION,
+    }
+    ledger_path = _test_ledger_path(data_root, split_hash)
+    ledger = _open_test_ledger(ledger_path, identity, manifest)
     models, receipt, contract = _load_frozen_ensemble(
         model_run, data_run, source_commit=training_source_commit, split_hash=split_hash,
     )
@@ -217,6 +283,12 @@ def evaluate(args: argparse.Namespace) -> int:
     cases: list[dict] = []
     for row in manifest["test"]:
         case_id = f"synthetic-{row['family']}-{row['seed']}"
+        previous = ledger["cases"].get(case_id)
+        if previous is not None and previous["status"] != "started":
+            cases.append(previous["result"])
+            continue
+        ledger["cases"][case_id] = {"status": "started", "result": None}
+        _atomic_json(ledger_path, ledger)
         started = time.monotonic()
         memory = PeakRSS()
         inference_seconds = 0.0
@@ -233,7 +305,7 @@ def evaluate(args: argparse.Namespace) -> int:
                 inference_seconds = time.monotonic() - inference_started
             elapsed = time.monotonic() - started
             complete_schedule = len(result.assignments) == row["size"] and result.stopped == "horizon-complete"
-            cases.append({
+            case_result = {
                 "case_id": case_id, "seed": row["seed"], "family": row["family"], "size": row["size"],
                 "status": "complete" if complete_schedule else "partial", "failure_reason": None,
                 "feasible": True, "assignments": len(result.assignments), "npv": result.npv,
@@ -247,7 +319,9 @@ def evaluate(args: argparse.Namespace) -> int:
                 "case_seconds": elapsed, "inference_seconds": inference_seconds,
                 "peak_memory_bytes": memory.peak_bytes,
                 "stop_reason": result.stopped,
-            })
+            }
+            _record_case(ledger_path, ledger, case_id, case_result)
+            cases.append(case_result)
         except TimeoutError as exc:
             if inference_started is not None:
                 inference_seconds = time.monotonic() - inference_started
@@ -260,6 +334,7 @@ def evaluate(args: argparse.Namespace) -> int:
             if baseline is not None:
                 failed_case["classical_baseline"] = baseline
                 failed_case["classical_normalized_npv"] = baseline["normalized_npv"]
+            _record_case(ledger_path, ledger, case_id, failed_case)
             cases.append(failed_case)
         except (ValueError, RuntimeError, FloatingPointError) as exc:
             if inference_started is not None:
@@ -273,6 +348,7 @@ def evaluate(args: argparse.Namespace) -> int:
             if baseline is not None:
                 failed_case["classical_baseline"] = baseline
                 failed_case["classical_normalized_npv"] = baseline["normalized_npv"]
+            _record_case(ledger_path, ledger, case_id, failed_case)
             cases.append(failed_case)
 
     counts = {status: sum(row["status"] == status for row in cases)
@@ -280,15 +356,13 @@ def evaluate(args: argparse.Namespace) -> int:
     numeric = [row["normalized_npv"] for row in cases if row.get("feasible") is True]
     result = {
         "schema_version": "1.0.0", "method": "frontier-policy", "evaluation": "sealed-synthetic-test",
-        "evaluated_at_utc": datetime.now(timezone.utc).isoformat(), "product_version": target_version,
+        "evaluated_at_utc": datetime.now(timezone.utc).isoformat(), "product_version": frozen_version,
         "source_commit": evaluation_commit, "training_source_commit": training_source_commit,
         "engine_version": "oreblocks==0.6.6",
         "generator_version": GENERATOR_VERSION, "split_sha256": split_hash,
         "training_data_sha256": contract["training_data_sha256"],
         "feature_contract_sha256": contract["feature_contract_sha256"],
-        "training_receipt_sha256": hashlib.sha256(
-            (data_run / "ensemble-receipt.json").read_bytes(),
-        ).hexdigest(),
+        "training_receipt_sha256": training_receipt_sha256,
         "checkpoint_sha256": [row["checkpoint_sha256"] for row in receipt["members"]],
         "inference_cap_seconds_per_case": INFERENCE_CAP_SECONDS,
         "cases": cases,
@@ -308,6 +382,10 @@ def evaluate(args: argparse.Namespace) -> int:
         "interpretation": "Synthetic held-out schedules only; no product-case or operating-mine claim.",
     }
     _atomic_json(output, result)
+    ledger["status"] = "complete"
+    ledger["completed_at_utc"] = datetime.now(timezone.utc).isoformat()
+    ledger["result_sha256"] = hashlib.sha256(output.read_bytes()).hexdigest()
+    _atomic_json(ledger_path, ledger)
     print(f"synthetic frontier evaluation written to {output}; cases={len(cases)}; counts={counts}")
     has_unavailable_case = any(row["status"] in {"failed", "unavailable"} for row in cases)
     return 2 if len(cases) != len(manifest["test"]) or has_unavailable_case else 0

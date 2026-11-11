@@ -105,6 +105,12 @@ The readiness document records the product version, digest of the contract catal
 
 The catalog also pins schema versions, owners, example documents, producer and consumer checks, missing-data behavior, model inputs and outputs, and swap-test status. A schema change must be reflected in the catalog and readiness digest. This makes the boundary auditable across the Python bake, stored JSON, and TypeScript replay. A catalog mismatch or stale digest blocks the gate rather than being silently accepted. The snapshot's available state means the listed artifact exists and meets its contract; scientific interpretation still depends on the study design, provenance, and limitations stated in this report.
 
+\subsection{Frozen evaluation and replay receipt}
+\label{sec:data-frontier-release}
+The frontier release receipt binds a candidate replay to one product version, engine version, evaluation source commit, training source commit, ordered set of five checkpoint hashes, feature-contract digest, split digest, and baseline case-index digest. Its case array must contain exactly the thirteen registered product cases in index order. Each row preserves the shared source and model identity plus one of four outcomes: complete, partial, failed, or unavailable. A complete or partial row carries the digest of its emitted trace; a failed or unavailable row carries a nonempty reason. The summary counts are recomputed from those rows. This representation makes omission visible and prevents a successful subset from standing in for the declared experiment.
+
+The receipt has two validation layers. JSON Schema constrains required fields, digest syntax, status-dependent fields, and the fixed case count. The Python validator then checks cross-row invariants such as matching versions, commits, checkpoint identity, case membership, and status totals. Neither layer establishes that the model is scientifically useful; they establish that the candidate is internally coherent and traceable to the stated inputs. In the current candidate, the receipt is absent because the one-shot synthetic evaluation output was lost during final serialization. The split is recorded as consumed, so no empirical conclusion or product-case replay is inferred from that attempt. This missing record blocks any release that claims the new policy.
+
 \section{System architecture}
 \label{sec:software-architecture}
 \subsection{Deterministic case pipeline}
