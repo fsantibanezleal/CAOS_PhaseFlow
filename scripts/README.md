@@ -58,3 +58,9 @@ a case whose output was lost is marked unavailable and is never rerun. The ledge
 training receipt, checkpoints, and source commits, so a different run name cannot reopen the same partition.
 Product-case rows carry an assembled-instance SHA-256 and paired per-method NPV/runtime evidence; only
 synthetic twins retain per-block schedules. Neither evaluation exports any MineLib block schedule to the repository.
+
+`diagnose_frontier_validation.py --data-root <external-run>` performs a descriptive replay of the frozen five-member
+ensemble on the checkpoint-selection validation split only. It checks the training source and checkpoint hashes,
+independently validates each schedule, and refuses to overwrite an existing diagnostic. Its output is post-selection
+evidence, not a test metric; it never opens synthetic test or product cases. The state-conditioned policy manuscript's
+`build_figures.py` reads the frozen training record and this validation diagnostic to generate its vector figures.

@@ -65,6 +65,13 @@
       "kind": "manuscript",
       "version": "0.01",
       "covers": ["BS-1"]
+    },
+    {
+      "title": "A State-Conditioned Feasible-Frontier Policy for Open-Pit Scheduling: Design, Feasibility, and Training Evidence",
+      "kind": "manuscript",
+      "version": "0.01",
+      "concept_doi": null,
+      "covers": ["BS-2"]
     }
   ]
 }
