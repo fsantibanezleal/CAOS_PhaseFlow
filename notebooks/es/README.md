@@ -31,6 +31,10 @@ El notebook de nivel 3 ejecuta replanificación determinista por escenario, como
 - 04-learned-surrogates/02-cross-case-validation.ipynb : nivel 2: comparar razones pareadas de valor en cuatro arquetipos generados e inspeccionar la regla en particiones de validación y limpias. Sin nivel 3: el dossier evalúa el surrogate propio y no identifica una implementación aprendida de referencia ejecutable.
 - 04-learned-surrogates/03-frontier-state-and-feasibility-mask.ipynb : nivel 2: generar un grafo con semilla, inspeccionar máscaras de precedencia y dos recursos, reproducir una puntuación transparente y validar objetivo y cobertura de forma independiente.
 - 04-learned-surrogates/04-frontier-data-splits-and-normalization.ipynb : nivel 2: reconstruir particiones sintéticas congeladas por semilla y familia, ajustar y resumir un normalizador solo con entrenamiento e inspeccionar sensibilidad sin usar filas reservadas.
+- 04-learned-surrogates/05-frontier-policy-mechanics.ipynb : nivel 4: recorrer variables con nombre, normalización solo de entrenamiento, máscaras de precedencia y capacidad condicionadas por el estado, reproducción determinista y validación independiente del plan.
+- 04-learned-surrogates/06-frontier-training-evidence.ipynb : nivel 4: reconstruir la partición congelada, procesar todos los registros guardados de entrenamiento y validación e interpretar la cobertura escasa sin presentar la validación reutilizada como prueba.
+
+Las dos lecciones de nivel 4 cubren el método condicionado por el estado desde su contrato de planificación ejecutable hasta los registros empíricos disponibles. La lección de validación conserva todos los casos vacíos y de baja cobertura, y aclara que no hay resultados independientes de prueba ni de casos del producto.
 
 ## Tema 05: operabilidad
 

@@ -31,6 +31,10 @@ The level-3 lesson executes deterministic scenario re-planning as described in t
 - 04-learned-surrogates/02-cross-case-validation.ipynb : level 2: compare paired plan-value ratios across four generated archetypes and inspect the guard on held-out and clean splits. No level 3: PhaseFlow's dossier evaluates its own surrogate and names no runnable learned CPIT reference implementation for this case.
 - 04-learned-surrogates/03-frontier-state-and-feasibility-mask.ipynb : level 2: generate a seeded graph, inspect precedence and two-resource action masks, replay a transparent score, and independently validate coverage and objective.
 - 04-learned-surrogates/04-frontier-data-splits-and-normalization.ipynb : level 2: rebuild the frozen synthetic seed/family partitions, fit and hash a train-only normalizer, and inspect family and size sensitivity without using held-out records.
+- 04-learned-surrogates/05-frontier-policy-mechanics.ipynb : level 4: trace named features, train-only normalization, state-dependent precedence and capacity masks, deterministic replay, and independent schedule validation.
+- 04-learned-surrogates/06-frontier-training-evidence.ipynb : level 4: rebuild the frozen partition, process all saved training and validation records, and interpret sparse coverage without presenting reused validation as a test.
+
+The two level-4 lessons cover the state-conditioned method from its executable scheduling contract through its surviving empirical records. The validation lesson preserves all empty and low-coverage cases and states that no independent test or product-case result exists.
 
 ## Topic 05: operability
 

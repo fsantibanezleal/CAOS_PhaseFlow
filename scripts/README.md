@@ -62,5 +62,7 @@ synthetic twins retain per-block schedules. Neither evaluation exports any MineL
 `diagnose_frontier_validation.py --data-root <external-run>` performs a descriptive replay of the frozen five-member
 ensemble on the checkpoint-selection validation split only. It checks the training source and checkpoint hashes,
 independently validates each schedule, and refuses to overwrite an existing diagnostic. Its output is post-selection
-evidence, not a test metric; it never opens synthetic test or product cases. The state-conditioned policy manuscript's
-`build_figures.py` reads the frozen training record and this validation diagnostic to generate its vector figures.
+evidence, not a test metric; it never opens synthetic test or product cases. Sanitized training metadata and the
+validation-only diagnostic are preserved under `docs/design/features/learned-frontier/records/`; the original receipt
+and model weights remain in their external roots. The state-conditioned policy manuscript's `build_figures.py` reads
+the committed records by default, so its vector figures can be reproduced without local machine paths.
