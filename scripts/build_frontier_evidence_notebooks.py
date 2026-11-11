@@ -11,7 +11,12 @@ import nbformat as nbf
 ROOT = Path(__file__).resolve().parents[1]
 TOPIC = "04-learned-surrogates"
 PACKAGES = ["oreblocks==0.6.6", "numpy==2.5.1", "matplotlib==3.11.2"]
-SOURCE = ["https://arxiv.org/abs/1707.06347", "https://github.com/fsantibanezleal/CAOS_PhaseFlow"]
+SOURCE = [
+    "https://arxiv.org/abs/1707.06347",
+    "https://arxiv.org/abs/1412.6980",
+    "https://doi.org/10.1287/inte.2013.0731",
+    "https://github.com/fsantibanezleal/CAOS_PhaseFlow",
+]
 RECORDS = "docs/design/features/learned-frontier/records"
 PIP_LINE = "python -m pip install oreblocks==0.6.6 numpy==2.5.1 matplotlib==3.11.2"
 
@@ -227,7 +232,7 @@ CODE = {
             "# Import pinned packages and the product's public frontier primitives.\nfrom pathlib import Path\nimport sys\nimport numpy as np\nimport matplotlib.pyplot as plt\nROOT = Path.cwd()\nsys.path.insert(0, str(ROOT / 'data-pipeline'))\nfrom pipeline.model.frontier_data import generate_graph, FEATURE_NAMES\nfrom pipeline.model.frontier_policy import FeatureNormalizer, feasible_frontier, precedence_frontier, replay_frontier_policy, validate_schedule",
             "# Generate separate training graphs and one inspectable decision graph.\ntrain_graphs = [generate_graph(seed, 'benched', 64, periods=8) for seed in range(10_101, 10_111)]\ncase = generate_graph(20_007, 'crosscut', 96, periods=8)\ntrain_matrix = np.vstack([g.node_features for g in train_graphs])\nnormalizer = FeatureNormalizer.fit(train_matrix, FEATURE_NAMES, declared_features=FEATURE_NAMES)\ncase_features = normalizer.transform(case.node_features, FEATURE_NAMES)\nprint({'generator': case.family_parameters, 'features': FEATURE_NAMES, 'shape': case_features.shape, 'normalizer_sha256': normalizer.sha256})\nassert np.isfinite(case_features).all()",
             "# Compare structural eligibility with full-vector resource feasibility at each period.\ninstance = case.instance\nready = precedence_frontier(instance, (), 0)\nfeasible = feasible_frontier(instance, (), 0)\nprint({'period_zero_ready': len(ready), 'period_zero_feasible': len(feasible), 'capacity_removed': len(ready) - len(feasible)})\nassert set(feasible).issubset(ready)",
-            "# Replay a transparent value score through the same feasibility-constrained transition.\nresult = replay_frontier_policy(instance, lambda b, p, a: float(instance.values[b]) if b >= 0 else -1.0, tonnage=case.tonnage)\nindependent_value = validate_schedule(instance, result.assignments)\nassert np.isclose(independent_value, result.npv)\nprint({'assignments': len(result.assignments), 'independent_npv': independent_value, 'stop_reason': result.stopped, 'tonnage_coverage': result.tonnage_coverage, 'positive_value_coverage': result.positive_value_coverage})",
+            "# Replay a transparent value score through the same feasibility-constrained transition.\nscore = lambda b, p, a: float(instance.values[b]) if b >= 0 else -1.0\nresult = replay_frontier_policy(instance, score, tonnage=case.tonnage)\nindependent_value = validate_schedule(instance, result.assignments)\nassert np.isclose(independent_value, result.npv)\nprint({'assignments': len(result.assignments), 'independent_npv': independent_value, 'stop_reason': result.stopped, 'tonnage_coverage': result.tonnage_coverage, 'positive_value_coverage': result.positive_value_coverage})",
             "# Reconstruct each decision's candidate counts from its prior assignment prefix.\nprefix = []\nready_counts = []\nfeasible_counts = []\nfor assignment in result.assignments:\n    ready_counts.append(len(precedence_frontier(instance, prefix, assignment.period)))\n    feasible_counts.append(len(feasible_frontier(instance, prefix, assignment.period)))\n    assert assignment.block in feasible_frontier(instance, prefix, assignment.period)\n    prefix.append(assignment)\nassert len(prefix) == len(result.assignments)",
             "# Plot action-set contraction for the replayed states.\nfig, ax = plt.subplots(figsize=(8, 4.5), constrained_layout=True)\nsteps = np.arange(1, len(ready_counts) + 1)\nax.plot(steps, ready_counts, marker='o', label='Precedence ready')\nax.plot(steps, feasible_counts, marker='s', label='Resource feasible')\nax.set(xlabel='Decision state', ylabel='Available block actions', title='Capacity filters the precedence frontier')\nax.grid(alpha=.25)\nax.legend(frameon=False)\nplt.show()",
             "# Compare both resource loads with their own period capacities.\nusage = np.zeros_like(instance.capacities)\nfor assignment in result.assignments:\n    usage[assignment.period] += instance.resources[assignment.block]\nfig, ax = plt.subplots(figsize=(8, 4.5), constrained_layout=True)\nperiods = np.arange(1, len(instance.capacities) + 1)\nfor resource, name in enumerate(('Mining', 'Processing')):\n    ax.plot(periods, usage[:, resource], marker='o', label=f'{name} use')\n    ax.plot(periods, instance.capacities[:, resource], linestyle='--', label=f'{name} limit')\nax.set(xlabel='Period', ylabel='Resource units', title='The schedule respects each capacity dimension')\nax.grid(alpha=.25)\nax.legend(frameon=False, ncol=2)\nplt.show()",
@@ -247,7 +252,7 @@ CODE = {
             "# Importa paquetes fijados y primitivas públicas de la frontera del producto.\nfrom pathlib import Path\nimport sys\nimport numpy as np\nimport matplotlib.pyplot as plt\nROOT = Path.cwd()\nsys.path.insert(0, str(ROOT / 'data-pipeline'))\nfrom pipeline.model.frontier_data import generate_graph, FEATURE_NAMES\nfrom pipeline.model.frontier_policy import FeatureNormalizer, feasible_frontier, precedence_frontier, replay_frontier_policy, validate_schedule",
             "# Genera grafos separados de entrenamiento y un grafo de decisión inspeccionable.\ntrain_graphs = [generate_graph(seed, 'benched', 64, periods=8) for seed in range(10_101, 10_111)]\ncase = generate_graph(20_007, 'crosscut', 96, periods=8)\ntrain_matrix = np.vstack([g.node_features for g in train_graphs])\nnormalizer = FeatureNormalizer.fit(train_matrix, FEATURE_NAMES, declared_features=FEATURE_NAMES)\ncase_features = normalizer.transform(case.node_features, FEATURE_NAMES)\nprint({'generator': case.family_parameters, 'features': FEATURE_NAMES, 'shape': case_features.shape, 'normalizer_sha256': normalizer.sha256})\nassert np.isfinite(case_features).all()",
             "# Compara la elegibilidad estructural con la factibilidad del vector completo de recursos.\ninstance = case.instance\nready = precedence_frontier(instance, (), 0)\nfeasible = feasible_frontier(instance, (), 0)\nprint({'period_zero_ready': len(ready), 'period_zero_feasible': len(feasible), 'capacity_removed': len(ready) - len(feasible)})\nassert set(feasible).issubset(ready)",
-            "# Reproduce una puntuación transparente mediante la misma transición restringida por factibilidad.\nresult = replay_frontier_policy(instance, lambda b, p, a: float(instance.values[b]) if b >= 0 else -1.0, tonnage=case.tonnage)\nindependent_value = validate_schedule(instance, result.assignments)\nassert np.isclose(independent_value, result.npv)\nprint({'assignments': len(result.assignments), 'independent_npv': independent_value, 'stop_reason': result.stopped, 'tonnage_coverage': result.tonnage_coverage, 'positive_value_coverage': result.positive_value_coverage})",
+            "# Reproduce una puntuación transparente mediante la misma transición restringida por factibilidad.\nscore = lambda b, p, a: float(instance.values[b]) if b >= 0 else -1.0\nresult = replay_frontier_policy(instance, score, tonnage=case.tonnage)\nindependent_value = validate_schedule(instance, result.assignments)\nassert np.isclose(independent_value, result.npv)\nprint({'assignments': len(result.assignments), 'independent_npv': independent_value, 'stop_reason': result.stopped, 'tonnage_coverage': result.tonnage_coverage, 'positive_value_coverage': result.positive_value_coverage})",
             "# Reconstruye los conteos de cada decisión usando el prefijo previo de asignaciones.\nprefix = []\nready_counts = []\nfeasible_counts = []\nfor assignment in result.assignments:\n    ready_counts.append(len(precedence_frontier(instance, prefix, assignment.period)))\n    feasible_counts.append(len(feasible_frontier(instance, prefix, assignment.period)))\n    assert assignment.block in feasible_frontier(instance, prefix, assignment.period)\n    prefix.append(assignment)\nassert len(prefix) == len(result.assignments)",
             "# Grafica cómo se reduce el conjunto de acciones factibles durante la reproducción.\nfig, ax = plt.subplots(figsize=(8, 4.5), constrained_layout=True)\nsteps = np.arange(1, len(ready_counts) + 1)\nax.plot(steps, ready_counts, marker='o', label='Lista por precedencia')\nax.plot(steps, feasible_counts, marker='s', label='Factible por recursos')\nax.set(xlabel='Estado de decisión', ylabel='Acciones de bloque disponibles', title='La capacidad filtra la frontera')\nax.grid(alpha=.25)\nax.legend(frameon=False)\nplt.show()",
             "# Compara cada carga de recursos con su propia capacidad por período.\nusage = np.zeros_like(instance.capacities)\nfor assignment in result.assignments:\n    usage[assignment.period] += instance.resources[assignment.block]\nfig, ax = plt.subplots(figsize=(8, 4.5), constrained_layout=True)\nperiods = np.arange(1, len(instance.capacities) + 1)\nfor resource, name in enumerate(('Minería', 'Procesamiento')):\n    ax.plot(periods, usage[:, resource], marker='o', label=f'Uso de {name}')\n    ax.plot(periods, instance.capacities[:, resource], linestyle='--', label=f'Límite de {name}')\nax.set(xlabel='Período', ylabel='Unidades del recurso', title='El plan respeta cada dimensión de capacidad')\nax.grid(alpha=.25)\nax.legend(frameon=False, ncol=2)\nplt.show()",
@@ -299,6 +304,64 @@ def build(language: str, lesson: str) -> None:
             "evidence": "El registro conserva deliberadamente cada semilla y tamaño de grafo en vez de distribuir solo una tabla agregada. Así, el lector puede auditar cruces, reproducir cuantiles, inspeccionar valores extremos y detectar una fila ausente sin adivinar cómo se calculó el resumen. Los hashes vinculan el resumen público con su recibo original externo y la partición congelada. El diagnóstico basta para sus cálculos descriptivos, mientras que los checkpoints privados no son necesarios para reproducirlos.\n\nEl resumen omite deliberadamente las trayectorias estado-acción y los pesos entrenados. El lector puede verificar la pertenencia de los registros, recalcular los valores descriptivos publicados e inspeccionar la variación entre casos, pero no reconstruir las elecciones de la política solo con este registro compacto. Esa distinción importa para la reproducibilidad: la lección reproduce el análisis de la evidencia conservada, no la evaluación perdida. El registro de particiones también muestra que volver a reproducir la validación repetiría datos de selección en vez de generar evidencia nueva.",
         },
     }
+    depth_sections = {
+        "en": {
+            "mechanics": """### Sensitivity and limits
+
+The capacity sweep above varies the full capacity matrix by one declared multiplier. This is a local sensitivity check, not a robustness study. To inspect which resource drives a decision, vary mining and processing columns separately while holding all other columns fixed; then repeat with a small factorial grid to expose interactions. Preserve the original instance and create a new immutable variant for each run. Record the multiplier, changed columns, stopping reason, objective, tonnage coverage, positive-value coverage, and validator result in a tidy case table. Plot each output against the varied parameter and retain the zero-action cases. If a metric changes discontinuously, inspect the action trace around the threshold: precedence can make a small resource change unlock a chain of blocks.
+
+Repeat the exercise across several graph families and sizes before describing a pattern. Use a fixed seed set for paired comparisons and separate the seed set used to tune a policy from the set used to summarize its behavior. Report the full distribution and the number of attempted cases, including failed generations and validator rejections. A single generated graph cannot estimate uncertainty or establish stability. This notebook's graph is deliberately synthetic, and the deterministic score is a teaching probe. Neither the sweep nor the schedule validator measures geological realism, operating cost, reserve confidence, or mine-plan acceptability. Those questions need domain data, an approved economic model, and independent review.
+
+For a useful diagnostic table, retain one row for every combination of graph, resource variant, and policy configuration. Store the raw capacity vector as well as the multiplier so another analyst can reconstruct the experiment. Compare decision traces to identify where the first action divergence occurs; aggregate objective differences alone can conceal a changed period assignment or a binding predecessor. Check the validator against deliberately perturbed schedules, including duplicate blocks, reversed precedence, and over-capacity assignments, and confirm that each violation is reported. These are software fault checks, not evidence that the model generalizes. Keep development cases separate from any later frozen assessment and log all protocol changes before inspecting its outcomes. Also inspect whether ties in the score are resolved deterministically, whether stop actions can be selected when blocks remain feasible, and whether discount periods follow the declared indexing convention. Small contract mismatches can change the schedule while every individual assignment still appears legal. Save the complete configuration with each trace so a reviewer can tell whether two runs differ because of capacity, scoring, or an implementation version.
+
+### Use with your own data
+
+Start with a versioned input contract. Keep one stable block identifier per row; declare units for value, tonnage, mining capacity, processing capacity, and discount period; and store provenance for each source field. Validate finite values, nonnegative resource use, unique identifiers, acyclic precedence edges, and complete capacity rows before constructing a graph. Resolve duplicated rows and missing fields through documented rules rather than silent imputation. Keep economic labels and outcome-derived features out of model inputs, and preserve the mapping back to source records in a controlled environment.
+
+Build partitions by deposit or another independent geological grouping when that matches the intended use. Freeze the manifest before model selection, fit feature scaling only on training rows, and reuse its feature order and digest at inference. Run a simple transparent baseline on the same cases and retain paired per-case outputs. For every policy, persist the input hash, configuration, seed, selected checkpoint, action trace, stop reason, validator findings, objective, and both coverage measures. Write each case atomically so an interrupted evaluation is resumable without rerunning completed cases. Have an independent reviewer check the validator and unit conversions before any results guide a real planning decision.""",
+            "evidence": """### Sensitivity and limits
+
+Begin by checking whether the descriptive summary is driven by a small number of cases. Recompute medians, quartiles, minimum and maximum, nonempty fraction, and both coverage measures for each graph family and size. Plot the empirical distribution with zeros and negative values retained. A bootstrap over these 200 rows would quantify variation conditional on this reused validation sample; it would not remove checkpoint-selection bias or produce an independent test estimate. State the resampling unit and seed if such a diagnostic is added, and do not call it a confidence interval for future deposits.
+
+The five training histories also need to be read as resource-bounded records. Compare each member's transition count, stop reason, validation cadence, selected checkpoint, and final checkpoint. A member that exhausts a CPU cap can still have a valid receipt, but completion alone says nothing about schedule usefulness. Missing or malformed history entries should fail the integrity check rather than be filled from another member. The case-level validator flag answers whether the stored assignment satisfies the implemented constraints; it does not certify the input assumptions or economic model. The current records contain no independent comparator, no untouched held-out outcomes, and no operationally sourced deposit data. Preserve those absences in every chart caption and summary.
+
+Read every aggregate together with its denominator. A mean based on 200 rows is not meaningful if some rows were silently dropped, so reconcile case IDs against the frozen manifest before plotting. Check duplicate IDs, missing fields, non-finite values, and unexpected split membership. For category summaries, report counts as well as percentages because a small subgroup can otherwise look disproportionately persuasive. Keep plots descriptive and include the data-processing code alongside the source rows. If a later protocol introduces weighting or exclusions, version the rule, show unweighted results too, and preserve a record of which cases changed status. Do not tune a decision threshold on these reused observations and then describe the resulting score as an independent performance estimate. When a metric appears unusually favorable, trace it back to the exact per-case rows and confirm that its numerator and denominator use the same population. Preserve the original summary as a separate artifact when changing an analysis, then label the revised view with its code version and inputs. This permits readers to distinguish a faithful reproduction from a new exploratory calculation. Exploratory calculations can be useful for finding data defects, but once they influence a model choice they become part of model selection and must be disclosed in the next protocol.
+
+### Use with your own data
+
+Before collecting results, define a stable case schema with an opaque case ID, source-data digest, deposit family, size, split, seed, configuration digest, checkpoint digest, and explicit outcome fields. Freeze the split and protocol in a reviewed versioned document. Keep a new test partition disjoint from all tuning and validation cases, and write a durable ledger row before processing each case. Persist the result for that case immediately, including failures and validator messages; a restart must skip completed rows by hash, not recompute them implicitly. Never replace an unavailable test outcome with a validation result.
+
+Choose a baseline before opening the test outcomes and run both methods on identical inputs and resource assumptions. Recompute objective and coverage from the canonical schedule and original case, then compare paired results using a predeclared analysis. Track missingness, warnings, exclusions, and code versions alongside metrics. Publish sufficient sanitized per-case data to reproduce every aggregate, while keeping restricted source data and weights under their access controls. Separate software validation, scientific evidence, operational acceptance, and release approval. This notebook demonstrates record processing only; your own data requires new provenance, protocol approval, and independent evaluation before any empirical claim.""",
+        },
+        "es": {
+            "mechanics": """### Sensibilidad y límites
+
+El barrido anterior varía toda la matriz de capacidades mediante un multiplicador declarado. Es una comprobación local de sensibilidad, no un estudio de robustez. Para identificar qué recurso afecta una decisión, varía por separado las columnas de minería y procesamiento, manteniendo las demás fijas; luego repite con una pequeña grilla factorial para detectar interacciones. Conserva la instancia original y crea una variante inmutable por ejecución. Registra el multiplicador, las columnas modificadas, la razón de detención, el objetivo, ambas coberturas y el resultado del validador en una tabla por caso. Grafica cada salida frente al parámetro y conserva los casos sin acciones. Si una métrica cambia abruptamente, inspecciona la traza alrededor del umbral: la precedencia puede hacer que un cambio pequeño de recursos libere una cadena de bloques.
+
+Repite el ejercicio con varias familias y tamaños de grafo antes de describir un patrón. Usa el mismo conjunto de semillas para comparaciones pareadas y separa las semillas usadas para ajustar una política de las usadas para resumir su comportamiento. Informa la distribución completa y la cantidad de casos intentados, incluidas generaciones fallidas y rechazos del validador. Un solo grafo no estima incertidumbre ni demuestra estabilidad. El grafo de esta lección es sintético y la puntuación determinista es una sonda didáctica. Ni el barrido ni el validador miden realismo geológico, costos operacionales, confianza de reservas o aceptabilidad del plan. Esas preguntas requieren datos del dominio, un modelo económico aprobado y revisión independiente.
+
+Para una tabla diagnóstica útil, conserva una fila por cada combinación de grafo, variante de recursos y configuración de política. Guarda el vector de capacidades original junto al multiplicador para que otro analista pueda reconstruir el experimento. Compara trazas para identificar la primera decisión divergente; las diferencias agregadas de objetivo pueden ocultar un cambio de período o un requisito limitante. Prueba el validador con planes alterados deliberadamente, incluidos bloques duplicados, precedencia invertida y asignaciones sobre capacidad, y confirma que informe cada infracción. Son verificaciones de software, no evidencia de generalización. Mantén los casos de desarrollo separados de cualquier evaluación congelada posterior y registra los cambios de protocolo antes de inspeccionar sus resultados.
+
+### Uso con datos propios
+
+Comienza con un contrato de entrada versionado. Mantén un identificador estable por bloque; declara unidades de valor, tonelaje, capacidad minera, capacidad de procesamiento y período de descuento; y conserva la procedencia de cada campo fuente. Valida valores finitos, consumos no negativos, identificadores únicos, aristas acíclicas y filas completas de capacidad antes de construir el grafo. Resuelve duplicados y datos faltantes mediante reglas documentadas, no imputaciones silenciosas. Evita variables derivadas de resultados y etiquetas económicas como entradas, y conserva el vínculo con registros fuente en un entorno controlado.
+
+Construye particiones por yacimiento u otra agrupación geológica independiente cuando corresponda al uso esperado. Congela el manifiesto antes de seleccionar el modelo, ajusta el escalado solo con entrenamiento y reutiliza orden y hash de variables durante la inferencia. Ejecuta una línea base transparente sobre los mismos casos y conserva resultados pareados. Por política, persiste hash de entrada, configuración, semilla, checkpoint elegido, traza de acciones, razón de detención, hallazgos del validador, objetivo y ambas coberturas. Escribe cada caso de forma atómica para reanudar una evaluación interrumpida sin repetir los casos terminados. Solicita revisión independiente del validador y de las conversiones de unidades antes de usar resultados en una decisión real de planificación.""",
+            "evidence": """### Sensibilidad y límites
+
+Primero comprueba si el resumen descriptivo depende de pocos casos. Recalcula medianas, cuartiles, mínimo y máximo, fracción no vacía y ambas coberturas por familia y tamaño de grafo. Grafica la distribución empírica conservando ceros y valores negativos. Un remuestreo de estas 200 filas cuantificaría variación condicionada a esta muestra de validación reutilizada; no elimina el sesgo de selección del checkpoint ni produce una estimación de prueba independiente. Declara la unidad y semilla del remuestreo si agregas ese diagnóstico, y no lo llames intervalo de confianza para futuros yacimientos.
+
+Las cinco historias de entrenamiento también deben leerse como registros con recursos limitados. Compara por miembro cantidad de transiciones, razón de término, frecuencia de validación, checkpoint seleccionado y checkpoint final. Un miembro que agota un límite de CPU puede tener un recibo válido, pero completar el trabajo no demuestra que el plan sea útil. Las entradas ausentes o malformadas deben fallar la comprobación de integridad, no completarse desde otro miembro. El indicador del validador por caso responde si la asignación almacenada satisface las restricciones implementadas; no certifica los supuestos de entrada ni el modelo económico. Estos registros carecen de comparador independiente, resultados de prueba intactos y datos de yacimientos operacionales. Conserva esas ausencias en cada título, pie de figura y resumen.
+
+Interpreta cada agregado junto con su denominador. Una media de 200 filas deja de ser interpretable si se omitieron filas, por eso concilia los IDs con el manifiesto antes de graficar. Busca IDs duplicados, campos ausentes, valores no finitos y pertenencia inesperada a particiones. Para resúmenes por categoría, informa conteos y porcentajes: un grupo pequeño puede parecer más convincente de lo que es. Mantén las gráficas descriptivas e incluye el código de procesamiento junto a las filas fuente. Si un protocolo futuro introduce ponderaciones o exclusiones, versiona la regla, presenta también resultados sin ponderar y conserva qué casos cambiaron de estado. No ajustes umbrales de decisión usando estas observaciones reutilizadas para luego presentar el resultado como una estimación de desempeño independiente.
+
+### Uso con datos propios
+
+Antes de recopilar resultados, define un esquema de casos estable con ID opaco, digest de datos fuente, familia del yacimiento, tamaño, partición, semilla, digest de configuración, digest del checkpoint y resultados explícitos. Congela particiones y protocolo en un documento versionado y revisado. Mantén una partición de prueba nueva, disjunta de los casos de ajuste y validación, y escribe una fila durable de registro antes de procesar cada caso. Persiste el resultado inmediatamente, incluso fallas y mensajes del validador; al reiniciar, omite filas completadas según su hash, sin recalcularlas implícitamente. Nunca reemplaces un resultado de prueba no disponible por uno de validación.
+
+Elige la línea base antes de abrir resultados de prueba y ejecuta ambos métodos con entradas y supuestos de recursos idénticos. Recalcula objetivo y cobertura desde el plan canónico y el caso original; compara resultados pareados mediante un análisis predefinido. Registra datos faltantes, advertencias, exclusiones y versiones junto con las métricas. Publica datos por caso sanitizados suficientes para reproducir los agregados, y conserva fuentes restringidas y pesos bajo sus controles de acceso. Separa validación del software, evidencia científica, aceptación operacional y aprobación de publicación. Esta lección solo demuestra procesamiento de registros; los datos propios requieren procedencia, protocolo aprobado y evaluación independiente antes de sustentar afirmaciones empíricas.""",
+        },
+    }
     heading_for_addition = (
         "Method"
         if lesson == "mechanics" and language == "en"
@@ -311,6 +374,11 @@ def build(language: str, lesson: str) -> None:
     for index, (heading, prose) in enumerate(spec["sections"]):
         if heading == heading_for_addition:
             spec["sections"][index] = (heading, prose + "\n\n" + additions[language][lesson])
+            break
+    summary_heading = "Summary" if language == "en" else "Resumen"
+    for index, (heading, prose) in enumerate(spec["sections"]):
+        if heading == summary_heading:
+            spec["sections"][index] = (heading, prose + "\n\n" + depth_sections[language][lesson])
             break
     data = (
         []
@@ -374,6 +442,18 @@ def build(language: str, lesson: str) -> None:
         cells[-1].execution_count = code_number
 
     for idx, (heading, prose) in enumerate(spec["sections"]):
+        equation = None
+        if idx == 3:
+            equation = {
+                "en": {
+                    "mechanics": r"$$E_t=\{b\notin A:P_b\subseteq\{i:p_i\leq t\}\}.$$\n\n$$F_t=\{b\in E_t:r_b\leq C_t-u_t\}.$$\n\nThe first set enforces prerequisites; the second applies every resource limit to residual capacity.".replace("\\n", "\n"),
+                    "evidence": r"$$NPV=\sum_{b\in S}\frac{v_b}{(1+d)^{p_b}}.$$\n\n$$c^+=\frac{\sum_{b\in S}\max(v_b,0)}{\sum_b\max(v_b,0)}.$$\n\nObjective and positive-value coverage answer separate questions, so the records report both.".replace("\\n", "\n"),
+                },
+                "es": {
+                    "mechanics": r"$$E_t=\{b\notin A:P_b\subseteq\{i:p_i\leq t\}\}.$$\n\n$$F_t=\{b\in E_t:r_b\leq C_t-u_t\}.$$\n\nEl primer conjunto impone requisitos; el segundo aplica cada límite a la capacidad residual.".replace("\\n", "\n"),
+                    "evidence": r"$$NPV=\sum_{b\in S}\frac{v_b}{(1+d)^{p_b}}.$$\n\n$$c^+=\frac{\sum_{b\in S}\max(v_b,0)}{\sum_b\max(v_b,0)}.$$\n\nEl objetivo y la cobertura de valor positivo responden preguntas distintas; los registros informan ambas.".replace("\\n", "\n"),
+                },
+            }[language][lesson]
         if idx == 6:
             quantity = "96-block graph" if lesson == "mechanics" else "200 validation records"
             if language == "en":
@@ -381,6 +461,8 @@ def build(language: str, lesson: str) -> None:
             else:
                 prose += f"\n\n**Respuesta:** El ejemplo de {quantity} respalda los cálculos presentados, y su estado solo de validación limita la conclusión."
         cells.append(markdown_cell(f"## {heading}\n\n{prose}"))
+        if equation:
+            cells.append(markdown_cell(equation))
         if idx == 1:
             cells.append(markdown_cell(f"{setup_label}:\n\n```bash\n{PIP_LINE}\n```"))
             setup = codes[0]
@@ -436,6 +518,22 @@ def build(language: str, lesson: str) -> None:
             append_code(codes[6])
             cells.append(markdown_cell(prose_after[language][lesson]))
             append_code(codes[7])
+            sweep_note = {
+                "en": "The capacity sweep holds values, graph edges, feature vectors, and the transparent score fixed. Changes therefore describe this generated instance only. Discounted objective need not move monotonically because blocks may shift between periods. Treat the curve as a local sensitivity diagnostic, not a cross-case result.",
+                "es": "El barrido conserva valores, aristas, variables y puntuación transparente. Los cambios describen solo esta instancia generada. El objetivo descontado no tiene que ser monótono porque los bloques pueden cambiar de período. Interpreta la curva como diagnóstico local, no como resultado entre casos.",
+            }
+            cells.append(markdown_cell(sweep_note[language]))
+            sweep_code = "# Re-run the same score over a declared uniform capacity sweep.\nfrom dataclasses import replace\nfactors = np.array([0.70, 0.85, 1.00, 1.15])\nsweep = []\nfor factor in factors:\n    variant = replace(instance, capacities=instance.capacities * factor)\n    replay = replay_frontier_policy(variant, score, tonnage=case.tonnage)\n    sweep.append((replay.positive_value_coverage, replay.npv))\nprint({'factors': factors.tolist(), 'coverage_npv': sweep})\nfig, ax = plt.subplots(figsize=(8, 4.5), constrained_layout=True)\nax.plot(factors, [row[0] for row in sweep], marker='o')\nax.set(xlabel='Uniform capacity multiplier', ylabel='Positive-value coverage', title='Sensitivity to the resource budget')\nax.grid(alpha=.25)\nplt.show()"
+            if language == "es":
+                sweep_code = sweep_code.replace("# Re-run the same score over a declared uniform capacity sweep.", "# Reproduce la misma puntuación con varios límites uniformes de capacidad.").replace("Uniform capacity multiplier", "Multiplicador uniforme de capacidad").replace("Positive-value coverage", "Cobertura de valor positivo").replace("Sensitivity to the resource budget", "Sensibilidad al presupuesto de recursos")
+            append_code(sweep_code)
+            cells.append(
+                markdown_cell(
+                    "Read this curve as the response of one fixed synthetic graph and score to the declared capacity multipliers. It shows how the resource budget changes positive-value coverage for this example; it does not compare policies or estimate behavior across deposits. The printed table also retains objective values because discounted value may move differently from coverage."
+                    if language == "en"
+                    else "Lee esta curva como la respuesta de un grafo sintético fijo y una puntuación a los multiplicadores declarados. Muestra cómo cambia la cobertura de valor positivo en este ejemplo; no compara políticas ni estima comportamiento entre yacimientos. La tabla impresa también conserva el objetivo porque el valor descontado puede cambiar de forma distinta a la cobertura."
+                )
+            )
         elif lesson == "evidence" and idx == 1:
             append_code(codes[0])
         elif lesson == "evidence" and idx == 3:
@@ -508,16 +606,31 @@ def build(language: str, lesson: str) -> None:
             append_code(codes[5])
             cells.append(markdown_cell(prose_after[language][lesson]))
             append_code(codes[6])
+            distribution_note = {
+                "en": "The objective histogram preserves zeros and negative values rather than centering only the successful cases. Its distribution belongs to a reused checkpoint-selection partition, so it diagnoses the saved run and is not an independent estimate. Read it beside the case-level plot to retain subgroup and outlier context.",
+                "es": "El histograma conserva ceros y valores negativos en vez de centrarse solo en los casos exitosos. Su distribución pertenece a la partición reutilizada para seleccionar checkpoints: diagnostica la ejecución guardada, no da una estimación independiente. Léelo junto al gráfico por caso para conservar contexto de grupos y valores extremos.",
+            }
+            cells.append(markdown_cell(distribution_note[language]))
+            histogram_code = "# Plot every normalized objective with median and zero references.\nfig, ax = plt.subplots(figsize=(8, 4.5), constrained_layout=True)\nax.hist(npv, bins=24, color='#176B87', edgecolor='white')\nax.axvline(0, color='#B84444', linestyle='--', label='Zero objective')\nax.axvline(np.median(npv), color='#D79222', linestyle=':', label='Median')\nax.set(xlabel='Normalized NPV', ylabel='Validation cases', title='Objective distribution on reused validation')\nax.grid(axis='y', alpha=.25)\nax.legend(frameon=False)\nplt.show()"
+            if language == "es":
+                histogram_code = histogram_code.replace("# Plot every normalized objective with median and zero references.", "# Grafica objetivos normalizados con referencias de mediana y cero.").replace("Zero objective", "Objetivo cero").replace("Median", "Mediana").replace("Normalized NPV", "NPV normalizado").replace("Validation cases", "Casos de validación").replace("Objective distribution on reused validation", "Distribución del objetivo en validación reutilizada")
+            append_code(histogram_code)
+            cells.append(
+                markdown_cell(
+                    "The histogram retains every one of the 200 validation objectives, including negative values and zeros. The vertical guides mark zero and the sample median. Its shape describes these saved checkpoint-selection cases only: the partition was reused after checkpoint selection, so this plot is diagnostic and cannot support a held-out performance claim."
+                    if language == "en"
+                    else "El histograma conserva los 200 objetivos de validación, incluidos valores negativos y ceros. Las líneas verticales marcan cero y la mediana de la muestra. Su forma describe solo estos casos guardados de selección de checkpoint: la partición se reutilizó después de seleccionar checkpoints, por lo que la gráfica es diagnóstica y no respalda una afirmación de desempeño en prueba independiente."
+                )
+            )
         if idx == 8:
-            policy = (
-                "Proximal policy optimization" if language == "en" else "Optimización de política proximal"
+            labels = {
+                "en": ["Policy-gradient method", "Adaptive optimizer", "Open-pit scheduling formulation", "Implementation and records"],
+                "es": ["Método de gradiente de política", "Optimizador adaptativo", "Formulación de planificación a cielo abierto", "Implementación y registros"],
+            }
+            references = "\n".join(
+                f"- {label}: {url}" for label, url in zip(labels[language], SOURCE, strict=True)
             )
-            repo = (
-                "PhaseFlow implementation and records"
-                if language == "en"
-                else "Implementación y registros de PhaseFlow"
-            )
-            cells.append(markdown_cell(f"- {policy}: {SOURCE[0]}\n- {repo}: {SOURCE[1]}"))
+            cells.append(markdown_cell(references))
     nb.cells = cells
     out = ROOT / "notebooks" / language / TOPIC / f"{spec['slug']}.ipynb"
     out.parent.mkdir(parents=True, exist_ok=True)
