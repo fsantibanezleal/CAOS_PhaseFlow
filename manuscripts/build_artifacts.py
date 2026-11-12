@@ -39,6 +39,23 @@ STYLE = {
     "pale": "#eeeeee",
 }
 
+METHOD_IMPLEMENTATIONS = {
+    "bench-by-bench": ("pipeline/stages/solve.py::_bench_weights; oreblocks.toposort_schedule", "Top bench is exhausted before the next bench."),
+    "nested-shells": ("pipeline/stages/solve.py::_shell_weights; oreblocks.toposort_schedule", "Twelve revenue-factor shells; inner shells are scheduled first."),
+    "toposort-greedy": ("oreblocks.toposort_schedule", 'weight="greedy"; stable block-index tie break.'),
+    "toposort-gershon": ("oreblocks.toposort_schedule", 'weight="gershon"; stable block-index tie break.'),
+    "toposort-expected": ("oreblocks.toposort_schedule", 'weight="expected" from the tightest single-resource relaxation.'),
+    "exts-two-resource": ("pipeline/stages/solve.py; oreblocks.toposort_schedule", "One expected-time order per resource relaxation; retain the best feasible schedule and the minimum bound."),
+    "shift-local-search": ("oreblocks.improve_schedule", "Seed is the best feasible ExTS order; accept improving shift moves."),
+    "sliding-window": ("oreblocks.sliding_window_schedule", "Window 3; fix 1 period; candidate cap 6000; coverage 1.6; MIP gap 0.03."),
+    "cpitD-local-search": ("oreblocks.exact_local_search", "d_max 180; 16 rounds up to 8000 blocks, otherwise 10; node cap 2000; MIP gap 0.0001; seed 11."),
+    "learned-expected-time": ("pipeline/model/learned.py; pipeline/stages/solve.py", "Five-member ranker; architecture, features, normalization and seeds are versioned in models/expected-time.json."),
+    "destination-toposort": ("pipeline/stages/solve.py; oreblocks.lift_to_pcpsp", "Fix destinations from the PCPSP relaxation, schedule the re-cut with expected-time TopoSort, then lift."),
+    "destination-sliding-window": ("pipeline/stages/solve.py; oreblocks.sliding_window_schedule", "PCPSP re-cut; window 3; fix 1 period; candidate cap 6000; coverage 1.6; MIP gap 0.03."),
+    "destination-local-search": ("oreblocks.exact_destination_local_search", "d_max 160; 16 rounds up to 8000 blocks, otherwise 10; node cap 2000; MIP gap 0.0001; seed 11."),
+    "min-width": ("oreblocks.enforce_min_width", "target width 3; start from the best comparable CPIT plan; retain capacity and precedence."),
+}
+
 
 def load(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
@@ -465,6 +482,27 @@ def build(root: Path) -> None:
     rows.extend([r"\bottomrule\end{longtable}\endgroup"])
     (generated / "method-summary.tex").write_text("\n".join(rows) + "\n", encoding="utf-8")
 
+    if set(method_names) != set(METHOD_IMPLEMENTATIONS):
+        raise SystemExit(
+            "Method implementation map differs from the committed traces: "
+            f"missing={sorted(set(method_names) - set(METHOD_IMPLEMENTATIONS))}, "
+            f"extra={sorted(set(METHOD_IMPLEMENTATIONS) - set(method_names))}"
+        )
+    implementation_rows = [
+        r"\begingroup\scriptsize\setlength{\tabcolsep}{3pt}",
+        r"\begin{longtable}{>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.37\textwidth}}",
+        r"\caption{Source entrypoints and principal fixed controls for every method present in the committed case traces; solver statuses and per-case outcomes remain in the trace matrix.}\label{tab:method-implementation-map}\\",
+        r"\toprule Method & Implementation entrypoint & Principal controls and parameters \\ \midrule\endfirsthead",
+        r"\toprule Method & Implementation entrypoint & Principal controls and parameters \\ \midrule\endhead",
+    ]
+    for name in method_names:
+        source, controls = METHOD_IMPLEMENTATIONS[name]
+        implementation_rows.append(
+            rf"{tex_identifier(name)} & \path{{{source}}} & {tex_escape(controls)} " + r"\\"
+        )
+    implementation_rows.extend([r"\bottomrule\end{longtable}\endgroup"])
+    (generated / "method-implementation-map.tex").write_text("\n".join(implementation_rows) + "\n", encoding="utf-8")
+
     # Preserve the complete case-by-method evidence matrix. A missing method
     # row is represented explicitly; it is never converted into a zero result.
     all_method_names = sorted({m["method"] for trace in traces.values() for m in trace["methods"]})
@@ -495,7 +533,7 @@ def build(root: Path) -> None:
     case_method_rows.extend([r"\bottomrule\end{longtable}\endgroup"])
     (generated / "case-method-outcomes.tex").write_text("\n".join(case_method_rows) + "\n", encoding="utf-8")
 
-    input_paths = [root / "manuscripts/build_artifacts.py", root / "manuscripts/build_contract_reference.py", root / "scripts/build_frontier_manuscript_table.py", root / "notebooks/data/frontier-evaluation-summary.json", root / "docs/contracts/catalog.md", root / "docs/contracts/versions.lock.json", *sorted((root / "docs/contracts/schemas").glob("*.json")), *(root / "models" / name for name in ("training-report.json", "guard-validation.json", "expected-time.json", "learned-failure-modes.json", "surrogate-parity.json", "learned-preview-timing.json")), root / "data/derived/manifests/index.json", *(root / "data/derived" / c["case_id"] / "trace.json" for c in case_rows), root / "docs/design/features/deposit-statistics-guard/proposal.md"]
+    input_paths = [root / "manuscripts/build_artifacts.py", root / "manuscripts/build_contract_reference.py", root / "scripts/build_frontier_manuscript_table.py", root / "data-pipeline/pipeline/stages/solve.py", root / "data-pipeline/pipeline/model/learned.py", root / "notebooks/data/frontier-evaluation-summary.json", root / "docs/contracts/catalog.md", root / "docs/contracts/versions.lock.json", *sorted((root / "docs/contracts/schemas").glob("*.json")), *(root / "models" / name for name in ("training-report.json", "guard-validation.json", "expected-time.json", "learned-failure-modes.json", "surrogate-parity.json", "learned-preview-timing.json")), root / "data/derived/manifests/index.json", *(root / "data/derived" / c["case_id"] / "trace.json" for c in case_rows), root / "docs/design/features/deposit-statistics-guard/proposal.md"]
     output_paths = [*report_fig.glob("*.pdf"), *bs1_fig.glob("*.pdf"), *generated.glob("*.tex"), root / "manuscripts/state-conditioned-frontier-policy/generated_frontier_summary.tex"]
     receipt = {
         "schema": "phaseflow.manuscript-build-receipt/v1",

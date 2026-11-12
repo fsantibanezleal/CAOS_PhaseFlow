@@ -183,15 +183,48 @@ Solver comparisons carry computational limits. A windowed MILP or neighborhood r
 
 The quantitative statements here are derived from the committed case traces, synthetic study files, and generated tables. Those links make each value traceable to its computational source, but they do not turn six independent deposit seeds into evidence about a population of operating mines. When the case results change, the tables, figures, uncertainty summaries, title, and abstract must be recomputed together; no old aggregate should be carried forward as if it described new inputs. The warning rule's independently measured misses remain part of the current evidence and should not be hidden by a later model update.
 \section{Reproducibility}
-Source code, automated validations, model files, derived traces, notebooks, and data contracts are maintained at \href{https://github.com/fsantibanezleal/CAOS_PhaseFlow}{CAOS PhaseFlow}. Python and TypeScript parity fixtures specify the supported computational paths. Synthetic data can be regenerated from the repository. MineLib block files are not redistributed; users must obtain them under source terms and configure an external data directory. Each trace records method versions, scenario, case identity, controls, and result values.
-The synthetic experiment fixes its generator revision, family settings, seed partitions, capacity scenarios, grid dimensions, model architecture, training normalization, and learner seeds in versioned configuration and study reports. A rerun must start from the same repository revision and preserve the partition assignments. The expected-time model can then be retrained from the declared source package and compared with the stored report; the result builder regenerates figures and tables from the trace and study documents. Its hash manifest records the source inputs, output files, and plotting dependency versions, allowing a reader to detect a changed artifact rather than treating a previously generated figure as current.
+Source code, automated validations, model files, derived traces, notebooks, and data contracts are maintained at \href{https://github.com/fsantibanezleal/CAOS_PhaseFlow}{CAOS PhaseFlow}. The numerical baseline in this report is the committed \texttt{0.11.000} case index at \path{data/derived/manifests/index.json}; it was produced from source commit \href{https://github.com/fsantibanezleal/CAOS_PhaseFlow/commit/09583286831d3b4be30dff370cb4691a6cec869d}{\texttt{09583286831d3b4be30dff370cb4691a6cec869d}}. Each case's method outcomes are in \path{data/derived/<case-id>/trace.json}. The synthetic study configuration, split seeds, feature definitions and training report are identified in \path{docs/design/SDD.md}, \path{models/expected-time.json} and \path{models/training-report.json}. MineLib block files are not redistributed; obtain them under their source terms and configure an external data directory. The committed aggregates permit inspection of the reported benchmark but do not reconstruct restricted per-block instances.
+
+From the repository root, run \texttt{python manuscripts/build\_contract\_reference.py --root .} to rebuild the contract tables, \texttt{python manuscripts/build\_artifacts.py --root .} to rebuild shared figures and numeric tables, and \texttt{python scripts/build\_frontier\_manuscript\_table.py --root .} to rebuild the test and product-case summary. To regenerate the baseline case traces, check out the source commit above, configure the pinned pipeline environment and external data root, then run the following command, continuing its arguments on the next display line:
+\begin{quote}\footnotesize
+\texttt{python data-pipeline/run.py all --learned}\\
+\texttt{--jobs 3 --output <external-stage>/data/derived}
+\end{quote}
+Validate that external tree with:
+\begin{quote}\footnotesize
+\texttt{python scripts/check\_artifacts.py}\\
+\texttt{--root <external-stage>/data/derived}\\
+\texttt{--models-dir <external-stage>/models}
+\end{quote}
+This bake is compute-intensive and requires licensed MineLib source files for the two declared cases. From \path{manuscripts/technical-report}, compile with:
+\begin{quote}\footnotesize
+\texttt{latexmk -pdf -interaction=nonstopmode}\\
+\texttt{-halt-on-error -outdir=build main.tex}
+\end{quote}
+The manuscript build receipt lists SHA-256 digests for every source and generated output used by the shared tables and figures. These commands reproduce public derived summaries when their recorded inputs are available; they do not reproduce licensed source data or external model checkpoints.
+
+The expected-time ablations use the frozen deposit-disjoint training and holdout cache. After preparing the pinned precompute environment and external model/cache directories, run:
+\begin{quote}\scriptsize
+\texttt{export CAOS\_MODELS\_ROOT=<external-model-stage>}\\
+\texttt{export PHASEFLOW\_TRAIN\_CACHE=<external-training-cache>}\\
+\texttt{python scripts/train\_learned.py}\\
+\texttt{python scripts/run\_expected\_time\_ablations.py}\\
+\texttt{--output-dir <external-ablation-dir>}
+\end{quote}
+Render the validated output record into the paper table with:
+\begin{quote}\footnotesize
+\texttt{python scripts/render\_expected\_time\_ablations.py}\\
+\texttt{--record <external-ablation-dir>/expected-time-ablations.json}\\
+\texttt{--output manuscripts/bs1-expected-time-policy/generated\_ablations.tex}
+\end{quote}
+The committed table identifies the record by SHA-256; the raw cache and record remain external and must be retained for bit-for-bit regeneration. Its candidate-wise confidence intervals are not paired-difference intervals, as specified in the results section.
 
 The case index points to manifests and traces; the catalog specifies how each document is produced and consumed; readiness binds the catalog digest and product version to the files on disk. A complete reproduction therefore checks the chain rather than opening one JSON file. Licensed block inputs remain in a configured external data root and are not copied into a public archive. Readers without those inputs can inspect the permitted derived results and rerun the synthetic study, but they cannot reconstruct restricted per-block benchmark data from the repository. This is an explicit access boundary rather than an implicit data-cleaning step.
 \section{Conclusions}
 PhaseFlow places feasible construction heuristics, published scheduling methods, mathematical bounds, and learned methods within one traceable benchmark. The expected-time ensemble produces useful schedules on many held-out generated cases, but its lower tail and vein failures preclude a general performance claim. Exact ExTS remains its nearest schedule comparator, and certified bounds remain the reference for optimality gaps. The ensemble is a fast candidate generator for cases where its assumptions hold; it does not replace mathematical certificates or mine-specific validation. The state-conditioned frontier policy completed capped training, a disjoint 500-case synthetic evaluation, and all thirteen registered product evaluations. Its median synthetic NPV and coverage are zero, and it fails on two unsupported product inputs; those measurements document a low-coverage outcome and do not support application-quality claims.
 The report's main conclusion is consequently qualified: the expected-time ranker can generate feasible candidate schedules with competitive value on much of the controlled test suite, while substantial and family-concentrated losses remain. The fixed warning rule does not reliably identify those losses and must remain unavailable. The method's inference advantage does not remove the cost of training, the need for exact evaluation, or the limits of synthetic-to-field transfer.
 
-The results establish a bounded computational study of precedence-constrained scheduling. The expected-time ensemble preserves much of the exact-relaxation ordering's schedule value on the tested synthetic design, but its lower tail, family-specific losses, and warning-rule failures restrict the conclusion. The state-conditioned method has a clear feasibility mechanism and negative post-selection diagnostics, while comparative quality remains unresolved without independent case-level outcomes. Further inference requires a new, independently specified evaluation on data not used to select checkpoints; no conclusion about operational mine performance follows from the current evidence.
+The results establish a bounded computational study of precedence-constrained scheduling. The expected-time ensemble preserves much of the exact-relaxation ordering's schedule value on the tested synthetic design, but its lower tail, family-specific losses, and warning-rule failures restrict the conclusion. The state-conditioned method produced 500 feasible but partial schedules on the disjoint synthetic test: mean normalized NPV was 0.000847 (seed-clustered 95\% interval [0.000525, 0.001270]), with median NPV and positive-value coverage both zero. Its paired mean difference from greedy TopoSort was 0.1862 [0.1618, 0.2098], but the low coverage and negative greedy outcomes prevent interpreting that contrast as useful extraction. On the 13 fixed product cases, 11 schedules were partial and two inputs were unsupported; the policy lost to exact expected-time ordering and most solver-based comparators. The four planned component ablations remain unmeasured, so the contribution of individual design choices is not identified. These findings describe the declared generator and registered cases and do not establish operational mine performance.
 \begin{thebibliography}{99}
 \raggedright
 \bibitem{lerchs1965} H. Lerchs and I. F. Grossmann, ``Optimum design of open-pit mines,'' \emph{Transactions of the Canadian Institute of Mining and Metallurgy}, 58, 47--54, 1965.
@@ -221,7 +254,7 @@ The results establish a bounded computational study of precedence-constrained sc
 \bibitem{goodfellow2016} R. C. Goodfellow and R. Dimitrakopoulos, ``Global optimization of open pit mining complexes with uncertainty,'' \emph{Applied Soft Computing}, 40, 292--304, 2016. doi:10.1016/j.asoc.2015.11.038.
 \bibitem{lamghari2012} A. Lamghari and R. Dimitrakopoulos, ``A diversified tabu search approach for the open-pit mine production scheduling problem with metal uncertainty,'' \emph{European Journal of Operational Research}, 222(3), 642--652, 2012. doi:10.1016/j.ejor.2012.05.029.
 \bibitem{lamghari2016} A. Lamghari and R. Dimitrakopoulos, ``Progressive hedging applied as a metaheuristic to schedule production in open-pit mines accounting for reserve uncertainty,'' \emph{European Journal of Operational Research}, 253(3), 843--855, 2016. doi:10.1016/j.ejor.2016.03.007.
-\bibitem{blom} M. Blom, A. R. Pearce, and P. C\^ot\'e, ``Long-term mine planning with large neighbourhood search,'' arXiv:2403.18213, 2024. doi:10.48550/arXiv.2403.18213.
+\bibitem{blom} M. Blom, A. R. Pearce, and P. C\^ot\'e, ``Long-Term Open-Pit Mine Planning with Large Neighbourhood Search,'' arXiv:2403.18213, 2024. doi:10.48550/arXiv.2403.18213.
 \bibitem{kumar2021} A. Kumar and R. Dimitrakopoulos, ``Production scheduling in industrial mining complexes with incoming new information using tree search and deep reinforcement learning,'' \emph{Applied Soft Computing}, 110, 107644, 2021. doi:10.1016/j.asoc.2021.107644.
 \bibitem{carvalho2023} J. P. de Carvalho and R. Dimitrakopoulos, ``Integrating short-term stochastic production planning updating with mining fleet management in industrial mining complexes: An actor-critic reinforcement learning approach,'' \emph{Applied Intelligence}, 53, 23179--23202, 2023. doi:10.1007/s10489-023-04774-3.
 \bibitem{teichteil2023} F. Teichteil-K\"onigsbuch, G. Poveda, G. Gonz\'alez de Garibay Barba, T. Luchterhand, and S. Thi\'ebaux, ``Fast and robust resource-constrained scheduling with graph neural networks,'' in \emph{Proceedings of the International Conference on Automated Planning and Scheduling}, 33, 623--633, 2023. doi:10.1609/icaps.v33i1.27244.

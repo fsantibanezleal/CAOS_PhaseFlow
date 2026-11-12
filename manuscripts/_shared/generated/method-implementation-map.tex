@@ -1,0 +1,20 @@
+\begingroup\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.36\textwidth}>{\raggedright\arraybackslash}p{0.37\textwidth}}
+\caption{Source entrypoints and principal fixed controls for every method present in the committed case traces; solver statuses and per-case outcomes remain in the trace matrix.}\label{tab:method-implementation-map}\\
+\toprule Method & Implementation entrypoint & Principal controls and parameters \\ \midrule\endfirsthead
+\toprule Method & Implementation entrypoint & Principal controls and parameters \\ \midrule\endhead
+\texttt{bench\allowbreak-by\allowbreak-bench} & \path{pipeline/stages/solve.py::_bench_weights; oreblocks.toposort_schedule} & Top bench is exhausted before the next bench. \\
+\texttt{cpitD\allowbreak-local\allowbreak-search} & \path{oreblocks.exact_local_search} & d\_max 180; 16 rounds up to 8000 blocks, otherwise 10; node cap 2000; MIP gap 0.0001; seed 11. \\
+\texttt{destination\allowbreak-local\allowbreak-search} & \path{oreblocks.exact_destination_local_search} & d\_max 160; 16 rounds up to 8000 blocks, otherwise 10; node cap 2000; MIP gap 0.0001; seed 11. \\
+\texttt{destination\allowbreak-sliding\allowbreak-window} & \path{pipeline/stages/solve.py; oreblocks.sliding_window_schedule} & PCPSP re-cut; window 3; fix 1 period; candidate cap 6000; coverage 1.6; MIP gap 0.03. \\
+\texttt{destination\allowbreak-toposort} & \path{pipeline/stages/solve.py; oreblocks.lift_to_pcpsp} & Fix destinations from the PCPSP relaxation, schedule the re-cut with expected-time TopoSort, then lift. \\
+\texttt{exts\allowbreak-two\allowbreak-resource} & \path{pipeline/stages/solve.py; oreblocks.toposort_schedule} & One expected-time order per resource relaxation; retain the best feasible schedule and the minimum bound. \\
+\texttt{learned\allowbreak-expected\allowbreak-time} & \path{pipeline/model/learned.py; pipeline/stages/solve.py} & Five-member ranker; architecture, features, normalization and seeds are versioned in models/expected-time.json. \\
+\texttt{min\allowbreak-width} & \path{oreblocks.enforce_min_width} & target width 3; start from the best comparable CPIT plan; retain capacity and precedence. \\
+\texttt{nested\allowbreak-shells} & \path{pipeline/stages/solve.py::_shell_weights; oreblocks.toposort_schedule} & Twelve revenue-factor shells; inner shells are scheduled first. \\
+\texttt{shift\allowbreak-local\allowbreak-search} & \path{oreblocks.improve_schedule} & Seed is the best feasible ExTS order; accept improving shift moves. \\
+\texttt{sliding\allowbreak-window} & \path{oreblocks.sliding_window_schedule} & Window 3; fix 1 period; candidate cap 6000; coverage 1.6; MIP gap 0.03. \\
+\texttt{toposort\allowbreak-expected} & \path{oreblocks.toposort_schedule} & weight="expected" from the tightest single-resource relaxation. \\
+\texttt{toposort\allowbreak-gershon} & \path{oreblocks.toposort_schedule} & weight="gershon"; stable block-index tie break. \\
+\texttt{toposort\allowbreak-greedy} & \path{oreblocks.toposort_schedule} & weight="greedy"; stable block-index tie break. \\
+\bottomrule\end{longtable}\endgroup
