@@ -207,7 +207,7 @@ def diagram_split(out: Path):
     ax.text(
         4.95,
         0.35,
-        "Seed and graph-family separation; test partition remains consumed",
+        "Seed and graph-family separation; only the frozen test supports held-out estimates",
         ha="center",
         fontsize=9,
         color=INK,
@@ -232,7 +232,7 @@ def diagram_evidence(out: Path):
     ax.text(
         5,
         0.3,
-        "Independent outcomes are retained; low coverage and unsupported inputs remain release limitations",
+        "Low coverage and unsupported inputs bound the interpretation of these outcomes",
         ha="center",
         fontsize=9,
         color=INK,
@@ -244,20 +244,20 @@ def diagram_failure(out: Path):
     fig, ax = plt.subplots(figsize=(9, 3.2))
     ax.set(xlim=(0, 9), ylim=(0, 3.2))
     ax.axis("off")
-    box(ax, (0.3, 1), 2.2, 1.35, "Sample A", "incomplete record;\nexcluded", color=RED)
-    box(ax, (3.35, 1), 2.2, 1.35, "Sample B", "360 of 500 rows;\nincomplete, excluded", color=GOLD)
-    box(ax, (6.4, 1), 2.2, 1.35, "Disjoint sample C", "500 of 500 rows;\nincluded", color=TEAL)
-    arrow(ax, (2.55, 1.68), (3.3, 1.68))
-    arrow(ax, (5.6, 1.68), (6.35, 1.68))
+    box(ax, (0.3, 1), 2.2, 1.35, "Feasible", "500 / 500 schedules\npass constraints", color=TEAL)
+    box(ax, (3.35, 1), 2.2, 1.35, "Complete", "0 / 500 schedules\nassign every block", color=GOLD)
+    box(ax, (6.4, 1), 2.2, 1.35, "Median coverage", "0 positive-value\ncoverage", color=RED)
+    arrow(ax, (2.55, 1.68), (3.3, 1.68), color=MID)
+    arrow(ax, (5.6, 1.68), (6.35, 1.68), color=MID)
     ax.text(
         4.5,
         0.35,
-        "Only the complete disjoint sample contributes to the held-out estimate",
+        "Feasibility is necessary, but it does not establish useful production coverage",
         ha="center",
         fontsize=9,
         color=INK,
     )
-    save(fig, out, "failure-path")
+    save(fig, out, "outcome-boundary")
 
 
 def plot_validation_history(out: Path, receipt: dict):

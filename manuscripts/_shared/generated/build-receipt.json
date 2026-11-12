@@ -24,7 +24,7 @@
     "models/guard-validation.json": "5d8e0aee189e1ccb1f603efe1fc1ff79e621431dbb542c1c37cb853b538ba23c",
     "models/training-report.json": "a84d23641323683406bd4fe56057944c0252205f0a10f4b217744c56b211cec3",
     "notebooks/data/frontier-evaluation-summary.json": "2978cd919c86cab5213a70865e369731a14d04a30be76541bc3a4d37d8ecac0d",
-    "scripts/build_frontier_manuscript_table.py": "65317268db9fa44850f95ae0b1dd1a958c0fd7300d24390bd79bf4674d460853"
+    "scripts/build_frontier_manuscript_table.py": "75e9ab4c62146c5333d0e71b3adcf5dde202f088ce5aa451304d46110df0e7ce"
   },
   "outputs": {
     "manuscripts/_shared/generated/guard-validation.tex": "caf2138b59f41f59d45f4e5ccb8eef40f28b611dea77f75aae5e63b7b14f2e4e",
