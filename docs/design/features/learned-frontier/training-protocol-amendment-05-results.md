@@ -29,7 +29,7 @@ The 13 registered cases were opened once after the policy and settings were froz
 | Case | Result | Assignments | Positive-value coverage | Tonnage coverage |
 |---|---|---:|---:|---:|
 | ctrl-abundant | partial | 6,336 | 1.0000 | 0.9167 |
-| ctrl-degenerate | failed: one-resource CPIT unsupported | — | — | — |
+| ctrl-degenerate | failed: one-resource CPIT unsupported | n/a | n/a | n/a |
 | kd-declared | partial | 9,460 | 0.5252 | 0.6594 |
 | newman1-published | partial | 1,054 | 0.9978 | 0.9947 |
 | regime-high-discount | partial | 2,542 | 0.6241 | 0.3678 |
@@ -40,7 +40,7 @@ The 13 registered cases were opened once after the policy and settings were froz
 | twin-porphyry-l | partial | 3,716 | 0.5506 | 0.3386 |
 | twin-porphyry-s | partial | 2,542 | 0.6241 | 0.3678 |
 | twin-vein | partial | 4,832 | 0.4052 | 0.3356 |
-| zuck-small-declared | failed: source-backed grade vector unavailable | — | — | — |
+| zuck-small-declared | failed: source-backed grade vector unavailable | n/a | n/a | n/a |
 
 All 11 partial schedules have paired rows for the applicable baseline methods. Frontier NPV exceeded the paired value for bench-by-bench in 11/11 cases, nested-shells in 9/11, greedy TopoSort in 9/11, Gershon in 8/11, and learned expected-time in 2/11. It did not exceed expected-time TopoSort, exact expected-time ordering, shift-local-search, sliding-window, or C-PIT[D] local search in any paired case. These are finite registered cases, not a population sample; no confidence interval across these heterogeneous cases is claimed. The low synthetic coverage and two unsupported inputs remain material limitations even where a case-level NPV is larger.
 
