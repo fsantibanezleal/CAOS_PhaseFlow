@@ -58,6 +58,11 @@ def tex_escape(value: str) -> str:
     return "".join(replacements.get(char, char) for char in value)
 
 
+def tex_identifier(value: str) -> str:
+    """Typeset a trace identifier in monospace with explicit hyphen breakpoints."""
+    return r"\texttt{" + r"\allowbreak-".join(tex_escape(part) for part in value.split("-")) + "}"
+
+
 def file_sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -459,6 +464,36 @@ def build(root: Path) -> None:
         rows.append(f"\\path{{{name}}} & {n_cases} & {median(gaps):.4f} & {median(times):.1f} & {max(times):.1f} " + r"\\")
     rows.extend([r"\bottomrule\end{longtable}\endgroup"])
     (generated / "method-summary.tex").write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    # Preserve the complete case-by-method evidence matrix. A missing method
+    # row is represented explicitly; it is never converted into a zero result.
+    all_method_names = sorted({m["method"] for trace in traces.values() for m in trace["methods"]})
+    case_method_rows = [
+        r"\begingroup\scriptsize\setlength{\tabcolsep}{2.4pt}",
+        r"\begin{longtable}{>{\raggedright\arraybackslash}p{0.16\textwidth}>{\raggedright\arraybackslash}p{0.25\textwidth}r r r r r}",
+        r"\caption{Complete recorded outcomes for every registered case and every method observed in the committed 0.11 benchmark traces; missing method rows are shown explicitly and are not imputed.}\label{tab:case-method-outcomes}\\",
+        r"\toprule Case & Method & Status & \shortstack{NPV\\(case units)} & \shortstack{Bound\\(case units)} & Gap (\%) & Runtime (ms) \\ \midrule\endfirsthead",
+        r"\toprule Case & Method & Status & \shortstack{NPV\\(case units)} & \shortstack{Bound\\(case units)} & Gap (\%) & Runtime (ms) \\ \midrule\endhead",
+    ]
+    for case in case_rows:
+        case_id = case["case_id"]
+        observed = {m["method"]: m for m in traces[case_id]["methods"]}
+        for method_name in all_method_names:
+            result = observed.get(method_name)
+            if result is None:
+                case_method_rows.append(
+                    f"{tex_identifier(case_id)} & {tex_identifier(method_name)} & no row & -- & -- & -- & -- " + r"\\"
+                )
+                continue
+            values = []
+            for key, digits in (("npv", 2), ("bound", 2), ("gapPct", 4), ("runtimeMs", 1)):
+                value = result.get(key)
+                values.append("--" if value is None else f"{float(value):.{digits}f}")
+            case_method_rows.append(
+                f"{tex_identifier(case_id)} & {tex_identifier(method_name)} & recorded & " + " & ".join(values) + " " + r"\\"
+            )
+    case_method_rows.extend([r"\bottomrule\end{longtable}\endgroup"])
+    (generated / "case-method-outcomes.tex").write_text("\n".join(case_method_rows) + "\n", encoding="utf-8")
 
     input_paths = [root / "manuscripts/build_artifacts.py", root / "manuscripts/build_contract_reference.py", root / "scripts/build_frontier_manuscript_table.py", root / "notebooks/data/frontier-evaluation-summary.json", root / "docs/contracts/catalog.md", root / "docs/contracts/versions.lock.json", *sorted((root / "docs/contracts/schemas").glob("*.json")), *(root / "models" / name for name in ("training-report.json", "guard-validation.json", "expected-time.json", "learned-failure-modes.json", "surrogate-parity.json", "learned-preview-timing.json")), root / "data/derived/manifests/index.json", *(root / "data/derived" / c["case_id"] / "trace.json" for c in case_rows), root / "docs/design/features/deposit-statistics-guard/proposal.md"]
     output_paths = [*report_fig.glob("*.pdf"), *bs1_fig.glob("*.pdf"), *generated.glob("*.tex"), root / "manuscripts/state-conditioned-frontier-policy/generated_frontier_summary.tex"]

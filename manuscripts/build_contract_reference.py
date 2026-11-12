@@ -156,6 +156,23 @@ def observed_fields(root: Path, documents: str) -> list[tuple[str, str]]:
     return result
 
 
+def contract_caption(contract_id: str) -> str:
+    descriptions = {
+        "case-index": "registered cases and their manifest references",
+        "case-manifest": "case identity, scenario assumptions, provenance, artifact references and result summaries",
+        "schedule-trace": "case-level methods, measured outcomes, feasibility status, runtime and replay data",
+        "frontier-release": "frozen model identity, evaluation partitions, per-case outcomes and trace provenance",
+        "learned-model": "model inputs, normalization, architecture, outputs and inference metadata",
+        "learned-study": "training, validation, parity, failure-mode and timing evidence documents",
+        "readiness": "catalog freshness, contract availability, provenance and missing-data status",
+    }
+    detail = descriptions.get(contract_id, "fields and their declared data constraints")
+    return (
+        f"Fields, types, requiredness and schema constraints for {contract_id}, covering {detail} "
+        "in the PhaseFlow pipeline."
+    )
+
+
 def build(root: Path) -> None:
     catalog = read_catalog(root / "docs/contracts/catalog.md")
     lock = json.loads((root / "docs/contracts/versions.lock.json").read_text(encoding="utf-8"))
@@ -170,8 +187,10 @@ def build(root: Path) -> None:
         owner, schema_rel, documents = catalog_row[2], catalog_row[3], catalog_row[5]
         missing = catalog_row[8]
         rows.extend([
+            rf"Table~\ref{{tab:contract-{tex(contract_id)}}} lists the versioned fields and structural constraints for {tex(contract_id)}; "
+            "the table also records observed fields where the shared schema intentionally leaves document detail open.",
             r"\begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}",
-            rf"\caption{{Fields in the {tex(contract_id)} contract, version {tex(version)}.}}\label{{tab:contract-{tex(contract_id)}}}\\",
+            rf"\caption{{{tex(contract_caption(contract_id))} Contract version {tex(version)}.}}\label{{tab:contract-{tex(contract_id)}}}\\",
             r"\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\",
             r"\midrule\endfirsthead",
             r"\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\",

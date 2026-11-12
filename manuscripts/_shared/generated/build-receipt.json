@@ -18,16 +18,30 @@
     "data/derived/twin-porphyry-s/trace.json": "83201662934a46b3c2a37a5031165ab6b0d11a66844e706c025ff932bc7ea828",
     "data/derived/twin-vein/trace.json": "cdcc3f9fca4e825d249e6aec7946dd5614f1f26deb9ee3ea5b270dbc5fb5e274",
     "data/derived/zuck-small-declared/trace.json": "e32192845c5bf79d1acb3fc96ef7640f2506b719a15d4d33eba962271ac58565",
+    "docs/contracts/catalog.md": "f6ce2511025c1adfb240c90000d472548515a9c837eab29b8a32cfce3f39e67a",
+    "docs/contracts/schemas/frontier-release.schema.json": "8e3a9b5b631d20900986575f9aaf0c5244c9507fe085489cad7d5aefd4fb7651",
+    "docs/contracts/schemas/index.schema.json": "1e1f13db535973375af685880b7afeff390497edaaf9aa32dc27eb97094bc744",
+    "docs/contracts/schemas/learned-model.schema.json": "4ea79e85706381829cabd9f79c543de172b97a96c52af6ec87cecc7700335ca2",
+    "docs/contracts/schemas/learned-study.schema.json": "dd204807978f86c37186894c68cb7f2108fa4068c66bad5af37d05d35b9199d5",
+    "docs/contracts/schemas/manifest.schema.json": "ed11812e66be69f96fdb6258ed58e78c25cf0ea201ad6995d4d4b02cb1a14618",
+    "docs/contracts/schemas/readiness.schema.json": "55691ffd7fd938ad178eafe020b0b38d4d0642182de6caac80eab908796548ca",
+    "docs/contracts/schemas/trace.schema.json": "b6f82ef6fe25418ac4613e739fdab5df9097126ddc2d754490fc3faf87bdce65",
+    "docs/contracts/versions.lock.json": "be1ff6bfbbdc8a4100916230f3dacbbd7bcf7fb965cb3511f41e8d84504e8e0f",
     "docs/design/features/deposit-statistics-guard/proposal.md": "ee5a2087314793c8706119095c322dbafbc8675a8a61c517b87af06f9f88087a",
-    "manuscripts/build_artifacts.py": "39698a7d2b499424c4f84089519638c2474902d06525a6286181b6efe8bf712b",
+    "manuscripts/build_artifacts.py": "937d347fb08a3e4de5ea72f3d658796eed59097eedf9dfaf93f4dcfe3e5242ff",
+    "manuscripts/build_contract_reference.py": "5c91f0752636314b03c4264cd961f12b3b96d705ed3397cf2661755b92b19594",
     "models/expected-time.json": "855d5154deebc68c0de0c869d0f9b82787f22bbbea8320e256cd1a441b3e8e68",
     "models/guard-validation.json": "5d8e0aee189e1ccb1f603efe1fc1ff79e621431dbb542c1c37cb853b538ba23c",
+    "models/learned-failure-modes.json": "1ea0803d4e5eb0da6fd61d083631bfab37cc3801ee905b4713c7cb6008d2cb60",
+    "models/learned-preview-timing.json": "75d7cf5cb8592036dabf8338761dcff5015ad9c17a4fd78f6672b8db902dcbb5",
+    "models/surrogate-parity.json": "a0314209368f4d7ae4be3745692a37b19f2a0b9329919a02adf01af314e33993",
     "models/training-report.json": "a84d23641323683406bd4fe56057944c0252205f0a10f4b217744c56b211cec3",
     "notebooks/data/frontier-evaluation-summary.json": "2978cd919c86cab5213a70865e369731a14d04a30be76541bc3a4d37d8ecac0d",
-    "scripts/build_frontier_manuscript_table.py": "75e9ab4c62146c5333d0e71b3adcf5dde202f088ce5aa451304d46110df0e7ce",
-    "manuscripts/build_contract_reference.py": "375c2883d3bbb1eee543a87e610b9a99f3e50e8b8428fdf2b25b36b2603c913a"
+    "scripts/build_frontier_manuscript_table.py": "75e9ab4c62146c5333d0e71b3adcf5dde202f088ce5aa451304d46110df0e7ce"
   },
   "outputs": {
+    "manuscripts/_shared/generated/case-method-outcomes.tex": "c2c3163110327dca903a9072bb62427678a939459c03642cddb6af616774658a",
+    "manuscripts/_shared/generated/contract-reference.tex": "bb008e190844124157adb5e222b286dc1cb3d3a946be8aa096ebc6bd10607456",
     "manuscripts/_shared/generated/guard-validation.tex": "caf2138b59f41f59d45f4e5ccb8eef40f28b611dea77f75aae5e63b7b14f2e4e",
     "manuscripts/_shared/generated/learned-by-archetype.tex": "49a2d92f780d0dc7e1da30e33959f51070731c4d54412d76efa55d16f4134be3",
     "manuscripts/_shared/generated/method-summary.tex": "318e9458280dc956c699d6285bf760c06e961fd2f3be80fc3b8b8236e172e314",
@@ -51,8 +65,7 @@
     "manuscripts/technical-report/figures/method-gap-distribution.pdf": "d568f5f3ced8066f65379a1f085655b297a1b9ed34ca34f8065558b23aa3af46",
     "manuscripts/technical-report/figures/method-row-counts.pdf": "60364df123842100e065287135be6c52f235f4b5c1e940bfb372e4411ad3c840",
     "manuscripts/technical-report/figures/method-runtime.pdf": "fa7932757080ca36b9681dc182bb4a4ae08fdbece9420a2895f0f0aa096af4b0",
-    "manuscripts/technical-report/figures/system-architecture.pdf": "b932886cbe46d3545cafe9192e129def73b4faaafbc23107f0f0852cd758b1b6",
-    "manuscripts/_shared/generated/contract-reference.tex": "b057ce12bef4e2681a27fc2dc13131f00d2207787a1434c7187e8a2b69bdf833"
+    "manuscripts/technical-report/figures/system-architecture.pdf": "b932886cbe46d3545cafe9192e129def73b4faaafbc23107f0f0852cd758b1b6"
   },
   "registered_cases": 13,
   "method_names": [

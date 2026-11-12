@@ -2,8 +2,9 @@
 \subsection{Field-level contract reference}
 \label{sec:data-contract-fields}
 The tables below are generated from the catalog, locked versions, and JSON Schemas. Producer, consumer, and missing-data behavior reproduce the catalog entries. The field rows report JSON types, required status, declared structural constraints, and the physical-unit convention where it is encoded. For fields whose physical unit depends on a case, the table says so rather than assigning a unit not present in the schema.
+Table~\ref{tab:contract-case-index} lists the versioned fields and structural constraints for case-index; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
-\caption{Fields in the case-index contract, version 1.0.0.}\label{tab:contract-case-index}\\
+\caption{Fields, types, requiredness and schema constraints for case-index, covering registered cases and their manifest references in the PhaseFlow pipeline. Contract version 1.0.0.}\label{tab:contract-case-index}\\
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
 \midrule\endfirsthead
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
@@ -27,8 +28,9 @@ The tables below are generated from the catalog, locked versions, and JSON Schem
 \bottomrule\end{longtable}
 \noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/manifest.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
 \textbf{Documents:} \path{data/derived/manifests/index.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: release gates fail before deployment; stale: the index engine version differs from VERSION.
+Table~\ref{tab:contract-case-manifest} lists the versioned fields and structural constraints for case-manifest; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
-\caption{Fields in the case-manifest contract, version 1.1.0.}\label{tab:contract-case-manifest}\\
+\caption{Fields, types, requiredness and schema constraints for case-manifest, covering case identity, scenario assumptions, provenance, artifact references and result summaries in the PhaseFlow pipeline. Contract version 1.1.0.}\label{tab:contract-case-manifest}\\
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
 \midrule\endfirsthead
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
@@ -171,8 +173,9 @@ The tables below are generated from the catalog, locked versions, and JSON Schem
 \bottomrule\end{longtable}
 \noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/manifest.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
 \textbf{Documents:} \path{data/derived/manifests/*.json, !data/derived/manifests/index.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: the release gate reports the missing manifest and blocks promotion.
+Table~\ref{tab:contract-schedule-trace} lists the versioned fields and structural constraints for schedule-trace; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
-\caption{Fields in the schedule-trace contract, version 1.4.0.}\label{tab:contract-schedule-trace}\\
+\caption{Fields, types, requiredness and schema constraints for schedule-trace, covering case-level methods, measured outcomes, feasibility status, runtime and replay data in the PhaseFlow pipeline. Contract version 1.4.0.}\label{tab:contract-schedule-trace}\\
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
 \midrule\endfirsthead
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
@@ -407,8 +410,9 @@ The tables below are generated from the catalog, locked versions, and JSON Schem
 \bottomrule\end{longtable}
 \noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/trace.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
 \textbf{Documents:} \path{data/derived/*/trace.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: the release gate reports the missing trace and blocks promotion; unavailable solver node counts are null, never negative sentinels.
+Table~\ref{tab:contract-frontier-release} lists the versioned fields and structural constraints for frontier-release; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
-\caption{Fields in the frontier-release contract, version 3.0.0.}\label{tab:contract-frontier-release}\\
+\caption{Fields, types, requiredness and schema constraints for frontier-release, covering frozen model identity, evaluation partitions, per-case outcomes and trace provenance in the PhaseFlow pipeline. Contract version 3.0.0.}\label{tab:contract-frontier-release}\\
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
 \midrule\endfirsthead
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
@@ -456,8 +460,9 @@ The tables below are generated from the catalog, locked versions, and JSON Schem
 \bottomrule\end{longtable}
 \noindent\textbf{Implementation:} \path{scripts/build_frontier_release_candidate.py}. \textbf{Data provider:} simulator:scripts/build\_frontier\_release\_candidate.py.
 \textbf{Documents:} \path{data/derived/frontier-release-receipt.json}. \textbf{Producer check:} \path{tests/test_build_frontier_release_candidate.py}. \textbf{Consumer check:} \path{scripts/check_frontier_release.py}. \textbf{Missing-data behavior:} missing or mixed source/case/checkpoint/split/partial coverage: the 0.12 release gate fails before promotion.
+Table~\ref{tab:contract-learned-model} lists the versioned fields and structural constraints for learned-model; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
-\caption{Fields in the learned-model contract, version 1.0.0.}\label{tab:contract-learned-model}\\
+\caption{Fields, types, requiredness and schema constraints for learned-model, covering model inputs, normalization, architecture, outputs and inference metadata in the PhaseFlow pipeline. Contract version 1.0.0.}\label{tab:contract-learned-model}\\
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
 \midrule\endfirsthead
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
@@ -476,8 +481,9 @@ The tables below are generated from the catalog, locked versions, and JSON Schem
 \bottomrule\end{longtable}
 \noindent\textbf{Implementation:} \path{data-pipeline/pipeline/model/learned.py}. \textbf{Data provider:} baseline:models.
 \textbf{Documents:} \path{models/expected-time.json, models/bound.json, models/expected-time.onnx, models/bound.onnx}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: learned parity and model checks fail; the exact lane remains authoritative.
+Table~\ref{tab:contract-learned-study} lists the versioned fields and structural constraints for learned-study; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
-\caption{Fields in the learned-study contract, version 1.0.0.}\label{tab:contract-learned-study}\\
+\caption{Fields, types, requiredness and schema constraints for learned-study, covering training, validation, parity, failure-mode and timing evidence documents in the PhaseFlow pipeline. Contract version 1.0.0.}\label{tab:contract-learned-study}\\
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
 \midrule\endfirsthead
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
@@ -532,8 +538,9 @@ No property-level schema is declared; see observed study document fields below. 
 \bottomrule\end{longtable}
 \noindent\textbf{Implementation:} \path{scripts/train_learned.py and evaluation scripts}. \textbf{Data provider:} baseline:models.
 \textbf{Documents:} \path{models/training-report.json, models/guard-validation.json, models/learned-failure-modes.json, models/surrogate-parity.json, models/learned-preview-timing.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: release evidence gate reports absent study evidence and blocks promotion.
+Table~\ref{tab:contract-readiness} lists the versioned fields and structural constraints for readiness; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
-\caption{Fields in the readiness contract, version 1.0.0.}\label{tab:contract-readiness}\\
+\caption{Fields, types, requiredness and schema constraints for readiness, covering catalog freshness, contract availability, provenance and missing-data status in the PhaseFlow pipeline. Contract version 1.0.0.}\label{tab:contract-readiness}\\
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
 \midrule\endfirsthead
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
