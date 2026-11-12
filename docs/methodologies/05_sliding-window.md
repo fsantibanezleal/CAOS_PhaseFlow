@@ -11,7 +11,7 @@ variables (Oyu Tolgoi) and 6.6 million (the Pilbara).
 
 What makes it a look-ahead is that the window is solved **jointly**: a block worth taking in period one
 only because of what it unlocks in period three is visible to the solver. In this product it is the
-best CPIT method on most of the case matrix (table below), which is why it is labelled `sota`.
+best published CPIT method on most of the case matrix (table below).
 
 ![Three periods solved jointly with an aggregated tail; one fixed; slide](../assets/sliding-window.svg)
 
@@ -34,7 +34,7 @@ makes it run.
 **The tail is optimistic by design.** Its capacity is the total of the remaining periods and its
 discount factor that of its first period, which over-values tail production: the standard optimistic
 relaxation for this heuristic, which keeps the tail from dominating while still telling the window a
-horizon exists. The rung's notes say so in every trace.
+horizon exists. The method's notes say so in every trace.
 
 ## 2. The candidate set: the relaxation's own guess
 
@@ -53,9 +53,9 @@ on a later slide.
 ## 3. Three versions, and what each one taught
 
 1. **A greedy wearing the name** (until oreblocks 0.5.0). Each window was scheduled with the same greedy
-   TopoSort as another rung, then every placement past the frozen prefix was undone. Since a placement
+   TopoSort as another method, then every placement past the frozen prefix was undone. Since a placement
    consumes only its own period's capacity, nothing inside the window could influence the prefix:
-   windows of 1, 2, 3, 5, 8 and T gave bit-identical schedules on three instances. The rung carried
+   windows of 1, 2, 3, 5, 8 and T gave bit-identical schedules on three instances. The method carried
    Cullenbine, Wood and Newman's name for a look-ahead it did not perform.
 2. **A real window that refused to run** (0.5.0). Solved jointly, with a candidate set sized to cover
    the window AND the whole remaining horizon, ordered by value density. On real-size cases that asked
@@ -91,12 +91,12 @@ The same window, candidate rule and gap schedule the **re-cut** destination inst
 
 ## 5. Measured on every case
 
-The sliding window against the rounding and local-search rungs it competes with:
+The sliding window against the rounding and local-search methods it competes with:
 
 <!-- generated:methods:toposort-expected,shift-local-search,cpitD-local-search,sliding-window -->
 | case | bound | `toposort-expected` | `shift-local-search` | `cpitD-local-search` | `sliding-window` | best plan of the case |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 2.54% | 2.50% | 2.49% | 1.40% | `sliding-window` 1.40% |
+| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 2.54% | 2.50% | 2.49% | 4.32% | `cpitD-local-search` 2.49% |
 | [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | joint LP | 21.35% | 17.28% | 16.91% | 1.98% | `sliding-window` 1.98% |
 | [`kd-declared`](../cases/03_kd-declared.md) | Algorithm 4 | 16.89% | 15.29% | 15.02% | 6.46% | `sliding-window` 6.46% |
 | [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | joint LP | 4.62% | 4.26% | 4.22% | 1.11% | `sliding-window` 1.11% |
@@ -109,14 +109,14 @@ The sliding window against the rounding and local-search rungs it competes with:
 | [`regime-mining-bound`](../cases/11_regime-mining-bound.md) | Algorithm 4 | 7.53% | 7.48% | 7.46% | 2.68% | `sliding-window` 2.68% |
 | [`ctrl-abundant`](../cases/12_ctrl-abundant.md) | Algorithm 4 | 0.33% | 0.26% | 0.26% | 0.65% | `cpitD-local-search` 0.26% |
 | [`ctrl-degenerate`](../cases/13_ctrl-degenerate.md) | Algorithm 4 | 0.00% | 0.00% | 0.00% | 0.00% | `toposort-greedy` 0.00% |
-| **median** |  | **7.31%** | **4.26%** | **4.22%** | **1.92%** |  |
+| **median** |  | **7.31%** | **4.26%** | **4.22%** | **1.98%** |  |
 <!-- /generated -->
 
 ## Limits
 
 - The tail is optimistic; the window never sees the true capacity of later periods.
 - The candidate set approximates the published full-model window.
-- It is the most expensive CPIT rung by two orders of magnitude, and the price is visible in the
+- It is the most expensive CPIT method by two orders of magnitude, and the price is visible in the
   runtime table of [12](12_reading-the-results.md).
 
 ## Where it lives

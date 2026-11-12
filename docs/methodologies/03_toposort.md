@@ -37,11 +37,11 @@ $$
 
 the expected extraction time read from the fractional LP optimum (a block never mined counts $T+1$).
 
-| weight | name | origin | rung here |
+| weight | name | origin | method |
 |---|---|---|---|
-| block value | GrTS | the obvious baseline | `toposort-greedy` (classical) |
-| value of the successor cone | GeTS | Gershon 1987a, [doi:10.1007/BF01553529](https://doi.org/10.1007/BF01553529) | `toposort-gershon` (classical) |
-| minus the LP expected time | ExTS | Chicoisne et al. 2012 | `toposort-expected` (sota) |
+| block value | GrTS | the obvious baseline | `toposort-greedy` |
+| value of the successor cone | GeTS | Gershon 1987a, [doi:10.1007/BF01553529](https://doi.org/10.1007/BF01553529) | `toposort-gershon` |
+| minus the LP expected time | ExTS | Chicoisne et al. 2012 | `toposort-expected` |
 
 The published spread between them is the argument for computing the bound before scheduling
 (Chicoisne et al., Tables 3 and 4, fractions of the LP bound):
@@ -79,7 +79,7 @@ Algorithm 4 computes expected times from each fractional solution, schedules fro
 best feasible plan. Both halves are honest: each single-resource objective bounds the two-resource
 problem, and each schedule is feasible for the full problem because the walk respects BOTH capacities
 regardless of which relaxation seeded it. `toposort-expected` uses the tightest relaxation only, so the
-difference between the two rungs is exactly what Algorithm 4's second relaxation adds; on most cases it
+difference between the two methods is exactly what Algorithm 4's second relaxation adds; on most cases it
 adds nothing, and the table below shows where it does.
 
 ## 5. Measured on every case
@@ -90,7 +90,7 @@ otherwise Algorithm 4), beside the best plan of the case.
 <!-- generated:methods:toposort-greedy,toposort-gershon,toposort-expected,exts-two-resource -->
 | case | bound | `toposort-greedy` | `toposort-gershon` | `toposort-expected` | `exts-two-resource` | best plan of the case |
 | --- | --- | ---: | ---: | ---: | ---: | --- |
-| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 3.81% | 4.13% | 2.54% | 2.54% | `sliding-window` 1.40% |
+| [`newman1-published`](../cases/01_newman1-published.md) | joint LP | 3.81% | 4.13% | 2.54% | 2.54% | `cpitD-local-search` 2.49% |
 | [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | joint LP | 46.28% | 32.71% | 21.35% | 21.23% | `sliding-window` 1.98% |
 | [`kd-declared`](../cases/03_kd-declared.md) | Algorithm 4 | 31.92% | 51.70% | 16.89% | 16.89% | `sliding-window` 6.46% |
 | [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | joint LP | 49.79% | 20.06% | 4.62% | 4.62% | `sliding-window` 1.11% |
@@ -109,5 +109,5 @@ otherwise Algorithm 4), beside the best plan of the case.
 ## Where it lives
 
 `oreblocks.toposort_order`, `oreblocks.toposort_schedule(weight=...)` (engine);
-`data-pipeline/pipeline/stages/solve.py` (the rungs); `frontend/src/engine/cpit.ts` (the browser's
+`data-pipeline/pipeline/stages/solve.py` (the methods); `frontend/src/engine/cpit.ts` (the browser's
 greedy, Gershon and ExTS walks, the Gershon bitsets included).

@@ -1,6 +1,6 @@
 # PhaseFlow data pipeline
 
-The repository-local Python package under `pipeline/` is the sole implementation of the offline bake and scientific evaluation. It reads declared source data, validates model contracts, runs the method ladder, and emits versioned traces and manifests into `data/derived/`. The browser consumes those artifacts; it does not reimplement offline scheduling for real cases.
+The repository-local Python package under `pipeline/` is the sole implementation of the offline bake and scientific evaluation. It reads declared source data, validates the selected model bundle, runs the methods and emits versioned traces and manifests into a required external output stage. Only a validated compact candidate is promoted into `data/derived/`. The browser consumes those artifacts; it does not reimplement offline scheduling for real cases.
 
 ## Layout
 

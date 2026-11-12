@@ -31,9 +31,32 @@ DOCS = ROOT / "docs"
 MANIFESTS = ROOT / "data" / "derived" / "manifests"
 MODELS = ROOT / "models"
 
+def configured_models() -> Path:
+    from model_paths import external_model_root
+    return external_model_root()
+
+
+def model_document(name: str) -> Path:
+    """Read staged model receipts, with committed standalone diagnostics as explicit fallback."""
+    candidate = MODELS / name
+    if candidate.is_file():
+        return candidate
+    # Preview timing is a dated browser benchmark, not a trained model receipt. Keep its committed
+    # source available while model-training artifacts are read from the external candidate bundle.
+    committed_diagnostic = ROOT / "models" / name
+    if name == "learned-preview-timing.json" and committed_diagnostic.is_file():
+        return committed_diagnostic
+    return candidate
+
 #: The order the argument is made in, and the order every case table follows.
 FAMILY_ORDER = ("published", "declared", "deposit", "regime", "control")
 DESTINATION = ("destination-toposort", "destination-sliding-window", "destination-local-search")
+PUBLIC_METHOD_FAMILY = {
+    "classical": "Reference methods",
+    "sota": "Published methods",
+    "learned": "Learned methods",
+    "beyond": "Additional analyses",
+}
 BLOCK = re.compile(r"(<!-- generated:([a-z-]+)(?::([^ ]+))? -->\n)(.*?)(<!-- /generated -->)", re.S)
 
 
@@ -145,12 +168,12 @@ def k_ladder(ms, _arg, _here):
         rung = found[0][1]["rung"]
         yard = "PCPSP LP" if meth in DESTINATION else "CPIT bound"
         rows.append([
-            f"`{meth}`", rung, yard, f"{len(found)} / {len(ms)}",
+            f"`{meth}`", PUBLIC_METHOD_FAMILY.get(rung, rung), yard, f"{len(found)} / {len(ms)}",
             pct(statistics.median(gaps)) if gaps else "-", pct(min(gaps)) if gaps else "-",
             pct(max(gaps)) if gaps else "-", str(best) if meth not in DESTINATION else "n/a",
             dur(statistics.median(rt)) if rt else "-",
         ])
-    return table(["method", "rung", "measured against", "cases run", "median gap", "best gap",
+    return table(["method", "family", "measured against", "cases run", "median gap", "best gap",
                   "worst gap", "best plan on", "median time"], rows, "lllrrrrrr")
 
 
@@ -185,11 +208,11 @@ def k_case(ms, arg, _here):
         yard = "PCPSP LP" if r["method"] in DESTINATION else used_bound(m)
         coh = "-" if r.get("components_mean") is None else f"{r['components_mean']:.1f} / {100 * r['largest_share_mean']:.0f}%"
         mark = " **(best)**" if m["best"]["method"] == r["method"] else ""
-        rows.append([f"`{r['method']}`{mark}", r["rung"], money(r["npv"]), yard, pct(r["gap_pct"]),
+        rows.append([f"`{r['method']}`{mark}", PUBLIC_METHOD_FAMILY.get(r["rung"], r["rung"]), money(r["npv"]), yard, pct(r["gap_pct"]),
                      dur(r.get("runtime_ms")), coh])
     for meth, why in (m["bound_summary"].get("skipped_methods") or {}).items():
         rows.append([f"`{meth}`", "-", "not run", "-", "-", "-", why])
-    return table(["method", "rung", "NPV", "measured against", "gap", "time",
+    return table(["method", "family", "NPV", "measured against", "gap", "time",
                   "components / largest share (mean per period)"], rows, "llrlrrl")
 
 
@@ -365,7 +388,7 @@ def k_learned_study(_ms, arg, _here):
         rows = []
         for name, r in study["rules"].items():
             h = r["holdout"]
-            mark = " **(shipped)**" if name == study["shipped_rule"] else ""
+            mark = " **(selected candidate; not shipped)**" if name == study["shipped_rule"] else ""
             rows.append([f"`{r['statement']}`{mark}", f"{h['flagged']} / {study['holdout']['n']}",
                          ratio(h["precision"], 2), ratio(h["recall"], 2), ratio(h["worst_unflagged"])])
         return table(["rule (read off the training deposits)", "held-out cases flagged", "precision", "recall",
@@ -419,7 +442,7 @@ def k_learned_metrics(_ms, _arg, _here):
 
 
 def k_learned_preview(_ms, _arg, _here):
-    t = json.loads((MODELS / "learned-preview-timing.json").read_text(encoding="utf-8"))
+    t = json.loads(model_document("learned-preview-timing.json").read_text(encoding="utf-8"))
     rows = []
     for r in t["rows"]:
         rows.append([f"`{r['case']}`", f"{r['nBlocks']:,}", f"{r['previewMs']:,} ms", f"{r['exactMs']:,} ms",
@@ -456,7 +479,9 @@ def main() -> int:
                     help="read another manifest folder (a sandbox bake) instead of the committed one")
     args = ap.parse_args()
 
-    global MANIFESTS
+    global MANIFESTS, MODELS
+    if not args.check:
+        MODELS = configured_models()
     if args.manifests is not None:
         if args.check:
             raise SystemExit("--check always reads the committed manifests")

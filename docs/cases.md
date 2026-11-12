@@ -56,8 +56,8 @@ same scale.
 ## Data availability, and the licence rule
 
 MineLib grants an academic download and not redistribution. The instances are fetched by
-`scripts/fetch_minelib.py` into the machine's data folder (`$PHASEFLOW_DATA_DIR/minelib`, or the git-ignored
-`data/raw/minelib` of a clone) and only aggregate results are committed; the pipeline's validate stage and
+`scripts/fetch_minelib.py` into the external machine data folder (`$CAOS_DATA_ROOT/minelib`; `$PHASEFLOW_DATA_DIR`
+remains an explicit compatibility alias) and only aggregate results are committed; the pipeline's validate stage and
 `scripts/check_artifacts.py` both fail if a non-redistributable case carries per-block data. Exactly one
 MineLib instance has its `.cpit` and `.pcpsp` model files reachable from a script (`newman1`, through the
 AMPL mirror); `zuck_small` and `kd` are reachable in UPIT form only, which is why their scenarios are

@@ -3,7 +3,7 @@
 **What it is.** The chart library behind production and cumulative NPV, capacity utilisation, head grade
 and strip ratio, spatial coherence, the method bars and the risk fan.
 
-**Pin.** `uplot@^1.6.31` in `frontend/package.json`.
+**Pin.** `uplot@^1.6.32` in `frontend/package.json`.
 
 **Why this one.** The interactive-visualisation rubric asks for an interactive chart with a value readout
 under the cursor, not a static SVG. uPlot gives a synchronised cursor and per-series toggling in about

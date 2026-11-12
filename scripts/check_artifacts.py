@@ -117,17 +117,20 @@ def _lane_check(cid: str, trace: dict, manifest: dict) -> list[str]:
     return []
 
 
-def main(root: Path = DERIVED) -> int:
+def main(root: Path = DERIVED, models_dir: Path = ROOT / "models") -> int:
     root = root.resolve()
     manifests = root / "manifests"
     product_version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
     sys.path.insert(0, str(ROOT / "data-pipeline"))
     from pipeline import registry
+    from pipeline.model.learned import LearnedBundle
+
+    guard_status = LearnedBundle.load(models_dir.resolve()).live_guard_status()
 
     fail: list[str] = []
     index_path = manifests / "index.json"
     if not index_path.exists():
-        print(f"missing {index_path}; run 'python data-pipeline/run.py' first", file=sys.stderr)
+        print(f"missing {index_path}; generate and validate an external candidate before promotion", file=sys.stderr)
         return 1
     index = json.loads(index_path.read_text(encoding="utf-8"))
     if index["schema"] != INDEX_SCHEMA:
@@ -208,6 +211,11 @@ def main(root: Path = DERIVED) -> int:
             fail.append(f"{cid}: PCPSP LP bound {pcpsp_lp:.2f} is below the joint CPIT LP {selected_bound:.2f}; "
                         "the richer problem cannot have the smaller relaxation")
         for meth in t["methods"]:
+            if meth.get("rung") == "learned" and meth.get("flaggedByRule") and not guard_status["available"]:
+                fail.append(
+                    f"{cid}/{meth['method']}: a live guard flag is present although the third-split rule is unavailable "
+                    f"({guard_status['reason']})"
+                )
             own = pcpsp_lp if meth["method"] in DESTINATION_METHODS else selected_bound
             if own is None:
                 fail.append(f"{cid}/{meth['method']}: destination plan shipped without a PCPSP LP bound")
@@ -284,4 +292,6 @@ def main(root: Path = DERIVED) -> int:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=DERIVED, help="artifact tree to validate")
-    raise SystemExit(main(parser.parse_args().root))
+    parser.add_argument("--models-dir", type=Path, default=ROOT / "models", help="trained model bundle to validate against")
+    args = parser.parse_args()
+    raise SystemExit(main(args.root, args.models_dir))

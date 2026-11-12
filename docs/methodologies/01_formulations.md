@@ -6,7 +6,7 @@ which plan, and a plan scored against the wrong bound is a number with the wrong
 
 MineLib (Espinoza, Goycoolea, Moreno and Newman, *Annals of Operations Research* 206(1):93-114, 2013,
 [doi:10.1007/s10479-012-1258-3](https://doi.org/10.1007/s10479-012-1258-3)) publishes instances for
-three classical problems; Jelvez, Morales and Nancel-Penard (MPES 2018,
+three established problems; Jelvez, Morales and Nancel-Penard (MPES 2018,
 [doi:10.1007/978-3-319-99220-4_18](https://doi.org/10.1007/978-3-319-99220-4_18)) state the distinction
 in one paragraph:
 

@@ -16,7 +16,12 @@ as a local release gate (ADR-0074). It fails, naming the file and the rule, on
   index does not list;
 - **beyond the state of the art**: a ``BS-`` identifier of the SDD section ``## Beyond the state of the art`` that no level 4
   notebook covers in each language, or a notebook claiming one the SDD does not list;
-- **anatomy**: the second-level sections of the tree's language, in order, as the level requires; a first cell that is not
+- **the method tiers** (template 0.13.000; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): a method of tier ``sota`` in
+  the SDD's ``## Method ladder`` table (``| id | tier | method | acceptance criterion | gate |``) that no level 3 notebook names in
+  ``caos.methods``, in each language; a level 3 notebook that names none, or a method that is no ``sota`` row; ``caos.methods`` on
+  another level. A tree whose SDD has no readable ladder is left to ``scripts/check_sdd.py``, which owns that table;
+- **anatomy**: the second-level sections of the tree's language, in order, as the level requires (from template 0.14.000 the
+  sections of levels 3 and 4 are ``Comparison`` and ``Evidence``: the tier names never title a notebook); a first cell that is not
   markdown; a code cell not directly preceded by a markdown cell, or without a comment;
 - **metadata**: the ``caos`` block (language, topic, level, title, packages, data, sources, beyond) must agree with the
   tree, the folder, ``notebooks/requirements.txt`` (each package an exact line of it, ``name==version`` or
@@ -42,7 +47,7 @@ as a local release gate (ADR-0074). It fails, naming the file and the rule, on
   floor: method cells (calls into a method package, a pipeline module or, at level 3, a pinned reference implementation), figures and
   the words that read each, explanatory prose, setup cells, reproduction checks, long sentences shared with another notebook of the tree,
   generic filler, two statements on a line, long lines and cells, the question in the first cell, an answer that quotes a number an output
-  shows, a method cell and a figure under State of the art (level 3) and a figure or table under Beyond the state of the art (level 4);
+  shows, a method cell and a figure under Comparison (level 3) and a figure or table under Evidence (level 4);
 - **CI**: ``.github/workflows/ci.yml`` runs this check and ``check_readme_areas.py``, and no workflow executes the notebooks.
 
 Usage: ``python scripts/check_notebooks.py [repo_root] [--pypi]``. Exit 0 clean, 1 on any finding. ``--pypi`` is opt-in and never
@@ -63,6 +68,7 @@ import sys
 import tokenize
 import urllib.error
 import urllib.request
+from html.parser import HTMLParser
 from pathlib import Path
 
 # the size limits of a committed notebook: the whole file (outputs included) and each embedded image, so the set stays
@@ -77,8 +83,8 @@ SECTIONS = (
     ("Setup", "Preparación", 1),
     ("Data", "Datos", 1),
     ("Method", "Método", 1),
-    ("State of the art", "Estado del arte", 3),
-    ("Beyond the state of the art", "Más allá del estado del arte", 4),
+    ("Comparison", "Comparación", 3),
+    ("Evidence", "Evidencia", 4),
     ("Results", "Resultados", 1),
     ("Summary", "Resumen", 1),
     ("References", "Referencias", 1),
@@ -87,7 +93,15 @@ NO_LEVEL_3 = {"en": "No level 3:", "es": "Sin nivel 3:"}
 MIN_REASON_WORDS = 4
 NOTEBOOK_KEYS = {"kernelspec", "language_info", "caos"}
 CAOS_KEYS = ("language", "topic", "level", "title", "packages", "data", "sources", "beyond")
-BEYOND_SECTION = "Beyond the state of the art"
+OPTIONAL_KEYS = ("methods",)  # level 3 only: the ids of the SDD's sota methods the notebook runs
+LADDER_SECTION = "Method ladder"
+LADDER_HEAD = ["id", "tier", "method", "acceptance criterion", "gate"]
+RULE = "CAOS_MANAGE conventions/method-tiers-and-manuscripts.md"
+BEYOND_SECTION = "Beyond the state of the art"  # the SDD's section: an internal record, never a notebook heading
+# the notebook sections of levels 3 and 4 (template 0.14.000): the tier names are internal and never a heading a reader
+# sees (CAOS_MANAGE conventions/method-tiers-and-manuscripts.md section 0); scripts/check_internal_names.py holds the rest
+COMPARISON_SECTION = "Comparison"
+EVIDENCE_SECTION = "Evidence"
 SLUG = re.compile(r"^(\d{2})-([a-z0-9]+(?:-[a-z0-9]+)*)$")
 NOTEBOOK = re.compile(r"^(\d{2})-([a-z0-9]+(?:-[a-z0-9]+)*)\.ipynb$")
 BS_ID = re.compile(r"\bBS-\d+\b")
@@ -427,25 +441,55 @@ def without_comments(code: str) -> str:
         return "\n".join(ln for ln in code.splitlines() if not ln.strip().startswith("#"))
 
 
-def sdd_claims(root: Path) -> tuple[set[str] | None, str | None]:
-    """The ``BS-`` identifiers of the SDD section, ``set()`` for 'None claimed.', and the problem reading it, if any."""
+def sdd_section(root: Path, title: str) -> list[str] | None:
+    """The lines of the SDD's level-2 section ``title`` (fences respected), None when the SDD or the section is absent."""
     sdd = root / "docs" / "design" / "SDD.md"
     if not sdd.is_file():
-        return None, "docs/design/SDD.md is missing"
-    lines = sdd.read_text(encoding="utf-8").splitlines()
+        return None
     body: list[str] | None = None
     fenced = False
-    for line in lines:
+    for line in sdd.read_text(encoding="utf-8").splitlines():
         if FENCE.match(line):
             fenced = not fenced
         if not fenced and (m := re.match(r"^##\s+(?:\d+\.\s*)?(.+?)\s*$", line)) and not line.startswith("###"):
             if body is not None:
                 break
-            if m[1].strip().lower() == BEYOND_SECTION.lower():
+            if m[1].strip().lower() == title.lower():
                 body = []
             continue
         if body is not None:
             body.append(line)
+    return body
+
+
+def sdd_ladder(root: Path) -> dict[str, str] | None:
+    """The SDD's method ladder as ``{id: tier}`` (tier in lower case), None when there is no table with the ladder's columns."""
+    body = sdd_section(root, LADDER_SECTION)
+    if body is None:
+        return None
+    ladder: dict[str, str] | None = None
+    for line in body:
+        if FENCE.match(line):
+            continue
+        if not line.strip().startswith("|"):
+            if ladder is not None:
+                break
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if ladder is None:
+            if [c.lower() for c in cells] == LADDER_HEAD:
+                ladder = {}
+        elif len(cells) == len(LADDER_HEAD) and not all(re.fullmatch(r":?-{3,}:?", c) for c in cells):
+            ladder[cells[0]] = cells[1].lower()
+    return ladder
+
+
+def sdd_claims(root: Path) -> tuple[set[str] | None, str | None]:
+    """The ``BS-`` identifiers of the SDD section, ``set()`` for 'None claimed.', and the problem reading it, if any."""
+    sdd = root / "docs" / "design" / "SDD.md"
+    if not sdd.is_file():
+        return None, "docs/design/SDD.md is missing"
+    body = sdd_section(root, BEYOND_SECTION)
     if body is None:
         return None, f"the SDD has no section '## {BEYOND_SECTION}' (list the BS- claims, or say 'None claimed.')"
     text = "\n".join(body)
@@ -502,7 +546,7 @@ def check_numbering(names: list[str], pattern: re.Pattern[str], rel: str, kind: 
 
 
 def check_notebook(root: Path, lang: str, topic: str, name: str, nb: dict, pins: set[str], claims: set[str],
-                   engine: set[str], listed: set[str], findings: list[str]) -> None:
+                   engine: set[str], listed: set[str], findings: list[str], ladder: dict[str, str] | None = None) -> None:
     rel = f"notebooks/{lang}/{topic}/{name}"
     path = root / rel
     size = path.stat().st_size
@@ -526,7 +570,7 @@ def check_notebook(root: Path, lang: str, topic: str, name: str, nb: dict, pins:
         for key in CAOS_KEYS:
             if key not in caos:
                 findings.append(f"{rel}: metadata: caos.{key} is missing")
-        for key in sorted(set(caos) - set(CAOS_KEYS)):
+        for key in sorted(set(caos) - set(CAOS_KEYS) - set(OPTIONAL_KEYS)):
             findings.append(f"{rel}: metadata: caos.{key} is not a field of the block")
         if caos.get("language") != lang:
             findings.append(f"{rel}: metadata: caos.language is {caos.get('language')!r}, the tree is {lang!r}")
@@ -592,6 +636,19 @@ def check_notebook(root: Path, lang: str, topic: str, name: str, nb: dict, pins:
             for b in beyond:
                 if b not in claims:
                     findings.append(f"{rel}: metadata: {b!r} is not a claim of the SDD's '## {BEYOND_SECTION}' section")
+        methods = caos.get("methods", [])
+        if not (isinstance(methods, list) and all(isinstance(m, str) for m in methods)):
+            findings.append(f"{rel}: metadata: caos.methods is not a list of ids of the SDD's Method ladder")
+        else:
+            if methods and level != 3:
+                findings.append(f"{rel}: metadata: caos.methods lists methods but this is a level {level} notebook: "
+                                "only a level 3 notebook names the sota methods it runs")
+            if level == 3 and not methods and any(t == "sota" for t in (ladder or {}).values()):
+                findings.append(f"{rel}: metadata: a level 3 notebook lists the sota methods of the SDD's Method ladder it runs "
+                                f"in caos.methods ({RULE})")
+            for m in methods:
+                if ladder is not None and ladder.get(m) != "sota":
+                    findings.append(f"{rel}: metadata: {m!r} is not a sota method of the SDD's Method ladder (tier sota)")
     # ---- anatomy
     if not cells or cells[0]["cell_type"] != "markdown":
         findings.append(f"{rel}: anatomy: the first cell is not a markdown cell (title, level, prerequisites, reading time)")
@@ -668,7 +725,7 @@ def counterpart_findings(root: Path, en_docs: dict[str, dict], es_docs: dict[str
         ca, cb = a["metadata"].get("caos"), b["metadata"].get("caos")
         rel = f"notebooks/es/{key}"
         if isinstance(ca, dict) and isinstance(cb, dict):
-            for field in ("level", "packages", "data", "beyond"):
+            for field in ("level", "packages", "data", "beyond", "methods"):
                 if ca.get(field) != cb.get(field):
                     findings.append(f"{rel}: mirror: caos.{field} differs from its English counterpart")
         kinds_a = [c["cell_type"] for c in a["cells"]]
@@ -735,6 +792,7 @@ def form_findings(root: Path, infos: list[str] | None = None, docs_out: dict[str
     claims, problem = sdd_claims(root)
     if problem:
         findings.append(f"docs/design/SDD.md: beyond: {problem}")
+    ladder = sdd_ladder(root)
     pins = read_pins(root)
     engine = engine_names(root)
     methods, method_findings = method_state(root, infos)
@@ -753,6 +811,7 @@ def form_findings(root: Path, infos: list[str] | None = None, docs_out: dict[str
         docs.setdefault(lang, {})
     levels: dict[str, dict[str, dict[str, int]]] = {lang: {} for lang in LANGS}
     covered: dict[str, set[str]] = {lang: set() for lang in LANGS}
+    run3: dict[str, set[str]] = {lang: set() for lang in LANGS}  # the sota methods the level 3 notebooks name
     for lang, tree in trees.items():
         check_numbering(tree.topics, SLUG, f"notebooks/{lang}", "topic", findings)
         for topic in tree.topics:
@@ -767,7 +826,7 @@ def form_findings(root: Path, infos: list[str] | None = None, docs_out: dict[str
                 if doc is None:
                     continue
                 docs[lang][f"{topic}/{name}"] = doc
-                check_notebook(root, lang, topic, name, doc, pins, claims or set(), engine, listed, findings)
+                check_notebook(root, lang, topic, name, doc, pins, claims or set(), engine, listed, findings, ladder)
                 findings.extend(method_copy_findings(f"notebooks/{lang}/{topic}/{name}", doc["cells"], methods))
                 caos = doc["metadata"].get("caos")
                 lv = caos.get("level") if isinstance(caos, dict) else None
@@ -776,6 +835,8 @@ def form_findings(root: Path, infos: list[str] | None = None, docs_out: dict[str
                     order.append(lv)
                     if lv == 4 and isinstance(caos.get("beyond"), list):
                         covered[lang].update(x for x in caos["beyond"] if isinstance(x, str))
+                    if lv == 3 and isinstance(caos.get("methods"), list):
+                        run3[lang].update(x for x in caos["methods"] if isinstance(x, str))
             if order != sorted(order):
                 findings.append(f"notebooks/{lang}/{topic}: levels: the level decreases inside the topic ({order}); the reading order never goes down")
             have = set(order)
@@ -786,6 +847,9 @@ def form_findings(root: Path, infos: list[str] | None = None, docs_out: dict[str
     for lang in LANGS:
         for claim in sorted((claims or set()) - covered[lang]):
             findings.append(f"notebooks/{lang}: beyond: the SDD claim {claim} is covered by no level 4 notebook (caos.beyond)")
+        for method in sorted(m for m, tier in (ladder or {}).items() if tier == "sota" and m not in run3[lang]):
+            findings.append(f"notebooks/{lang}: tiers: the sota method {method} of the SDD's Method ladder is named by no level 3 notebook "
+                            f"(caos.methods): every state-of-the-art method has a level 3 notebook that runs it ({RULE})")
     counterpart_findings(root, docs["en"], docs["es"], findings)
     ci_findings(root, findings)
     return findings
@@ -851,11 +915,114 @@ def parse_code(code: str) -> ast.Module | None:
         return None
 
 
+class _VisibleHTML(HTMLParser):
+    """Static visible content; hidden HTML cannot pad the notebook's teaching prose."""
+
+    VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
+
+    def __init__(self):
+        super().__init__(convert_charrefs=False)
+        self.stack: list[tuple[str, bool]] = []
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        style = re.sub(r"/\*.*?\*/", "", attributes.get("style") or "", flags=re.S)
+        effective: dict[str, tuple[str, bool]] = {}
+        displays = {"none", "block", "inline", "inline-block", "flex", "inline-flex", "grid", "inline-grid",
+                    "contents", "flow-root", "table", "inline-table", "table-row", "table-cell", "table-caption",
+                    "table-row-group", "table-header-group", "table-footer-group", "table-column", "table-column-group",
+                    "list-item", "inherit", "initial", "unset", "revert", "revert-layer"}
+        for declaration in style.split(";"):
+            property_name, separator, value = declaration.partition(":")
+            if not separator:
+                continue
+            property_name = property_name.strip().lower()
+            important = bool(re.search(r"!important\s*$", value, re.I))
+            value = re.sub(r"\s*!important\s*$", "", value, flags=re.I).strip().lower()
+            if property_name == "display" and value not in displays:
+                continue
+            if property_name == "visibility" and value not in {"hidden", "collapse", "visible", "inherit", "initial", "unset", "revert", "revert-layer"}:
+                continue
+            if property_name == "opacity":
+                try:
+                    float(value.rstrip("%"))
+                except ValueError:
+                    continue  # A CSS expression is not statically resolved to hidden.
+            if effective.get(property_name, ("", False))[1] and not important:
+                continue
+            effective[property_name] = value, important
+        hidden_style = (effective.get("display", ("", False))[0] == "none"
+                        or effective.get("visibility", ("", False))[0] in {"hidden", "collapse"}
+                        or ("opacity" in effective and float(effective["opacity"][0].rstrip("%")) <= 0))
+        hidden = (bool(self.stack and self.stack[-1][1]) or "hidden" in attributes
+                  or tag in {"script", "style", "template", "pre", "code"}
+                  or hidden_style)
+        if tag not in self.VOID:
+            self.stack.append((tag, hidden))
+        elif tag in {"br", "hr"} and not hidden:
+            self.parts.append("\n")
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag not in self.VOID:
+            self.handle_endtag(tag)
+
+    def handle_endtag(self, tag):
+        for index in range(len(self.stack) - 1, -1, -1):
+            if self.stack[index][0] == tag:
+                del self.stack[index:]
+                break
+
+    def handle_data(self, data):
+        if not self.stack or not self.stack[-1][1]:
+            self.parts.append(data)
+
+    def handle_entityref(self, name):
+        self.handle_data(f"&{name};")
+
+    def handle_charref(self, name):
+        self.handle_data(f"&#{name};")
+
+
+# CommonMark raw HTML (spec 0.31.2, section 6.6): an open tag with its attributes, a closing tag, a comment, a processing instruction,
+# a declaration or CDATA. Any other `<` is text (`sum_{k<n}`, `i<j`, `x <y`) and never reaches the HTML parser, whose handling of
+# an unterminated "tag" changed in Python 3.12.11 and 3.13.4 (it hid the rest of the document: ChancaDEM's SDD, 0.15.000, #102).
+_HTML_ATTRIBUTE = r"""\s+[A-Za-z_:][A-Za-z0-9_.:-]*(?:\s*=\s*(?:[^\s"'=<>`]+|'[^']*'|"[^"]*"))?"""
+RAW_HTML = re.compile(rf"<(?:[A-Za-z][A-Za-z0-9-]*(?:{_HTML_ATTRIBUTE})*\s*/?>|/[A-Za-z][A-Za-z0-9-]*\s*>|!--|\?|![A-Za-z]|!\[CDATA\[)")
+
+
+def visible_markdown(text: str) -> str:
+    """Remove hidden DOM and complete or unterminated HTML comments; preserve visible Markdown. Only real markup (``RAW_HTML``) is
+    parsed: a `<` that starts no tag is prose, on every Python release."""
+    protected: dict[str, str] = {}
+
+    def protect(match):
+        token = f"\x00{len(protected)}\x00"
+        protected[token] = match[0]
+        return token
+
+    # Literal code/math is not HTML: a quoted hidden tag must not swallow later prose.
+    text = re.sub(r"(?ms)^\s*(`{3,}|~{3,})[^\n]*\n.*?^\s*\1[^\n]*(?:\n|$)", protect, text)
+    text = re.sub(r"<(?:https?://|mailto:)[^\s<>]+>", protect, text, flags=re.I)
+    text = re.sub(r"(`+)[^`\n]*\1|\$\$.*?\$\$|\$[^$\n]*\$|\\\[.*?\\\]|"
+                  r"\\begin\{(?P<environment>(?:equation|align)\*?)\}.*?\\end\{(?P=environment)\}",
+                  protect, text, flags=re.S)
+    text = re.sub(r"<", lambda m: m[0] if RAW_HTML.match(m.string, m.start()) else protect(m), text)
+    parser = _VisibleHTML()
+    parser.feed(re.sub(r"<!--.*?(?:-->|$)", "", text, flags=re.S))
+    parser.close()
+    result = "".join(parser.parts)
+    for token, value in protected.items():
+        result = result.replace(token, value)
+    return result
+
+
 def strip_markup(text: str) -> str:
     """Markdown without what a reader does not read as prose: fenced and indented code, HTML comments, tables, display and inline math."""
     kept: list[str] = []
     fenced = False
-    for line in text.splitlines():
+    for line in visible_markdown(text).splitlines():
         if FENCE.match(line):
             fenced = not fenced
         elif not fenced:
@@ -1473,7 +1640,7 @@ class Reading:
         for i, c in enumerate(self.cells):
             if c["cell_type"] == "markdown":
                 fenced = False
-                for line in text_of(c["source"]).splitlines():
+                for line in visible_markdown(text_of(c["source"])).splitlines():
                     if FENCE.match(line):
                         fenced = not fenced
                     elif not fenced and (m := HEADING2.match(line)):
@@ -1635,6 +1802,14 @@ def reading_findings(rel: str, r: Reading, bar: dict) -> list[str]:
         if value > floor:
             out.append(f"{rel}: bar: {measure} {value}, the floor is at most {floor} ({why})")
 
+    opening = text_of(r.cells[0].get("source", "")) if r.cells else ""
+    foreign_labels = (r"(?im)^\s*[-*]\s*(?:Nivel|Tiempo de lectura)\s*:", r"\bminutos\b") if r.lang == "en" else (
+        r"(?im)^\s*[-*]\s*(?:Level|Reading time)\s*:", r"\bminutes\b")
+    if any(re.search(pattern, opening) for pattern in foreign_labels):
+        language = "English" if r.lang == "en" else "Spanish"
+        other = "Spanish" if r.lang == "en" else "English"
+        out.append(f"{rel}: language: {language} reader metadata uses {other} labels or time units")
+
     below("method cells", len(r.method_cells), floor_at(bar, "method_cells", level))
     if r.level == 3:
         below("method cells that call the product's own method (package or pipeline)", len(r.product_cells), f["level3_product_cells_min"])
@@ -1671,15 +1846,15 @@ def reading_findings(rel: str, r: Reading, bar: dict) -> list[str]:
             out.append(f"{rel}: bar: the answer quotes no number that appears in an output of the notebook, at the precision the answer writes it "
                        f"(numbers in the answer: {quoted[:6]})")
     if r.level == 3:
-        if not [i for i in r.method_cells if r.section[i] == "State of the art"]:
-            out.append(f"{rel}: bar: no method cell under State of the art: a level 3 notebook runs the state of the art")
-        if not sum(n for i, n in r.fig_cells if r.section[i] == "State of the art"):
-            out.append(f"{rel}: bar: no figure under State of the art: a level 3 notebook compares it with a figure")
+        if not [i for i in r.method_cells if r.section[i] == COMPARISON_SECTION]:
+            out.append(f"{rel}: bar: no method cell under {COMPARISON_SECTION}: a level 3 notebook runs the published method it compares")
+        if not sum(n for i, n in r.fig_cells if r.section[i] == COMPARISON_SECTION):
+            out.append(f"{rel}: bar: no figure under {COMPARISON_SECTION}: a level 3 notebook compares the methods with a figure")
     if r.level == 4:
-        shown_beyond = sum(n for i, n in r.fig_cells if r.section[i] == BEYOND_SECTION) \
-            + sum(1 for i, c in enumerate(r.cells) if r.section[i] == BEYOND_SECTION and has_table(c))
+        shown_beyond = sum(n for i, n in r.fig_cells if r.section[i] == EVIDENCE_SECTION) \
+            + sum(1 for i, c in enumerate(r.cells) if r.section[i] == EVIDENCE_SECTION and has_table(c))
         if not shown_beyond:
-            out.append(f"{rel}: bar: no figure or table under {BEYOND_SECTION}: a level 4 notebook measures its claim")
+            out.append(f"{rel}: bar: no figure or table under {EVIDENCE_SECTION}: a level 4 notebook measures its claim")
     out.extend(f"{rel}: bar: {message}" for message in r.line_findings)
     return out
 

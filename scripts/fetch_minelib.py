@@ -4,8 +4,8 @@
 MineLib (Espinoza, Goycoolea, Moreno and Newman, Annals of Operations Research 206(1):93-114, 2013,
 doi:10.1007/s10479-012-1258-3) grants an ACADEMIC DOWNLOAD. It does not grant redistribution, so:
 
-- instances land under ``$PHASEFLOW_DATA_DIR/minelib/`` (the machine's data folder), or under the
-  git-ignored ``data/raw/minelib/`` of the clone when that variable is not set;
+- instances land under ``$CAOS_DATA_ROOT/minelib/`` (the machine's external data folder);
+  ``PHASEFLOW_DATA_DIR`` remains an explicit compatibility alias;
 - only AGGREGATE results for a MineLib case are ever committed, never per-block data;
 - this script downloads, it does not vendor.
 
@@ -27,7 +27,16 @@ import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-CACHE = (Path(os.environ["PHASEFLOW_DATA_DIR"]) if os.environ.get("PHASEFLOW_DATA_DIR") else ROOT / "data" / "raw") / "minelib"
+
+
+def cache_root() -> Path:
+    configured = os.environ.get("CAOS_DATA_ROOT") or os.environ.get("PHASEFLOW_DATA_DIR")
+    if not configured:
+        raise SystemExit("Set CAOS_DATA_ROOT to an external data directory before fetching MineLib inputs.")
+    root = Path(configured).expanduser().resolve()
+    if root.is_relative_to(ROOT):
+        raise SystemExit("CAOS_DATA_ROOT/PHASEFLOW_DATA_DIR must resolve outside the product repository.")
+    return root / "minelib"
 
 AMPL = "https://raw.githubusercontent.com/ampl/colab.ampl.com/master/authors/eduardosalaz/minelib/data"
 WHATTLE = "https://raw.githubusercontent.com/qarth/whattle/master/test/minelib"
@@ -44,7 +53,7 @@ def fetch(instance: str) -> int:
         print(f"unknown instance {instance!r}; known: {sorted(SOURCES)}", file=sys.stderr)
         return 2
     base, exts = SOURCES[instance]
-    out = CACHE / instance
+    out = cache_root() / instance
     out.mkdir(parents=True, exist_ok=True)
     for ext in exts:
         url = f"{base}/{instance}/{instance}.{ext}"

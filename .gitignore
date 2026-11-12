@@ -29,6 +29,8 @@ frontend/public/manifests/
 # copies of models/*.json made by copy-data.mjs at dev and build time; models/ is the one copy
 frontend/public/models/
 frontend/public/pyodide/
+# A prior manual TeX invocation wrote auxiliary output to this literal directory name.
+manuscripts/technical-report/$out/
 *.tsbuildinfo
 
 # --- Secrets / env (public repo : only .env.example is committed) ---
@@ -38,6 +40,8 @@ frontend/public/pyodide/
 
 # --- Raw / heavy data : commit ONLY the compact derived artifacts under data/derived/ ---
 data/raw/
+# Release receipt is emitted only when a release candidate has valid source and case evidence.
+data/derived/frontier-release-receipt.json
 *.parquet
 *.h5
 *.hdf5

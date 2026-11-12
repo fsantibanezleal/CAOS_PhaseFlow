@@ -5,5 +5,5 @@ pip install -r requirements-precompute.txt  # exact SciPy, highspy and ONNX pins
 ```
 
 HiGHS is bundled in the scipy wheel: no separate install, no licence. Without scipy the engine still
-computes the critical multiplier bound, Algorithm 4 and the TopoSort and shift rungs (numpy only), and the
-pipeline records the solver-dependent rungs as NOT RUN with the reason.
+computes the critical multiplier bound, Algorithm 4 and the TopoSort and shift methods (numpy only), and the
+pipeline records the solver-dependent methods as NOT RUN with the reason.

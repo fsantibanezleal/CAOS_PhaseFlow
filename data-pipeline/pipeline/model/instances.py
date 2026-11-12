@@ -23,11 +23,13 @@ from ..io.contract import ContractReport, validate_instance
 from ..io.schema import Case, DepositSpec, Scenario
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-#: Where the MineLib download lives. Downloaded data belongs in the machine's data folder, not in a
-#: clone, so ``PHASEFLOW_DATA_DIR`` names that folder; without it the git-ignored ``data/raw`` of the
-#: clone is used, which keeps a fresh clone runnable with no configuration.
-DATA_DIR = Path(os.environ["PHASEFLOW_DATA_DIR"]) if os.environ.get("PHASEFLOW_DATA_DIR") else REPO_ROOT / "data" / "raw"
-MINELIB_CACHE = DATA_DIR / "minelib"
+# Downloaded MineLib inputs stay outside the repository. CAOS_DATA_ROOT is the shared
+# workstation contract; PHASEFLOW_DATA_DIR remains an explicit compatibility alias.
+_data_root = os.environ.get("CAOS_DATA_ROOT") or os.environ.get("PHASEFLOW_DATA_DIR")
+DATA_DIR = Path(_data_root).expanduser().resolve() if _data_root else None
+if DATA_DIR is not None and DATA_DIR.is_relative_to(REPO_ROOT):
+    raise RuntimeError("CAOS_DATA_ROOT/PHASEFLOW_DATA_DIR must resolve outside the product repository.")
+MINELIB_CACHE = DATA_DIR / "minelib" if DATA_DIR is not None else None
 
 
 @dataclass
@@ -156,6 +158,11 @@ def _twin_instance(case: Case) -> Instance:
 
 def _minelib_instance(case: Case) -> Instance:
     spec = case.deposit
+    if MINELIB_CACHE is None:
+        raise RuntimeError(
+            "MineLib source data is not configured. Set CAOS_DATA_ROOT to an external data directory "
+            "and run scripts/fetch_minelib.py --all."
+        )
     d = MINELIB_CACHE / spec.minelib_id
     stem = d / spec.minelib_id
     if not (stem.with_suffix(".blocks")).exists():

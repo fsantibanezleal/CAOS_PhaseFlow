@@ -16,3 +16,8 @@ python scripts/check_readiness.py
 `data/derived/readiness.json` is generated evidence, not a hand-edited release badge. Recompute it after changing the
 catalog or the committed data with `python scripts/update_readiness.py`, then run the checks above. MineLib block data
 remain external; only license-permitted aggregate traces and manifests are committed.
+
+The `frontier-release` receipt keeps separate SHA-256 identities for the frozen training/validation split and the
+independent synthetic test sample. A replacement test sample never changes the recorded training split or reopens a
+consumed test ledger. The split identities are documented in [frontier release contract v2](frontier-release-v2.md);
+the v3 receipt also requires both coverage measures on every partial schedule ([contract v3](frontier-release-v3.md)).

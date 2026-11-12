@@ -1,0 +1,25 @@
+{
+  "kind": "technical-report",
+  "title_support": [
+    "fig:method-gap-distribution",
+    "fig:case-inventory",
+    "fig:learned-holdout-by-archetype"
+  ],
+  "methods": {
+    "M-1": "sec:method-construction",
+    "M-2": "sec:method-sliding",
+    "M-3": "sec:method-destination",
+    "M-4": "sec:method-replanning",
+    "BS-1": "sec:method-expected-time",
+    "BS-2": "sec:method-frontier"
+  },
+  "contracts": {
+    "case-index": "sec:data-case-index",
+    "case-manifest": "sec:data-case-manifest",
+    "schedule-trace": "sec:data-trace",
+    "learned-model": "sec:data-model",
+    "learned-study": "sec:data-study",
+    "readiness": "sec:data-readiness",
+    "frontier-release": "sec:data-frontier-release"
+  }
+}

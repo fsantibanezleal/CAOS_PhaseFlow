@@ -4,12 +4,12 @@
 (light/dark) toggles, the one-line footer, the architecture modal, citations, and the document components
 (`Equation`, `InlineMath`, `Figure`, `Callout`, `Refs`, `Tabs`, `SubTabs`) the reading pages are built from.
 
-**Pin.** `@fasl-work/caos-app-shell@0.19.6` in `frontend/package.json`, resolved from npm and locked in `frontend/package-lock.json`. The corresponding shell repository release tag is `v0.19.006`.
+**Pin.** `@fasl-work/caos-app-shell@0.26.0` in `frontend/package.json`, resolved from npm and locked in `frontend/package-lock.json`. The corresponding shell repository release tag is `v0.26.000`.
 
-**Current release note.** Shell 0.19.6 marks the product licence identifier `translate="no"`, preventing a browser translator from changing SPDX identifiers and keeping them out of numeric formatting checks. PhaseFlow uses the MIT licence, and the current pin also keeps the product aligned with the shared shell release. PhaseFlow continues to opt into `CaseWorkbench`'s `noteFit` because the published-case anchor is part of its case context. The package pin and lockfile are checked by `scripts/check_tech_matrix.py`.
+**Current release note.** Shell 0.26.000 keeps `PlotCard` headers at their natural height, makes moving marks redraw without rebuilding a chart, reports the `SceneCallouts` band only after the card width and height settle, places long callout values on their own row, and treats a fully visible `CardDeck` as a row rather than a carousel. The settled band and callout sizing directly support PhaseFlow's four-step story: the drawing is padded by the measured band, data anchors and linked markers are remapped into the remaining drawing, and the phone stage retains at least 490 px for the drawing. PhaseFlow's method charts remain product-owned, so the shell chart-mark and UTC-axis additions do not replace their event handling or time model. The shell also supplies compact tab density, guided-story framing, 3D scene frames, reciprocal linked views, reduced-motion transitions and the measured ADR-0082 story gate. Earlier releases added full artifact verification (0.19.12), complete scrollable-document measurement (0.19.11), optional `document` framing for `SurfacePage` and transformed executive-illustration label measurement (0.19.10), and the normal `CaseWorkbench` instrument marker (0.19.9). PhaseFlow's reading pages continue to use `DocPage`; the product keeps its `noteFit` adaptation because the published-case anchor is part of its context. The package pin and lockfile are checked by `scripts/check_tech_matrix.py`.
 
 **Why a shared shell.** Products in this line must read as one system and keep one standard of structure
-(ADR-0016: the six pages, the header, the footer) and quality (ADR-0071: sized containers, one navigation
+(the six pages, the header, the footer) and quality (sized containers, one navigation
 row). Hand-rolling a header or a footer per product drifts; adopting the shell keeps the floor shared and
 fixes it once.
 

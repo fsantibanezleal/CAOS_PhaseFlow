@@ -22,7 +22,8 @@ different kind of mistake.
 
 ## Where the rule is enforced, in code rather than in a comment
 
-- `scripts/fetch_minelib.py` downloads into the machine's data folder or the git-ignored `data/raw/`, and
+- `scripts/fetch_minelib.py` downloads into an external machine data folder configured by `CAOS_DATA_ROOT`
+  (or the explicit `PHASEFLOW_DATA_DIR` compatibility alias), and
   never into a committed path.
 - `data-pipeline/pipeline/core/trace.py` writes `periodOfBlock` and `blocks` only for synthetic instances.
 - `pipeline.py::_validate` and `scripts/check_artifacts.py` fail on the NEGATIVE clause: a case whose

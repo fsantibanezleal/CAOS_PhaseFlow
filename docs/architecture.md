@@ -11,5 +11,5 @@
 | 07 | [deploy](architecture/07_deploy.md) | GitHub Pages, what CI enforces, what only a browser gate can see |
 
 The data contracts (inputs, CONTRACT 1, CONTRACT 2, licences, model files) have their own theme:
-[data-contract.md](data-contract.md). Binding decision: ADR-0057 (product-repo archetype), with ADR-0055
-(deploy class) and ADR-0074 (CI never trains).
+[data-contract.md](data-contract.md). The product is a static, offline-pipeline-heavy scientific workbench;
+CI validates committed evidence and never trains or rebakes models.

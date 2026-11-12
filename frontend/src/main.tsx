@@ -9,9 +9,10 @@ import './phaseflow.css';
 import './content/content.css';
 import { CITATIONS } from './data/citations.ts';
 import product from '../../product.json';
-import { architecture } from './architecture.ts';
-import { APP_VERSION, loadIndex, loadManifest } from './lib/artifacts.ts';
+import { architecture } from './architecture/index.ts';
+import { APP_VERSION, loadIndex, loadManifest, loadPublicJSON } from './lib/artifacts.ts';
 const Tool = lazy(() => import('./pages/Tool.tsx'));
+const Story = lazy(() => import('./pages/Story.tsx'));
 const Focus = lazy(() => import('./pages/Focus.tsx'));
 const Introduction = lazy(() => import('./pages/Introduction.tsx'));
 const Methodology = lazy(() => import('./pages/Methodology.tsx'));
@@ -24,6 +25,7 @@ applyTheme(readTheme());
 const config: ShellConfig = {
   product: { name: product.name, mark: <CalendarClock size={18} aria-hidden="true" /> },
   routes: STANDARD_ROUTES,
+  immersiveRoutes: ['/story'],
   links: { github: product.repo },
   version: APP_VERSION,
   license: { en: `${product.license} license`, es: `Licencia ${product.license}` },
@@ -56,13 +58,14 @@ function DocumentLanguage() {
   return null;
 }
 
-createRoot(document.getElementById('root')!).render(
+function renderApp() {
+  createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <CitationsProvider items={CITATIONS}>
         <DocumentLanguage />
         <Routes>
-          {/* ADR-0070: the focus view renders OUTSIDE the shell. The header and footer are exactly the
+          {/* The Focus view renders OUTSIDE the shell. The header and footer are exactly the
               chrome a focus view exists to escape, so it cannot be a child of AppShell. */}
           <Route path="/focus/:caseId" element={<Suspense fallback={<p data-state="loading" role="status">Loading PhaseFlow…</p>}><Focus /></Suspense>} />
           <Route
@@ -73,6 +76,7 @@ createRoot(document.getElementById('root')!).render(
                 <Routes>
                   <Route path="/" element={<Landing />} />
                   <Route path="/app" element={<Tool />} />
+                  <Route path="/story/:step" element={<Story />} />
                   <Route path="/introduction" element={<Introduction />} />
                   <Route path="/methodology" element={<Methodology />} />
                   <Route path="/implementation" element={<Implementation />} />
@@ -88,4 +92,13 @@ createRoot(document.getElementById('root')!).render(
       </CitationsProvider>
     </BrowserRouter>
   </StrictMode>,
-);
+  );
+}
+
+// Warm the public model records without blocking the route tree. Pages keep their own loading state,
+// so direct routes remain readable while these shared responses are fetched.
+void Promise.allSettled([
+  loadPublicJSON('/data/models/expected-time.json'),
+  loadPublicJSON('/data/models/guard-validation.json'),
+]);
+renderApp();

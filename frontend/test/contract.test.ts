@@ -9,10 +9,9 @@
 // A drift was already shipping: `ensemble.resolveMethod` is written into twelve of the thirteen
 // committed traces and `EnsembleReport` did not know the field existed, so no panel could read it.
 //
-// The field names are PARSED OUT OF `contract.types.ts` rather than restated here. A hand-written
-// list of expected fields is a third copy of the schema, and a third copy drifts the same way the
-// second one did: the first draft of this file listed the ensemble fields by hand, got four of them
-// wrong, and accused the artifacts of a drift that was in the test.
+// The field names are read from the JSON Schema source. TypeScript is generated from those same
+// schemas and `npm run build` checks the generated file byte-for-byte, so the schema remains the
+// one field inventory instead of maintaining a parallel handwritten type list.
 
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -24,7 +23,10 @@ import type { CaseIndex, CaseManifest, ScheduleTrace } from '../src/lib/contract
 
 const DERIVED = join(process.cwd(), '..', 'data', 'derived');
 const MANIFESTS = join(DERIVED, 'manifests');
-const TYPES_SRC = readFileSync(join(process.cwd(), 'src', 'lib', 'contract.types.ts'), 'utf8');
+const TRACE_SCHEMA_SOURCE = JSON.parse(readFileSync(join(process.cwd(), '..', 'docs', 'contracts', 'schemas', 'trace.schema.json'), 'utf8')) as {
+  properties: Record<string, unknown>;
+  $defs: Record<string, { properties?: Record<string, unknown> }>;
+};
 
 function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(path, 'utf8')) as T;
@@ -37,36 +39,18 @@ function caseIds(): string[] {
     .sort();
 }
 
-/** The property names an interface declares, read from the mirror's own source. */
+/** The property names a contract schema declares, read from its single source of truth. */
 function declaredFields(name: string): Set<string> {
-  const start = TYPES_SRC.indexOf(`export interface ${name}`);
-  assert.ok(start >= 0, `contract.types.ts declares no interface ${name}`);
-  const open = TYPES_SRC.indexOf('{', start);
-  let depth = 0;
-  let end = open;
-  for (let i = open; i < TYPES_SRC.length; i++) {
-    if (TYPES_SRC[i] === '{') depth++;
-    else if (TYPES_SRC[i] === '}') {
-      depth--;
-      if (depth === 0) {
-        end = i;
-        break;
-      }
-    }
-  }
-  const body = TYPES_SRC.slice(open + 1, end);
-  const fields = new Set<string>();
-  // top level of this interface only: skip anything nested inside an inline object type
-  let nest = 0;
-  for (const raw of body.split('\n')) {
-    const line = raw.trim();
-    if (nest === 0) {
-      const m = /^([A-Za-z_][A-Za-z0-9_]*)\??\s*:/.exec(line);
-      if (m) fields.add(m[1]);
-    }
-    nest += (line.match(/\{/g) ?? []).length - (line.match(/\}/g) ?? []).length;
-    if (nest < 0) nest = 0;
-  }
+  const definitions: Record<string, string> = {
+    TraceMethod: 'traceMethod',
+    EnsembleReport: 'ensembleReport',
+    BoundReport: 'boundReport',
+  };
+  const definition = name === 'ScheduleTrace'
+    ? { properties: TRACE_SCHEMA_SOURCE.properties }
+    : TRACE_SCHEMA_SOURCE.$defs[definitions[name] ?? name];
+  assert.ok(definition, `trace.schema.json declares no definition ${name}`);
+  const fields = new Set(Object.keys(definition.properties ?? {}));
   assert.ok(fields.size > 0, `parsed no fields out of ${name}`);
   return fields;
 }
