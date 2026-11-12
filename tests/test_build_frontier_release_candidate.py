@@ -30,6 +30,7 @@ def _evaluation(case_ids: list[str]) -> dict:
             {
                 "case_id": case_id, "status": "complete", "failure_reason": None,
                 "npv": 9.5, "assignments": 2, "inference_seconds": 0.01,
+                "certified_bound": 20.0, "certified_bound_method": "algorithm4",
                 "tonnage_coverage": 0.5, "positive_value_coverage": 0.5,
                 "stop_reason": "horizon-complete", "peak_memory_bytes": 1024,
                 "periods": [
@@ -61,7 +62,7 @@ def _bind_baseline(evaluation: dict, baseline: Path) -> None:
 
 def test_release_receipt_requires_both_test_and_training_split_digests():
     receipt = {
-        "schema": "phaseflow.frontier-release/v2", "product_version": PRODUCT_VERSION,
+        "schema": "phaseflow.frontier-release/v3", "product_version": PRODUCT_VERSION,
         "engine_version": "oreblocks==0.6.6", "source_commit": "a" * 40,
         "checkpoint_sha256": "b" * 64, "feature_contract_sha256": "c" * 64,
         "split_sha256": "d" * 64,
@@ -72,7 +73,7 @@ def test_release_receipt_requires_both_test_and_training_split_digests():
 
 def test_release_receipt_rejects_same_training_and_test_split():
     receipt = {
-        "schema": "phaseflow.frontier-release/v2",
+        "schema": "phaseflow.frontier-release/v3",
         "split_sha256": "d" * 64,
         "training_split_sha256": "d" * 64,
     }
@@ -109,10 +110,17 @@ def test_candidate_assembles_receipts_and_keeps_licensed_schedules_aggregate_onl
         }
         manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
         entries.append({"case_id": case_id, "manifest_path": f"manifests/{case_id}.json"})
+    legacy_bound_trace = baseline / "case-00" / "trace.json"
+    legacy_bound = json.loads(legacy_bound_trace.read_text(encoding="utf-8"))
+    legacy_bound["bound"]["used"] = "bienstock-zuckerberg"
+    legacy_bound["bound"]["joint"] = 19.0
+    legacy_bound_trace.write_text(json.dumps(legacy_bound), encoding="utf-8")
     (manifests / "index.json").write_text(json.dumps({
         "schema": "phaseflow.index/v1", "engine_version": BASELINE_VERSION, "n_cases": 13, "cases": entries,
     }), encoding="utf-8")
     evaluation = _evaluation(ids)
+    evaluation["cases"][0]["certified_bound"] = 19.0
+    evaluation["cases"][0]["certified_bound_method"] = "bienstock-zuckerberg"
     _bind_baseline(evaluation, baseline)
     evaluation_path = tmp_path / "evaluation.json"
     evaluation_path.write_text(json.dumps(evaluation), encoding="utf-8")
@@ -135,6 +143,24 @@ def test_candidate_assembles_receipts_and_keeps_licensed_schedules_aggregate_onl
 
     schema = json.loads((ROOT / "docs/contracts/schemas/frontier-release.schema.json").read_text(encoding="utf-8"))
     assert not list(Draft202012Validator(schema).iter_errors(receipt))
+
+    # A fail-closed unsupported case has no paired result row, but its failure
+    # must remain in the release receipt rather than blocking the other cases.
+    failed_evaluation = json.loads(json.dumps(evaluation))
+    failed_row = failed_evaluation["cases"][0]
+    failed_row["status"] = "failed"
+    failed_row["failure_reason"] = "ValueError: unsupported declared one-resource CPIT contract"
+    failed_row.pop("baseline_trace_sha256")
+    failed_evaluation["summary"].update({"complete": 12, "failed": 1})
+    failed_path = tmp_path / "evaluation-with-failure.json"
+    failed_path.write_text(json.dumps(failed_evaluation), encoding="utf-8")
+
+    failed_candidate = tmp_path / "candidate-with-failure"
+    failed_receipt = build_candidate(baseline, failed_candidate, failed_path)
+    assert failed_receipt["summary"]["failed"] == 1
+    assert failed_receipt["cases"][0]["failure_reason"] == failed_row["failure_reason"]
+    failed_trace = json.loads((failed_candidate / "case-00/trace.json").read_text(encoding="utf-8"))
+    assert failed_trace["frontierPolicy"]["status"] == "failed"
 
 
 def test_candidate_rejects_unreconciled_period_cashflow(tmp_path):

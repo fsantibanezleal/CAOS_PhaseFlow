@@ -24,14 +24,19 @@ def seed_clustered_interval(
     cases: list[dict], *, metric: str = "normalized_npv", replicates: int = BOOTSTRAP_REPLICATES,
     seed: int = BOOTSTRAP_SEED,
 ) -> dict:
-    """Bootstrap seed clusters, averaging repeated family rows within each seed."""
+    """Bootstrap feasible complete/partial seed clusters, averaging repeated rows per seed.
+
+    Rows without an explicit ``feasible=True`` are excluded. This prevents a successful
+    status label from silently admitting a schedule that failed the independent validator.
+    """
     if replicates < 1:
         raise ValueError("bootstrap replicate count must be positive")
     groups: dict[int, list[float]] = {}
     for row in cases:
         value = row.get(metric)
         cluster = row.get("seed")
-        if (row.get("status") not in {"complete", "partial"} or isinstance(cluster, bool)
+        if (row.get("status") not in {"complete", "partial"} or row.get("feasible") is not True
+                or isinstance(cluster, bool)
                 or not isinstance(cluster, int) or isinstance(value, bool)
                 or not isinstance(value, (int, float)) or not math.isfinite(value)):
             continue

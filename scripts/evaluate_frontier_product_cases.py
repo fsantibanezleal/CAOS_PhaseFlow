@@ -117,7 +117,10 @@ def _baseline_cases(
         if not comparable:
             raise ValueError(f"baseline trace has no comparable CPIT method rows: {case_id}")
         bound_payload = trace.get("bound") or {}
-        certified_bound = bound_payload.get("algorithm4")
+        used_bound = bound_payload.get("used")
+        certified_bound = bound_payload.get("joint") if used_bound == "bienstock-zuckerberg" else None
+        if certified_bound is None:
+            certified_bound = bound_payload.get("algorithm4")
         if (isinstance(certified_bound, bool) or not isinstance(certified_bound, (int, float))
                 or not math.isfinite(certified_bound)):
             certified_bound = None
@@ -125,7 +128,8 @@ def _baseline_cases(
             "trace_sha256": hashlib.sha256(trace_path.read_bytes()).hexdigest(),
             "methods": comparable,
             "certified_bound": float(certified_bound) if certified_bound is not None else None,
-            "bound_method": bound_payload.get("used") if certified_bound is not None else None,
+            "bound_method": used_bound if used_bound == "bienstock-zuckerberg" and bound_payload.get("joint") == certified_bound
+            else "algorithm4" if certified_bound is not None else None,
             "published": trace.get("published") or {},
             "trace": trace,
             "manifest": manifest,
@@ -354,6 +358,7 @@ def evaluate(args: argparse.Namespace) -> int:
                 "failure_reason": f"{type(exc).__name__}: {exc}",
                 "case_seconds": time.monotonic() - started, "inference_seconds": inference_seconds,
                 "peak_memory_bytes": memory.peak_bytes,
+                "baseline_trace_sha256": baseline[case_id]["trace_sha256"],
             })
 
     counts = {status: sum(row["status"] == status for row in rows)

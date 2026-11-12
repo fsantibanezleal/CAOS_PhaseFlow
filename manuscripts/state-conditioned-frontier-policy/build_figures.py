@@ -198,7 +198,7 @@ def diagram_split(out: Path):
     specs = [
         (0.3, 2.25, 2.6, "Train", "1,000 graphs", "policy updates", BLUE),
         (3.7, 2.25, 2.0, "Validation", "200 graphs", "checkpoint selection", TEAL),
-        (6.6, 2.25, 2.9, "Synthetic test", "500 graphs", "opened once; outputs lost", RED),
+        (6.6, 2.25, 2.9, "Synthetic test", "500 graphs", "completed; all partial", RED),
     ]
     for x, w, h, t, b, c, col in specs:
         box(ax, (x, 0.95), w, 1.5, t, b + "\n" + c, color=col)
@@ -222,8 +222,8 @@ def diagram_evidence(out: Path):
     steps = [
         (0.25, "Training", "complete", "5 capped members", BLUE),
         (2.75, "Validation", "diagnostic", "200 cases reused", GOLD),
-        (5.25, "Test", "unavailable", "500 outputs lost", RED),
-        (7.75, "Product cases", "unopened", "13 cases untouched", RED),
+        (5.25, "Test", "completed", "500 partial; low coverage", RED),
+        (7.75, "Product cases", "evaluated", "11 partial; 2 failed", RED),
     ]
     for x, title, status, detail, color in steps:
         box(ax, (x, 0.95), 2.0, 1.55, title, f"{status}\n{detail}", color=color)
@@ -232,7 +232,7 @@ def diagram_evidence(out: Path):
     ax.text(
         5,
         0.3,
-        "Only training and validation diagnostics survived; no independent performance result exists",
+        "Independent outcomes are retained; low coverage and unsupported inputs remain release limitations",
         ha="center",
         fontsize=9,
         color=INK,
@@ -244,15 +244,15 @@ def diagram_failure(out: Path):
     fig, ax = plt.subplots(figsize=(9, 3.2))
     ax.set(xlim=(0, 9), ylim=(0, 3.2))
     ax.axis("off")
-    box(ax, (0.3, 1), 2.2, 1.35, "Evaluation loop", "500 cases processed\nin memory", color=BLUE)
-    box(ax, (3.35, 1), 2.2, 1.35, "Final serializer", "exception before\nper-case persistence", color=RED)
-    box(ax, (6.4, 1), 2.2, 1.35, "Surviving record", "split consumed;\nall rows unavailable", color=GOLD)
+    box(ax, (0.3, 1), 2.2, 1.35, "Sample A", "incomplete record;\nexcluded", color=RED)
+    box(ax, (3.35, 1), 2.2, 1.35, "Sample B", "360 of 500 rows;\nincomplete, excluded", color=GOLD)
+    box(ax, (6.4, 1), 2.2, 1.35, "Disjoint sample C", "500 of 500 rows;\nincluded", color=TEAL)
     arrow(ax, (2.55, 1.68), (3.3, 1.68))
     arrow(ax, (5.6, 1.68), (6.35, 1.68))
     ax.text(
         4.5,
         0.35,
-        "In-memory execution is not an auditable result artifact",
+        "Only the complete disjoint sample contributes to the held-out estimate",
         ha="center",
         fontsize=9,
         color=INK,

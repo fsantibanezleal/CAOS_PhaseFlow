@@ -7,7 +7,7 @@ from typing import Sequence
 
 import numpy as np
 
-from .frontier_data import FEATURE_NAMES, generate_graph
+from .frontier_data import FEATURE_NAMES, GENERATOR_VERSION, generate_graph
 from .frontier_policy import FeatureNormalizer
 
 
@@ -21,6 +21,11 @@ def fit_training_normalizer(rows: Sequence[dict]) -> tuple[FeatureNormalizer, st
     for row in rows:
         if not isinstance(row, dict) or set(row) != {"seed", "family", "size", "generator_version"}:
             raise ValueError("training generator rows must match the frozen manifest schema")
+        if row["generator_version"] != GENERATOR_VERSION:
+            raise ValueError(
+                f"training generator version {row['generator_version']!r} differs from "
+                f"the supported {GENERATOR_VERSION!r}"
+            )
         seed = row["seed"]
         if not isinstance(seed, int) or isinstance(seed, bool) or seed in seen_seeds:
             raise ValueError("training generator seeds must be unique integers")

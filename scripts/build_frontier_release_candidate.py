@@ -99,8 +99,20 @@ def _frontier_method(trace: dict[str, Any], result: dict[str, Any], evaluation: 
     method_id = "frontier-policy"
     if any(row.get("method") == method_id for row in trace.get("methods", [])):
         raise ValueError(f"{trace['caseId']}: frontier method already exists in the baseline trace")
-    used = (trace.get("bound") or {}).get("used", "algorithm4")
-    bound = _finite((trace.get("bound") or {}).get(used), f"{trace['caseId']} {used} bound")
+    bound_payload = trace.get("bound") or {}
+    bound = _finite(result.get("certified_bound"), f"{trace['caseId']} certified bound")
+    used_bound = bound_payload.get("used", "algorithm4")
+    bound_key = "joint" if used_bound == "bienstock-zuckerberg" else used_bound
+    declared_bound = bound_payload.get(bound_key)
+    if isinstance(declared_bound, (int, float)) and not isinstance(declared_bound, bool):
+        if abs(float(declared_bound) - bound) > max(0.02, abs(bound) * 1e-9):
+            raise ValueError(f"{trace['caseId']}: evaluated certified bound differs from the baseline trace")
+    else:
+        # Fall back only for older traces that named a bound with no numeric
+        # payload, and require the evaluation receipt to agree with Algorithm 4.
+        algorithm4 = _finite(bound_payload.get("algorithm4"), f"{trace['caseId']} Algorithm 4 bound")
+        if abs(algorithm4 - bound) > max(0.02, abs(bound) * 1e-9):
+            raise ValueError(f"{trace['caseId']}: fallback bound differs from the evaluated certified bound")
     npv = _finite(result.get("npv"), f"{trace['caseId']} NPV")
     if npv > bound * (1 + 1e-9) + 1e-3:
         raise ValueError(f"{trace['caseId']}: frontier NPV exceeds its certified CPIT bound")
@@ -240,9 +252,12 @@ def build_candidate(baseline_root: Path, candidate_root: Path, evaluation_path: 
         if trace.get("caseId") != case_id:
             raise ValueError(f"{case_id}: baseline trace identity differs from the index")
         baseline_trace_sha256 = hashlib.sha256(trace_path.read_bytes()).hexdigest()
-        if result.get("baseline_trace_sha256") != baseline_trace_sha256:
-            raise ValueError(f"{case_id}: baseline trace differs from the paired all-case evaluation")
         status = result.get("status")
+        paired_trace_sha256 = result.get("baseline_trace_sha256")
+        if status in {"complete", "partial"} and paired_trace_sha256 != baseline_trace_sha256:
+            raise ValueError(f"{case_id}: baseline trace differs from the paired all-case evaluation")
+        if paired_trace_sha256 is not None and paired_trace_sha256 != baseline_trace_sha256:
+            raise ValueError(f"{case_id}: supplied baseline trace digest does not match the frozen baseline")
         if status not in status_counts:
             raise ValueError(f"{case_id}: unsupported retained evaluation status")
         status_counts[status] += 1
@@ -286,6 +301,11 @@ def build_candidate(baseline_root: Path, candidate_root: Path, evaluation_path: 
             "feature_contract_sha256": evaluation["feature_contract_sha256"],
             "status": status, "failure_reason": result.get("failure_reason"),
         }
+        if status == "partial":
+            case_receipt["tonnage_coverage"] = _finite(result.get("tonnage_coverage"), "tonnage_coverage")
+            case_receipt["positive_value_coverage"] = _finite(
+                result.get("positive_value_coverage"), "positive_value_coverage",
+            )
         if method is not None:
             case_receipt["trace_sha256"] = hashlib.sha256(trace_bytes).hexdigest()
         case_receipts.append(case_receipt)

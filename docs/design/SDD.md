@@ -168,15 +168,16 @@ already deployed in 0.07.002; the gate protects it.
 
 **BS-1, expected-time ensemble policy.** Hypothesis: a five-member ensemble trained on deposit-disjoint synthetic instances can rank blocks by expected extraction time and produce a feasible precedence-safe CPIT schedule whose discounted NPV is competitive with exact expected-time ordering, while avoiding an LP solve at inference. Method: train each member on the same train-only normalization with frozen, distinct seeds; average predictions; run the shared TopoSort constructor; compare against the classical constructor, sliding-window look-ahead, exact expected-time ordering and exact local-search results under identical deposits and constraints. Evaluation: use seed-disjoint holdout deposits, retain each case and seed, report NPV ratios, feasibility, timing and uncertainty, and test the ONNX and browser implementations against Python. The claim is limited to this benchmark and does not imply a field-wide performance improvement. A result that misses the hypothesis remains in the report and notebook.
 
-**BS-2, state-conditioned frontier policy.** Felipe approved the design direction on 2026-11-01. The graph-conditioned PPO actor, feasible-action mask, independent validator, frozen split, external training receipts, and one-shot synthetic and product-case evaluators are implemented. Run `20261111-bs2-ppo-v4` completed its five validation-selected members under the frozen cap. The synthetic test partition was then opened once; all 500 cases were processed, but the run failed at final JSON serialization before writing the result or any case journal. The split-wide external ledger now records the test outputs as lost and prohibits a repeat. No synthetic test metrics were retained, and none of the 13 product cases has been opened. The policy therefore has no valid held-out evaluation, app replay, or release claim. Recovering empirical evidence requires a separately reviewed, versioned protocol and a new disjoint split; the consumed split cannot be reused. The existing 0.11.000 artifacts remain unchanged while that release path is unresolved.
+**BS-2, state-conditioned frontier policy.** Felipe approved the design direction on 2026-11-01. The graph-conditioned PPO actor, feasible-action mask, independent validator, frozen splits, external training receipts, and one-shot evaluators are implemented. Run `20261111-bs2-ppo-v4` completed its five validation-selected members under the frozen cap. The original test and first recovery samples remain consumed and excluded; the second disjoint recovery sample (`test-split-recovery-02.json`, SHA-256 `11f5f8b8e35412e69012cd8905174717820dfc1f55d84e08680845d2a4db5a1f`) completed all 500 cases. All were feasible partial schedules: mean normalized NPV 0.000847 (median 0), mean positive-value coverage 0.002111 (median 0), and mean tonnage coverage 0.001164 (median 0). The seed-clustered 95% interval for normalized NPV is [0.000525, 0.001270]; the paired difference from greedy TopoSort is positive, but accompanies near-zero coverage and is not evidence of useful plan quality. Product-case evaluation completed once for all 13 cases: 11 feasible partial schedules and 2 explicit unsupported-input failures (`ctrl-degenerate`: one-resource contract; `zuck-small-declared`: no source-backed grade vector). Among the 11 paired outcomes, the policy beat greedy TopoSort in 9, but lost to exact expected-time ordering and most solver-based comparators. These measurements are a negative/low-coverage diagnostic, not a superiority claim. An external structural candidate passes the artifact and receipt validators, but it is based on the frozen 0.11.000 traces rather than a fresh 0.12.000 all-method bake. The full version-consistent bake is in progress. Keep app replay and release promotion closed until that bake, manuscript and notebook corrections, and independent content review pass.
 
 The three feature designs are proposals: the deposit-statistics live guard, the
 learned destination policy, and a scalable sliding window on larger instances
 have not passed implementation or empirical gates. The separately approved
-state-conditioned scheduler has its own versioned 0.12.000 amendment and a
-partial vertical implementation, including completed capped training. Its
-one-shot held-out output is unavailable, so the UI must not claim a measured
-result or expose a replay until new disjoint evidence passes the release gates.
+state-conditioned scheduler has its own versioned 0.12.000 amendment, completed
+capped training and retained one-shot held-out outputs. Its severe coverage
+shortfall and two unsupported product inputs remain explicit; the UI must not
+present it as a complete or generally useful plan. The 0.12.000 replay remains
+unavailable until the full all-method bake and release gates pass.
 
 The uncertainty re-planning estimate uses one fixed policy selected by expected
 NPV, then exact local search in restricted C-PIT[D] neighborhoods on each
@@ -301,7 +302,7 @@ The product template's CI runs static and scientific contract checks on every ch
 | Responsive behavior | Route sizes, charts and navigation are measured across supported viewports. |
 | Design before new work | New feature designs name requirements, implementation boundaries and adversarial verification gates. |
 | Shared base adoption | Shell behavior comes from an exact released package pin; defects are resolved in that shared package. |
-| Frontier scheduler | Offline actor training, feasible-action masking, independent validation and committed replay are specified by `features/learned-frontier/SDD-amendment-0.12.000.md`; training and evaluator code are implemented, five v4 members have validation-selected checkpoints, and the first held-out split was consumed without durable outputs. Product-case evaluation, replay, app exposure and release evidence remain unavailable. |
+| Frontier scheduler | Offline actor training and evaluation are specified by `features/learned-frontier/SDD-amendment-0.12.000.md`; five v4 members and the 500-case synthetic plus 13-case product evaluations are retained. Coverage is near zero and two product cases fail closed. A structural candidate passes artifact checks; fresh all-method rebake, content review and deployment remain open. |
 
 ## Convergence record
 
@@ -309,7 +310,7 @@ This SDD backfills a shipped product and is awaiting independent review.
 The existing requirements are checked by the named gates above.
 Feature records name their approval and implementation state individually. The frontier
 policy direction is approved, its SDD amendment fixes the implementation and evaluation
-boundary, and the code and training are present. Its one-shot synthetic outputs were not
-persisted, so the empirical, product-case, manuscript, notebook, app replay and release
-gates remain open. No training or validation-selected checkpoint is evidence of a held-out
-result.
+boundary, and the code and training are present. The second recovery sample and all product
+cases now have retained outcomes. The very low coverage, two unsupported cases, stale
+committed artifacts, and manuscript/notebook shortfalls keep app replay and release closed.
+The completed evaluation is evidence of those results, not a claim of useful schedule quality.

@@ -98,10 +98,12 @@ def test_peak_rss_sampler_observes_resident_memory_during_case_scope():
 
 def test_synthetic_interval_bootstraps_seed_clusters_and_excludes_failures():
     cases = [
-        {"seed": 1, "family": "benched", "status": "complete", "normalized_npv": 0.2},
-        {"seed": 1, "family": "branching", "status": "partial", "normalized_npv": 0.4},
-        {"seed": 2, "family": "funnel", "status": "complete", "normalized_npv": 0.8},
-        {"seed": 3, "family": "crosscut", "status": "failed", "normalized_npv": 100.0},
+        {"seed": 1, "family": "benched", "status": "complete", "feasible": True, "normalized_npv": 0.2},
+        {"seed": 1, "family": "branching", "status": "partial", "feasible": True, "normalized_npv": 0.4},
+        {"seed": 2, "family": "funnel", "status": "complete", "feasible": True, "normalized_npv": 0.8},
+        {"seed": 3, "family": "crosscut", "status": "failed", "feasible": True, "normalized_npv": 100.0},
+        {"seed": 4, "family": "funnel", "status": "partial", "feasible": False, "normalized_npv": 50.0},
+        {"seed": 5, "family": "funnel", "status": "partial", "normalized_npv": 60.0},
     ]
     interval = seed_clustered_interval(cases, replicates=100, seed=17)
     assert interval["clusters"] == 2

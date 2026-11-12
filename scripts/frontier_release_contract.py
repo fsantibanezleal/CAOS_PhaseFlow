@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
-RELEASE_SCHEMA = "phaseflow.frontier-release/v2"
+RELEASE_SCHEMA = "phaseflow.frontier-release/v3"
 
 
 def validate_v2_split_hashes(receipt: dict) -> None:

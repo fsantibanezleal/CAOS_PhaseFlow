@@ -80,7 +80,7 @@ TEXT = {
                 ),
                 (
                     "Data",
-                    """The training summary omits checkpoint locations but retains the original receipt's digest, source commit, engine version, five member seeds, selected and final checkpoint hashes, transition histories, and compute caps. The validation diagnostic stores one row per declared validation seed, with graph family, size, assignment count, normalized objective, two coverage fractions, and independent validation status. A frozen manifest lists train, validation, and test partitions separately. None of the test rows appears in the validation record, and the thirteen product-case scenarios are not opened here. These are generated records from the PhaseFlow pipeline, not MineLib observations; no external dataset is redistributed. The program code is MIT-licensed, not third-party data. Source: https://github.com/fsantibanezleal/CAOS_PhaseFlow. External checkpoints remain outside the repository.""",
+                    """The training summary omits checkpoint locations but retains the original receipt's digest, source commit, engine version, five member seeds, selected and final checkpoint hashes, transition histories, and compute caps. The validation diagnostic stores one row per declared validation seed, with graph family, size, assignment count, normalized objective, two coverage fractions, and independent validation status. A frozen manifest lists train, validation, and test partitions separately. None of the test rows appears in the validation record. The separate test and product-case results are outside this lesson and are processed in a dedicated analysis. These are generated records from the PhaseFlow pipeline, not MineLib observations; no external dataset is redistributed. The program code is MIT-licensed, not third-party data. Source: https://github.com/fsantibanezleal/CAOS_PhaseFlow. External checkpoints remain outside the repository.""",
                 ),
                 (
                     "Method",
@@ -88,7 +88,7 @@ TEXT = {
                 ),
                 (
                     "Comparison",
-                    """The saved training history and the later validation replay answer different questions. Validation events selected checkpoints, so inspecting those values is part of model selection. The post-selection replay checks surviving policies against the same validation partition and its independent schedule validator. Agreement between the two views is useful for debugging but does not create an independent sample. The lost one-shot synthetic test has no retained case results; its split-wide ledger prohibits repeating it. Product cases remain unopened. We therefore compare records and evidence states, not competing policy performance.""",
+                    """The saved training history and the later validation replay answer different questions. Validation events selected checkpoints, so inspecting those values is part of model selection. The post-selection replay checks surviving policies against the same validation partition and its independent schedule validator. Agreement between the two views is useful for debugging but does not create an independent sample. The original one-shot synthetic test remains consumed and excluded. A later disjoint 500-seed test and the thirteen registered product-case outcomes are documented in a separate worked analysis; this lesson deliberately stays on training and post-selection validation. We therefore compare model-selection records here, not held-out policy performance.""",
                 ),
                 (
                     "Evidence",
@@ -96,11 +96,11 @@ TEXT = {
                 ),
                 (
                     "Results",
-                    """Read the mean beside the median, range, nonempty fraction, assigned blocks, and both forms of coverage. A small positive mean can coexist with a median of zero when most runs return no value-bearing blocks and a few cases carry the aggregate. The member histories also show the finite training budget and actual validation checkpoints. Neither a saved checkpoint hash nor a finite loss curve is an acceptance criterion for a mining schedule. Missing held-out outcomes remain unavailable rather than being reconstructed from model behavior or replaced by validation rows.""",
+                    """Read the mean beside the median, range, nonempty fraction, assigned blocks, and both forms of coverage. A small positive mean can coexist with a median of zero when most runs return no value-bearing blocks and a few cases carry the aggregate. The member histories also show the finite training budget and actual validation checkpoints. Neither a saved checkpoint hash nor a finite loss curve is an acceptance criterion for a mining schedule. This training-validation lesson does not import or recompute held-out outcomes; those are analyzed separately from their own frozen receipts, never reconstructed from model behavior or replaced by validation rows.""",
                 ),
                 (
                     "Summary",
-                    """The record processing is reproducible and the negative evidence is preserved. The current outputs support statements about capped training completion, checkpoint provenance, independently validated schedules on the reused validation set, and sparse case coverage. They do not support a held-out performance result. Recovery requires a reviewed versioned protocol, a new disjoint seed-and-family split, and persisted per-case outputs before any product cases are opened. Use the current notebook to explain that boundary and audit the diagnostics; do not present it as a final benchmark or a deployment artifact.""",
+                    """The record processing is reproducible and the negative evidence is preserved. These outputs support statements about capped training completion, checkpoint provenance, independently validated schedules on the reused validation set, and sparse coverage. They do not establish held-out performance. Consult the separate worked analysis for the disjoint test and product-case results, keeping its low coverage and failed inputs visible. Use this lesson to audit training and selection diagnostics; do not present validation as an independent benchmark or deployment evidence.""",
                 ),
                 (
                     "References",
@@ -176,7 +176,7 @@ TEXT = {
                 ),
                 (
                     "Comparación",
-                    """La historia de entrenamiento y la reproducción posterior de validación responden preguntas distintas. Los eventos de validación seleccionaron checkpoints, por lo que examinarlos forma parte de seleccionar el modelo. La reproducción posterior comprueba políticas supervivientes en esa misma partición y con su validador independiente. La concordancia entre ambas vistas ayuda a depurar, pero no crea una muestra independiente. La prueba sintética de una sola ejecución no retuvo resultados por caso y el registro de partición impide repetirla. Los casos de producto siguen sin abrirse. Por eso comparamos registros y estados de evidencia, no desempeño entre políticas.""",
+                    """La historia de entrenamiento y la reproducción posterior de validación responden preguntas distintas. Los eventos de validación seleccionaron checkpoints, por lo que examinarlos forma parte de seleccionar el modelo. La reproducción posterior comprueba políticas supervivientes en esa misma partición y con su validador independiente. La concordancia entre ambas vistas ayuda a depurar, pero no crea una muestra independiente. La ejecución sintética original se consumió durante la serialización y quedó excluida; después se completó una prueba disjunta de 500 semillas y una evaluación de trece casos de producto. La lección 07 analiza esos recibos por separado. Aquí comparamos registros de entrenamiento y validación posterior a selección, no desempeño de prueba.""",
                 ),
                 (
                     "Evidencia",
@@ -622,7 +622,14 @@ Elige la línea base antes de abrir resultados de prueba y ejecuta ambos método
                 )
             )
         elif lesson == "evidence" and idx == 1:
-            append_code(codes[0])
+            setup, load_records = codes[0].split("RECORDS = ", 1)
+            append_code(setup)
+            cells.append(markdown_cell(
+                "Load the frozen training, selection and split records after the product APIs are available."
+                if language == "en"
+                else "Carga los registros congelados de entrenamiento, selección y partición después de importar las API del producto."
+            ))
+            append_code("RECORDS = " + load_records)
         elif lesson == "evidence" and idx == 3:
             descriptions = {
                 "en": [
@@ -717,10 +724,21 @@ Elige la línea base antes de abrir resultados de prueba y ejecuta ambos método
             sensitivity_code = "# Compare the full set with explicit minimum-assignment filters.\nminimum_blocks = np.array([0, 1, 2, 4])\nsensitivity = []\nfor threshold in minimum_blocks:\n    keep = assigned >= threshold\n    sensitivity.append({'minimum_blocks': int(threshold), 'cases': int(keep.sum()), 'median_npv': float(np.median(npv[keep])), 'median_positive_value_coverage': float(np.median(value_coverage[keep]))})\nprint(sensitivity)\nfig, axes = plt.subplots(1, 2, figsize=(9, 4.2), constrained_layout=True)\naxes[0].plot(minimum_blocks, [row['median_npv'] for row in sensitivity], marker='o')\naxes[0].set(xlabel='Minimum assigned blocks included', ylabel='Median normalized NPV', title='Outcome under inclusion rules')\naxes[1].plot(minimum_blocks, [row['cases'] for row in sensitivity], marker='s', color='#D79222')\naxes[1].set(xlabel='Minimum assigned blocks included', ylabel='Cases retained', title='Denominator after filtering')\nfor ax in axes:\n    ax.grid(alpha=.25)\nplt.show()"
             if language == "es":
                 sensitivity_code = sensitivity_code.replace("# Compare the full set with explicit minimum-assignment filters.", "# Compara todos los casos con filtros explícitos por asignaciones mínimas.").replace("Minimum assigned blocks included", "Mínimo de bloques asignados").replace("Median normalized NPV", "Mediana del NPV normalizado").replace("Outcome under inclusion rules", "Resultado según regla de inclusión").replace("Cases retained", "Casos conservados").replace("Denominator after filtering", "Denominador tras el filtro")
-            append_code(sensitivity_code)
+            calculation, plot = sensitivity_code.split("\nfig, axes =", 1)
+            append_code(calculation)
+            cells.append(markdown_cell(
+                "The first output reports the retained denominator and medians for each threshold. The plot repeats both quantities so exclusion effects remain visible."
+                if language == "en"
+                else "La primera salida informa los denominadores y las medianas para cada umbral. La figura repite ambas cantidades para mantener visibles los efectos de exclusión."
+            ))
+            append_code(
+                ("# Plot retained counts and medians for each inclusion threshold.\n" if language == "en" else
+                 "# Grafica los conteos retenidos y medianas por umbral de inclusión.\n")
+                + "fig, axes =" + plot
+            )
             sensitivity_read = {
                 "en": "The printed row count is the denominator for each filtered statistic. Compare it with the all-case row before interpreting a median change: filtering removes zero and low-assignment outcomes and describes a selected subset, not a better policy. The sensitivity is conditional on these reused validation cases and is not an uncertainty interval.",
-                "es": "El conteo impreso es el denominador de cada estadística filtrada. Compáralo con la fila de todos los casos antes de interpretar un cambio en la mediana: el filtro quita resultados con cero o pocas asignaciones y describe un subconjunto seleccionado, no una política mejor. La sensibilidad es condicional a estos casos de validación reutilizados y no es un intervalo de incertidumbre.",
+                "es": "El conteo impreso es el denominador de cada estadística filtrada. Compáralo con la fila de todos los casos antes de interpretar un cambio en la mediana: el filtro quita resultados con cero o pocas asignaciones y describe un subconjunto seleccionado, no una política mejor. Esta sensibilidad es condicional a validación reutilizada y no es un intervalo de incertidumbre.",
             }
             cells.append(markdown_cell(sensitivity_read[language]))
         if lesson == "mechanics" and idx == 7:

@@ -15,6 +15,8 @@ import argparse
 import hashlib
 import json
 import math
+import subprocess
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 from statistics import median
@@ -84,6 +86,15 @@ def case_label(case_id: str) -> str:
 
 def build(root: Path) -> None:
     root = root.resolve()
+    table_build = subprocess.run(
+        [sys.executable, str(root / "scripts/build_frontier_manuscript_table.py"), "--root", str(root)],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if table_build.returncode:
+        raise SystemExit(f"Could not build the frontier result table:\n{table_build.stdout}\n{table_build.stderr}")
     index = load(root / "data/derived/manifests/index.json")
     case_rows = index.get("cases", [])
     expected_cases = int(index.get("n_cases", -1))
@@ -440,8 +451,8 @@ def build(root: Path) -> None:
     rows.extend([r"\bottomrule\end{longtable}\endgroup"])
     (generated / "method-summary.tex").write_text("\n".join(rows) + "\n", encoding="utf-8")
 
-    input_paths = [root / "manuscripts/build_artifacts.py", root / "data/derived/manifests/index.json", *(root / "data/derived" / c["case_id"] / "trace.json" for c in case_rows), root / "models/training-report.json", root / "models/guard-validation.json", root / "models/expected-time.json", root / "docs/design/features/deposit-statistics-guard/proposal.md"]
-    output_paths = [*report_fig.glob("*.pdf"), *bs1_fig.glob("*.pdf"), *generated.glob("*.tex")]
+    input_paths = [root / "manuscripts/build_artifacts.py", root / "scripts/build_frontier_manuscript_table.py", root / "notebooks/data/frontier-evaluation-summary.json", root / "data/derived/manifests/index.json", *(root / "data/derived" / c["case_id"] / "trace.json" for c in case_rows), root / "models/training-report.json", root / "models/guard-validation.json", root / "models/expected-time.json", root / "docs/design/features/deposit-statistics-guard/proposal.md"]
+    output_paths = [*report_fig.glob("*.pdf"), *bs1_fig.glob("*.pdf"), *generated.glob("*.tex"), root / "manuscripts/state-conditioned-frontier-policy/generated_frontier_summary.tex"]
     receipt = {
         "schema": "phaseflow.manuscript-build-receipt/v1",
         "builder": "manuscripts/build_artifacts.py",

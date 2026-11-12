@@ -62,6 +62,9 @@ def test_frontier_training_normalizer_uses_only_named_train_rows_and_hashes_sour
     assert len(receipt["sha256"]) == 64
     with pytest.raises(ValueError, match="schema"):
         fit_training_normalizer([{"seed": 7101, "family": "benched", "size": 32, "case_id": "heldout"}])
+    stale_version = {**rows[0], "generator_version": "frontier-graphs/0.0.0"}
+    with pytest.raises(ValueError, match="generator version"):
+        fit_training_normalizer([stale_version])
     with pytest.raises(ValueError, match="unique"):
         fit_training_normalizer([rows[0], rows[0]])
 
