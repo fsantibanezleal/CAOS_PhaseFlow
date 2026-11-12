@@ -20,6 +20,7 @@ from evaluate_frontier_product_cases import (  # noqa: E402
     _validate_baseline_pairing,
 )
 import evaluate_frontier_policy as frontier_evaluator  # noqa: E402
+import build_frontier_recovery_manifest as recovery_split  # noqa: E402
 from pipeline.model.frontier_evaluation import seed_clustered_interval  # noqa: E402
 from pipeline.model.frontier_data import generate_graph  # noqa: E402
 from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
@@ -153,6 +154,22 @@ def test_adversarial_synthetic_test_ledger_recovers_completed_cases_without_repe
     assert "not rerun" in state["result"]["failure_reason"]
 
 
+def test_synthetic_final_summary_reads_completed_rows_from_the_durable_case_ledger(tmp_path):
+    manifest = {"test": [{"case_id": "synthetic-funnel-500000", "family": "funnel", "seed": 500000, "size": 32}]}
+    identity = {"split_sha256": "d" * 64, "evaluation_source_commit": "e" * 40}
+    path = frontier_evaluator._test_ledger_path(tmp_path, identity["split_sha256"])
+    ledger = frontier_evaluator._open_test_ledger(path, identity, manifest)
+    result = {"case_id": "synthetic-funnel-500000", "status": "partial", "normalized_npv": 0.125}
+    frontier_evaluator._record_case(path, ledger, result["case_id"], result)
+
+    assert frontier_evaluator._durable_results(path, identity, manifest) == [result]
+    ledger = json.loads(path.read_text(encoding="utf-8"))
+    ledger["cases"][result["case_id"]]["result"]["status"] = "complete"
+    path.write_text(json.dumps(ledger), encoding="utf-8")
+    with pytest.raises(ValueError, match="complete durable case record"):
+        frontier_evaluator._durable_results(path, identity, manifest)
+
+
 def test_adversarial_synthetic_test_ledger_refuses_consumed_split_and_nonfinite_json(tmp_path):
     identity = {"split_sha256": "c" * 64}
     path = frontier_evaluator._test_ledger_path(tmp_path, identity["split_sha256"])
@@ -161,6 +178,36 @@ def test_adversarial_synthetic_test_ledger_refuses_consumed_split_and_nonfinite_
         frontier_evaluator._open_test_ledger(path, identity, {"test": []})
     with pytest.raises(ValueError, match="Out of range"):
         frontier_evaluator._atomic_json(tmp_path / "nonfinite.json", {"value": float("nan")})
+
+
+def test_recovery_test_split_keeps_frozen_development_rows_and_replaces_only_consumed_test_seeds():
+    original, original_sha = frontier_evaluator._frozen_manifest()
+    payload = recovery_split.build_recovery_payload({"sha256": original_sha, "manifest": original})
+    recovered = payload["manifest"]
+    original_test = original["test"]
+    recovered_test = recovered["test"]
+
+    assert payload["schema"] == recovery_split.SCHEMA
+    assert payload["replaces_consumed_test_split_sha256"] == original_sha
+    assert payload["training_split_sha256"] == original_sha
+    assert payload["test_split_sha256"] == frontier_evaluator.manifest_sha256(recovered)
+    assert recovered["train"] == original["train"]
+    assert recovered["validation"] == original["validation"]
+    assert len(recovered_test) == 500
+    assert [row["seed"] for row in recovered_test] == list(range(500_000, 500_500))
+    assert {row["seed"] for row in recovered_test}.isdisjoint(row["seed"] for row in original_test)
+    assert [(row["family"], row["size"]) for row in recovered_test] == [
+        (row["family"], row["size"]) for row in original_test
+    ]
+    assert frontier_evaluator.validate_split_manifest(recovered)["test"] == 500
+
+
+def test_recovery_test_split_rejects_a_modified_original_manifest():
+    original, original_sha = frontier_evaluator._frozen_manifest()
+    modified = json.loads(json.dumps(original))
+    modified["test"][0]["size"] += 1
+    with pytest.raises(ValueError, match="digest does not match"):
+        recovery_split.build_recovery_payload({"sha256": original_sha, "manifest": modified})
 
 
 def test_expected_time_comparison_requires_its_completed_bound():

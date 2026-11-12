@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
 
 from pipeline.model.frontier_release import validate_release_receipt  # noqa: E402
+from frontier_release_contract import validate_v2_split_hashes  # noqa: E402
 
 
 def main() -> int:
@@ -22,7 +23,17 @@ def main() -> int:
     index = json.loads(index_path.read_text(encoding="utf-8"))
     receipt = json.loads(args.receipt.read_text(encoding="utf-8"))
     expected = [row["case_id"] for row in index["cases"]]
-    print(json.dumps(validate_release_receipt(receipt, expected), sort_keys=True))
+    try:
+        validate_v2_split_hashes(receipt)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
+
+    # The data-pipeline validator is frozen with the trained method source at v1.
+    # Adapt only its structural view; the v2-specific split identities are checked above.
+    structural_receipt = dict(receipt)
+    structural_receipt["schema"] = "phaseflow.frontier-release/v1"
+    result = validate_release_receipt(structural_receipt, expected)
+    print(json.dumps(result, sort_keys=True))
     return 0
 
 

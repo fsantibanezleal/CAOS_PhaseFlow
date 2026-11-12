@@ -13,6 +13,7 @@ BASELINE_VERSION = json.loads((ROOT / "data/derived/manifests/index.json").read_
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from build_frontier_release_candidate import build_candidate  # noqa: E402
+from frontier_release_contract import validate_v2_split_hashes  # noqa: E402
 
 
 def _evaluation(case_ids: list[str]) -> dict:
@@ -20,7 +21,8 @@ def _evaluation(case_ids: list[str]) -> dict:
         "product_version": PRODUCT_VERSION, "engine_version": "oreblocks==0.6.6",
         "source_commit": "a" * 40, "training_source_commit": "b" * 40,
         "feature_contract_sha256": "c" * 64, "case_index_sha256": "d" * 64,
-        "split_sha256": "e" * 64, "training_receipt_sha256": "f" * 64,
+        "split_sha256": "e" * 64, "training_split_sha256": "9" * 64,
+        "training_receipt_sha256": "f" * 64,
         "checkpoint_sha256": ["1" * 64, "2" * 64, "3" * 64, "4" * 64, "5" * 64],
         "baseline": {"product_version": BASELINE_VERSION, "engine_version": "oreblocks==0.6.6", "index_sha256": ""},
         "summary": {"cases": 13, "complete": 13, "partial": 0, "failed": 0, "unavailable": 0},
@@ -55,6 +57,27 @@ def _bind_baseline(evaluation: dict, baseline: Path) -> None:
     for result in evaluation["cases"]:
         trace_path = baseline / result["case_id"] / "trace.json"
         result["baseline_trace_sha256"] = hashlib.sha256(trace_path.read_bytes()).hexdigest()
+
+
+def test_release_receipt_requires_both_test_and_training_split_digests():
+    receipt = {
+        "schema": "phaseflow.frontier-release/v2", "product_version": PRODUCT_VERSION,
+        "engine_version": "oreblocks==0.6.6", "source_commit": "a" * 40,
+        "checkpoint_sha256": "b" * 64, "feature_contract_sha256": "c" * 64,
+        "split_sha256": "d" * 64,
+    }
+    with pytest.raises(ValueError, match="training split sha256"):
+        validate_v2_split_hashes(receipt)
+
+
+def test_release_receipt_rejects_same_training_and_test_split():
+    receipt = {
+        "schema": "phaseflow.frontier-release/v2",
+        "split_sha256": "d" * 64,
+        "training_split_sha256": "d" * 64,
+    }
+    with pytest.raises(ValueError, match="distinct evaluation and training splits"):
+        validate_v2_split_hashes(receipt)
 
 
 def test_candidate_assembles_receipts_and_keeps_licensed_schedules_aggregate_only(tmp_path):
@@ -98,6 +121,8 @@ def test_candidate_assembles_receipts_and_keeps_licensed_schedules_aggregate_onl
     receipt = build_candidate(baseline, candidate, evaluation_path)
 
     assert receipt["summary"] == {"cases": 13, "complete": 13, "partial": 0, "failed": 0, "unavailable": 0}
+    assert receipt["split_sha256"] == "e" * 64
+    assert receipt["training_split_sha256"] == "9" * 64
     synthetic_trace = json.loads((candidate / "case-00/trace.json").read_text(encoding="utf-8"))
     assert synthetic_trace["methods"][-1]["method"] == "frontier-policy"
     assert synthetic_trace["methods"][-1]["periodOfBlock"] == [0, 1, -1]

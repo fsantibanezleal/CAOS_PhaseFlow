@@ -15,9 +15,9 @@
     "sha256": "b6f82ef6fe25418ac4613e739fdab5df9097126ddc2d754490fc3faf87bdce65"
   },
   "frontier-release": {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "schema": "docs/contracts/schemas/frontier-release.schema.json",
-    "sha256": "893e5d6d76211135fce8970271b36ec5f936af74871f6aa187eca101dedfd188"
+    "sha256": "6246f3e67e9239e664ad63a0d51dcf4f0b0fc70ba7ab4f6fd335263d9b9d213e"
   },
   "learned-model": {
     "version": "1.0.0",

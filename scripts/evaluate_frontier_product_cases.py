@@ -27,6 +27,7 @@ from pipeline.model.frontier_data import GENERATOR_VERSION  # noqa: E402
 from pipeline.model.frontier_runtime import PeakRSS  # noqa: E402
 from evaluate_frontier_policy import (  # noqa: E402
     _frozen_manifest,
+    _recovery_manifest,
     _load_frozen_ensemble,
     _validate_frozen_method_source,
 )
@@ -221,8 +222,11 @@ def evaluate(args: argparse.Namespace) -> int:
     baseline, baseline_index_hash = _baseline_cases(
         baseline_root, approved_baseline_root, case_ids, expected_version=baseline_version,
     )
-    manifest, split_hash = _frozen_manifest()
+    manifest, training_split_hash = _frozen_manifest()
     del manifest
+    _, test_split_hash, frozen_training_split_hash = _recovery_manifest()
+    if frozen_training_split_hash != training_split_hash:
+        raise ValueError("the recovery test sample does not preserve the frozen training split")
 
     model_root = Path(args.model_root).expanduser().resolve()
     approved_model_root = Path(args.approved_model_root).expanduser().resolve()
@@ -260,13 +264,16 @@ def evaluate(args: argparse.Namespace) -> int:
     synthetic_receipt = json.loads(synthetic_receipt_path.read_text(encoding="utf-8"))
     if (synthetic_receipt.get("source_commit") != source_commit
             or synthetic_receipt.get("training_source_commit") != training_source_commit
-            or synthetic_receipt.get("split_sha256") != split_hash
+            or synthetic_receipt.get("evaluation") != "recovery-synthetic-test-01"
+            or synthetic_receipt.get("split_sha256") != test_split_hash
+            or synthetic_receipt.get("training_split_sha256") != training_split_hash
             or synthetic_receipt.get("summary", {}).get("cases") != 500
             or synthetic_receipt.get("summary", {}).get("failed") != 0
             or synthetic_receipt.get("summary", {}).get("unavailable") != 0):
         raise ValueError("synthetic test receipt is incomplete, failed or belongs to another frozen source")
     models, training_receipt, contract = _load_frozen_ensemble(
-        model_run, data_run, source_commit=training_source_commit, split_hash=split_hash,
+        model_run, data_run, source_commit=training_source_commit,
+        training_split_hash=training_split_hash,
     )
     os.environ["CAOS_DATA_ROOT"] = str(case_data_root)
     build_instance = importlib.import_module("pipeline.model.instances").build_instance
@@ -358,7 +365,8 @@ def evaluate(args: argparse.Namespace) -> int:
         "product_version": target_version, "source_commit": source_commit,
         "training_source_commit": training_source_commit,
         "engine_version": "oreblocks==0.6.6", "generator_version": GENERATOR_VERSION,
-        "case_index_sha256": index_hash, "split_sha256": split_hash,
+        "case_index_sha256": index_hash, "split_sha256": test_split_hash,
+        "training_split_sha256": training_split_hash,
         "baseline": {
             "product_version": baseline_version, "engine_version": "oreblocks==0.6.6",
             "index_sha256": baseline_index_hash,

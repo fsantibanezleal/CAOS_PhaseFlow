@@ -25,6 +25,7 @@ from pipeline.model.frontier_release import validate_training_members  # noqa: E
 from pipeline.model.frontier_policy import Assignment, validate_schedule  # noqa: E402
 
 MANIFEST_PATH = ROOT / "docs/design/features/learned-frontier/split-manifest.json"
+RECOVERY_MANIFEST_PATH = ROOT / "docs/design/features/learned-frontier/test-split-recovery-01.json"
 CASE_INDEX = ROOT / "data/derived/manifests/index.json"
 def _under(path: Path, parent: Path) -> bool:
     try:
@@ -93,6 +94,25 @@ def _record_case(path: Path, ledger: dict, case_id: str, result: dict) -> None:
     _atomic_json(path, ledger)
 
 
+def _durable_results(path: Path, identity: dict, manifest: dict) -> list[dict]:
+    """Read every final case result back from the atomic ledger before summary serialization."""
+    ledger = json.loads(path.read_text(encoding="utf-8"))
+    if ledger.get("identity") != identity or not isinstance(ledger.get("cases"), dict):
+        raise ValueError("the per-case ledger changed identity or has no case map")
+    results = []
+    for row in manifest["test"]:
+        case_id = f"synthetic-{row['family']}-{row['seed']}"
+        record = ledger["cases"].get(case_id)
+        if (not isinstance(record, dict) or record.get("status") not in
+                {"complete", "partial", "failed", "unavailable"}
+                or not isinstance(record.get("result"), dict)
+                or record["result"].get("case_id") != case_id
+                or record["result"].get("status") != record["status"]):
+            raise ValueError(f"{case_id}: final summary requires a complete durable case record")
+        results.append(record["result"])
+    return results
+
+
 def _frozen_manifest() -> tuple[dict, str]:
     if not CASE_INDEX.is_file() or not MANIFEST_PATH.is_file():
         raise ValueError("the committed case index and frozen split ledger are required")
@@ -104,6 +124,28 @@ def _frozen_manifest() -> tuple[dict, str]:
         raise ValueError("the split ledger differs from the frozen graph generator or current product case index")
     validate_split_manifest(manifest["manifest"])
     return manifest["manifest"], expected_hash
+
+
+def _recovery_manifest() -> tuple[dict, str, str]:
+    """Load the committed new test sample while retaining the original training split identity."""
+    if not RECOVERY_MANIFEST_PATH.is_file():
+        raise ValueError("the prospectively frozen recovery test manifest is required")
+    from build_frontier_recovery_manifest import build_recovery_payload
+
+    original, training_split_hash = _frozen_manifest()
+    original_payload = {"sha256": training_split_hash, "manifest": original}
+    expected = build_recovery_payload(original_payload)
+    payload = json.loads(RECOVERY_MANIFEST_PATH.read_text(encoding="utf-8"))
+    if payload != expected:
+        raise ValueError("the recovery test manifest differs from the frozen design or consumed split")
+    manifest = payload["manifest"]
+    validate_split_manifest(manifest)
+    split_hash = manifest_sha256(manifest)
+    if split_hash != payload["test_split_sha256"]:
+        raise ValueError("the recovery test split digest does not match its manifest")
+    if payload["training_split_sha256"] != training_split_hash:
+        raise ValueError("the recovery test manifest changed the frozen training split identity")
+    return manifest, split_hash, training_split_hash
 
 
 def _source_commit() -> str:
@@ -136,7 +178,7 @@ def _validate_frozen_method_source(training_commit: str, evaluation_commit: str)
         raise ValueError("frozen training method, data or protocol changed before evaluation: " + ", ".join(changed))
 
 
-def _load_frozen_ensemble(model_run: Path, data_run: Path, *, source_commit: str, split_hash: str):
+def _load_frozen_ensemble(model_run: Path, data_run: Path, *, source_commit: str, training_split_hash: str):
     receipt_path = data_run / "ensemble-receipt.json"
     contract_path = data_run / "training-contract.json"
     normalization_path = data_run / "feature-normalizer.json"
@@ -147,7 +189,8 @@ def _load_frozen_ensemble(model_run: Path, data_run: Path, *, source_commit: str
     normalization = json.loads(normalization_path.read_text(encoding="utf-8"))
     if receipt.get("complete") is not True or receipt.get("method") != "frontier-policy":
         raise ValueError("the five-member frontier training run is incomplete")
-    if receipt.get("source_commit") != source_commit or receipt.get("split_sha256") != split_hash:
+    if (receipt.get("source_commit") != source_commit
+            or receipt.get("split_sha256") != training_split_hash):
         raise ValueError("training receipt source commit or split ledger differs from the declared frozen training source")
     if receipt.get("training_contract") != contract or receipt.get("normalization") != normalization:
         raise ValueError("training receipt, standalone contract and normalizer disagree")
@@ -236,7 +279,13 @@ def evaluate(args: argparse.Namespace) -> int:
     if dirty.stdout.strip():
         raise ValueError("synthetic test evaluation requires the clean frozen product source")
     evaluation_commit = _source_commit()
-    manifest, split_hash = _frozen_manifest()
+    if args.test_split == "original":
+        manifest, split_hash = _frozen_manifest()
+        training_split_hash = split_hash
+        evaluation_name = "sealed-synthetic-test"
+    else:
+        manifest, split_hash, training_split_hash = _recovery_manifest()
+        evaluation_name = "recovery-synthetic-test-01"
     model_root = Path(args.model_root).expanduser().resolve()
     approved_model_root = Path(args.approved_model_root).expanduser().resolve()
     data_root = Path(args.data_root).expanduser().resolve()
@@ -272,12 +321,15 @@ def evaluate(args: argparse.Namespace) -> int:
         "training_receipt_sha256": training_receipt_sha256,
         "checkpoint_sha256": [row["checkpoint_sha256"] for row in training_receipt["members"]],
         "split_sha256": split_hash,
+        "training_split_sha256": training_split_hash,
+        "evaluation_split": args.test_split,
         "generator_version": GENERATOR_VERSION,
     }
     ledger_path = _test_ledger_path(data_root, split_hash)
     ledger = _open_test_ledger(ledger_path, identity, manifest)
     models, receipt, contract = _load_frozen_ensemble(
-        model_run, data_run, source_commit=training_source_commit, split_hash=split_hash,
+        model_run, data_run, source_commit=training_source_commit,
+        training_split_hash=training_split_hash,
     )
 
     cases: list[dict] = []
@@ -351,15 +403,19 @@ def evaluate(args: argparse.Namespace) -> int:
             _record_case(ledger_path, ledger, case_id, failed_case)
             cases.append(failed_case)
 
+    # Rebuild the final summary from durable per-case records, not the process-local list.
+    cases = _durable_results(ledger_path, identity, manifest)
+
     counts = {status: sum(row["status"] == status for row in cases)
               for status in ("complete", "partial", "failed", "unavailable")}
     numeric = [row["normalized_npv"] for row in cases if row.get("feasible") is True]
     result = {
-        "schema_version": "1.0.0", "method": "frontier-policy", "evaluation": "sealed-synthetic-test",
+        "schema_version": "1.0.0", "method": "frontier-policy", "evaluation": evaluation_name,
         "evaluated_at_utc": datetime.now(timezone.utc).isoformat(), "product_version": frozen_version,
         "source_commit": evaluation_commit, "training_source_commit": training_source_commit,
         "engine_version": "oreblocks==0.6.6",
         "generator_version": GENERATOR_VERSION, "split_sha256": split_hash,
+        "training_split_sha256": training_split_hash,
         "training_data_sha256": contract["training_data_sha256"],
         "feature_contract_sha256": contract["feature_contract_sha256"],
         "training_receipt_sha256": training_receipt_sha256,
@@ -398,6 +454,10 @@ def main() -> int:
     parser.add_argument("--approved-model-root", required=True)
     parser.add_argument("--data-root", required=True)
     parser.add_argument("--approved-data-root", required=True)
+    parser.add_argument(
+        "--test-split", choices=("original", "recovery-01"), default="original",
+        help="select the original one-shot split or its committed disjoint recovery sample",
+    )
     args = parser.parse_args()
     try:
         return evaluate(args)

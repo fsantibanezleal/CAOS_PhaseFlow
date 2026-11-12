@@ -22,7 +22,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "data-pipeline"))
 
 from pipeline.core import readiness  # noqa: E402
-from pipeline.model.frontier_release import RECEIPT_SCHEMA, validate_release_receipt  # noqa: E402
+from pipeline.model.frontier_release import validate_release_receipt  # noqa: E402
+from frontier_release_contract import RELEASE_SCHEMA, validate_v2_split_hashes  # noqa: E402
 
 
 def _json(path: Path) -> dict[str, Any]:
@@ -190,7 +191,8 @@ def build_candidate(baseline_root: Path, candidate_root: Path, evaluation_path: 
     if evaluation.get("product_version") != version or evaluation.get("engine_version") != "oreblocks==0.6.6":
         raise ValueError("evaluation does not match the candidate product and engine versions")
     for field, size in (("source_commit", 40), ("training_source_commit", 40),
-                        ("feature_contract_sha256", 64), ("case_index_sha256", 64), ("split_sha256", 64)):
+                        ("feature_contract_sha256", 64), ("case_index_sha256", 64),
+                        ("split_sha256", 64), ("training_split_sha256", 64)):
         value = evaluation.get(field)
         if not isinstance(value, str) or len(value) != size or any(c not in "0123456789abcdef" for c in value):
             raise ValueError(f"evaluation receipt has an invalid {field}")
@@ -291,7 +293,7 @@ def build_candidate(baseline_root: Path, candidate_root: Path, evaluation_path: 
     index["engine_version"] = version
     _write(index_path, index)
     receipt = {
-        "schema": RECEIPT_SCHEMA,
+        "schema": RELEASE_SCHEMA,
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "product_version": version,
         "engine_version": "oreblocks==0.6.6",
@@ -301,13 +303,17 @@ def build_candidate(baseline_root: Path, candidate_root: Path, evaluation_path: 
         "checkpoint_members_sha256": checkpoints,
         "feature_contract_sha256": evaluation["feature_contract_sha256"],
         "split_sha256": evaluation["split_sha256"],
+        "training_split_sha256": evaluation["training_split_sha256"],
         "case_index_sha256": evaluation["case_index_sha256"],
         "baseline": evaluation["baseline"],
         "cases": case_receipts,
         "summary": {"cases": len(case_receipts), **status_counts},
         "redistribution": "Synthetic period vectors only; licensed MineLib schedules remain period aggregates.",
     }
-    validate_release_receipt(receipt, expected_ids)
+    validate_v2_split_hashes(receipt)
+    structural_receipt = dict(receipt)
+    structural_receipt["schema"] = "phaseflow.frontier-release/v1"
+    validate_release_receipt(structural_receipt, expected_ids)
     _write(candidate_root / "frontier-release-receipt.json", receipt)
     snapshot = readiness.compute(ROOT, derived_root=candidate_root, models_dir=ROOT / "models", version=version)
     readiness.write(candidate_root, snapshot)
