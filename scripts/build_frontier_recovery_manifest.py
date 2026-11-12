@@ -15,8 +15,8 @@ from pipeline.model.frontier_splits import build_split_manifest, manifest_sha256
 
 INDEX = ROOT / "data/derived/manifests/index.json"
 ORIGINAL = ROOT / "docs/design/features/learned-frontier/split-manifest.json"
-OUTPUT = ROOT / "docs/design/features/learned-frontier/test-split-recovery-01.json"
-SEED_START = 500_000
+OUTPUT = ROOT / "docs/design/features/learned-frontier/test-split-recovery-02.json"
+SEED_START = 600_000
 SCHEMA = "phaseflow.frontier-test-recovery/v1"
 
 

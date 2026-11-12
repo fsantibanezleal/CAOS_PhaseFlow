@@ -141,7 +141,7 @@ def test_adversarial_frozen_training_commit_may_have_result_only_evaluation_revi
 
 
 def test_adversarial_synthetic_test_ledger_recovers_completed_cases_without_repeating_started_cases(tmp_path):
-    manifest = {"test": [{"case_id": "synthetic-benched-4", "family": "benched", "seed": 4, "size": 32}]}
+    manifest = {"test": [{"family": "benched", "seed": 4, "size": 32}]}
     identity = {"split_sha256": "a" * 64, "evaluation_source_commit": "b" * 40}
     path = frontier_evaluator._test_ledger_path(tmp_path, identity["split_sha256"])
     ledger = frontier_evaluator._open_test_ledger(path, identity, manifest)
@@ -152,6 +152,25 @@ def test_adversarial_synthetic_test_ledger_recovers_completed_cases_without_repe
     state = resumed["cases"]["synthetic-benched-4"]
     assert state["status"] == "unavailable"
     assert "not rerun" in state["result"]["failure_reason"]
+
+
+def test_atomic_json_retries_transient_windows_sharing_denial(tmp_path, monkeypatch):
+    real_replace = frontier_evaluator.os.replace
+    attempts = 0
+
+    def replace_with_transient_denial(source, target):
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            raise PermissionError("temporary Windows sharing denial")
+        return real_replace(source, target)
+
+    monkeypatch.setattr(frontier_evaluator.os, "replace", replace_with_transient_denial)
+    target = tmp_path / "ledger.json"
+    frontier_evaluator._atomic_json(target, {"cases": {"one": {"status": "complete"}}})
+
+    assert attempts == 3
+    assert json.loads(target.read_text(encoding="utf-8"))["cases"]["one"]["status"] == "complete"
 
 
 def test_synthetic_final_summary_reads_completed_rows_from_the_durable_case_ledger(tmp_path):
@@ -194,8 +213,14 @@ def test_recovery_test_split_keeps_frozen_development_rows_and_replaces_only_con
     assert recovered["train"] == original["train"]
     assert recovered["validation"] == original["validation"]
     assert len(recovered_test) == 500
-    assert [row["seed"] for row in recovered_test] == list(range(500_000, 500_500))
+    assert [row["seed"] for row in recovered_test] == list(range(600_000, 600_500))
     assert {row["seed"] for row in recovered_test}.isdisjoint(row["seed"] for row in original_test)
+    prior_recovery = json.loads(
+        (ROOT / "docs/design/features/learned-frontier/test-split-recovery-01.json").read_text(encoding="utf-8")
+    )
+    assert {row["seed"] for row in recovered_test}.isdisjoint(
+        row["seed"] for row in prior_recovery["manifest"]["test"]
+    )
     assert [(row["family"], row["size"]) for row in recovered_test] == [
         (row["family"], row["size"]) for row in original_test
     ]

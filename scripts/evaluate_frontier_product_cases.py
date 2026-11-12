@@ -264,7 +264,7 @@ def evaluate(args: argparse.Namespace) -> int:
     synthetic_receipt = json.loads(synthetic_receipt_path.read_text(encoding="utf-8"))
     if (synthetic_receipt.get("source_commit") != source_commit
             or synthetic_receipt.get("training_source_commit") != training_source_commit
-            or synthetic_receipt.get("evaluation") != "recovery-synthetic-test-01"
+            or synthetic_receipt.get("evaluation") != "recovery-synthetic-test-02"
             or synthetic_receipt.get("split_sha256") != test_split_hash
             or synthetic_receipt.get("training_split_sha256") != training_split_hash
             or synthetic_receipt.get("summary", {}).get("cases") != 500

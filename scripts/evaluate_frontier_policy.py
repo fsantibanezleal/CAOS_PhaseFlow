@@ -11,6 +11,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import uuid
 
 import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +26,7 @@ from pipeline.model.frontier_release import validate_training_members  # noqa: E
 from pipeline.model.frontier_policy import Assignment, validate_schedule  # noqa: E402
 
 MANIFEST_PATH = ROOT / "docs/design/features/learned-frontier/split-manifest.json"
-RECOVERY_MANIFEST_PATH = ROOT / "docs/design/features/learned-frontier/test-split-recovery-01.json"
+RECOVERY_MANIFEST_PATH = ROOT / "docs/design/features/learned-frontier/test-split-recovery-02.json"
 CASE_INDEX = ROOT / "data/derived/manifests/index.json"
 def _under(path: Path, parent: Path) -> bool:
     try:
@@ -37,12 +38,19 @@ def _under(path: Path, parent: Path) -> bool:
 
 def _atomic_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".pending")
+    temporary = path.with_name(f"{path.name}.{uuid.uuid4().hex}.pending")
     temporary.write_text(
         json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2, allow_nan=False) + "\n",
         encoding="utf-8",
     )
-    os.replace(temporary, path)
+    for attempt in range(6):
+        try:
+            os.replace(temporary, path)
+            return
+        except PermissionError:
+            if attempt == 5:
+                raise
+            time.sleep(0.05 * (attempt + 1))
 
 
 def _test_ledger_path(data_root: Path, split_hash: str) -> Path:
@@ -59,7 +67,10 @@ def _open_test_ledger(path: Path, identity: dict, manifest: dict) -> dict:
             raise ValueError(f"the sealed synthetic test split is {ledger['status']} and cannot be evaluated again")
         if ledger.get("status") != "started" or not isinstance(ledger.get("cases"), dict):
             raise ValueError("the synthetic test ledger is malformed or in an unknown state")
-        rows = {row["case_id"]: row for row in manifest["test"]}
+        rows = {
+            f"synthetic-{row['family']}-{row['seed']}": row
+            for row in manifest["test"]
+        }
         for case_id, state in ledger["cases"].items():
             if (case_id not in rows or not isinstance(state, dict)
                     or state.get("status") not in {"started", "complete", "partial", "failed", "unavailable"}):
@@ -285,7 +296,7 @@ def evaluate(args: argparse.Namespace) -> int:
         evaluation_name = "sealed-synthetic-test"
     else:
         manifest, split_hash, training_split_hash = _recovery_manifest()
-        evaluation_name = "recovery-synthetic-test-01"
+        evaluation_name = "recovery-synthetic-test-02"
     model_root = Path(args.model_root).expanduser().resolve()
     approved_model_root = Path(args.approved_model_root).expanduser().resolve()
     data_root = Path(args.data_root).expanduser().resolve()
@@ -455,7 +466,7 @@ def main() -> int:
     parser.add_argument("--data-root", required=True)
     parser.add_argument("--approved-data-root", required=True)
     parser.add_argument(
-        "--test-split", choices=("original", "recovery-01"), default="original",
+        "--test-split", choices=("original", "recovery-02"), default="original",
         help="select the original one-shot split or its committed disjoint recovery sample",
     )
     args = parser.parse_args()
