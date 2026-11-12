@@ -17,6 +17,9 @@ remain the comparison baseline. It is not a release; publication and deployment 
   source trace to the frozen evaluation, then refreshes manifest sizes and trace digests against the current contract.
 - Declare the frozen frontier evaluation receipt in the trace schema and generated browser contract; refresh the
   generated case result tables so the published measurements include the admitted frontier-policy rows.
+- Refresh the technical-report contract tables and SHA-256 build manifest from the current trace schema, and include
+  the frontier policy's implementation entrypoints and controls in the generated method map. Keep schema identifiers
+  and literal artifact/field names in the manuscript tables without treating them as narrative tier or process terms.
 - Adopt Product Template 0.15.009 and published App Shell 0.26.0. The PhaseFlow workflow rejects version-stamped authored stage inputs and produces its versioned model documents before the bake; the guided case story reserves the settled callout band, remaps linked markers into the reduced drawing, and keeps the phone drawing floor; the template's
   declared-data copier and product hook now deliver case artifacts and released model metadata through one
   clean public-data overlay.

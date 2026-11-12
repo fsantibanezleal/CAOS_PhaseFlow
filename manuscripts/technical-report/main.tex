@@ -201,7 +201,7 @@ This bake is compute-intensive and requires licensed MineLib source files for th
 \texttt{latexmk -pdf -interaction=nonstopmode}\\
 \texttt{-halt-on-error -outdir=build main.tex}
 \end{quote}
-The manuscript build receipt lists SHA-256 digests for every source and generated output used by the shared tables and figures. These commands reproduce public derived summaries when their recorded inputs are available; they do not reproduce licensed source data or external model checkpoints.
+The build manifest records SHA-256 digests for each source and generated output used by the shared tables and figures. The commands reproduce public derived summaries when their recorded inputs are available; they do not reproduce licensed source data or external model checkpoints.
 
 The expected-time ablations use the frozen deposit-disjoint training and holdout cache. After preparing the pinned precompute environment and external model/cache directories, run:
 \begin{quote}\scriptsize

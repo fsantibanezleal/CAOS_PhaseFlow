@@ -9,6 +9,7 @@
 \texttt{destination\allowbreak-sliding\allowbreak-window} & \path{pipeline/stages/solve.py; oreblocks.sliding_window_schedule} & PCPSP re-cut; window 3; fix 1 period; candidate cap 6000; coverage 1.6; MIP gap 0.03. \\
 \texttt{destination\allowbreak-toposort} & \path{pipeline/stages/solve.py; oreblocks.lift_to_pcpsp} & Fix destinations from the PCPSP relaxation, schedule the re-cut with expected-time TopoSort, then lift. \\
 \texttt{exts\allowbreak-two\allowbreak-resource} & \path{pipeline/stages/solve.py; oreblocks.toposort_schedule} & One expected-time order per resource relaxation; retain the best feasible schedule and the minimum bound. \\
+\texttt{frontier\allowbreak-policy} & \path{pipeline/model/frontier_ppo.py::replay_frontier_ensemble; pipeline/model/frontier_policy.py::validate_schedule} & Five-member frozen ensemble; state-conditioned graph scores; precedence/resource action mask; explicit period and schedule stop actions; independent schedule validation. \\
 \texttt{learned\allowbreak-expected\allowbreak-time} & \path{pipeline/model/learned.py; pipeline/stages/solve.py} & Five-member ranker; architecture, features, normalization and seeds are versioned in models/expected-time.json. \\
 \texttt{min\allowbreak-width} & \path{oreblocks.enforce_min_width} & target width 3; start from the best comparable CPIT plan; retain capacity and precedence. \\
 \texttt{nested\allowbreak-shells} & \path{pipeline/stages/solve.py::_shell_weights; oreblocks.toposort_schedule} & Twelve revenue-factor shells; inner shells are scheduled first. \\

@@ -190,7 +190,7 @@ def build(root: Path) -> None:
             rf"Table~\ref{{tab:contract-{tex(contract_id)}}} lists the versioned fields and structural constraints for {tex(contract_id)}; "
             "the table also records observed fields where the shared schema intentionally leaves document detail open.",
             r"\begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}",
-            rf"\caption{{{tex(contract_caption(contract_id))} Contract version {tex(version)}.}}\label{{tab:contract-{tex(contract_id)}}}\\",
+            rf"\caption{{{tex(contract_caption(contract_id))} Schema identifier {tex(version)}.}}\label{{tab:contract-{tex(contract_id)}}}\\",
             r"\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\",
             r"\midrule\endfirsthead",
             r"\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\",
@@ -208,17 +208,30 @@ def build(root: Path) -> None:
                 if path.endswith(".rung"):
                     continue
                 field = path
-                rows.append(
+                row = (
                     rf"\path{{{field}}} & {tex(type_name(node))} & {'yes' if required else 'no'} & "
                     rf"{tex(unit_hint(path, node))} & {tex(constraints(node))} \\")
+                # This is a literal field name from the learned-study JSON contract, not prose.
+                if path.endswith(".honesty"):
+                    row += " % voice-ok: literal schema field name"
+                rows.append(row)
         else:
             rows.append(r"No property-level schema is declared; see observed study document fields below. & object & - & mixed & The shared schema enforces only the outer object shape. \\")
             for path, kind in observed_fields(root, documents):
-                rows.append(rf"\texttt{{{tex(path)}}} & {tex(kind)} & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\")
+                row = rf"\texttt{{{tex(path)}}} & {tex(kind)} & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\"
+                if path.endswith(".honesty"):
+                    row += " % voice-ok: literal source field name"
+                rows.append(row)
+        metadata_line = (
+            rf"\textbf{{Documents:}} \path{{{documents}}}. \textbf{{Producer check:}} \path{{{catalog_row[6]}}}. "
+            rf"\textbf{{Consumer check:}} \path{{{catalog_row[7]}}}. \textbf{{Missing-data behavior:}} {tex(missing)}."
+        )
+        if "receipt" in metadata_line.lower():
+            metadata_line += " % voice-ok: literal artifact path from the contract catalog"
         rows.extend([
             r"\bottomrule\end{longtable}",
             rf"\noindent\textbf{{Implementation:}} \path{{{owner}}}. \textbf{{Data provider:}} {tex(catalog_row[9])}.",
-            rf"\textbf{{Documents:}} \path{{{documents}}}. \textbf{{Producer check:}} \path{{{catalog_row[6]}}}. \textbf{{Consumer check:}} \path{{{catalog_row[7]}}}. \textbf{{Missing-data behavior:}} {tex(missing)}.",
+            metadata_line,
         ])
     rows.append(r"\endgroup")
     target = root / "manuscripts/_shared/generated/contract-reference.tex"

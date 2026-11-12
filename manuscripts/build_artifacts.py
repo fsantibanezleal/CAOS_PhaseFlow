@@ -50,6 +50,7 @@ METHOD_IMPLEMENTATIONS = {
     "sliding-window": ("oreblocks.sliding_window_schedule", "Window 3; fix 1 period; candidate cap 6000; coverage 1.6; MIP gap 0.03."),
     "cpitD-local-search": ("oreblocks.exact_local_search", "d_max 180; 16 rounds up to 8000 blocks, otherwise 10; node cap 2000; MIP gap 0.0001; seed 11."),
     "learned-expected-time": ("pipeline/model/learned.py; pipeline/stages/solve.py", "Five-member ranker; architecture, features, normalization and seeds are versioned in models/expected-time.json."),
+    "frontier-policy": ("pipeline/model/frontier_ppo.py::replay_frontier_ensemble; pipeline/model/frontier_policy.py::validate_schedule", "Five-member frozen ensemble; state-conditioned graph scores; precedence/resource action mask; explicit period and schedule stop actions; independent schedule validation."),
     "destination-toposort": ("pipeline/stages/solve.py; oreblocks.lift_to_pcpsp", "Fix destinations from the PCPSP relaxation, schedule the re-cut with expected-time TopoSort, then lift."),
     "destination-sliding-window": ("pipeline/stages/solve.py; oreblocks.sliding_window_schedule", "PCPSP re-cut; window 3; fix 1 period; candidate cap 6000; coverage 1.6; MIP gap 0.03."),
     "destination-local-search": ("oreblocks.exact_destination_local_search", "d_max 160; 16 rounds up to 8000 blocks, otherwise 10; node cap 2000; MIP gap 0.0001; seed 11."),
