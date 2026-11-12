@@ -16,7 +16,8 @@
       "03-uncertainty/04-learned-expected-time-ensemble.ipynb"
     ],
     "BS-2": [
-      "04-learned-surrogates/03-frontier-state-and-feasibility-mask.ipynb"
+      "04-learned-surrogates/03-frontier-state-and-feasibility-mask.ipynb",
+      "04-learned-surrogates/07-frontier-heldout-evidence.ipynb"
     ]
   },
   "contracts": {
