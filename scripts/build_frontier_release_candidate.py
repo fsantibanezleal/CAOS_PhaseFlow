@@ -40,6 +40,14 @@ def _write(path: Path, payload: dict[str, Any]) -> bytes:
     return encoded
 
 
+def _write_trace(path: Path, payload: dict[str, Any]) -> bytes:
+    """Keep large replay traces compact while writing the same canonical JSON values."""
+    encoded = (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(encoded)
+    return encoded
+
+
 def _finite(value: Any, field: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
         raise ValueError(f"{field} must be a finite number")
@@ -184,6 +192,19 @@ def _scoreboard_row(method: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _normalize_unavailable_node_counts(value: Any) -> None:
+    """Migrate the legacy -1 sentinel to the contract's explicit null representation."""
+    if isinstance(value, dict):
+        for key, child in value.items():
+            if key == "nodes" and child == -1:
+                value[key] = None
+            else:
+                _normalize_unavailable_node_counts(child)
+    elif isinstance(value, list):
+        for child in value:
+            _normalize_unavailable_node_counts(child)
+
+
 def build_candidate(baseline_root: Path, candidate_root: Path, evaluation_path: Path) -> dict[str, Any]:
     """Copy one exact baseline and combine it with one frozen all-case evaluation."""
     baseline_root = baseline_root.resolve()
@@ -284,7 +305,10 @@ def build_candidate(baseline_root: Path, candidate_root: Path, evaluation_path: 
             trace["frontierPolicy"] = {"status": status, "reason": reason[:1000]}
             method = None
 
-        trace_bytes = _write(trace_path, trace)
+        # The frozen 0.11 baseline used -1 when a solver could not report nodes.
+        # Preserve that meaning as null so the current trace contract can validate it.
+        _normalize_unavailable_node_counts(trace)
+        trace_bytes = _write_trace(trace_path, trace)
         manifest_path = candidate_root / entry["manifest_path"]
         manifest = _json(manifest_path)
         manifest["engine"]["version"] = version

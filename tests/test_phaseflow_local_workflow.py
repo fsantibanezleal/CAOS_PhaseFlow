@@ -33,6 +33,9 @@ def test_adversarial_phaseflow_bridge_stages_models_and_computes_readiness(tmp_p
     shutil.copy2(ROOT / "VERSION", stage / "VERSION")
     config = json.loads((ROOT / "scripts/local/workflow.json").read_text(encoding="utf-8"))
     assert config["stage_inputs"] == [], "model bundles are regenerated inside each external candidate stage"
+    assert config["stage_engine_versions"] == {
+        "data/derived/frontier-release-receipt.json": "oreblocks==0.6.6",
+    }
 
     finalized = invoke("phaseflow-finalize", stage)
     assert finalized.returncode == 0, finalized.stderr
@@ -46,6 +49,13 @@ def test_adversarial_phaseflow_bridge_stages_models_and_computes_readiness(tmp_p
         check=False,
     )
     assert checked.returncode == 0, checked.stdout + checked.stderr
+
+
+def test_adversarial_frontier_engine_version_pin_is_declared() -> None:
+    config = json.loads((ROOT / "scripts/local/workflow.json").read_text(encoding="utf-8"))
+    assert config["stage_engine_versions"] == {
+        "data/derived/frontier-release-receipt.json": "oreblocks==0.6.6",
+    }
 
 
 def test_adversarial_phaseflow_bridge_requires_complete_current_registry(tmp_path: Path) -> None:

@@ -3,6 +3,9 @@
     "readiness"
   ],
   "stage_inputs": [],
+  "stage_engine_versions": {
+    "data/derived/frontier-release-receipt.json": "oreblocks==0.6.6"
+  },
   "model_stage_directory": "models",
   "readiness_check": "scripts/check_readiness.py",
   "primary_environment": ".venv-pipeline",

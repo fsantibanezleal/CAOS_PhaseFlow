@@ -5,14 +5,17 @@ Versions are `X.XX.XXX` (major.minor.patch, zero-padded); the manifests carry th
 
 ## [0.12.000] - Unreleased
 
-Approved development line for the state-conditioned frontier scheduler. The 0.11.000/OreBlocks 0.6.6
-artifacts remain the comparison baseline; this candidate is not a release and has no trained-policy or
-deployment evidence yet.
+Approved development line for the state-conditioned frontier scheduler. This candidate now includes the frozen
+frontier-policy receipt and all thirteen product-case outcomes, while the exact 0.11.000/OreBlocks 0.6.6 artifacts
+remain the comparison baseline. It is not a release; publication and deployment gates remain open.
 
 - Require each ensemble member to carry finite validation history and the matching selected-checkpoint hash;
   incomplete or mismatched receipts fail closed.
-- Adopt Product Template 0.15.008 and published App Shell 0.26.0. The PhaseFlow workflow rejects version-stamped authored stage inputs and produces its versioned model documents before the bake; the guided case story reserves the settled callout band
-  band, remaps linked markers into the reduced drawing, and keeps the phone drawing floor; the template's
+- The frozen frontier evaluation reports 11 partial schedules and 2 unsupported product cases, with no unavailable
+  cases. Partial coverage and failures remain in the release receipt; the result is not presented as a complete schedule.
+- The candidate builder normalizes legacy unavailable solver node counts from `-1` to `null` only after matching each
+  source trace to the frozen evaluation, then refreshes manifest sizes and trace digests against the current contract.
+- Adopt Product Template 0.15.009 and published App Shell 0.26.0. The PhaseFlow workflow rejects version-stamped authored stage inputs and produces its versioned model documents before the bake; the guided case story reserves the settled callout band, remaps linked markers into the reduced drawing, and keeps the phone drawing floor; the template's
   declared-data copier and product hook now deliver case artifacts and released model metadata through one
   clean public-data overlay.
 - For a separately frozen run, validate first at 8,192 transitions and every 32,768 thereafter, stop validation

@@ -98,7 +98,9 @@ def test_candidate_assembles_receipts_and_keeps_licensed_schedules_aggregate_onl
             ]},
             "instance": {"nBlocks": 3, "synthetic": case_id != "licensed"},
             "bound": {"used": "algorithm4", "algorithm4": 20.0},
-            "methods": [], "learned": {},
+            "methods": [{"extra": {"localSearchReceipt": {"neighborhoods": [{"nodes": -1}]}}}],
+            "ensemble": {"replanningReceipts": [{"neighborhoods": [{"nodes": -1}]}]},
+            "learned": {},
         }
         trace_path.write_text(json.dumps(trace), encoding="utf-8")
         manifest_path = manifests / f"{case_id}.json"
@@ -134,6 +136,8 @@ def test_candidate_assembles_receipts_and_keeps_licensed_schedules_aggregate_onl
     synthetic_trace = json.loads((candidate / "case-00/trace.json").read_text(encoding="utf-8"))
     assert synthetic_trace["methods"][-1]["method"] == "frontier-policy"
     assert synthetic_trace["methods"][-1]["periodOfBlock"] == [0, 1, -1]
+    assert synthetic_trace["methods"][0]["extra"]["localSearchReceipt"]["neighborhoods"][0]["nodes"] is None
+    assert synthetic_trace["ensemble"]["replanningReceipts"][0]["neighborhoods"][0]["nodes"] is None
     licensed_trace = json.loads((candidate / "licensed/trace.json").read_text(encoding="utf-8"))
     assert "periodOfBlock" not in licensed_trace["methods"][-1]
     assert json.loads((candidate / "manifests/index.json").read_text(encoding="utf-8"))["engine_version"] == PRODUCT_VERSION
