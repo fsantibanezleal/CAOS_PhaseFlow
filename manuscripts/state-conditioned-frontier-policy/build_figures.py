@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Circle
 
 INK = "#172B3A"
@@ -94,30 +96,33 @@ def diagram_decision_cycle(out: Path):
 
 
 def diagram_architecture(out: Path):
-    fig, ax = plt.subplots(figsize=(10, 4.3))
-    ax.set(xlim=(0, 10), ylim=(0, 4.3))
+    fig, ax = plt.subplots(figsize=(10, 5.2))
+    ax.set(xlim=(0, 10), ylim=(0, 5.2))
     ax.axis("off")
-    box(ax, (0.2, 2.55), 2.0, 1.2, "Static graph", "7 node features\nprecedence edges", color=BLUE)
-    box(ax, (0.2, 0.55), 2.0, 1.2, "Dynamic state", "period, capacity,\nvalue, frontier", color=TEAL)
-    box(ax, (3.1, 2.55), 2.1, 1.2, "Graph encoder", "2 message-passing\nlayers, width 64", color=BLUE)
-    box(ax, (3.1, 0.55), 2.1, 1.2, "State encoder", "pooled graph +\nstate vector", color=TEAL)
-    box(ax, (6.0, 2.55), 1.6, 1.2, "Block actor", "one logit\nper block", color=GOLD)
-    box(ax, (6.0, 0.55), 1.6, 1.2, "Stop actor", "period /\nschedule", color=GOLD)
-    box(ax, (8.15, 1.55), 1.6, 1.2, "Masked action", "ensemble logits\nthen argmax", color=RED)
+    box(ax, (0.2, 3.15), 2.0, 1.2, "Static graph", "7 node features\nprecedence edges", color=BLUE)
+    box(ax, (0.2, 0.7), 2.0, 1.2, "Dynamic state", "period, residual\nresources, value", color=TEAL)
+    box(ax, (3.0, 3.15), 2.1, 1.2, "Graph encoder", "2 message-passing\nlayers, width 64", color=BLUE)
+    box(ax, (3.0, 0.7), 2.1, 1.2, "State vector", "frontier size and\ncurrent schedule", color=TEAL)
+    box(ax, (6.0, 3.4), 1.6, 1.15, "Block actor", "node embedding\n+ state", color=GOLD)
+    box(ax, (6.0, 1.9), 1.6, 1.15, "Stop actor", "state only; period /\nschedule logits", color=GOLD)
+    box(ax, (6.0, 0.35), 1.6, 1.15, "Critic", "pooled graph\n+ state", color=BLUE)
+    box(ax, (8.25, 2.5), 1.5, 1.2, "Masked action", "block and stop\nlogits, then argmax", color=RED)
     for s, e in [
-        ((2.22, 3.15), (3.05, 3.15)),
-        ((2.22, 1.15), (3.05, 1.15)),
-        ((5.25, 3.15), (5.95, 3.15)),
-        ((5.25, 1.15), (5.95, 1.15)),
-        ((7.65, 3.05), (8.1, 2.4)),
-        ((7.65, 1.15), (8.1, 1.9)),
+        ((2.22, 3.75), (2.95, 3.75)),       # graph -> encoder
+        ((2.22, 1.3), (2.95, 1.3)),         # dynamic state -> state vector
+        ((5.15, 3.75), (5.95, 4.0)),        # node embeddings -> block actor
+        ((5.15, 3.45), (5.95, 1.0)),        # pooled embedding -> critic
+        ((5.15, 1.35), (5.95, 3.6)),        # state -> block actor
+        ((5.15, 1.25), (5.95, 2.45)),       # state -> stop actor
+        ((5.15, 1.05), (5.95, 0.85)),       # state -> critic
+        ((7.65, 4.0), (8.2, 3.35)),          # block logits -> mask
+        ((7.65, 2.45), (8.2, 2.95)),        # stop logits -> mask
     ]:
         arrow(ax, s, e)
-    arrow(ax, (8.95, 1.5), (2.2, 0.45), color=MID)
     ax.text(
-        5.7,
-        0.08,
-        "assignment updates state; static graph embeddings are reused",
+        5.0,
+        0.12,
+        "state-conditioned actor, state-only stop head, pooled-state critic",
         ha="center",
         fontsize=9,
         color=INK,
@@ -126,19 +131,41 @@ def diagram_architecture(out: Path):
 
 
 def diagram_mask(out: Path):
+    repository = Path(__file__).resolve().parents[2]
+    sys.path.insert(0, str(repository / "data-pipeline"))
+    from pipeline.model.frontier_policy import (
+        Assignment,
+        FrontierInstance,
+        feasible_frontier,
+        precedence_frontier,
+    )
+
+    fixture = FrontierInstance(
+        values=np.zeros(5),
+        resources=np.array([[1.0], [1.0], [1.0], [1.0], [3.0]]),
+        predecessors=((), (0,), (1,), (1,), (0,)),
+        capacities=np.array([[3.0], [5.0]]),
+        discount_rate=0.0,
+    )
+    assignments = (Assignment(block=0, period=0),)
+    ready = precedence_frontier(fixture, assignments, 0)
+    feasible = feasible_frontier(fixture, assignments, 0)
+    if ready != (1, 4) or feasible != (1,):
+        raise ValueError("mask schematic fixture no longer matches the public frontier primitives")
     fig, ax = plt.subplots(figsize=(8, 5.4))
     ax.set(xlim=(0, 8), ylim=(0, 5.4))
     ax.axis("off")
     pos = {0: (1, 4.15), 1: (3, 4.15), 2: (5, 4.15), 3: (3, 2.0), 4: (6.5, 2.0)}
-    edges = [(0, 1), (1, 2), (1, 3), (2, 4)]
+    # A is assigned. B is ready; C and D wait on B. E is ready but exceeds capacity.
+    edges = [(0, 1), (1, 2), (1, 3), (0, 4)]
     for u, v in edges:
         arrow(ax, (pos[u][0] + 0.25, pos[u][1] - 0.1), (pos[v][0] - 0.25, pos[v][1] + 0.1), color=MID)
     labels = {
         0: "A · assigned",
         1: "B · eligible",
-        2: "C · eligible",
-        3: "D · waits for C",
-        4: "E · capacity blocked",
+        2: "C · waits for B",
+        3: "D · waits for B",
+        4: "E · ready, capacity blocked",
     }
     colors = {0: TEAL, 1: BLUE, 2: BLUE, 3: RED, 4: RED}
     for node, (x, y) in pos.items():
@@ -146,14 +173,14 @@ def diagram_mask(out: Path):
         ax.add_patch(circ)
         ax.text(x, y, str(node), ha="center", va="center", fontweight="bold", color=INK)
         ax.text(x, y - 0.56, labels[node], ha="center", va="top", fontsize=9, color=colors[node])
-    box(ax, (0.5, 0.18), 2.7, 0.62, "Current capacity", "remaining resource vector", color=TEAL, fontsize=8)
+    box(ax, (0.5, 0.18), 2.7, 0.62, "Period 1 resources", "capacity 3; A uses 1; residual 2", color=TEAL, fontsize=8)
     box(
         ax,
         (4.35, 0.18),
         3.1,
         0.62,
         "Mask result",
-        "{B, C, stop-period, stop-schedule}",
+        "{" + ", ".join(chr(ord("A") + i) for i in feasible) + ", stop-period, stop-schedule}",
         color=GOLD,
         fontsize=8,
     )
@@ -258,7 +285,7 @@ def plot_validation_replay(out: Path, diagnostic: dict):
     left.bar(["nonempty"], [diagnostic["nonempty_schedule_fraction"]], color=BLUE, width=0.55)
     left.set_ylim(0, 1)
     left.set_ylabel("Fraction of validation cases")
-    left.set_title("Schedule completion", color=INK, fontweight="bold")
+    left.set_title("Nonempty schedules", color=INK, fontweight="bold")
     left.text(
         0,
         diagnostic["nonempty_schedule_fraction"] + 0.04,

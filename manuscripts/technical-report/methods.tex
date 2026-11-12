@@ -6,9 +6,9 @@ For an eligible block $b$, the greedy priority uses its declared economic value.
 
 Let $q(b)$ be the priority score and $E(S)$ the current eligible set after the scheduled set $S$. At each step the next block is $b^*=\arg\max_{b\in E(S)}q(b)$, with deterministic tie-breaking by case block order. The earliest feasible period is
 \begin{equation}
- t^*(b)=\min\left\{t:\;L_{rt}+a_{rb}\leq c_{rt}\quad\forall r\in R\right\},
+t^*(b)=\min\left\{t:\;t\geq\max\left(\{1\}\cup\{t_a:a\in\operatorname{pred}(b)\}\right),\quad L_{rt}+a_{rb}\leq c_{rt}\quad\forall r\in R\right\},
 \end{equation}
-where $L_{rt}$ is resource use already assigned in period $t$. If no such period exists, the constructor records a refusal rather than silently exceeding capacity. When a block is placed, its successors may become eligible and every resource total is updated. Feasibility follows from the eligibility and capacity predicates only when the input precedence graph and resource fields have themselves passed validation.
+where $t_a$ is the period assigned to predecessor $a$ and $L_{rt}$ is resource use already assigned in period $t$. The lower bound enforces precedence when a predecessor is assigned later than an earlier feasible capacity slot. The implementation visits one stable weighted topological order. If a predecessor was left unmined or no period satisfies the lower bound and capacities, that block remains unmined and the constructor continues to later entries; it returns a possibly partial schedule. The caller decides whether completeness is required. Every returned assignment satisfies precedence and capacity when the input graph and resource fields pass validation.
 
 The naive implementation scans all unassigned blocks to rebuild eligibility and scans periods and resources for each candidate. Its bound is $O(|B|^2+|B||T||R|)$ before score construction; maintaining indegrees and a priority queue reduces graph traversal to $O((|B|+|A|)\log |B|)$, while period checks still depend on the assignment strategy. A successor-value recurrence over a DAG can be computed in reverse topological order in $O(|B|+|A|)$, but the recurrence's duplicate-path interpretation must remain explicit. These are operation-count descriptions, not wall-time promises across different graph sizes, Python versions, or solver environments.
 
@@ -21,16 +21,15 @@ The naive implementation scans all unassigned blocks to rebuild eligibility and 
 \label{alg:constructive}
 \begin{algorithmic}[1]
 \Require Acyclic precedence graph, block values, resource coefficients, period capacities, priority $q$
-\State $S\gets\varnothing$; initialize period loads $L_{rt}\gets0$
-\While{$S\neq B$}
-  \State $E\gets\{b\notin S:\operatorname{pred}(b)\subseteq S\}$
-  \If{$E=\varnothing$} \State record invalid graph and stop \EndIf
-  \State choose highest-priority $b\in E$ with deterministic tie-breaking
-  \State find earliest $t$ with $L_{rt}+a_{rb}\leq c_{rt}$ for every $r$
-  \If{no such $t$} \State record infeasible remainder and stop \EndIf
+\State Construct a stable topological order, breaking ties by $q$ and block index
+\State Initialize assigned set $S\gets\varnothing$ and period loads $L_{rt}\gets0$
+\For{each block $b$ in that order}
+  \If{some required predecessor of $b$ is unassigned} \State leave $b$ unmined; continue \EndIf
+  \State find earliest $t\geq\max(\{1\}\cup\{t_a:a\in\operatorname{pred}(b)\})$ with $L_{rt}+a_{rb}\leq c_{rt}$ for every $r$
+  \If{no such $t$} \State leave $b$ unmined; continue \EndIf
   \State assign $b$ to $t$; update $S$ and all $L_{rt}$
-\EndWhile
-\State independently validate precedence, uniqueness, resources, and objective
+\EndFor
+\State Independently validate every emitted assignment; return a complete or partial schedule
 \end{algorithmic}
 \end{algorithm}
 
@@ -152,24 +151,25 @@ The predictions determine only priority; feasibility comes from the common const
 
 The hypothesis is narrowly about schedule quality on unseen generated deposits while avoiding the exact LP ranking at inference. On the 432 synthetic holdout cases, the median ratio to exact ExTS is 0.9405, the mean is 0.9401, the tenth percentile 0.8364, and the minimum 0.7101; one third fall below 0.90. The learned schedule beats greedy in 92.13 percent of those cases. Two separately identified real benchmark cases yield ratios 0.9989 and 0.8987; two cases are not an estimate of transfer to a population of mines. The independent warning validation misses many failures and falls below the frozen precision, recall and worst-unflagged thresholds, so the warning remains unavailable.
 
-These are results of the current serialized experiment, not universal performance guarantees. A full ablation must isolate feature groups, ensemble size and training-data design under the same frozen seed partitions. Those ablation results are not yet part of this report and are not fabricated from aggregate metrics. The current values are also tied to the validated 0.11 baseline and must be recomputed if a new canonical bake changes the method or case artifacts. Python, ONNX and browser parity, failure rates by family, runtimes, and uncertainty intervals belong in the result table and notebook so the user can judge whether a fast ranker is useful for a particular task.
+These results describe a fixed synthetic design, not universal performance guarantees. The paired ablation table in the companion study reports the five-member mean ratio as 0.940 [0.927, 0.957], with seed-cluster bootstrap uncertainty; removing depth, grade, and radial features reduces the mean to 0.674 [0.6677, 0.6820]. A half-size training set yields 0.943 [0.930, 0.959], but the interval and lower tail remain conditional on six independent holdout deposits. The ablations therefore quantify sensitivity within this generator and design. They do not identify causal effects of individual features or predict transfer to arbitrary mines.
+\input{../bs1-expected-time-policy/generated_ablations.tex}
 
 The target is an extraction-time fraction produced by a relaxation, rather than a directly observed period in an operating mine. Its usefulness depends on how faithfully that ranking transfers to a feasible schedule after precedence and capacity repair. Regression error and schedule value are therefore distinct outcomes: a predictor can have a modest absolute time error but preserve a valuable ordering, or have a small average error while misordering a critical frontier. The study reports rank correlation and schedule-value ratios together, and evaluates every case through the same downstream constructor. No metric is interpreted as a substitute for the paired objective comparison.
 
 The experiment's controlled factors are deposit family, deposit seed, grid size, capacity scenario, discount rate and horizon. Deposit seeds, not individual block rows, define the split because thousands of rows from one graph share structure. The 432 holdout cases cross six held-out deposits, four generated families, nine declared scenarios and two grid sizes. The row-level training count is much larger, but it does not increase the number of independent deposit replicates. The uncertainty analysis must therefore cluster at the deposit seed or report descriptive case distributions without a false independent-row standard error.
 
-An informative ablation must preserve that split and retrain each candidate on the same train-only normalization. Planned contrasts include a single seeded member versus the five-member mean, removal of the predecessor-recurrence features, removal of grade and radial features, and a reduced training set matched by deposit family. For each contrast, the paired holdout ratio against the full model is computed per deposit seed and scenario; failure rate and worst-case ratio remain visible. These are not current measured results. The manuscript will include the ablation table only after the controlled runs complete and their configuration and outputs are checked against the frozen split. Until then the absent ablation is an explicit completeness defect, not a null finding or an assumed benefit of ensembling.
+Table~\ref{tab:expected-time-ablations} reports the completed paired ablations from the same six-seed holdout. The five-member ensemble has a mean ratio of 0.940, while removing recurrence features changes it to 0.932. The displayed intervals describe each candidate mean separately rather than the paired difference; this 0.008 gap is descriptive and does not establish an ensemble or recurrence benefit. Removing depth, grade, and radial features produces a substantially lower mean of 0.674 and a wider lower tail, indicating that this feature bundle matters within the tested generator. Training on half the deposit set gives a mean of 0.943, but this descriptive contrast does not show that less training data is generally sufficient: the estimate is based on six independent holdout seeds and a single declared training subset. Member-specific rows expose variation hidden by the ensemble average. These comparisons are conditional on the fixed generator, split, and model configurations; they do not isolate causal effects among correlated features or establish transfer to operating mines.
 
-For ablation candidate $k$, the paired change is normalized by the exact comparator on the same case:
+For ablation candidate $k$, the paired change from the full ensemble is normalized by the exact comparator on the same case:
 \begin{equation}
  \Delta_{k,c}=\frac{V_{k,c}-V_{full,c}}{V_{\mathrm{ExTS},c}},
  \qquad c\in\mathcal C_{holdout}.
 \end{equation}
-The distribution of $\Delta_{k,c}$ must be summarized by deposit seed before any interval is computed. This defines the estimand without claiming an effect before the ablation is run. The denominator is positive for the eligible study cases; if future cases admit nonpositive comparator values, this ratio is undefined and the report must switch to a paired value difference rather than clip or shift the denominator.
+The paired contrast $\Delta_{k,c}$ is defined on the same case-level scores, but Table~\ref{tab:expected-time-ablations} reports candidate-to-comparator ratio intervals rather than a cluster-bootstrap interval for $\Delta_{k,c}$. Marginal interval overlap cannot answer the paired contrast. We therefore treat its size as a descriptive quantity and make no inferential claim about a difference between candidates. The estimates describe the declared synthetic holdout and do not establish effects beyond this fixed generator and split. The denominator is positive for the eligible study cases; if future cases admit nonpositive comparator values, this ratio is undefined and the report must switch to a paired value difference rather than clip or shift the denominator.
 
 \subsection{State-conditioned feasible-frontier policy}
 \label{sec:method-frontier}
-The state-conditioned policy is an approved method in the 0.12.000 candidate. It conditions decisions on the partial schedule rather than using a static per-block ranking. The state contains the current period, assigned-period vector, residual resources, accumulated value, and the precedence frontier. At each decision, the actor scores only blocks that are both precedence-eligible and feasible under the remaining resources of that period. Separate stop-period and stop-schedule actions allow the policy to leave capacity unused or return a partial schedule; coverage is measured rather than hidden. The 0.12.000 v4 training run completed five capped members and selected checkpoints by its declared validation rule. Its validation scores and the subsequent loss of the one-shot test output are reported in Section~\ref{sec:frontier-results}.
+The state-conditioned policy conditions decisions on the partial schedule rather than using a static per-block ranking. The state contains the current period, assigned-period vector, residual resources, accumulated value, and the precedence frontier. At each decision, the actor scores only blocks that are both precedence-eligible and feasible under the remaining resources of that period. Separate stop-period and stop-schedule actions allow the policy to leave capacity unused or return a partial schedule; coverage is measured rather than hidden. Five training members reached their declared stopping budgets and selected checkpoints by the predeclared validation rule. Their training and validation records, and the subsequent loss of the one-shot test output, are reported in Section~\ref{sec:frontier-results}.
 
 Let $s_t$ be the partial schedule state and $\mathcal A(s_t)$ the feasible action mask. The masked policy is
 \begin{equation}
