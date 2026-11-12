@@ -38,6 +38,8 @@ frontend/public/pyodide/
 
 # --- Raw / heavy data : commit ONLY the compact derived artifacts under data/derived/ ---
 data/raw/
+# Release receipt is emitted only when a release candidate has valid source and case evidence.
+data/derived/frontier-release-receipt.json
 *.parquet
 *.h5
 *.hdf5
