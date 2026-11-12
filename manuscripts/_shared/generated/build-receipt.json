@@ -29,7 +29,7 @@
     "docs/contracts/versions.lock.json": "be1ff6bfbbdc8a4100916230f3dacbbd7bcf7fb965cb3511f41e8d84504e8e0f",
     "docs/design/features/deposit-statistics-guard/proposal.md": "ee5a2087314793c8706119095c322dbafbc8675a8a61c517b87af06f9f88087a",
     "manuscripts/build_artifacts.py": "937d347fb08a3e4de5ea72f3d658796eed59097eedf9dfaf93f4dcfe3e5242ff",
-    "manuscripts/build_contract_reference.py": "5c91f0752636314b03c4264cd961f12b3b96d705ed3397cf2661755b92b19594",
+    "manuscripts/build_contract_reference.py": "9d84c81f0db0099862bf3d185df471b070050731285069b61f1f33ea23510f60",
     "models/expected-time.json": "855d5154deebc68c0de0c869d0f9b82787f22bbbea8320e256cd1a441b3e8e68",
     "models/guard-validation.json": "5d8e0aee189e1ccb1f603efe1fc1ff79e621431dbb542c1c37cb853b538ba23c",
     "models/learned-failure-modes.json": "1ea0803d4e5eb0da6fd61d083631bfab37cc3801ee905b4713c7cb6008d2cb60",
@@ -41,7 +41,7 @@
   },
   "outputs": {
     "manuscripts/_shared/generated/case-method-outcomes.tex": "c2c3163110327dca903a9072bb62427678a939459c03642cddb6af616774658a",
-    "manuscripts/_shared/generated/contract-reference.tex": "bb008e190844124157adb5e222b286dc1cb3d3a946be8aa096ebc6bd10607456",
+    "manuscripts/_shared/generated/contract-reference.tex": "e0cadff7150bdc3967f566b90d59b531eb5f412c1098a0c17cd4cdb04fa9c013",
     "manuscripts/_shared/generated/guard-validation.tex": "caf2138b59f41f59d45f4e5ccb8eef40f28b611dea77f75aae5e63b7b14f2e4e",
     "manuscripts/_shared/generated/learned-by-archetype.tex": "49a2d92f780d0dc7e1da30e33959f51070731c4d54412d76efa55d16f4134be3",
     "manuscripts/_shared/generated/method-summary.tex": "318e9458280dc956c699d6285bf760c06e961fd2f3be80fc3b8b8236e172e314",

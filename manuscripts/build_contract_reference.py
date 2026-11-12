@@ -180,7 +180,7 @@ def build(root: Path) -> None:
         r"\begingroup\small\setlength{\tabcolsep}{3pt}",
         r"\subsection{Field-level contract reference}",
         r"\label{sec:data-contract-fields}",
-        "The tables below are generated from the catalog, locked versions, and JSON Schemas. Producer, consumer, and missing-data behavior reproduce the catalog entries. The field rows report JSON types, required status, declared structural constraints, and the physical-unit convention where it is encoded. For fields whose physical unit depends on a case, the table says so rather than assigning a unit not present in the schema.",
+        "The tables below are generated from the catalog, locked versions, and JSON Schemas. Producer, consumer, and missing-data behavior reproduce the catalog entries. The field rows report JSON types, required status, declared structural constraints, and the physical-unit convention where it is encoded. Internal display-classification metadata are omitted from these reader-facing tables; the versioned JSON Schemas retain the exact serialized contract. For fields whose physical unit depends on a case, the table says so rather than assigning a unit not present in the schema.",
     ]
     for contract_id, catalog_row in catalog.items():
         version = lock[contract_id]["version"]
@@ -205,10 +205,12 @@ def build(root: Path) -> None:
             fields = []
         if fields:
             for path, node, required in fields:
+                if path.endswith(".rung"):
+                    continue
                 field = path
                 rows.append(
                     rf"\path{{{field}}} & {tex(type_name(node))} & {'yes' if required else 'no'} & "
-                    rf"{tex(unit_hint(path, node))} & {tex("four display categories; method names and case outcomes are listed directly" if path.endswith(".rung") else constraints(node))} \\")
+                    rf"{tex(unit_hint(path, node))} & {tex(constraints(node))} \\")
         else:
             rows.append(r"No property-level schema is declared; see observed study document fields below. & object & - & mixed & The shared schema enforces only the outer object shape. \\")
             for path, kind in observed_fields(root, documents):

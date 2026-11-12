@@ -1,7 +1,7 @@
 \begingroup\small\setlength{\tabcolsep}{3pt}
 \subsection{Field-level contract reference}
 \label{sec:data-contract-fields}
-The tables below are generated from the catalog, locked versions, and JSON Schemas. Producer, consumer, and missing-data behavior reproduce the catalog entries. The field rows report JSON types, required status, declared structural constraints, and the physical-unit convention where it is encoded. For fields whose physical unit depends on a case, the table says so rather than assigning a unit not present in the schema.
+The tables below are generated from the catalog, locked versions, and JSON Schemas. Producer, consumer, and missing-data behavior reproduce the catalog entries. The field rows report JSON types, required status, declared structural constraints, and the physical-unit convention where it is encoded. Internal display-classification metadata are omitted from these reader-facing tables; the versioned JSON Schemas retain the exact serialized contract. For fields whose physical unit depends on a case, the table says so rather than assigning a unit not present in the schema.
 Table~\ref{tab:contract-case-index} lists the versioned fields and structural constraints for case-index; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
 \caption{Fields, types, requiredness and schema constraints for case-index, covering registered cases and their manifest references in the PhaseFlow pipeline. Contract version 1.0.0.}\label{tab:contract-case-index}\\
@@ -96,7 +96,6 @@ Table~\ref{tab:contract-case-manifest} lists the versioned fields and structural
 \path{scoreboard} & array & yes & units not specified & min items: 1 \\
 \path{scoreboard[]} & object & no & units not specified & no additional range declared \\
 \path{scoreboard[].method} & string & yes & no physical unit & no additional range declared \\
-\path{scoreboard[].rung} & enum & yes & no physical unit & four display categories; method names and case outcomes are listed directly \\
 \path{scoreboard[].npv} & number & yes & case economic unit & no additional range declared \\
 \path{scoreboard[].bound} & number & yes & units not specified & no additional range declared \\
 \path{scoreboard[].gap_pct} & number & yes & units not specified & no additional range declared \\
@@ -335,7 +334,6 @@ Table~\ref{tab:contract-schedule-trace} lists the versioned fields and structura
 \path{methods} & array & yes & units not specified & min items: 1 \\
 \path{methods[]} & object & no & units not specified & no additional range declared \\
 \path{methods[].method} & string & yes & no physical unit & no additional range declared \\
-\path{methods[].rung} & enum & yes & no physical unit & four display categories; method names and case outcomes are listed directly \\
 \path{methods[].heuristic} & boolean & yes & no physical unit & no additional range declared \\
 \path{methods[].npv} & number & yes & case economic unit & no additional range declared \\
 \path{methods[].bound} & number & yes & units not specified & no additional range declared \\
