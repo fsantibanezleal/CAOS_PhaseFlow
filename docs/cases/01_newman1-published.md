@@ -104,6 +104,7 @@ the largest one.
 | `destination-sliding-window` | Additional analyses | 23,428,619 | PCPSP LP | 4.32% | 19.3 s | 10.8 / 82% |
 | `destination-local-search` | Additional analyses | 23,875,641 | PCPSP LP | 2.49% | 16.9 s | 9.2 / 83% |
 | `min-width` | Additional analyses | 23,872,009 | joint LP | 2.51% | 54 ms | 8.5 / 85% |
+| `frontier-policy` | Additional analyses | 23,054,389 | joint LP | 5.85% | 9.3 s | 8.4 / 88% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/newman1-published.json` by `scripts/docs_tables.py`.*

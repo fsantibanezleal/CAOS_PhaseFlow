@@ -15,6 +15,8 @@ remain the comparison baseline. It is not a release; publication and deployment 
   cases. Partial coverage and failures remain in the release receipt; the result is not presented as a complete schedule.
 - The candidate builder normalizes legacy unavailable solver node counts from `-1` to `null` only after matching each
   source trace to the frozen evaluation, then refreshes manifest sizes and trace digests against the current contract.
+- Declare the frozen frontier evaluation receipt in the trace schema and generated browser contract; refresh the
+  generated case result tables so the published measurements include the admitted frontier-policy rows.
 - Adopt Product Template 0.15.009 and published App Shell 0.26.0. The PhaseFlow workflow rejects version-stamped authored stage inputs and produces its versioned model documents before the bake; the guided case story reserves the settled callout band, remaps linked markers into the reduced drawing, and keeps the phone drawing floor; the template's
   declared-data copier and product hook now deliver case artifacts and released model metadata through one
   clean public-data overlay.

@@ -25,6 +25,7 @@ of its own problem, how often it was the best comparable plan, and its median co
 | `destination-sliding-window` | Additional analyses | PCPSP LP | 9 / 13 | 2.68% | 0.00% | 19.22% | n/a | 61.5 min |
 | `destination-local-search` | Additional analyses | PCPSP LP | 9 / 13 | 2.49% | 0.00% | 18.95% | n/a | 2.5 s |
 | `min-width` | Additional analyses | CPIT bound | 13 / 13 | 2.23% | 0.00% | 6.64% | 0 | 335 ms |
+| `frontier-policy` | Additional analyses | CPIT bound | 11 / 13 | 15.08% | 3.64% | 86.69% | 0 | 2.3 min |
 <!-- /generated -->
 
 ## 2. Only compare through the same bound of the same problem

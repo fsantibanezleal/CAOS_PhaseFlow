@@ -53,6 +53,7 @@ the largest one.
 | `destination-sliding-window` | Additional analyses | 437,899,435 | PCPSP LP | 0.21% | 10.6 min | 26.8 / 79% |
 | `destination-local-search` | Additional analyses | 438,028,477 | PCPSP LP | 0.18% | 5.3 s | 27.2 / 79% |
 | `min-width` | Additional analyses | 427,631,216 | Algorithm 4 | 0.26% | 350 ms | 1.4 / 89% |
+| `frontier-policy` | Additional analyses | 413,153,254 | Algorithm 4 | 3.64% | 3.8 min | 6.2 / 78% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/ctrl-abundant.json` by `scripts/docs_tables.py`.*

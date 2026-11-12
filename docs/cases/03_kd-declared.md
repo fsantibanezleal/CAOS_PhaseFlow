@@ -69,9 +69,10 @@ the largest one.
 | `cpitD-local-search` | Published methods | 216,143,500 | Algorithm 4 | 15.02% | 730 ms | 63.3 / 55% |
 | `learned-expected-time` | Learned methods | 189,960,771 | Algorithm 4 | 25.31% | 1.0 s | 40.1 / 63% |
 | `min-width` | Additional analyses | 237,448,231 | Algorithm 4 | 6.64% | 378 ms | 25.9 / 75% |
-| `destination-toposort` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
-| `destination-sliding-window` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
+| `frontier-policy` | Additional analyses | 204,147,475 | Algorithm 4 | 19.74% | 12.5 min | 65.8 / 54% |
 | `destination-local-search` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
+| `destination-sliding-window` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
+| `destination-toposort` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/kd-declared.json` by `scripts/docs_tables.py`.*

@@ -68,6 +68,7 @@ the largest one.
 | `destination-sliding-window` | Additional analyses | 1,218,078,183 | PCPSP LP | 10.80% | 7.47 h | 5.9 / 84% |
 | `destination-local-search` | Additional analyses | 1,223,250,862 | PCPSP LP | 10.42% | 16.0 s | 6.3 / 84% |
 | `min-width` | Additional analyses | 1,071,699,061 | Algorithm 4 | 3.55% | 483 ms | 3.2 / 91% |
+| `frontier-policy` | Additional analyses | 954,631,473 | Algorithm 4 | 14.08% | 5.6 min | 24.6 / 76% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/twin-layered.json` by `scripts/docs_tables.py`.*

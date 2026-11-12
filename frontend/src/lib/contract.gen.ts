@@ -171,6 +171,20 @@ export interface components {
                 [key: string]: unknown;
             };
             methods: components["schemas"]["traceMethod"][];
+            frontierPolicy?: {
+                /** @enum {unknown} */
+                status: "complete" | "partial";
+                source: string;
+                trainingSourceCommit: string;
+                evaluationSourceCommit: string;
+                trainingReceiptSha256: string;
+                featureContractSha256: string;
+                checkpointSha256: string[];
+            } | {
+                /** @enum {unknown} */
+                status: "failed" | "unavailable";
+                reason: string;
+            };
             blocks?: components["schemas"]["traceBlocks"];
         } & {
             [key: string]: unknown;

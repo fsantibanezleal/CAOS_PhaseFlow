@@ -72,6 +72,7 @@ the largest one.
 | `destination-sliding-window` | Additional analyses | 299,142,002 | PCPSP LP | 19.22% | 61.5 min | 7.2 / 84% |
 | `destination-local-search` | Additional analyses | 300,153,975 | PCPSP LP | 18.95% | 9.0 s | 7.6 / 83% |
 | `min-width` | Additional analyses | 285,102,255 | Algorithm 4 | 0.10% | 691 ms | 4.7 / 95% |
+| `frontier-policy` | Additional analyses | 223,609,744 | Algorithm 4 | 21.65% | 3.7 min | 25.4 / 59% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/twin-vein.json` by `scripts/docs_tables.py`.*

@@ -49,9 +49,10 @@ the largest one.
 | `cpitD-local-search` | Published methods | 169,795,008 | joint LP | 8.04% | 970 ms | 7.1 / 86% |
 | `learned-expected-time` | Learned methods | 167,477,587 | joint LP | 9.29% | 10.4 s | 72.2 / 27% |
 | `min-width` | Additional analyses | 181,077,136 | joint LP | 1.93% | 1.2 s | 10.6 / 73% |
-| `destination-toposort` | - | not run | - | - | - |  |
-| `destination-sliding-window` | - | not run | - | - | - |  |
+| `frontier-policy` | Additional analyses | 159,223,871 | joint LP | 13.76% | 63.3 s | 41.0 / 51% |
 | `destination-local-search` | - | not run | - | - | - |  |
+| `destination-sliding-window` | - | not run | - | - | - |  |
+| `destination-toposort` | - | not run | - | - | - |  |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/regime-high-discount.json` by `scripts/docs_tables.py`.*

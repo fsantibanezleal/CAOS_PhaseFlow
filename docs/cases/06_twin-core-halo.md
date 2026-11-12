@@ -65,6 +65,7 @@ the largest one.
 | `destination-sliding-window` | Additional analyses | 124,663,892 | PCPSP LP | 5.46% | 28.03 h | 21.2 / 61% |
 | `destination-local-search` | Additional analyses | 124,888,370 | PCPSP LP | 5.29% | 2.0 s | 22.3 / 60% |
 | `min-width` | Additional analyses | 94,383,318 | Algorithm 4 | 3.07% | 334 ms | 12.3 / 45% |
+| `frontier-policy` | Additional analyses | 12,960,636 | Algorithm 4 | 86.69% | 4.0 min | 56.1 / 52% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/twin-core-halo.json` by `scripts/docs_tables.py`.*

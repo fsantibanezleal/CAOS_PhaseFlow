@@ -58,8 +58,9 @@ the largest one.
 | `learned-expected-time` | Learned methods | 112,281,367 | joint LP | 13.42% | 339 ms | 56.2 / 24% |
 | `destination-toposort` | Additional analyses | 190,273,768 | PCPSP LP | 8.36% | 76.9 s | 22.5 / 55% |
 | `min-width` | Additional analyses | 124,764,861 | joint LP | 3.79% | 118 ms | 10.7 / 58% |
-| `destination-sliding-window` | - | not run | - | - | - |  |
+| `frontier-policy` | Additional analyses | 101,124,142 | joint LP | 22.02% | 41.9 s | 34.4 / 37% |
 | `destination-local-search` | - | not run | - | - | - |  |
+| `destination-sliding-window` | - | not run | - | - | - |  |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/regime-mill-bound.json` by `scripts/docs_tables.py`.*

@@ -61,10 +61,10 @@ the largest one.
 | `sliding-window` **(best)** | Published methods | 705,009,489 | joint LP | 1.98% | 109.7 min | 64.0 / 69% |
 | `cpitD-local-search` | Published methods | 597,620,803 | joint LP | 16.91% | 454 ms | 48.4 / 78% |
 | `min-width` | Additional analyses | 703,210,121 | joint LP | 2.23% | 314 ms | 42.9 / 74% |
-| `learned-expected-time` | - | not run | - | - | - | no source grade field for the learned input features |
-| `destination-toposort` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
-| `destination-sliding-window` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
 | `destination-local-search` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
+| `destination-sliding-window` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
+| `destination-toposort` | - | not run | - | - | - | no matching source PCPSP model or synthetic destination economics |
+| `learned-expected-time` | - | not run | - | - | - | no source grade field for the learned input features |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/zuck-small-declared.json` by `scripts/docs_tables.py`.*

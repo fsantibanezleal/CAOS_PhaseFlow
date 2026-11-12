@@ -63,6 +63,7 @@ the largest one.
 | `destination-sliding-window` | Additional analyses | 314,005,926 | PCPSP LP | 0.78% | 87.5 min | 25.4 / 70% |
 | `destination-local-search` | Additional analyses | 314,279,336 | PCPSP LP | 0.69% | 1.2 s | 25.2 / 70% |
 | `min-width` | Additional analyses | 231,603,548 | joint LP | 1.12% | 128 ms | 12.5 / 72% |
+| `frontier-policy` | Additional analyses | 209,106,102 | joint LP | 10.73% | 66.6 s | 41.0 / 51% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/twin-porphyry-s.json` by `scripts/docs_tables.py`.*

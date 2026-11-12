@@ -56,6 +56,7 @@ the largest one.
 | `destination-sliding-window` | Additional analyses | 182,955,949 | PCPSP LP | 2.68% | 4.9 min | 16.4 / 45% |
 | `destination-local-search` | Additional analyses | 182,965,952 | PCPSP LP | 2.67% | 2.5 s | 16.6 / 45% |
 | `min-width` | Additional analyses | 182,955,949 | Algorithm 4 | 2.68% | 104 ms | 16.4 / 45% |
+| `frontier-policy` | Additional analyses | 136,789,709 | Algorithm 4 | 27.24% | 53.0 s | 59.7 / 35% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/regime-mining-bound.json` by `scripts/docs_tables.py`.*
