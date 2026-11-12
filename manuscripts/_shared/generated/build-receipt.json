@@ -19,12 +19,13 @@
     "data/derived/twin-vein/trace.json": "cdcc3f9fca4e825d249e6aec7946dd5614f1f26deb9ee3ea5b270dbc5fb5e274",
     "data/derived/zuck-small-declared/trace.json": "e32192845c5bf79d1acb3fc96ef7640f2506b719a15d4d33eba962271ac58565",
     "docs/design/features/deposit-statistics-guard/proposal.md": "ee5a2087314793c8706119095c322dbafbc8675a8a61c517b87af06f9f88087a",
-    "manuscripts/build_artifacts.py": "2b043c6699dc802e3fd50d9a79d7feff07dd35eaa5e0ec878d456f09beda2223",
+    "manuscripts/build_artifacts.py": "39698a7d2b499424c4f84089519638c2474902d06525a6286181b6efe8bf712b",
     "models/expected-time.json": "855d5154deebc68c0de0c869d0f9b82787f22bbbea8320e256cd1a441b3e8e68",
     "models/guard-validation.json": "5d8e0aee189e1ccb1f603efe1fc1ff79e621431dbb542c1c37cb853b538ba23c",
     "models/training-report.json": "a84d23641323683406bd4fe56057944c0252205f0a10f4b217744c56b211cec3",
     "notebooks/data/frontier-evaluation-summary.json": "2978cd919c86cab5213a70865e369731a14d04a30be76541bc3a4d37d8ecac0d",
-    "scripts/build_frontier_manuscript_table.py": "75e9ab4c62146c5333d0e71b3adcf5dde202f088ce5aa451304d46110df0e7ce"
+    "scripts/build_frontier_manuscript_table.py": "75e9ab4c62146c5333d0e71b3adcf5dde202f088ce5aa451304d46110df0e7ce",
+    "manuscripts/build_contract_reference.py": "375c2883d3bbb1eee543a87e610b9a99f3e50e8b8428fdf2b25b36b2603c913a"
   },
   "outputs": {
     "manuscripts/_shared/generated/guard-validation.tex": "caf2138b59f41f59d45f4e5ccb8eef40f28b611dea77f75aae5e63b7b14f2e4e",
@@ -50,7 +51,8 @@
     "manuscripts/technical-report/figures/method-gap-distribution.pdf": "d568f5f3ced8066f65379a1f085655b297a1b9ed34ca34f8065558b23aa3af46",
     "manuscripts/technical-report/figures/method-row-counts.pdf": "60364df123842100e065287135be6c52f235f4b5c1e940bfb372e4411ad3c840",
     "manuscripts/technical-report/figures/method-runtime.pdf": "fa7932757080ca36b9681dc182bb4a4ae08fdbece9420a2895f0f0aa096af4b0",
-    "manuscripts/technical-report/figures/system-architecture.pdf": "b932886cbe46d3545cafe9192e129def73b4faaafbc23107f0f0852cd758b1b6"
+    "manuscripts/technical-report/figures/system-architecture.pdf": "b932886cbe46d3545cafe9192e129def73b4faaafbc23107f0f0852cd758b1b6",
+    "manuscripts/_shared/generated/contract-reference.tex": "b057ce12bef4e2681a27fc2dc13131f00d2207787a1434c7187e8a2b69bdf833"
   },
   "registered_cases": 13,
   "method_names": [

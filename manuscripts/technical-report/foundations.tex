@@ -111,6 +111,8 @@ The frontier evaluation record binds a candidate replay to one product version, 
 
 The evidence record has two validation layers. JSON Schema constrains required fields, digest syntax, status-dependent fields, and the fixed case count. The Python validator then checks cross-row invariants such as matching versions, commits, checkpoint identity, case membership, and status totals. Neither layer establishes that the model is scientifically useful; they establish that the candidate is internally coherent and traceable to the stated inputs. The synthetic test estimate uses one disjoint 500-seed sample. A separate evaluation covers all thirteen registered cases, with eleven partial schedules and two fail-closed input outcomes. These results establish traceability, not usefulness: low coverage and the absence of any complete policy schedule preclude interpreting feasibility as evidence of useful extraction.
 
+\input{../_shared/generated/contract-reference.tex}
+
 \section{System architecture}
 \label{sec:software-architecture}
 \subsection{Deterministic case pipeline}

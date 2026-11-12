@@ -1,0 +1,556 @@
+\begingroup\small\setlength{\tabcolsep}{3pt}
+\subsection{Field-level contract reference}
+\label{sec:data-contract-fields}
+The tables below are generated from the catalog, locked versions, and JSON Schemas. Producer, consumer, and missing-data behavior reproduce the catalog entries. The field rows report JSON types, required status, declared structural constraints, and the physical-unit convention where it is encoded. For fields whose physical unit depends on a case, the table says so rather than assigning a unit not present in the schema.
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
+\caption{Fields in the case-index contract, version 1.0.0.}\label{tab:contract-case-index}\\
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endhead
+\path{schema} & constant & yes & no physical unit & const: "phaseflow.index/v1" \\
+\path{engine_version} & string & yes & no physical unit & pattern: \textasciicircum{}\textbackslash{}d+\textbackslash{}.\textbackslash{}d\{2\}\textbackslash{}.\textbackslash{}d\{3\}\$ \\
+\path{n_cases} & integer & yes & count & minimum: 1 \\
+\path{cases} & array & yes & units not specified & min items: 1 \\
+\path{cases[]} & object & no & units not specified & no additional range declared \\
+\path{cases[].case_id} & string & yes & no physical unit & min length: 1 \\
+\path{cases[].category} & string & yes & no physical unit & min length: 1 \\
+\path{cases[].manifest_path} & string & yes & no physical unit & pattern: \textasciicircum{}manifests/[\textasciicircum{}/]+\textbackslash{}.json\$ \\
+\path{cases[].default} & boolean & yes & no physical unit & no additional range declared \\
+\path{cases[].lane} & enum & yes & no physical unit & enum: ["live","replay"] \\
+\path{cases[].title} & object & yes & units not specified & no additional range declared \\
+\path{cases[].title.en} & string & yes & no physical unit & min length: 1 \\
+\path{cases[].title.es} & string & yes & no physical unit & min length: 1 \\
+\path{cases[].role} & object & yes & units not specified & no additional range declared \\
+\path{cases[].role.en} & string & yes & no physical unit & min length: 1 \\
+\path{cases[].role.es} & string & yes & no physical unit & min length: 1 \\
+\bottomrule\end{longtable}
+\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/manifest.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
+\textbf{Documents:} \path{data/derived/manifests/index.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: release gates fail before deployment; stale: the index engine version differs from VERSION.
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
+\caption{Fields in the case-manifest contract, version 1.1.0.}\label{tab:contract-case-manifest}\\
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endhead
+\path{schema} & constant & yes & no physical unit & const: "phaseflow.manifest/v1" \\
+\path{case_id} & string & yes & no physical unit & min length: 1 \\
+\path{category} & string & yes & no physical unit & min length: 1 \\
+\path{real_or_synthetic} & enum & yes & no physical unit & enum: ["real","synthetic"] \\
+\path{engine} & object & yes & units not specified & no additional range declared \\
+\path{engine.version} & string & yes & no physical unit & no additional range declared \\
+\path{engine.oreblocks} & string & no & no physical unit & no additional range declared \\
+\path{engine.source} & string & no & no physical unit & no additional range declared \\
+\path{scenario} & object & yes & units not specified & no additional range declared \\
+\path{scenario.periods} & integer & yes & count & minimum: 1 \\
+\path{scenario.discount_rate} & number & yes & dimensionless & no additional range declared \\
+\path{scenario.period_one_undiscounted} & boolean & yes & no physical unit & no additional range declared \\
+\path{scenario.n_resources} & integer & yes & count & minimum: 1 \\
+\path{scenario.declared} & boolean & yes & no physical unit & no additional range declared \\
+\path{scenario.capacity_fraction} & array & no & resource-specific input unit & no additional range declared \\
+\path{scenario.capacity_fraction[]} & number & no & resource-specific input unit & no additional range declared \\
+\path{scenario.limit_per_period} & array & yes & units not specified & no additional range declared \\
+\path{scenario.limit_per_period[]} & number & no & units not specified & no additional range declared \\
+\path{scenario.resource_names} & array & yes & resource-specific input unit & no additional range declared \\
+\path{scenario.resource_names[]} & string & no & no physical unit & no additional range declared \\
+\path{instance} & object & yes & units not specified & no additional range declared \\
+\path{instance.n_blocks} & integer & yes & count & minimum: 1 \\
+\path{instance.n_precedence_arcs} & integer & yes & count & minimum: 0 \\
+\path{instance.upit_value} & number & yes & case economic unit & no additional range declared \\
+\path{instance.upit_blocks} & integer & yes & count & minimum: 0 \\
+\path{artifact} & object & yes & units not specified & no additional range declared \\
+\path{artifact.path} & string & yes & no physical unit & pattern: \textasciicircum{}[\textasciicircum{}/].*trace\textbackslash{}.json\$ \\
+\path{artifact.format} & constant & yes & no physical unit & const: "json" \\
+\path{artifact.trace_schema} & constant & yes & no physical unit & const: "phaseflow.schedule-trace/v1" \\
+\path{artifact.bytes} & integer & yes & bytes & minimum: 1 \\
+\path{lane} & enum & yes & no physical unit & enum: ["live","replay"] \\
+\path{gate} & object & yes & units not specified & no additional range declared \\
+\path{gate.lane} & enum & yes & no physical unit & enum: ["live","replay"] \\
+\path{gate.n_blocks} & integer & yes & count & minimum: 0 \\
+\path{gate.n_arcs} & integer & yes & count & minimum: 0 \\
+\path{gate.trace_bytes} & integer & yes & bytes & minimum: 0 \\
+\path{gate.offline_ms} & number & yes & milliseconds & minimum: 0 \\
+\path{gate.budgets} & object & yes & units not specified & no additional range declared \\
+\path{gate.budgets.blocks} & integer & yes & count & minimum: 0 \\
+\path{gate.budgets.arcs} & integer & yes & count & minimum: 0 \\
+\path{gate.budgets.trace_bytes} & integer & yes & bytes & minimum: 0 \\
+\path{gate.reasons} & array & yes & units not specified & no additional range declared \\
+\path{gate.reasons[]} & string & no & no physical unit & no additional range declared \\
+\path{flags} & array & yes & units not specified & no additional range declared \\
+\path{controls} & object & yes & units not specified & no additional range declared \\
+\path{controls.dualitySetMatches} & boolean & no & no physical unit & no additional range declared \\
+\path{controls.dualityBoundError} & number & no & units not specified & no additional range declared \\
+\path{controls.boundGeqFeasible} & boolean & no & no physical unit & no additional range declared \\
+\path{controls.orderInvariant} & boolean & no & no physical unit & no additional range declared \\
+\path{controls.orderInvarianceError} & number & no & units not specified & no additional range declared \\
+\path{controls.allPass} & boolean & yes & no physical unit & no additional range declared \\
+\path{controls.bestGapPct} & number & no & units not specified & no additional range declared \\
+\path{controls.worstGapPct} & number & no & units not specified & no additional range declared \\
+\path{best} & JSON value & yes & units not specified & no additional range declared \\
+\path{best (anyOf 1)} & object & yes & units not specified & no additional range declared \\
+\path{best (anyOf 1).method} & string & yes & no physical unit & no additional range declared \\
+\path{best (anyOf 1).gap_pct} & number & yes & units not specified & no additional range declared \\
+\path{best (anyOf 2)} & null & yes & units not specified & no additional range declared \\
+\path{scoreboard} & array & yes & units not specified & min items: 1 \\
+\path{scoreboard[]} & object & no & units not specified & no additional range declared \\
+\path{scoreboard[].method} & string & yes & no physical unit & no additional range declared \\
+\path{scoreboard[].rung} & enum & yes & no physical unit & four display categories; method names and case outcomes are listed directly \\
+\path{scoreboard[].npv} & number & yes & case economic unit & no additional range declared \\
+\path{scoreboard[].bound} & number & yes & units not specified & no additional range declared \\
+\path{scoreboard[].gap_pct} & number & yes & units not specified & no additional range declared \\
+\path{scoreboard[].runtime_ms} & number & yes & milliseconds & no additional range declared \\
+\path{scoreboard[].notes} & string & no & no physical unit & no additional range declared \\
+\path{scoreboard[].measured_vs_exact} & number or null & no & units not specified & no additional range declared \\
+\path{scoreboard[].components_mean} & number & no & units not specified & no additional range declared \\
+\path{scoreboard[].largest_share_mean} & number & no & units not specified & no additional range declared \\
+\path{scoreboard[].utilization} & array & no & units not specified & no additional range declared \\
+\path{scoreboard[].utilization[]} & array & no & units not specified & no additional range declared \\
+\path{scoreboard[].utilization[][]} & number or null & no & units not specified & no additional range declared \\
+\path{scoreboard[].extra} & object & no & units not specified & no additional range declared \\
+\path{published} & object & yes & units not specified & no additional range declared \\
+\path{published.problem} & enum & no & no physical unit & enum: ["CPIT","PCPSP"] \\
+\path{published.source_tables} & string & no & no physical unit & no additional range declared \\
+\path{published.upit_optimum} & number & no & units not specified & no additional range declared \\
+\path{published.lp_bound} & number & no & units not specified & no additional range declared \\
+\path{published.best_known} & number & no & units not specified & no additional range declared \\
+\path{published.best_known_gap_pct} & number & no & units not specified & no additional range declared \\
+\path{published.source} & string & no & no physical unit & no additional range declared \\
+\path{bound_summary} & object & no & units not specified & no additional range declared \\
+\path{bound_summary.algorithm4} & number & yes & units not specified & no additional range declared \\
+\path{bound_summary.algorithm4_ms} & number & yes & milliseconds & no additional range declared \\
+\path{bound_summary.closure_solves} & integer & yes & count & no additional range declared \\
+\path{bound_summary.joint} & number or null & yes & units not specified & no additional range declared \\
+\path{bound_summary.joint_ms} & number or null & yes & milliseconds & no additional range declared \\
+\path{bound_summary.joint_iterations} & integer or null & yes & dimensionless & no additional range declared \\
+\path{bound_summary.joint_converged} & boolean or null & yes & units not specified & no additional range declared \\
+\path{bound_summary.tightening_pct} & number or null & yes & units not specified & no additional range declared \\
+\path{bound_summary.used} & string & yes & no physical unit & no additional range declared \\
+\path{bound_summary.joint_nodes} & integer or null & yes & units not specified & no additional range declared \\
+\path{bound_summary.joint_edges} & integer or null & yes & units not specified & no additional range declared \\
+\path{bound_summary.joint_skipped} & string or null & yes & units not specified & no additional range declared \\
+\path{bound_summary.joint_note} & string or null & yes & units not specified & no additional range declared \\
+\path{bound_summary.pcpsp_lp} & number or null & yes & units not specified & no additional range declared \\
+\path{bound_summary.pcpsp_lp_ms} & number or null & yes & milliseconds & no additional range declared \\
+\path{bound_summary.pcpsp_lp_rows} & integer or null & yes & units not specified & no additional range declared \\
+\path{bound_summary.pcpsp_lp_status} & string or null & yes & units not specified & no additional range declared \\
+\path{bound_summary.pcpsp_lp_method} & string or null & no & units not specified & no additional range declared \\
+\path{bound_summary.pcpsp_lp_iterations} & integer or null & no & dimensionless & no additional range declared \\
+\path{bound_summary.pcpsp_lp_gap_estimate} & number or null & no & units not specified & no additional range declared \\
+\path{bound_summary.pcpsp_lp_slack} & number or null & no & units not specified & no additional range declared \\
+\path{bound_summary.pcpsp_lp_note} & string or null & no & units not specified & no additional range declared \\
+\path{bound_summary.pcpsp_lp_error} & string or null & no & units not specified & no additional range declared \\
+\path{bound_summary.skipped_methods} & object or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary} & object & no & units not specified & no additional range declared \\
+\path{ensemble_summary.ran} & boolean or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.reason} & string or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.nRealisations} & integer or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.sigma} & number or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.methods} & array or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.methods[]} & string & no & no physical unit & no additional range declared \\
+\path{ensemble_summary.expected} & array or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.expected[]} & number & no & units not specified & no additional range declared \\
+\path{ensemble_summary.p10} & array or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.p10[]} & number & no & units not specified & no additional range declared \\
+\path{ensemble_summary.p90} & array or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.p90[]} & number & no & units not specified & no additional range declared \\
+\path{ensemble_summary.meanModel} & array or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.meanModel[]} & number & no & units not specified & no additional range declared \\
+\path{ensemble_summary.optimism} & array or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.optimism[]} & number & no & units not specified & no additional range declared \\
+\path{ensemble_summary.bestByExpected} & string or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.bestByP10} & string or null & yes & units not specified & no additional range declared \\
+\path{ensemble_summary.valueOfReplanningPct} & number or null & yes & case economic unit & no additional range declared \\
+\path{ensemble_summary.resolveMethod} & string or null & no & units not specified & no additional range declared \\
+\path{ensemble_summary.fixedPolicy} & string or null & no & units not specified & no additional range declared \\
+\path{ensemble_summary.fixedPolicyExpectedNpv} & number or null & no & case economic unit & no additional range declared \\
+\path{ensemble_summary.replannedExpectedNpv} & number or null & no & case economic unit & no additional range declared \\
+\path{ensemble_summary.replanningElapsedSeconds} & number or null & no & units not specified & no additional range declared \\
+\path{ensemble_summary.replanningSettings} & JSON value & no & units not specified & no additional range declared \\
+\path{ensemble_summary.replanningSettings (anyOf 1)} & object & no & units not specified & no additional range declared \\
+\path{ensemble_summary.replanningSettings (anyOf 2)} & null & no & units not specified & no additional range declared \\
+\bottomrule\end{longtable}
+\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/manifest.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
+\textbf{Documents:} \path{data/derived/manifests/*.json, !data/derived/manifests/index.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: the release gate reports the missing manifest and blocks promotion.
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
+\caption{Fields in the schedule-trace contract, version 1.4.0.}\label{tab:contract-schedule-trace}\\
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endhead
+\path{schema} & constant & yes & no physical unit & const: "phaseflow.schedule-trace/v1" \\
+\path{caseId} & string & yes & no physical unit & min length: 1 \\
+\path{category} & string & yes & no physical unit & min length: 1 \\
+\path{title} & object & yes & units not specified & no additional range declared \\
+\path{title.en} & string & yes & no physical unit & min length: 1 \\
+\path{title.es} & string & yes & no physical unit & min length: 1 \\
+\path{role} & object & yes & units not specified & no additional range declared \\
+\path{role.en} & string & yes & no physical unit & min length: 1 \\
+\path{role.es} & string & yes & no physical unit & min length: 1 \\
+\path{instance} & object & yes & units not specified & no additional range declared \\
+\path{instance.source} & enum & yes & no physical unit & enum: ["twin","minelib"] \\
+\path{instance.synthetic} & boolean & yes & no physical unit & no additional range declared \\
+\path{instance.nBlocks} & integer & yes & count & minimum: 1 \\
+\path{instance.nPrecedenceArcs} & integer & yes & count & minimum: 0 \\
+\path{instance.gradeSource} & string or null & yes & input grade unit & no additional range declared \\
+\path{instance.dims} & array & yes & units not specified & min items: 3; max items: 3 \\
+\path{instance.dims[]} & integer & no & count & minimum: 1 \\
+\path{instance.upitValue} & number & yes & case economic unit & no additional range declared \\
+\path{instance.upitBlocks} & integer & yes & count & minimum: 0 \\
+\path{instance.licence} & string & yes & no physical unit & no additional range declared \\
+\path{scenario} & object & yes & units not specified & no additional range declared \\
+\path{scenario.periods} & integer & yes & count & minimum: 1 \\
+\path{scenario.discountRate} & number & yes & dimensionless & no additional range declared \\
+\path{scenario.periodOneUndiscounted} & boolean & yes & no physical unit & no additional range declared \\
+\path{scenario.declared} & boolean & yes & no physical unit & no additional range declared \\
+\path{scenario.resources} & array & yes & resource-specific input unit & no additional range declared \\
+\path{scenario.resources[]} & object & no & resource-specific input unit & no additional range declared \\
+\path{scenario.resources[].id} & integer & yes & count & no additional range declared \\
+\path{scenario.resources[].name} & string & yes & no physical unit & no additional range declared \\
+\path{scenario.resources[].limitPerPeriod} & array & yes & resource-specific input unit & no additional range declared \\
+\path{scenario.resources[].limitPerPeriod[]} & number & no & resource-specific input unit & no additional range declared \\
+\path{published} & object & yes & units not specified & no additional range declared \\
+\path{published.problem} & enum & no & no physical unit & enum: ["CPIT","PCPSP"] \\
+\path{published.source_tables} & string & no & no physical unit & no additional range declared \\
+\path{published.upit_optimum} & number & no & units not specified & no additional range declared \\
+\path{published.lp_bound} & number & no & units not specified & no additional range declared \\
+\path{published.best_known} & number & no & units not specified & no additional range declared \\
+\path{published.best_known_gap_pct} & number & no & units not specified & no additional range declared \\
+\path{published.source} & string & no & no physical unit & no additional range declared \\
+\path{controls} & object & yes & units not specified & no additional range declared \\
+\path{controls.dualitySetMatches} & boolean & yes & no physical unit & no additional range declared \\
+\path{controls.dualityBoundError} & number & yes & units not specified & no additional range declared \\
+\path{controls.boundGeqFeasible} & boolean & yes & no physical unit & no additional range declared \\
+\path{controls.orderInvariant} & boolean & yes & no physical unit & no additional range declared \\
+\path{controls.orderInvarianceError} & number & yes & units not specified & no additional range declared \\
+\path{controls.allPass} & boolean & yes & no physical unit & no additional range declared \\
+\path{controls.bestGapPct} & number & yes & units not specified & no additional range declared \\
+\path{controls.worstGapPct} & number & yes & units not specified & no additional range declared \\
+\path{bound} & object & no & units not specified & no additional range declared \\
+\path{bound.algorithm4} & number & no & units not specified & no additional range declared \\
+\path{bound.algorithm4_ms} & number & no & milliseconds & no additional range declared \\
+\path{bound.closure_solves} & integer & no & count & no additional range declared \\
+\path{bound.joint} & number or null & no & units not specified & no additional range declared \\
+\path{bound.joint_ms} & number or null & no & milliseconds & no additional range declared \\
+\path{bound.joint_iterations} & integer or null & no & dimensionless & no additional range declared \\
+\path{bound.joint_converged} & boolean or null & no & units not specified & no additional range declared \\
+\path{bound.joint_nodes} & integer & no & count & no additional range declared \\
+\path{bound.joint_edges} & integer & no & count & no additional range declared \\
+\path{bound.joint_skipped} & string & no & no physical unit & no additional range declared \\
+\path{bound.joint_error} & string & no & no physical unit & no additional range declared \\
+\path{bound.skipped_methods} & object & no & units not specified & no additional range declared \\
+\path{bound.joint_note} & string & no & no physical unit & no additional range declared \\
+\path{bound.joint_solver} & string & no & no physical unit & no additional range declared \\
+\path{bound.joint_slack} & number & no & units not specified & no additional range declared \\
+\path{bound.tightening_pct} & number or null & no & units not specified & no additional range declared \\
+\path{bound.used} & enum & no & no physical unit & enum: ["algorithm4","bienstock-zuckerberg"] \\
+\path{bound.pcpsp_lp} & number or null & no & units not specified & no additional range declared \\
+\path{bound.pcpsp_lp_ms} & number & no & milliseconds & no additional range declared \\
+\path{bound.pcpsp_lp_rows} & integer & no & count & no additional range declared \\
+\path{bound.pcpsp_lp_status} & string & no & no physical unit & no additional range declared \\
+\path{bound.pcpsp_lp_method} & string & no & no physical unit & no additional range declared \\
+\path{bound.pcpsp_lp_iterations} & integer & no & count & no additional range declared \\
+\path{bound.pcpsp_lp_gap_estimate} & number & no & units not specified & no additional range declared \\
+\path{bound.pcpsp_lp_slack} & number & no & units not specified & no additional range declared \\
+\path{bound.pcpsp_lp_note} & string & no & no physical unit & no additional range declared \\
+\path{bound.pcpsp_lp_error} & string & no & no physical unit & no additional range declared \\
+\path{ensemble} & object & no & units not specified & no additional range declared \\
+\path{ensemble.resolveMethod} & string & no & no physical unit & no additional range declared \\
+\path{ensemble.ran} & boolean & yes & no physical unit & no additional range declared \\
+\path{ensemble.reason} & string & no & no physical unit & no additional range declared \\
+\path{ensemble.nRealisations} & integer & no & count & no additional range declared \\
+\path{ensemble.sigma} & number & no & units not specified & no additional range declared \\
+\path{ensemble.methods} & array & no & units not specified & no additional range declared \\
+\path{ensemble.methods[]} & string & no & no physical unit & no additional range declared \\
+\path{ensemble.expected} & array & no & units not specified & no additional range declared \\
+\path{ensemble.expected[]} & number & no & units not specified & no additional range declared \\
+\path{ensemble.p10} & array & no & units not specified & no additional range declared \\
+\path{ensemble.p10[]} & number & no & units not specified & no additional range declared \\
+\path{ensemble.p90} & array & no & units not specified & no additional range declared \\
+\path{ensemble.p90[]} & number & no & units not specified & no additional range declared \\
+\path{ensemble.meanModel} & array & no & units not specified & no additional range declared \\
+\path{ensemble.meanModel[]} & number & no & units not specified & no additional range declared \\
+\path{ensemble.optimism} & array & no & units not specified & no additional range declared \\
+\path{ensemble.optimism[]} & number & no & units not specified & no additional range declared \\
+\path{ensemble.bestByExpected} & string & no & no physical unit & no additional range declared \\
+\path{ensemble.bestByP10} & string & no & no physical unit & no additional range declared \\
+\path{ensemble.valueOfPlanSelection} & number & no & case economic unit & no additional range declared \\
+\path{ensemble.valueOfReplanning} & number & no & case economic unit & no additional range declared \\
+\path{ensemble.valueOfReplanningPct} & number & no & case economic unit & no additional range declared \\
+\path{ensemble.fixedPolicy} & string & no & no physical unit & no additional range declared \\
+\path{ensemble.fixedPolicyExpectedNpv} & number & no & case economic unit & no additional range declared \\
+\path{ensemble.replannedExpectedNpv} & number & no & case economic unit & no additional range declared \\
+\path{ensemble.replanningElapsedSeconds} & number & no & units not specified & no additional range declared \\
+\path{ensemble.replanningSettings} & object & no & units not specified & no additional range declared \\
+\path{ensemble.replanningSettings.dMax} & integer & yes & count & no additional range declared \\
+\path{ensemble.replanningSettings.rounds} & integer & yes & count & no additional range declared \\
+\path{ensemble.replanningSettings.mipGap} & number & yes & units not specified & no additional range declared \\
+\path{ensemble.replanningSettings.timeLimitSecondsPerNeighborhood} & number or null & yes & units not specified & no additional range declared \\
+\path{ensemble.replanningSettings.nodeLimitPerNeighborhood} & integer & no & count & no additional range declared \\
+\path{ensemble.replanningSettings.seedBase} & integer & yes & count & no additional range declared \\
+\path{ensemble.replanningNote} & string & no & no physical unit & no additional range declared \\
+\path{ensemble.replanningReceipts} & array & no & units not specified & no additional range declared \\
+\path{ensemble.replanningReceipts[]} & object & no & units not specified & no additional range declared \\
+\path{ensemble.replanningReceipts[].realisation} & integer & yes & count & minimum: 0 \\
+\path{ensemble.replanningReceipts[].certifiedOptimal} & boolean & yes & no physical unit & no additional range declared \\
+\path{ensemble.replanningReceipts[].requestedRounds} & integer & yes & count & minimum: 0 \\
+\path{ensemble.replanningReceipts[].attemptedRounds} & integer & yes & count & minimum: 0 \\
+\path{ensemble.replanningReceipts[].skippedRounds} & integer & yes & count & minimum: 0 \\
+\path{ensemble.replanningReceipts[].neighborhoods} & array & yes & units not specified & no additional range declared \\
+\path{ensemble.replanningReceipts[].neighborhoods[]} & object & no & units not specified & no additional range declared \\
+\path{ensemble.replanningReceipts[].neighborhoods[].round} & integer & yes & count & minimum: 1 \\
+\path{ensemble.replanningReceipts[].neighborhoods[].backend} & string & yes & no physical unit & no additional range declared \\
+\path{ensemble.replanningReceipts[].neighborhoods[].status} & string & yes & no physical unit & no additional range declared \\
+\path{ensemble.replanningReceipts[].neighborhoods[].seconds} & number & yes & units not specified & minimum: 0 \\
+\path{ensemble.replanningReceipts[].neighborhoods[].nodes} & integer or null & yes & units not specified & minimum: 0 \\
+\path{ensemble.replanningReceipts[].neighborhoods[].mipGap} & number or null & no & units not specified & no additional range declared \\
+\path{ensemble.replanningReceipts[].neighborhoods[].incumbentNpv} & number or null & no & case economic unit & no additional range declared \\
+\path{ensemble.replanningReceipts[].neighborhoods[].upperBoundNpv} & number or null & no & case economic unit & no additional range declared \\
+\path{ensemble.replanningReceipts[].neighborhoods[].usedStart} & boolean & yes & no physical unit & no additional range declared \\
+\path{ensemble.replanningReceipts[].neighborhoods[].improved} & boolean & yes & no physical unit & no additional range declared \\
+\path{ensemble.replanningReceipts[].neighborhoods[].certifiedOptimal} & boolean & yes & no physical unit & no additional range declared \\
+\path{ensemble.note} & string & no & no physical unit & no additional range declared \\
+\path{learned} & object & no & units not specified & no additional range declared \\
+\path{learned.expectedTime} & object & no & units not specified & no additional range declared \\
+\path{learned.bound} & object & no & units not specified & no additional range declared \\
+\path{learned.guard} & object & no & units not specified & no additional range declared \\
+\path{learned.guard.rule} & string & no & no physical unit & no additional range declared \\
+\path{learned.guard.failure_below} & number & no & units not specified & no additional range declared \\
+\path{learned.guard.validation_n} & integer & no & count & no additional range declared \\
+\path{learned.guard.validation_recall} & number & no & units not specified & no additional range declared \\
+\path{learned.guard.validation_precision} & number & no & units not specified & no additional range declared \\
+\path{learned.guard.validation_worst_unflagged} & number & no & units not specified & no additional range declared \\
+\path{learned.guard.live_available} & boolean & no & no physical unit & no additional range declared \\
+\path{learned.guard.live_unavailable_reason} & string & no & no physical unit & no additional range declared \\
+\path{learned.honesty} & string & no & no physical unit & no additional range declared \\
+\path{contract} & object & yes & units not specified & no additional range declared \\
+\path{contract.accepted} & boolean & yes & no physical unit & no additional range declared \\
+\path{contract.flags} & array & yes & units not specified & no additional range declared \\
+\path{contract.flags[]} & object & no & units not specified & no additional range declared \\
+\path{contract.flags[].code} & string & yes & no physical unit & no additional range declared \\
+\path{contract.flags[].detail} & string & yes & no physical unit & no additional range declared \\
+\path{contract.facts} & object & yes & units not specified & no additional range declared \\
+\path{methods} & array & yes & units not specified & min items: 1 \\
+\path{methods[]} & object & no & units not specified & no additional range declared \\
+\path{methods[].method} & string & yes & no physical unit & no additional range declared \\
+\path{methods[].rung} & enum & yes & no physical unit & four display categories; method names and case outcomes are listed directly \\
+\path{methods[].heuristic} & boolean & yes & no physical unit & no additional range declared \\
+\path{methods[].npv} & number & yes & case economic unit & no additional range declared \\
+\path{methods[].bound} & number & yes & units not specified & no additional range declared \\
+\path{methods[].gapPct} & number & yes & units not specified & no additional range declared \\
+\path{methods[].runtimeMs} & number & yes & units not specified & no additional range declared \\
+\path{methods[].minedBlocks} & integer & yes & count & minimum: 0 \\
+\path{methods[].notes} & string & yes & no physical unit & no additional range declared \\
+\path{methods[].unreliable} & boolean & no & no physical unit & no additional range declared \\
+\path{methods[].measuredVsExact} & number or null & no & units not specified & no additional range declared \\
+\path{methods[].flaggedByRule} & boolean & no & no physical unit & no additional range declared \\
+\path{methods[].periods} & array & yes & units not specified & no additional range declared \\
+\path{methods[].periods[]} & object & no & units not specified & no additional range declared \\
+\path{methods[].periods[].t} & integer & yes & count & minimum: 1 \\
+\path{methods[].periods[].minedTonnes} & number & yes & resource-specific input unit & no additional range declared \\
+\path{methods[].periods[].oreTonnes} & number & yes & resource-specific input unit & no additional range declared \\
+\path{methods[].periods[].wasteTonnes} & number & yes & resource-specific input unit & no additional range declared \\
+\path{methods[].periods[].headGrade} & number & yes & input grade unit & no additional range declared \\
+\path{methods[].periods[].metal} & number & yes & units not specified & no additional range declared \\
+\path{methods[].periods[].value} & number & yes & case economic unit & no additional range declared \\
+\path{methods[].periods[].discCashFlow} & number & yes & units not specified & no additional range declared \\
+\path{methods[].periods[].cumNpv} & number & yes & case economic unit & no additional range declared \\
+\path{methods[].periods[].stripRatio} & number & yes & dimensionless & no additional range declared \\
+\path{methods[].periods[].resourceUse} & array & yes & resource-specific input unit & no additional range declared \\
+\path{methods[].periods[].resourceUse[]} & number & no & resource-specific input unit & no additional range declared \\
+\path{methods[].periods[].resourceLimit} & array & yes & resource-specific input unit & no additional range declared \\
+\path{methods[].periods[].resourceLimit[]} & number & no & resource-specific input unit & no additional range declared \\
+\path{methods[].periods[].components} & integer & yes & count & minimum: 0 \\
+\path{methods[].periods[].largestComponentShare} & number & yes & units not specified & no additional range declared \\
+\path{methods[].periods[].minWidthBlocks} & integer & yes & count & minimum: 0 \\
+\path{methods[].periods[].blocks} & integer & yes & count & minimum: 0 \\
+\path{methods[].periodOfBlock} & array & no & units not specified & no additional range declared \\
+\path{methods[].periodOfBlock[]} & integer & no & count & no additional range declared \\
+\path{methods[].extra} & object & no & units not specified & no additional range declared \\
+\path{methods[].extra.localSearchReceipt} & object & no & units not specified & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.requestedRounds} & integer & yes & count & minimum: 0 \\
+\path{methods[].extra.localSearchReceipt.attemptedRounds} & integer & yes & count & minimum: 0 \\
+\path{methods[].extra.localSearchReceipt.skippedRounds} & integer & yes & count & minimum: 0 \\
+\path{methods[].extra.localSearchReceipt.mipGapTarget} & number & yes & units not specified & minimum: 0 \\
+\path{methods[].extra.localSearchReceipt.timeLimitSeconds} & number or null & no & units not specified & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.nodeLimit} & integer or null & yes & units not specified & minimum: 0 \\
+\path{methods[].extra.localSearchReceipt.certifiedOptimal} & boolean & yes & no physical unit & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.neighborhoods} & array & yes & units not specified & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[]} & object & no & units not specified & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].round} & integer & yes & count & minimum: 1 \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].backend} & string & yes & no physical unit & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].status} & string & yes & no physical unit & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].seconds} & number & yes & units not specified & minimum: 0 \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].nodes} & integer or null & yes & units not specified & minimum: 0 \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].mipGap} & number or null & no & units not specified & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].incumbentNpv} & number or null & no & case economic unit & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].upperBoundNpv} & number or null & no & case economic unit & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].usedStart} & boolean & yes & no physical unit & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].improved} & boolean & yes & no physical unit & no additional range declared \\
+\path{methods[].extra.localSearchReceipt.neighborhoods[].certifiedOptimal} & boolean & yes & no physical unit & no additional range declared \\
+\path{blocks} & object & no & units not specified & no additional range declared \\
+\path{blocks.x} & array & yes & units not specified & no additional range declared \\
+\path{blocks.x[]} & number & no & units not specified & no additional range declared \\
+\path{blocks.y} & array & yes & units not specified & no additional range declared \\
+\path{blocks.y[]} & number & no & units not specified & no additional range declared \\
+\path{blocks.level} & array & yes & units not specified & no additional range declared \\
+\path{blocks.level[]} & number & no & units not specified & no additional range declared \\
+\path{blocks.grade} & array & yes & input grade unit & no additional range declared \\
+\path{blocks.grade[]} & number & no & input grade unit & no additional range declared \\
+\path{blocks.tonnage} & array & yes & resource-specific input unit & no additional range declared \\
+\path{blocks.tonnage[]} & number & no & resource-specific input unit & no additional range declared \\
+\path{blocks.processTonnage} & array & yes & resource-specific input unit & no additional range declared \\
+\path{blocks.processTonnage[]} & number & no & resource-specific input unit & no additional range declared \\
+\path{blocks.value} & array & yes & case economic unit & no additional range declared \\
+\path{blocks.value[]} & number & no & case economic unit & no additional range declared \\
+\path{blocks.inPit} & array & yes & units not specified & no additional range declared \\
+\path{blocks.inPit[]} & integer & no & count & no additional range declared \\
+\bottomrule\end{longtable}
+\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/trace.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
+\textbf{Documents:} \path{data/derived/*/trace.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: the release gate reports the missing trace and blocks promotion; unavailable solver node counts are null, never negative sentinels.
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
+\caption{Fields in the frontier-release contract, version 3.0.0.}\label{tab:contract-frontier-release}\\
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endhead
+\path{schema} & constant & yes & no physical unit & const: "phaseflow.frontier-release/v3" \\
+\path{created_at_utc} & string & yes & no physical unit & format: date-time \\
+\path{product_version} & string & yes & no physical unit & pattern: \textasciicircum{}[0-9]+\textbackslash{}.[0-9]\{2\}\textbackslash{}.[0-9]\{3\}\$ \\
+\path{engine_version} & string & yes & no physical unit & min length: 1 \\
+\path{source_commit} & string & yes & no physical unit & pattern: \textasciicircum{}[0-9a-f]\{40\}\$ \\
+\path{training_source_commit} & string & yes & no physical unit & pattern: \textasciicircum{}[0-9a-f]\{40\}\$ \\
+\path{checkpoint_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{checkpoint_members_sha256} & array & yes & 64-character lowercase hexadecimal digest & min items: 5; max items: 5 \\
+\path{checkpoint_members_sha256[]} & string & no & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{feature_contract_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{split_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{training_split_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{case_index_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{baseline} & object & yes & units not specified & no additional range declared \\
+\path{baseline.product_version} & string & yes & no physical unit & no additional range declared \\
+\path{baseline.engine_version} & string & yes & no physical unit & no additional range declared \\
+\path{baseline.index_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{cases} & array & yes & units not specified & min items: 13; max items: 13 \\
+\path{cases[]} & object & no & units not specified & no additional range declared \\
+\path{cases[] (allOf 1)} & JSON value & no & units not specified & no additional range declared \\
+\path{cases[] (allOf 2)} & JSON value & no & units not specified & no additional range declared \\
+\path{cases[] (allOf 3)} & JSON value & no & units not specified & no additional range declared \\
+\path{cases[].case_id} & string & yes & no physical unit & min length: 1 \\
+\path{cases[].product_version} & string & yes & no physical unit & no additional range declared \\
+\path{cases[].engine_version} & string & yes & no physical unit & no additional range declared \\
+\path{cases[].source_commit} & string & yes & no physical unit & pattern: \textasciicircum{}[0-9a-f]\{40\}\$ \\
+\path{cases[].checkpoint_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{cases[].feature_contract_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{cases[].status} & enum & yes & no physical unit & enum: ["complete","partial","failed","unavailable"] \\
+\path{cases[].trace_sha256} & string & no & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{cases[].tonnage_coverage} & number & no & resource-specific input unit & minimum: 0; maximum: 1 \\
+\path{cases[].positive_value_coverage} & number & no & case economic unit & minimum: 0; maximum: 1 \\
+\path{cases[].failure_reason} & string or null & yes & units not specified & no additional range declared \\
+\path{summary} & object & yes & units not specified & no additional range declared \\
+\path{summary.cases} & constant & yes & no physical unit & const: 13 \\
+\path{summary.complete} & integer & yes & count & minimum: 0 \\
+\path{summary.partial} & integer & yes & count & minimum: 0 \\
+\path{summary.failed} & integer & yes & count & minimum: 0 \\
+\path{summary.unavailable} & integer & yes & count & minimum: 0 \\
+\path{redistribution} & string & yes & no physical unit & min length: 20 \\
+\bottomrule\end{longtable}
+\noindent\textbf{Implementation:} \path{scripts/build_frontier_release_candidate.py}. \textbf{Data provider:} simulator:scripts/build\_frontier\_release\_candidate.py.
+\textbf{Documents:} \path{data/derived/frontier-release-receipt.json}. \textbf{Producer check:} \path{tests/test_build_frontier_release_candidate.py}. \textbf{Consumer check:} \path{scripts/check_frontier_release.py}. \textbf{Missing-data behavior:} missing or mixed source/case/checkpoint/split/partial coverage: the 0.12 release gate fails before promotion.
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
+\caption{Fields in the learned-model contract, version 1.0.0.}\label{tab:contract-learned-model}\\
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endhead
+\path{schema} & string & yes & no physical unit & min length: 1 \\
+\path{target} & enum & yes & no physical unit & enum: ["expected\_time\_fraction","bound\_over\_upit"] \\
+\path{features} & array & yes & units not specified & min items: 1 \\
+\path{features[]} & string & no & no physical unit & no additional range declared \\
+\path{layers} & array & yes & units not specified & min items: 1 \\
+\path{layers[]} & object & no & units not specified & no additional range declared \\
+\path{mu} & array & yes & units not specified & no additional range declared \\
+\path{mu[]} & number & no & units not specified & no additional range declared \\
+\path{sigma} & array & yes & units not specified & no additional range declared \\
+\path{sigma[]} & number & no & units not specified & minimum: 0 \\
+\path{metrics} & object & yes & units not specified & no additional range declared \\
+\bottomrule\end{longtable}
+\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/model/learned.py}. \textbf{Data provider:} baseline:models.
+\textbf{Documents:} \path{models/expected-time.json, models/bound.json, models/expected-time.onnx, models/bound.onnx}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: learned parity and model checks fail; the exact lane remains authoritative.
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
+\caption{Fields in the learned-study contract, version 1.0.0.}\label{tab:contract-learned-study}\\
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endhead
+No property-level schema is declared; see observed study document fields below. & object & - & mixed & The shared schema enforces only the outer object shape. \\
+\texttt{training-report.json.expected\_time} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{training-report.json.expected\_time\_per\_case} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{training-report.json.bound} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{training-report.json.archetypes} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{training-report.json.scenarios} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{training-report.json.sizes} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{training-report.json.honesty} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.purpose} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.rule} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.failure\_below} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.validation\_seeds} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.train\_seeds} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.holdout\_seeds} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.n} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.failures} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.flagged} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.true\_positive} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.false\_positive} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.false\_negative} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.true\_negative} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.precision} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.recall} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.worst\_unflagged} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.worst\_overall} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.median} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.median\_by\_size} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.p10} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.holdout\_for\_comparison} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{guard-validation.json.rows} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-failure-modes.json.failure\_below} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-failure-modes.json.rules} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-failure-modes.json.shipped\_rule} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-failure-modes.json.shipped\_caveat} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-failure-modes.json.refuted} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-failure-modes.json.train} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-failure-modes.json.holdout} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{surrogate-parity.json.schema} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{surrogate-parity.json.note} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{surrogate-parity.json.bound} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{surrogate-parity.json.expectedTime} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{surrogate-parity.json.features} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-preview-timing.json.schema} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-preview-timing.json.measured} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-preview-timing.json.runtime} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-preview-timing.json.note} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\texttt{learned-preview-timing.json.rows} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\bottomrule\end{longtable}
+\noindent\textbf{Implementation:} \path{scripts/train_learned.py and evaluation scripts}. \textbf{Data provider:} baseline:models.
+\textbf{Documents:} \path{models/training-report.json, models/guard-validation.json, models/learned-failure-modes.json, models/surrogate-parity.json, models/learned-preview-timing.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: release evidence gate reports absent study evidence and blocks promotion.
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
+\caption{Fields in the readiness contract, version 1.0.0.}\label{tab:contract-readiness}\\
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endfirsthead
+\toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
+\midrule\endhead
+\path{schema} & constant & yes & no physical unit & const: "phaseflow.readiness/v1" \\
+\path{product_version} & string & yes & no physical unit & pattern: \textasciicircum{}\textbackslash{}d+\textbackslash{}.\textbackslash{}d\{2\}\textbackslash{}.\textbackslash{}d\{3\}\$ \\
+\path{catalog_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
+\path{contracts} & array & yes & units not specified & no additional range declared \\
+\path{contracts[]} & object & no & units not specified & no additional range declared \\
+\path{contracts[].id} & string & yes & no physical unit & min length: 1 \\
+\path{contracts[].version} & string & yes & no physical unit & pattern: \textasciicircum{}\textbackslash{}d+\textbackslash{}.\textbackslash{}d+\textbackslash{}.\textbackslash{}d+\$ \\
+\path{contracts[].state} & enum & yes & no physical unit & enum: ["available","partial","missing","stale"] \\
+\path{contracts[].provenance} & string or null & yes & units not specified & no additional range declared \\
+\path{contracts[].reason} & object or null & yes & units not specified & no additional range declared \\
+\path{contracts[].missing} & array & yes & units not specified & no additional range declared \\
+\path{contracts[].missing[]} & string & no & no physical unit & no additional range declared \\
+\bottomrule\end{longtable}
+\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/readiness.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
+\textbf{Documents:} \path{data/derived/readiness.json}. \textbf{Producer check:} \path{tests/contracts/test_readiness.py::test_committed_snapshot_is_reproducible}. \textbf{Consumer check:} \path{scripts/check_readiness.py}. \textbf{Missing-data behavior:} missing or stale: the release gate fails.
+\endgroup

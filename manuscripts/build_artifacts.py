@@ -95,6 +95,15 @@ def build(root: Path) -> None:
     )
     if table_build.returncode:
         raise SystemExit(f"Could not build the frontier result table:\n{table_build.stdout}\n{table_build.stderr}")
+    contract_build = subprocess.run(
+        [sys.executable, str(root / "manuscripts/build_contract_reference.py"), "--root", str(root)],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if contract_build.returncode:
+        raise SystemExit(f"Could not build the contract field tables:\n{contract_build.stdout}\n{contract_build.stderr}")
     index = load(root / "data/derived/manifests/index.json")
     case_rows = index.get("cases", [])
     expected_cases = int(index.get("n_cases", -1))
@@ -451,7 +460,7 @@ def build(root: Path) -> None:
     rows.extend([r"\bottomrule\end{longtable}\endgroup"])
     (generated / "method-summary.tex").write_text("\n".join(rows) + "\n", encoding="utf-8")
 
-    input_paths = [root / "manuscripts/build_artifacts.py", root / "scripts/build_frontier_manuscript_table.py", root / "notebooks/data/frontier-evaluation-summary.json", root / "data/derived/manifests/index.json", *(root / "data/derived" / c["case_id"] / "trace.json" for c in case_rows), root / "models/training-report.json", root / "models/guard-validation.json", root / "models/expected-time.json", root / "docs/design/features/deposit-statistics-guard/proposal.md"]
+    input_paths = [root / "manuscripts/build_artifacts.py", root / "manuscripts/build_contract_reference.py", root / "scripts/build_frontier_manuscript_table.py", root / "notebooks/data/frontier-evaluation-summary.json", root / "docs/contracts/catalog.md", root / "docs/contracts/versions.lock.json", *sorted((root / "docs/contracts/schemas").glob("*.json")), *(root / "models" / name for name in ("training-report.json", "guard-validation.json", "expected-time.json", "learned-failure-modes.json", "surrogate-parity.json", "learned-preview-timing.json")), root / "data/derived/manifests/index.json", *(root / "data/derived" / c["case_id"] / "trace.json" for c in case_rows), root / "docs/design/features/deposit-statistics-guard/proposal.md"]
     output_paths = [*report_fig.glob("*.pdf"), *bs1_fig.glob("*.pdf"), *generated.glob("*.tex"), root / "manuscripts/state-conditioned-frontier-policy/generated_frontier_summary.tex"]
     receipt = {
         "schema": "phaseflow.manuscript-build-receipt/v1",
