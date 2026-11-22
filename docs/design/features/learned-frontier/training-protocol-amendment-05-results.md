@@ -51,7 +51,7 @@ Review found that the evaluator selected the certified Algorithm 4 value while p
 The completed evaluation output remains immutable at its original path. `scripts/amend_frontier_product_bound_metadata.py` writes a separate amended copy after verifying the exact baseline index and each paired trace digest. The copy records the original receipt SHA-256 in its `amendment` field. Its SHA-256 is `d023db6d67823ee189e944b16d0b9ed0e0aaba302d6754a127beb3ac91916bb2`. It corrected 11 successful case rows. The amended receipt was used to create an external candidate; `scripts/check_frontier_release.py` accepted its 13-case ledger and `scripts/check_artifacts.py` accepted its case traces. Candidate summary: 0 complete, 11 partial, 2 failed, 0 unavailable. This structural result is not the required fresh full 0.12.000 all-method bake and is not a deployment receipt.
 
 The repaired evaluator now writes baseline trace digests for fail-closed rows and chooses the same finite bound the producer labels as used. Neither change triggers a repeat of the one-shot product evaluation. Any future policy or method change requires a new, separately frozen training and test design.
-# Superseding release state — 2026-11-22
+# Superseding release state: 2026-11-22
 
 The structural candidate described below was an intermediate state. The full version-consistent 0.12.000 all-method bake
 was subsequently committed at `15caab8`; all thirteen indexed cases now carry engine version 0.12.000 and the artifact
