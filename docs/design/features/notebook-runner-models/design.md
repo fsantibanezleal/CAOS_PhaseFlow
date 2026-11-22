@@ -11,7 +11,7 @@ notebook can read, including the released models. The source model and committed
 notebook remain unchanged, and the runner removes the temporary tree after the
 check.
 
-The runner copies `models/` only when it exists. Products that do not ship a
-model directory retain the existing behavior. This is a filesystem-input
-boundary for the notebook QA lane; it does not train, rewrite, or publish model
-artifacts.
+The runner copies `models/` and `manuscripts/` only when each exists. The copy
+excludes Python and notebook caches. Products without either directory retain
+the existing behavior. This is a filesystem-input boundary for notebook QA; it
+does not train, rewrite, or publish model or manuscript artifacts.
