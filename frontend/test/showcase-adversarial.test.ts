@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { resolveBenchLevel, resolveStorySelection, resolveStoryStep } from '../src/lib/storySelection.ts';
+import { storyCalloutContentKey } from '../src/lib/storyCalloutLayout.ts';
 import type { ScheduleTrace } from '../src/lib/contract.types.ts';
 
 const trace = {
@@ -8,6 +9,18 @@ const trace = {
   methods: [{ method: 'method-a' }, { method: 'method-b' }],
   scenario: { periods: 8 },
 } as unknown as ScheduleTrace;
+
+test('adversarial: changed story callout copy forces fresh measured card sizes', () => {
+  const initial = [{ id: 'capacity', eyebrow: { en: 'CAPACITY', es: 'CAPACIDAD' }, value: '99.9%',
+    unit: { en: 'of processing', es: 'de planta' }, state: 'observed',
+    source: { en: 'Committed schedule', es: 'Plan comprometido' } }];
+  const movedAnchor = [{ ...initial[0], anchor: { x: 0.2, y: 0.4 } }];
+  const changedCard = [{ ...initial[0], value: '100%', source: { en: 'New step', es: 'Nuevo paso' } }];
+  assert.equal(storyCalloutContentKey(initial), storyCalloutContentKey(movedAnchor),
+    'moving an anchor alone must not remount measured cards');
+  assert.notEqual(storyCalloutContentKey(initial), storyCalloutContentKey(changedCard),
+    'a changed value or source must remount the shell measurer');
+});
 
 test('adversarial: a mismatched case URL cannot apply another trace selection', () => {
   assert.deepEqual(resolveStorySelection(trace, new URLSearchParams('case=case-b&method=method-a&period=2')),

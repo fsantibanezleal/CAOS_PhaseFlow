@@ -20,14 +20,21 @@ let server;
 let browser;
 
 async function stageStats(page) {
-  return page.evaluate(() => {
-    const gl = document.querySelector('[data-testid="schedule-stage"] canvas');
-    if (!gl) return null;
+  // WebGL's default framebuffer is cleared after compositing, so drawImage(glCanvas) and readPixels
+  // see zeros even while the user sees a full pit. Measure the actual browser-composited capture.
+  const canvas = page.locator('[data-testid="schedule-stage"] canvas');
+  if (!(await canvas.count())) return null;
+  const png = await canvas.screenshot();
+  return page.evaluate(async (base64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${base64}`;
+    await img.decode();
     const c = document.createElement('canvas');
-    c.width = gl.width;
-    c.height = gl.height;
+    c.width = img.naturalWidth;
+    c.height = img.naturalHeight;
     const ctx = c.getContext('2d');
-    ctx.drawImage(gl, 0, 0);
+    if (!ctx) return null;
+    ctx.drawImage(img, 0, 0);
     const { data } = ctx.getImageData(0, 0, c.width, c.height);
     const bg = [data[0], data[1], data[2]];
     let model = 0;
@@ -41,7 +48,7 @@ async function stageStats(page) {
     }
     const n = data.length / 4;
     return { model: model / n, colour: colour / n, width: c.width, height: c.height };
-  });
+  }, png.toString('base64'));
 }
 
 try {

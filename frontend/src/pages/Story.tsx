@@ -9,6 +9,7 @@ import { ScheduleView3D } from '../viz/ScheduleView3D.tsx';
 import { largestOverrun } from '../lib/feasibility.ts';
 import { EngineText } from '../lib/EngineText.tsx';
 import { resolveBenchLevel, resolveStorySelection, resolveStoryStep } from '../lib/storySelection.ts';
+import { storyCalloutContentKey } from '../lib/storyCalloutLayout.ts';
 
 const StableProductionChart = memo(ProductionChart);
 const StableScheduleView3D = memo(ScheduleView3D);
@@ -63,8 +64,11 @@ function PhaseFlowStoryStage({ items, className, children, overlay, onBand }: {
     ...item,
     anchor: anchorInDrawing(item.anchor, band, height),
   })), [items, band, height]);
+  // Step changes keep the portal mounted. Remount the shell callout measurer when the
+  // displayed content changes so its row layout cannot reuse the previous step's card sizes.
+  const calloutContentKey = storyCalloutContentKey(items);
   return <div ref={host} className={className}>
-    <SceneCallouts items={placed} placement="header" onLayout={({ bandHeight }) => {
+    <SceneCallouts key={calloutContentKey} items={placed} placement="header" onLayout={({ bandHeight }) => {
       setBand((previous) => previous === bandHeight ? previous : bandHeight);
       onBand(bandHeight);
     }} />

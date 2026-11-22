@@ -115,7 +115,7 @@ export default function Tool() {
       ? tabletChartHeight
     : viewportHeight >= 1200
       ? Math.min(960, Math.round(viewportHeight * 0.64))
-      : Math.min(900, Math.max(620, viewportHeight - 120));
+      : Math.min(760, Math.max(360, viewportHeight - 260));
 
   const dims = useMemo<[number, number, number]>(
     () => (st.trace ? [st.trace.instance.dims[0], st.trace.instance.dims[1], st.trace.instance.dims[2]] : [1, 1, 1]),
@@ -289,7 +289,7 @@ export default function Tool() {
               <h4>{es ? 'Uso de capacidad' : 'Capacity utilisation'}</h4>
               <CapacityChart periods={method.periods} names={trace.scenario.resources.map((r) => resourceLabel(r.name))} theme={st.theme} height={productionChartHeight} />
               <p className="pf-cap pf-muted">
-                {es ? 'Qué restricción limita en cada año. Una capacidad que nunca llega a 100% no está limitando nada.' : 'Which constraint binds in each year. A capacity that never reaches 100 percent is not limiting anything.'}
+                {es ? 'La línea muestra el uso; 100% indica una capacidad vinculante.' : 'The line shows capacity use; 100% is the binding limit.'}
               </p>
             </div>,
           },

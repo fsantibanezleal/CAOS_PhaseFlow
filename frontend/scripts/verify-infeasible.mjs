@@ -18,7 +18,9 @@ let browser;
 
 async function selectCase(page, id, best) {
   await page.locator('[data-control="case"]').selectOption(id);
-  // the case is loaded when the method picker opens on that case's own best plan
+  // The current shell keeps the method picker in its Method tab; open it for this case before
+  // checking the case's selected best plan.
+  await page.getByRole('tab', { name: 'Method', exact: true }).click();
   await page.waitForFunction((b) => document.querySelector('select[aria-label="Method"]')?.value === b, best,
     { timeout: 60000 });
 }
@@ -68,14 +70,20 @@ try {
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 800 });
     await page.waitForTimeout(300);
-    const tracks = await page.locator('[data-testid="method-bars"] .pf-mb-row .pf-mb-track').evaluateAll((els) =>
+    const tracks = await page.locator('[data-testid="method-bars"] .pf-method-chart .pf-mc-row rect.pf-mc-track').evaluateAll((els) =>
       els.map((el) => el.getBoundingClientRect().width));
+    assert.ok(tracks.length > 0, `${width}px: the method chart has no rendered bars`);
     const narrowest = Math.min(...tracks);
     assert.ok(narrowest >= 80, `${width}px: a method bar track is ${narrowest.toFixed(0)}px wide`);
-    const spill = await page.locator('[data-testid="method-bars"] .pf-mb-row').evaluateAll((els) =>
-      els.filter((el) => el.scrollWidth > el.clientWidth + 1).length);
-    assert.equal(spill, 0, `${width}px: ${spill} method bar rows spill their text`);
-    console.log(`method bars ${width}px: narrowest track ${narrowest.toFixed(0)}px, no row spills`);
+    const dimensions = await page.locator('[data-testid="method-bars"] .pf-method-chart').evaluate((el) => ({
+      width: el.clientWidth,
+      scrollWidth: el.scrollWidth,
+      parentWidth: el.parentElement.clientWidth,
+    }));
+    assert.ok(dimensions.width > 0, `${width}px: method chart is not rendered`);
+    assert.ok(dimensions.scrollWidth <= dimensions.parentWidth + 1,
+      `${width}px: method chart spills ${dimensions.scrollWidth - dimensions.parentWidth}px horizontally`);
+    console.log(`method bars ${width}px: ${tracks.length} rows, narrowest track ${narrowest.toFixed(0)}px, no horizontal spill`);
   }
   await page.setViewportSize({ width: 1280, height: 800 });
 

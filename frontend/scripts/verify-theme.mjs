@@ -40,6 +40,9 @@ try {
   const errors = [];
   page.on('pageerror', (error) => errors.push(String(error)));
   await page.goto(new URL('/app', server.resolvedUrls.local[0]).href, { waitUntil: 'networkidle' });
+  // The current shell keeps the method picker inside its Method tab to reduce default chrome.
+  // Open it before measuring both native controls, rather than waiting on the older always-visible picker.
+  await page.getByRole('tab', { name: 'Method', exact: true }).click();
   await page.locator('select[aria-label="Method"]').waitFor();
 
   for (const theme of ['light', 'dark']) {

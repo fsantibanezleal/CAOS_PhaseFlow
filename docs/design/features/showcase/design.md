@@ -12,6 +12,10 @@ period values, resource use and objective. The selected step builds a single pri
 panel. A story headline is rendered from values already present in those contracts; it never hard-codes a result or
 labels a missing value as zero. The stage and panel use the shell's `StoryFrame`, `SceneCallouts` and linked-view store.
 
+The stage remains mounted between story steps. The callout measurer is keyed to its displayed content so changed values,
+source strings, states or units trigger fresh card measurements before the rows are placed; stale heights cannot position a
+new step's boxes.
+
 ## Six problem views
 
 The stage is a 3D block model for replay-eligible cases, sized to the pit's authored bounds. Period scrubbing changes

@@ -10,6 +10,7 @@
 | SC-006 | Plant a comparison row with no matching method id; verify URL selection is refused and the displayed comparison remains trace-derived. | `frontend/scripts/verify-showcase.mjs`; `frontend/test/showcase-adversarial.test.ts::adversarial: an unknown method cannot replace the case method` |
 | SC-007 | Plant an unknown story slug with malformed case/method/period query state; verify fallback and selection parsing remain bounded. | `frontend/scripts/verify-showcase.mjs`; `frontend/test/showcase-adversarial.test.ts::adversarial: an unknown story slug falls back to a valid direct step` |
 | SC-008 | Plant unsafe period values while reduced motion is active; verify no malformed cursor reaches a stage and keyboard movement still visits valid story links. | `frontend/scripts/verify-showcase.mjs`; `frontend/test/showcase-adversarial.test.ts::adversarial: a period above the horizon is bounded to the final committed row` |
+| SC-009 | Navigate through story steps and periods that change callout content; verify boxes do not overlap at each viewport, theme and language. | `frontend/test/showcase-adversarial.test.ts::adversarial: changed story callout copy forces fresh measured card sizes` |
 
 Release review also captures each story step at 1280x800 and 390x844, in both themes and languages. Review records the
 six catalog views, evidence source and units, stage/panel share, callout placement, reduced-motion state and route
