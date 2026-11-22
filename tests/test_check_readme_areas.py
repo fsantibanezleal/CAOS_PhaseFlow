@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import re
 import shutil
 import subprocess
@@ -62,7 +63,7 @@ def test_a_complete_readme_passes(tmp_path: Path) -> None:
     assert CHECK.findings_of(make(tmp_path, readme())) == []
 
 
-def test_a_readme_without_the_areas_section_is_found(tmp_path: Path) -> None:
+def test_adversarial_a_readme_without_the_areas_section_is_found(tmp_path: Path) -> None:
     assert found(make(tmp_path, readme(head="## What is in it")), "no section '## Areas'")
     (tmp_path / "README.md").unlink()
     assert found(tmp_path, "README.md: missing")
@@ -71,7 +72,7 @@ def test_a_readme_without_the_areas_section_is_found(tmp_path: Path) -> None:
     assert found(root, "no section '## Areas'")
 
 
-def test_an_area_without_its_row_is_found(tmp_path: Path) -> None:
+def test_adversarial_an_area_without_its_row_is_found(tmp_path: Path) -> None:
     for area in ROWS:
         rows = {k: v for k, v in ROWS.items() if k != area}
         assert found(make(tmp_path, readme(rows)), f"the area {area!r} has no row"), area
@@ -79,7 +80,7 @@ def test_an_area_without_its_row_is_found(tmp_path: Path) -> None:
     assert found(make(tmp_path, readme(rows)), "'Web'", "more than one row")
 
 
-def test_a_row_without_a_status_is_found(tmp_path: Path) -> None:
+def test_adversarial_a_row_without_a_status_is_found(tmp_path: Path) -> None:
     rows = dict(ROWS, Data="| Data | [`data/`](data/) | in progress | the committed derived artifacts |")
     assert found(make(tmp_path, readme(rows)), "'Data'", "no status")
     rows = dict(ROWS, API="| API | [`app/`](app/) | dormant | the API and its tests |")
@@ -90,7 +91,7 @@ def test_a_row_without_a_status_is_found(tmp_path: Path) -> None:
     assert found(make(tmp_path, readme(rows)), "'Web'", "no 'What it holds' cell")
 
 
-def test_a_folder_link_that_does_not_exist_is_found(tmp_path: Path) -> None:
+def test_adversarial_a_folder_link_that_does_not_exist_is_found(tmp_path: Path) -> None:
     root = make(tmp_path, readme())
     shutil.rmtree(root / "notebooks")
     assert found(root, "'Notebooks'", "links 'notebooks/', which does not exist")
@@ -100,18 +101,18 @@ def test_a_folder_link_that_does_not_exist_is_found(tmp_path: Path) -> None:
     assert found(make(tmp_path, readme(rows)), "'Tests and gates'", "does not link its folder scripts/")
 
 
-def test_the_packages_row_must_link_pypi(tmp_path: Path) -> None:
+def test_adversarial_the_packages_row_must_link_pypi(tmp_path: Path) -> None:
     rows = dict(ROWS, Packages="| Packages | (PyPI) | active: none yet | the packages it consumes |")
     assert found(make(tmp_path, readme(rows)), "'Packages'", "links no package on PyPI")
 
 
-def test_the_template_readme_states_every_area() -> None:
+def test_adversarial_the_template_readme_states_every_area() -> None:
     assert CHECK.findings_of(ROOT) == []
     text = (ROOT / "README.md").read_text(encoding="utf-8")
     assert "## What is in it" not in text and "## Areas" in text
 
 
-def test_the_readme_instantiate_writes_states_every_area(tmp_path: Path) -> None:
+def test_adversarial_the_readme_instantiate_writes_states_every_area(tmp_path: Path) -> None:
     """A product made from the template starts with a README that passes the check (the CI step runs on the first push)."""
     spec = importlib.util.spec_from_file_location("instantiate", ROOT / "scripts" / "instantiate.py")
     inst = importlib.util.module_from_spec(spec)
@@ -151,6 +152,9 @@ def test_instantiate_leaves_a_passing_readme_and_the_notebooks(tmp_path: Path) -
                         "--deploy", "pages", "--domain", "demo.example.org", "--visibility", "public", "--tagline-en", "One line.",
                         "--tagline-es", "Una linea.", "--no-run"], capture_output=True, text=True, cwd=product)
     assert r.returncode == 0, r.stdout + r.stderr
+    config = json.loads((product / "scripts/local/workflow.json").read_text())
+    assert config["external_environments_required"] is True
+    assert config["environment_namespace"] == "demo"
     check = subprocess.run([sys.executable, str(product / "scripts" / "check_readme_areas.py"), str(product)], capture_output=True, text=True, cwd=product)
     assert check.returncode == 0, check.stdout
     assert (product / "notebooks" / "en" / "README.md").is_file() and not (product / ".template-source").exists()
@@ -161,7 +165,7 @@ def test_every_conventional_area_is_a_row_of_the_template_readme(area: str) -> N
     assert re.search(rf"^\| {re.escape(area)} \|", (ROOT / "README.md").read_text(encoding="utf-8"), re.M), area
 
 
-def test_the_areas_section_follows_the_purpose_and_the_live_urls(tmp_path: Path) -> None:
+def test_adversarial_the_areas_section_follows_the_purpose_and_the_live_urls(tmp_path: Path) -> None:
     """F15 (convention section 8): the section comes after the one-paragraph purpose and the live URLs, never before them."""
     rows = "\n".join(ROWS.values())
     table = f"## Areas\n\n| Area | Folder | Status | What it holds |\n|---|---|---|---|\n{rows}\n"
@@ -173,13 +177,13 @@ def test_the_areas_section_follows_the_purpose_and_the_live_urls(tmp_path: Path)
     assert found(no_purpose, "'## Areas'", "after the purpose and the live URLs")
 
 
-def test_what_it_holds_is_more_than_a_dash(tmp_path: Path) -> None:
+def test_adversarial_what_it_holds_is_more_than_a_dash(tmp_path: Path) -> None:
     for n, cell in enumerate(("-", "n/a", "the web")):
         rows = dict(ROWS, Web=f"| Web | [`frontend/`](frontend/) | active | {cell} |")
         assert found(make(tmp_path / str(n), readme(rows)), "'Web'", "'What it holds'", "three words"), cell
 
 
-def test_a_dead_link_in_what_it_holds_is_found(tmp_path: Path) -> None:
+def test_adversarial_a_dead_link_in_what_it_holds_is_found(tmp_path: Path) -> None:
     rows = dict(ROWS, Web="| Web | [`frontend/`](frontend/) | active | the workbench, see [the guide](docs/guides/absent.md) |")
     root = make(tmp_path, readme(rows))
     assert found(root, "'Web'", "links 'docs/guides/absent.md', which does not exist")

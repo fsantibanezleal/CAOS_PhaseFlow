@@ -99,6 +99,7 @@ export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: bool
       </div>
     );
   }
+  const replan = ensemble.replanningSettings;
   // WHY THIS IS NOT A LINE CHART ANY MORE.
   //
   // It used to plot four uPlot series against the method INDEX, 1..N. That draws a line from
@@ -218,7 +219,13 @@ export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: bool
       </p>
       <p className="pf-cap pf-muted">
         {es ? 'Valor de re-planificar sabiendo la realización' : 'Value of re-planning once the realisation is known'}:{' '}
-        <b>{dec(ensemble.valueOfReplanningPct, 3)}%</b>. <EngineText text={ensemble.replanningNote} />
+        <b>{dec(ensemble.valueOfReplanningPct, 3)}%</b>.{' '}
+        {es
+          ? `Cada realización parte del mismo plan fijo (${ensemble.fixedPolicy}), elegido por su mayor NPV esperado. La búsqueda local resuelve exactamente cada vecindad C-PIT[D] al gap declarado, pero no certifica el óptimo global: el resultado es una cota inferior de EVPI.`
+          : `Every realisation starts from the same fixed plan (${ensemble.fixedPolicy}), selected by its highest expected NPV. The local search solves each C-PIT[D] neighbourhood exactly to the declared gap, but does not certify the global optimum; the result is a lower bound on EVPI.`}{' '}
+        {replan && (es
+          ? `Configuración: ${replan.rounds} rondas, vecindad máxima ${replan.dMax}, brecha MIP ${dec(replan.mipGap, 5)}; tiempo medido ${dec(ensemble.replanningElapsedSeconds, 3)} s.`
+          : `Settings: ${replan.rounds} rounds, maximum neighbourhood ${replan.dMax}, MIP gap ${dec(replan.mipGap, 5)}; measured time ${dec(ensemble.replanningElapsedSeconds, 3)} s.`)}
       </p>
       <p className="pf-cap pf-muted"><EngineText text={ensemble.note} /></p>
       <p className="pf-cap pf-muted">
@@ -235,7 +242,8 @@ export function RiskPanel({ ensemble, es }: { ensemble: EnsembleReport; es: bool
 export function LearnedPanel({ learned, methods, es }: { learned: LearnedReport; methods: TraceMethod[]; es: boolean }) {
   const et = learned.expectedTime ?? {};
   const bd = learned.bound ?? {};
-  const learnedRow = methods.find((m) => m.rung === 'learned');
+  const guard = learned.guard;
+  const learnedRow = methods.find((m) => m.method === 'learned');
   const exactRow = methods.find((m) => m.method === 'toposort-expected');
   if (!Object.keys(et).length) {
     return (
@@ -265,6 +273,18 @@ export function LearnedPanel({ learned, methods, es }: { learned: LearnedReport;
         <div className="pf-kpi"><b>{pct(et.holdout_beats_greedy_rate, 0)}</b><span>{es ? 'gana al codicioso' : 'beats greedy'}</span></div>
         <div className="pf-kpi"><b>{pct(bd.holdout_mean_rel_err, 2)}</b><span>{es ? 'error de la cota' : 'bound surrogate error'}</span></div>
       </div>
+      {guard && guard.live_available === false && (
+        <div className="pf-panel-failed pf-cap pf-warn" data-testid="learned-guard-unavailable" role="status">
+          <strong>{es ? 'Guarda no disponible: la regla candidata sigue siendo investigación.' : 'Guard unavailable: the candidate rule remains research-only.'}</strong>
+          <div>
+            {es ? 'La validación independiente no alcanzó los mínimos preregistrados.' : 'Independent validation missed the predeclared minima.'}{' '}
+            {es ? 'Sensibilidad' : 'Recall'} {pct(guard.validation_recall)}, {es ? 'precisión' : 'precision'} {pct(guard.validation_precision)},{' '}
+            {es ? 'peor razón no marcada' : 'worst unflagged ratio'} {pct(guard.validation_worst_unflagged)}.
+            {' '}{es ? 'Mínimos' : 'Required'}: {es ? 'sensibilidad' : 'recall'} {es ? '81,8%' : '81.8%'}, {es ? 'precisión' : 'precision'} {es ? '66,7%' : '66.7%'},{' '}
+            {es ? 'peor razón no marcada' : 'worst unflagged ratio'} {es ? '78,52%' : '78.52%'}.
+          </div>
+        </div>
+      )}
       {learnedRow && exactRow && (
         <p className="pf-cap">
           {es ? 'En este caso' : 'On this case'}: {learnedRow.method} {fmtMoney(learnedRow.npv)} ({fmtDuration(learnedRow.runtimeMs)},{' '}

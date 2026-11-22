@@ -1,37 +1,38 @@
 # 12 · Reading the results
 
-How to read the numbers the ladder produces, which comparisons are legitimate, and what the controls
+How to read the measured methods, which comparisons are legitimate, and what the controls
 prove and do not prove. Every table on this page is generated from the committed manifests.
 
-## 1. The ladder at a glance
+## 1. Methods at a glance
 
 Each method across the whole case matrix: how many cases it ran on, its gap distribution against the bound
 of its own problem, how often it was the best comparable plan, and its median cost.
 
 <!-- generated:ladder -->
-| method | rung | measured against | cases run | median gap | best gap | worst gap | best plan on | median time |
+| method | family | measured against | cases run | median gap | best gap | worst gap | best plan on | median time |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `bench-by-bench` | classical | CPIT bound | 13 / 13 | 51.78% | 0.00% | 103.85% | 0 | 90 ms |
-| `nested-shells` | classical | CPIT bound | 13 / 13 | 42.13% | 0.00% | 71.15% | 0 | 87 ms |
-| `toposort-greedy` | classical | CPIT bound | 13 / 13 | 46.28% | 0.00% | 80.00% | 1 | 87 ms |
-| `toposort-gershon` | classical | CPIT bound | 13 / 13 | 24.05% | 0.00% | 92.14% | 0 | 282 ms |
-| `toposort-expected` | sota | CPIT bound | 13 / 13 | 7.31% | 0.00% | 21.35% | 0 | 22.4 s |
-| `exts-two-resource` | sota | CPIT bound | 12 / 13 | 6.05% | 0.33% | 21.23% | 0 | 34.3 s |
-| `shift-local-search` | sota | CPIT bound | 13 / 13 | 4.26% | 0.00% | 17.28% | 0 | 72 ms |
-| `sliding-window` | sota | CPIT bound | 13 / 13 | 1.92% | 0.00% | 6.46% | 10 | 39.7 min |
-| `cpitD-local-search` | sota | CPIT bound | 13 / 13 | 4.22% | 0.00% | 16.91% | 2 | 740 ms |
-| `learned-expected-time` | learned | CPIT bound | 12 / 13 | 11.93% | 0.00% | 65.68% | 0 | 122 ms |
-| `destination-toposort` | beyond | PCPSP LP | 11 / 13 | 9.89% | 0.00% | 18.99% | n/a | 24.7 s |
-| `destination-sliding-window` | beyond | PCPSP LP | 11 / 13 | 1.68% | 0.00% | 19.22% | n/a | 52.1 min |
-| `destination-local-search` | beyond | PCPSP LP | 11 / 13 | 1.52% | 0.00% | 18.95% | n/a | 2.1 s |
-| `min-width` | beyond | CPIT bound | 13 / 13 | 1.93% | 0.00% | 6.64% | 0 | 293 ms |
+| `bench-by-bench` | Reference methods | CPIT bound | 13 / 13 | 51.78% | 0.00% | 103.85% | 0 | 112 ms |
+| `nested-shells` | Reference methods | CPIT bound | 13 / 13 | 42.13% | 0.00% | 71.15% | 0 | 108 ms |
+| `toposort-greedy` | Reference methods | CPIT bound | 13 / 13 | 46.28% | 0.00% | 80.00% | 1 | 104 ms |
+| `toposort-gershon` | Reference methods | CPIT bound | 13 / 13 | 24.05% | 0.00% | 92.14% | 0 | 423 ms |
+| `toposort-expected` | Published methods | CPIT bound | 13 / 13 | 7.31% | 0.00% | 21.35% | 0 | 37.4 s |
+| `exts-two-resource` | Published methods | CPIT bound | 12 / 13 | 6.05% | 0.33% | 21.23% | 0 | 38.2 s |
+| `shift-local-search` | Published methods | CPIT bound | 13 / 13 | 4.26% | 0.00% | 17.28% | 0 | 68 ms |
+| `sliding-window` | Published methods | CPIT bound | 13 / 13 | 1.98% | 0.00% | 6.46% | 9 | 52.8 min |
+| `cpitD-local-search` | Published methods | CPIT bound | 13 / 13 | 4.22% | 0.00% | 16.91% | 3 | 966 ms |
+| `learned-expected-time` | Learned methods | CPIT bound | 12 / 13 | 10.84% | 0.00% | 25.31% | 0 | 323 ms |
+| `destination-toposort` | Additional analyses | PCPSP LP | 10 / 13 | 9.13% | 0.00% | 18.99% | n/a | 65.6 s |
+| `destination-sliding-window` | Additional analyses | PCPSP LP | 9 / 13 | 2.68% | 0.00% | 19.22% | n/a | 61.5 min |
+| `destination-local-search` | Additional analyses | PCPSP LP | 9 / 13 | 2.49% | 0.00% | 18.95% | n/a | 2.5 s |
+| `min-width` | Additional analyses | CPIT bound | 13 / 13 | 2.23% | 0.00% | 6.64% | 0 | 335 ms |
+| `frontier-policy` | Additional analyses | CPIT bound | 11 / 13 | 15.08% | 3.64% | 86.69% | 0 | 2.3 min |
 <!-- /generated -->
 
 ## 2. Only compare through the same bound of the same problem
 
 | comparison | legitimate | why |
 |---|---|---|
-| classical against sota against learned, same case | yes | same problem, same bound |
+| reference, published, and learned methods on the same case | yes | same problem, same bound |
 | `min-width` against the plan it smooths | yes | a feasible CPIT plan under the same capacities; the difference is what operability changes in NPV, almost always a cost (a 0.01 percent gain on `twin-vein`) |
 | `learned-expected-time` against `toposort-expected` | yes | that is the plan it approximates (the ratio is recorded per case) |
 | a destination plan against a CPIT plan, by NPV | as a VALUE of the destination freedom only | different problems; each destination plan is scored against the PCPSP LP |
@@ -41,7 +42,7 @@ of its own problem, how often it was the best comparable plan, and its median co
 | `newman1` CPIT against the external CPIT integer optimum | yes, attributed | same named model; an external solve, not a PhaseFlow certificate |
 
 The best plan of a case (`best` in the manifest, the default method in the app) is chosen among the
-classical, sota and learned rungs only, ties broken by name so a bake is reproducible. The beyond rungs
+reference, published and learned methods only, ties broken by name so a bake is reproducible. Proposed analyses
 never compete for it: the destination plans solve another problem and `min-width` is the best plan traded
 for workability.
 
@@ -62,7 +63,7 @@ added.
 
 **What a large gap can mean, and how the matrix separates it:**
 
-1. the method is losing: visible when the exact re-solve or the sliding window materially beats the
+1. the method is losing: visible when the bounded neighborhood search or the sliding window materially beats the
    rounding on the same case;
 2. the bound is loose: visible when the joint LP tightens Algorithm 4 ([02](02_the-bound.md), section 6);
 3. the instance is hard: both bounds agree and every method sits far from them.
@@ -88,9 +89,9 @@ green, because the gates read schemas and never `resourceUse` against `resourceL
 <!-- generated:controls -->
 | case | duality (pit set) | duality error | bound >= plans | order invariance | order error | best comparable gap | worst comparable gap |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| [`newman1-published`](../cases/01_newman1-published.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.40% | 6.41% |
+| [`newman1-published`](../cases/01_newman1-published.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 2.49% | 6.41% |
 | [`zuck-small-declared`](../cases/02_zuck-small-declared.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.98% | 51.78% |
-| [`kd-declared`](../cases/03_kd-declared.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 6.46% | 65.68% |
+| [`kd-declared`](../cases/03_kd-declared.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 6.46% | 51.70% |
 | [`twin-porphyry-s`](../cases/04_twin-porphyry-s.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.11% | 54.09% |
 | [`twin-porphyry-l`](../cases/05_twin-porphyry-l.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 1.58% | 60.05% |
 | [`twin-core-halo`](../cases/06_twin-core-halo.md) | pass | 0.00e+00 | pass | pass | 0.00e+00 | 3.05% | 103.85% |

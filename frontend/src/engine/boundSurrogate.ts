@@ -88,7 +88,7 @@ export function predict(model: Pick<Mlp, 'mu' | 'sigma' | 'layers'>, x: ArrayLik
 let cached: Promise<Mlp> | null = null;
 
 export function loadBoundSurrogate(version: string): Promise<Mlp> {
-  cached ??= fetch(`/models/bound.json?v=${version}`).then((r) => {
+  cached ??= fetch(`/data/models/bound.json?v=${version}`).then((r) => {
     if (!r.ok) throw new Error(`bound surrogate: HTTP ${r.status}`);
     return r.json() as Promise<Mlp>;
   });

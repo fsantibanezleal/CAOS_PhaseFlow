@@ -52,8 +52,8 @@ flagged) does the gate run Kahn's algorithm, and a cycle is a rejection.
 |---|---|
 | a destination forbidden by a sentinel value | the destination is marked forbidden; the CPIT value is the best ALLOWED destination; no plan may send the block there (the schedule valuer raises) |
 | a block whose net value is hugely negative but finite | legal; it is waste, and the ultimate pit excludes it unless something below pays for it |
-| no grade field (`zuck_small`) | `gradeSource: null` in the trace; the learned rung is skipped with the reason; grade charts are replaced by strip ratio |
-| no destination economics (`kd`, `zuck_small`) | the three destination rungs are skipped with the reason; nothing is reconstructed from the CPIT value, which cannot recover a discarded alternative |
+| no grade field (`zuck_small`) | `gradeSource: null` in the trace; the learned method is skipped with the reason; grade charts are replaced by strip ratio |
+| no destination economics (`kd`, `zuck_small`) | the three destination-choice methods are skipped with the reason; nothing is reconstructed from the CPIT value, which cannot recover a discarded alternative |
 | the published scheduling file is unreachable | the scenario is declared and marked `declared: true`; gaps are against this product's bound |
 | a capacity so loose or so tight that the problem degenerates | flagged (above), never silently "fixed" |
 | non-numeric columns | kept as labels |

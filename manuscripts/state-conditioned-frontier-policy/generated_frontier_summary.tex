@@ -1,0 +1,17 @@
+% Generated from notebooks/data/frontier-evaluation-summary.json after contract validation.
+% Retained case audit: {'synthetic_cases': 500, 'product_cases': 13, 'family': ['funnel'], 'empty_synthetic_schedules': 277, 'unique_product_case_ids': 13, 'declared_receipt_hashes': {'product_case_sha256': 'd023db6d67823ee189e944b16d0b9ed0e0aaba302d6754a127beb3ac91916bb2', 'synthetic_test_sha256': '2974b8ead9dfd81c0808e30fee5dfe3a2f148d5bdb984352a1b5880e48fd8f7d'}}
+\begin{table}[ht]
+\centering\scriptsize
+\setlength{\tabcolsep}{1.75pt}
+\caption{Measured outcomes by evaluation set. Synthetic paired differences are frontier minus greedy TopoSort, with a 95\% seed-cluster interval; product win counts are descriptive over supported fixed cases.}
+\label{tab:frontier-measured-summary}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.10\textwidth}r>{\raggedright\arraybackslash}p{0.15\textwidth}rr>{\raggedright\arraybackslash}p{0.37\textwidth}r}
+\toprule Set & $n$ & Status & Mean NPV & Median NPV & Paired comparison & Wins \\
+\midrule
+Synthetic test & 500 & 500 partial; 0 failed & 0.000847 & 0.000 & 0.186 [0.162, 0.210] & 334/500 \\
+Product cases & 13 & 11 partial; 2 failed & not pooled & not pooled & greedy 9/11; exact ExTS 0/11; local search 0/11 & fixed cases \\
+\bottomrule
+\end{tabular}
+\vspace{2pt}
+\parbox{0.98\linewidth}{\footnotesize Synthetic statistics use all 500 cases. Product counts cover 11 scored cases; fixed-case counts are descriptive, not a population estimate.}
+\end{table}

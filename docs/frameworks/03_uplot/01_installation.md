@@ -1,7 +1,7 @@
 # uPlot · 01 · Installation
 
 ```bash
-cd frontend && npm ci      # uplot@^1.6.31 from the lockfile
+cd frontend && npm ci      # uplot@^1.6.32 from the lockfile
 ```
 
 ```ts

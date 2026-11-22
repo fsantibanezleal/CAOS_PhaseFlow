@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Measure the SHIPPED learned guard on a THIRD, never-seen seed set.
 
-    .venv/Scripts/python.exe scripts/validate_guard.py
+    CAOS_MODELS_ROOT=<external-model-stage> .venv-pipeline/Scripts/python.exe scripts/validate_guard.py
 
 Why this script exists, and why it is separate from training.
 
@@ -16,8 +16,8 @@ model's own metrics and applied. Nothing in this file is allowed to pick a thres
 candidates, or tune anything; it computes one confusion matrix and writes it down. If the numbers come
 out worse than the held-out ones, that is the answer and it goes on the page.
 
-The result is committed as `models/guard-validation.json` and quoted in
-`docs/methodologies/08_when-the-surrogate-fails.md`.
+The result is written to `guard-validation.json` in the selected external model candidate. Promote it only
+with the complete validated artifact stage.
 """
 
 from __future__ import annotations
@@ -45,8 +45,9 @@ from train_learned import (  # noqa: E402
     collect,
     score_cases,
 )
+from model_paths import external_model_root  # noqa: E402
 
-MODELS = ROOT / "models"
+MODELS: Path
 
 #: A third disjoint set. Primes, like the other two, and chosen once: re-rolling these until the
 #: numbers improve would put this script back in the business the whole file exists to avoid.
@@ -54,6 +55,8 @@ VALIDATION_SEEDS = [241, 251, 257, 263, 269, 271]
 
 
 def main() -> int:
+    global MODELS
+    MODELS = external_model_root()
     overlap = set(VALIDATION_SEEDS) & (set(TRAIN_SEEDS) | set(HOLDOUT_SEEDS))
     assert not overlap, f"the validation seeds are not new: {sorted(overlap)}"
 

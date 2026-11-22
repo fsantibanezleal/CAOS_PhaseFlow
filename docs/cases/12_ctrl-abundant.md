@@ -2,7 +2,7 @@
 
 **Family:** `control`. **Role in the argument**, as the case source states it:
 
-> Loose-capacity diagnostic. The best CPIT schedule approaches the certified bound, but classical schedules still lose value because period timing and slope precedence matter at a positive discount rate. The zero-rate, single-period ctrl-degenerate case is the exact collapse control; this one is not.
+> Loose-capacity diagnostic. The best CPIT schedule approaches the certified bound, but established schedules still lose value because period timing and slope precedence matter at a positive discount rate. The zero-rate, single-period ctrl-degenerate case is the exact collapse control; this one is not.
 
 ## The instance
 
@@ -14,7 +14,7 @@
 
 The small porphyry with mining capacity 2.50 and plant capacity 2.00 of the pit's per-period resource, over
 eight periods at ten percent. Capacity barely binds, but discounting and slope precedence still decide when
-each block is mined, so the methods still differ: the best plan approaches the bound while the classical
+each block is mined, so the methods still differ: the best plan approaches the bound while the established
 plans lose value to timing. Loose capacity alone does not make the choice of extraction period irrelevant.
 The exact collapse control is `ctrl-degenerate`.
 
@@ -24,9 +24,9 @@ The exact collapse control is `ctrl-degenerate`.
 | bound | value | time | detail |
 | --- | ---: | ---: | --- |
 | ultimate pit (UPIT, exact, undiscounted) | 473,615,066 |  | 4,621 of 6,912 blocks; no time, no capacity |
-| Algorithm 4 (min over single-resource LPs) | 428,750,527 | 11.4 s | 138 maximum closures |
-| joint LP (Bienstock-Zuckerberg) | 428,750,584 | 9.3 s | 13 iterations on 55,296 nodes, 479,584 edges; slack of Algorithm 4: none (BZ ended 0.13 ppm above, inside its tolerance) |
-| PCPSP LP (HiGHS, destinations free) | 438,824,759 | 51.8 s | 534,896 rows, status optimal |
+| Algorithm 4 (min over single-resource LPs) | 428,750,527 | 12.3 s | 138 maximum closures |
+| joint LP (Bienstock-Zuckerberg) | 428,750,584 | 5.7 s | 13 iterations on 55,296 nodes, 479,584 edges; slack of Algorithm 4: none (BZ ended 0.13 ppm above, inside its tolerance) |
+| PCPSP LP (HiGHS, destinations free) | 438,824,759 | 54.7 s | 534,896 rows, status optimal |
 | used for every CPIT gap on this case | Algorithm 4 |  |  |
 <!-- /generated -->
 
@@ -37,22 +37,23 @@ CPIT bound the case uses. Coherence is the mean over periods of the connected co
 the largest one.
 
 <!-- generated:case:ctrl-abundant -->
-| method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
+| method | family | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | 398,634,010 | Algorithm 4 | 7.02% | 90 ms | 1.4 / 100% |
-| `nested-shells` | classical | 404,889,616 | Algorithm 4 | 5.57% | 87 ms | 8.0 / 87% |
-| `toposort-greedy` | classical | 401,470,358 | Algorithm 4 | 6.36% | 87 ms | 2.2 / 87% |
-| `toposort-gershon` | classical | 419,591,568 | Algorithm 4 | 2.14% | 282 ms | 1.8 / 90% |
-| `toposort-expected` | sota | 427,325,801 | Algorithm 4 | 0.33% | 11.5 s | 3.2 / 88% |
-| `exts-two-resource` | sota | 427,325,801 | Algorithm 4 | 0.33% | 11.6 s | 3.2 / 88% |
-| `shift-local-search` | sota | 427,637,346 | Algorithm 4 | 0.26% | 72 ms | 1.4 / 89% |
-| `sliding-window` | sota | 425,960,871 | Algorithm 4 | 0.65% | 4.6 min | 2.0 / 83% |
-| `cpitD-local-search` **(best)** | sota | 427,644,503 | Algorithm 4 | 0.26% | 936 ms | 1.4 / 89% |
-| `learned-expected-time` | learned | 424,178,034 | Algorithm 4 | 1.07% | 125 ms | 2.0 / 90% |
-| `destination-toposort` | beyond | 437,075,858 | PCPSP LP | 0.40% | 13.0 s | 19.0 / 85% |
-| `destination-sliding-window` | beyond | 437,899,435 | PCPSP LP | 0.21% | 12.4 min | 26.8 / 79% |
-| `destination-local-search` | beyond | 438,028,477 | PCPSP LP | 0.18% | 4.4 s | 27.2 / 79% |
-| `min-width` | beyond | 427,631,216 | Algorithm 4 | 0.26% | 376 ms | 1.4 / 89% |
+| `bench-by-bench` | Reference methods | 398,634,010 | Algorithm 4 | 7.02% | 67 ms | 1.4 / 100% |
+| `nested-shells` | Reference methods | 404,889,616 | Algorithm 4 | 5.57% | 70 ms | 8.0 / 87% |
+| `toposort-greedy` | Reference methods | 401,470,358 | Algorithm 4 | 6.36% | 62 ms | 2.2 / 87% |
+| `toposort-gershon` | Reference methods | 419,591,568 | Algorithm 4 | 2.14% | 196 ms | 1.8 / 90% |
+| `toposort-expected` | Published methods | 427,325,801 | Algorithm 4 | 0.33% | 12.4 s | 3.2 / 88% |
+| `exts-two-resource` | Published methods | 427,325,801 | Algorithm 4 | 0.33% | 12.4 s | 3.2 / 88% |
+| `shift-local-search` | Published methods | 427,637,346 | Algorithm 4 | 0.26% | 60 ms | 1.4 / 89% |
+| `sliding-window` | Published methods | 425,960,871 | Algorithm 4 | 0.65% | 3.9 min | 2.0 / 83% |
+| `cpitD-local-search` **(best)** | Published methods | 427,644,503 | Algorithm 4 | 0.26% | 706 ms | 1.4 / 89% |
+| `learned-expected-time` | Learned methods | 423,393,914 | Algorithm 4 | 1.25% | 1.4 s | 2.6 / 90% |
+| `destination-toposort` | Additional analyses | 437,075,858 | PCPSP LP | 0.40% | 10.3 s | 19.0 / 85% |
+| `destination-sliding-window` | Additional analyses | 437,899,435 | PCPSP LP | 0.21% | 10.6 min | 26.8 / 79% |
+| `destination-local-search` | Additional analyses | 438,028,477 | PCPSP LP | 0.18% | 5.3 s | 27.2 / 79% |
+| `min-width` | Additional analyses | 427,631,216 | Algorithm 4 | 0.26% | 350 ms | 1.4 / 89% |
+| `frontier-policy` | Additional analyses | 413,153,254 | Algorithm 4 | 3.64% | 3.8 min | 6.2 / 78% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/ctrl-abundant.json` by `scripts/docs_tables.py`.*

@@ -1,5 +1,5 @@
 # Repo-local tool configuration ONLY. A product declares NO package of its own.
-# See conventions/no-internal-packages.md: if a package is required it is a SEPARATE REPO with a
+# See the product packaging rule: if a package is required it is a SEPARATE REPO with a
 # valid PyPI project, published, and consumed as a dependency (milldem, minehaulsim, oreblocks).
 # data-pipeline/ is scripts, invoked by path: python data-pipeline/run.py
 # Product-repo template, the offline engine package (ADR-0057). Rename `pipeline` -> `pipeline` per product.

@@ -1,0 +1,142 @@
+{
+  "complete": true,
+  "elapsed_wall_seconds": 37593.359999999986,
+  "engine_version": "oreblocks==0.6.6",
+  "feature_contract_sha256": "30d50b6b5fe8c0580b91992cf6d7745ddb9923eaae6892dc235805617b22b6fc",
+  "max_cpu_seconds_per_member": 7200.0,
+  "max_transitions_per_member": 1000000,
+  "max_wall_seconds_all_members": 86400.0,
+  "members": [
+    {
+      "checkpoint_sha256": "4753af9ced29a9bc75f64b027529a4c0177d5928c9f4816a50631b33c4d06c63",
+      "cpu_seconds": 7172.703125,
+      "final_checkpoint_sha256": "6182cd3ae52cad0015c7ed96d54a8f60e5cec0634daaea6bf4a3b8fb53c5ae6a",
+      "seed": 1103,
+      "status": "trained-to-stop-rule",
+      "stop_reason": "cpu-cap",
+      "transitions": 40960,
+      "validation_history": [
+        {
+          "all_feasible": true,
+          "cases": 200,
+          "mean_normalized_npv": 0.0,
+          "selected_checkpoint_sha256": "4753af9ced29a9bc75f64b027529a4c0177d5928c9f4816a50631b33c4d06c63",
+          "transitions": 8192
+        }
+      ],
+      "wall_seconds": 7300.672000000006
+    },
+    {
+      "checkpoint_sha256": "caf1600e8b8fdfd60c26afee124f177d7f381e9a4299119b2b7d0f82e68af31b",
+      "cpu_seconds": 7173.65625,
+      "final_checkpoint_sha256": "ec840cd652861af50ef9dc2532c0bc8dbbca0fa22d6d442315992c7740cf504f",
+      "seed": 2207,
+      "status": "trained-to-stop-rule",
+      "stop_reason": "cpu-cap",
+      "transitions": 45056,
+      "validation_history": [
+        {
+          "all_feasible": true,
+          "cases": 200,
+          "mean_normalized_npv": 0.000504781448816061,
+          "selected_checkpoint_sha256": "2221e122733cc14f30bcc79807d5f59b22c124cc94f44d11793bf34109998784",
+          "transitions": 8192
+        },
+        {
+          "all_feasible": true,
+          "cases": 200,
+          "mean_normalized_npv": 0.0015332233654874459,
+          "selected_checkpoint_sha256": "caf1600e8b8fdfd60c26afee124f177d7f381e9a4299119b2b7d0f82e68af31b",
+          "transitions": 40960
+        }
+      ],
+      "wall_seconds": 7449.375
+    },
+    {
+      "checkpoint_sha256": "b6df99794298e5420f221ee57511a6a2f231781ab1e94297258cca2f35ebcb2e",
+      "cpu_seconds": 7171.859375,
+      "final_checkpoint_sha256": "e987180fc606db217b1253e95d5af6e14e8ca1defbe76a630573d71fa8e2dfb0",
+      "seed": 3301,
+      "status": "trained-to-stop-rule",
+      "stop_reason": "cpu-cap",
+      "transitions": 61440,
+      "validation_history": [
+        {
+          "all_feasible": true,
+          "cases": 200,
+          "mean_normalized_npv": 0.0,
+          "selected_checkpoint_sha256": "3d31941cf72b6b0fff0030a68bd09b12de24b07128021b455b298a817839394a",
+          "transitions": 8192
+        },
+        {
+          "all_feasible": true,
+          "cases": 200,
+          "mean_normalized_npv": 0.0009309144419334634,
+          "selected_checkpoint_sha256": "b6df99794298e5420f221ee57511a6a2f231781ab1e94297258cca2f35ebcb2e",
+          "transitions": 40960
+        }
+      ],
+      "wall_seconds": 7414.641000000003
+    },
+    {
+      "checkpoint_sha256": "61acc411a5e651f40416383e32852fef899230c71d6ab2e901da4690bee1b03b",
+      "cpu_seconds": 7172.84375,
+      "final_checkpoint_sha256": "e7934164d72cbd68b29679e1d2af82242e3c832fe7bd8e36b84a452ff948f652",
+      "seed": 4409,
+      "status": "trained-to-stop-rule",
+      "stop_reason": "cpu-cap",
+      "transitions": 53248,
+      "validation_history": [
+        {
+          "all_feasible": true,
+          "cases": 200,
+          "mean_normalized_npv": 0.0,
+          "selected_checkpoint_sha256": "12184f706d05e4383574d9c66e0a709ab71f0951eee7cdf263f7bf51e8f25480",
+          "transitions": 8192
+        },
+        {
+          "all_feasible": true,
+          "cases": 200,
+          "mean_normalized_npv": 0.002744251554187409,
+          "selected_checkpoint_sha256": "61acc411a5e651f40416383e32852fef899230c71d6ab2e901da4690bee1b03b",
+          "transitions": 40960
+        }
+      ],
+      "wall_seconds": 7629.358999999997
+    },
+    {
+      "checkpoint_sha256": "2239297544e7e2b93e9ae92b2a510b1c9edcd470d1ad84e9e5ee80eefae80674",
+      "cpu_seconds": 7172.453125,
+      "final_checkpoint_sha256": "a0b74b98f3cb8ec20d4db54b5106c1d2bfc12d6055e64a143feec4feda0ac5dc",
+      "seed": 5519,
+      "status": "trained-to-stop-rule",
+      "stop_reason": "cpu-cap",
+      "transitions": 53248,
+      "validation_history": [
+        {
+          "all_feasible": true,
+          "cases": 200,
+          "mean_normalized_npv": 0.0,
+          "selected_checkpoint_sha256": "fabe6fc20d0ee0c51bf0d44e17992c1a3a34ba223cd503d37e8f532100215ec8",
+          "transitions": 8192
+        },
+        {
+          "all_feasible": true,
+          "cases": 200,
+          "mean_normalized_npv": 0.0011385680907299062,
+          "selected_checkpoint_sha256": "2239297544e7e2b93e9ae92b2a510b1c9edcd470d1ad84e9e5ee80eefae80674",
+          "transitions": 40960
+        }
+      ],
+      "wall_seconds": 7664.405999999988
+    }
+  ],
+  "original_receipt_sha256": "f3669a904e62903910a6fdbc9752f22aacae1a46d02d9f2d8e1a741e46becf7f",
+  "product_version": "0.12.000",
+  "provenance": "Location fields are omitted; checkpoint digests are retained. Original complete receipt remains in the external training root.",
+  "run": "20261111-bs2-ppo-v4",
+  "schema": "phaseflow.frontier-training-summary/v1",
+  "split_sha256": "18860c8a361576ba924ec95fd5dfe9d58c8a37a3466a1c17bb9765ddfc81350c",
+  "training_data_sha256": "ab7e651136279d0675363eec7d983b91eb508047ea33893512e27175a54ae478",
+  "training_source_commit": "4aa49f4e72b2563d652a5636f69c2c5a5582db00"
+}

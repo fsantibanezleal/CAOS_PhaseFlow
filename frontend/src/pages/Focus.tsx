@@ -1,15 +1,10 @@
-// ADR-0070 focus view: one selected schedule, full viewport, and controls that genuinely re-solve.
+// Focus view: one selected schedule, full viewport, and controls that genuinely re-solve.
 //
-// Clause 6 is the hard one: "a parameter that cannot respond live must not be presented as a live
-// control; if the product's lane is a pre-baked replay, that constraint is a product defect to fix,
-// not a UI detail to hide." On a scheduling product that means the discount rate, the capacities and
-// the wall angle must move the ANSWER, not switch between baked chips. They do: the TypeScript
-// engine in src/engine/ re-runs the critical multiplier bound and the TopoSort rounding on the block
-// model the trace carries, and the HUD shows the measured solve time so the claim is checkable.
+// Discount rate, capacities and wall angle are live controls: the TypeScript engine re-runs the
+// critical-multiplier bound and TopoSort rounding on the block model, and the HUD reports solve time.
 //
-// Clause 8 is the one most easily faked, so: the entry control lives in the App next to the case
-// selector, the return control is on the stage, both preserve the case, and the browser gate clicks
-// them rather than requesting the URL.
+// The App provides an entry control beside the case selector. Returning from Focus preserves the
+// selected case, and the browser gate exercises both controls.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';

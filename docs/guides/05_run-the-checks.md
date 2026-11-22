@@ -2,7 +2,7 @@
 
 Everything CI runs can be run on a laptop, and so can the slower checks CI deliberately does not run.
 
-## What CI runs (cheap checks only, ADR-0074)
+## What CI runs
 
 ```bash
 ruff check data-pipeline tests
@@ -32,7 +32,7 @@ the WebGL context once after the first frame and the on-demand stage stayed blan
 
 Point pytest's `--basetemp` and Playwright's browsers (`PLAYWRIGHT_BROWSERS_PATH`) at the machine's temp
 folder, not the system drive or the repository. The pipeline suite includes a sandbox bake of a whole
-case (the degenerate control, every rung, about two minutes) that asserts the committed trace is
+case (the degenerate control, every method, about two minutes) that asserts the committed trace is
 byte-identical afterwards: tests never write canonical artifacts.
 
 ## When a check fails

@@ -245,7 +245,24 @@ const timeTxt = fmtDuration;
 export function RuntimePanel({ lang }: { lang: Lang }) {
   const es = lang === 'es';
   const data = useManifests();
-  if (!data || data === 'error') return <Pending lang={lang} state={data as null | 'error'} />;
+  const measurementTable = (
+    <div className="pfd-scroll">
+      <table className="pfd-table">
+        <caption>{es ? 'Qué mide cada categoría de tiempo y cómo interpretar la comparación.' : 'What each timing category measures and how to interpret the comparison.'}</caption>
+        <thead><tr>
+          <th scope="col">{es ? 'Categoría' : 'Category'}</th>
+          <th scope="col">{es ? 'Medición' : 'Measurement'}</th>
+          <th scope="col">{es ? 'Lectura' : 'Interpretation'}</th>
+        </tr></thead>
+        <tbody>
+          <tr><th scope="row">{es ? 'Cotas' : 'Bounds'}</th><td>{es ? 'Tiempo de pared por caso' : 'Wall time per case'}</td><td>{es ? 'Separar Algoritmo 4, LP conjunta y LP PCPSP' : 'Separate Algorithm 4, joint LP, and PCPSP LP'}</td></tr>
+          <tr><th scope="row">{es ? 'Planes' : 'Schedules'}</th><td>{es ? 'Tiempo de pared por método' : 'Wall time per method'}</td><td>{es ? 'Comparar métodos sobre el mismo caso y carga' : 'Compare methods on the same case and workload'}</td></tr>
+          <tr><th scope="row">{es ? 'Admisión' : 'Admission'}</th><td>{es ? 'Estado y motivo de omisión' : 'Status and skip reason'}</td><td>{es ? 'Una omisión no equivale a cero segundos ni a un método lento' : 'A skip is neither zero seconds nor a slow method'}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  );
+  if (!data || data === 'error') return <>{measurementTable}<Pending lang={lang} state={data as null | 'error'} /></>;
   const methods = LADDER_ORDER.filter((mt) => data.manifests.some((m) => get(m, mt)));
   const cols: Array<{ id: string; label: string; ms: (m: CaseManifest) => number | null | undefined }> = [
     { id: 'alg4', label: es ? 'Algoritmo 4' : 'Algorithm 4', ms: (m) => m.bound_summary?.algorithm4_ms },
@@ -254,6 +271,8 @@ export function RuntimePanel({ lang }: { lang: Lang }) {
     ...methods.map((mt) => ({ id: mt, label: mt, ms: (m: CaseManifest) => get(m, mt)?.runtime_ms })),
   ];
   return (
+    <>
+    {measurementTable}
     <div className="pfd-scroll">
       <table className="pfd-table">
         <caption>{es ? 'Tiempo de pared de cada cota y cada método, medido en el horneado (un proceso por caso, sin límite de tiempo). El mayor de cada fila está en negrita.' : 'Wall time of every bound and every method, measured in the bake (one process per case, no time limit). The largest of each row is bold.'}</caption>
@@ -278,6 +297,7 @@ export function RuntimePanel({ lang }: { lang: Lang }) {
         </tbody>
       </table>
     </div>
+    </>
   );
 }
 

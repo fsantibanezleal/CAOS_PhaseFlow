@@ -1,11 +1,11 @@
 """Offline pipeline orchestrator and CLI.
 
-    python data-pipeline/run.py                          # bake every case (canonical)
-    python data-pipeline/run.py twin-porphyry-s          # one case
-    python data-pipeline/run.py all --output build/smoke # sandbox: never touches committed evidence
+    python data-pipeline/run.py all --output <external-stage>/data/derived
+    python data-pipeline/run.py twin-porphyry-s --output <external-stage>/data/derived
+    python data-pipeline/run.py all --output <external-stage>/data/derived # sandbox output
 
-The canonical bake is an explicit release operation. Tests and CI smoke runs must pass ``--output``
-so they cannot mutate committed scientific evidence.
+The canonical bake is an explicit release operation. Candidate artifacts and trained model inputs use
+external roots; only validated compact release evidence is admitted to the repository.
 
 Stages, in order, each with real typed inputs and outputs:
 
@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -27,6 +28,7 @@ from pathlib import Path
 from . import __version__, registry
 from .core.gate import classify_lane
 from .core.manifest import build_case_manifest, build_index
+from .core.readiness import compute as compute_readiness, write as write_readiness
 from .core.trace import build_trace
 from .io.formats import write_json
 from .model.instances import build_instance
@@ -36,7 +38,7 @@ from .stages import solve as solve_stage
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DERIVED = REPO_ROOT / "data" / "derived"
 MANIFESTS = DERIVED / "manifests"
-MODELS = REPO_ROOT / "models"
+MODELS = Path(os.environ.get("CAOS_MODELS_ROOT", REPO_ROOT / "models")).expanduser().resolve()
 
 
 @dataclass(frozen=True)
@@ -48,12 +50,11 @@ class PipelinePaths:
     @classmethod
     def from_output(cls, output: str | Path | None = None) -> PipelinePaths:
         if output is None:
-            return cls(root=DERIVED, manifests=MANIFESTS, models=MODELS)
+            raise ValueError("Pass --output with an external candidate directory; repository writes are never a pipeline default.")
         root = Path(output).resolve()
-        # The models are an INPUT, not an output: they are trained by a separate script and
-        # committed. A sandbox bake redirects where artifacts are WRITTEN, and pointing the model
-        # path at the sandbox too made `--output build/local --learned` fail on a missing file that
-        # was never supposed to be there.
+        if root.is_relative_to(REPO_ROOT):
+            raise ValueError(f"Pipeline output must resolve outside the product repository: {root}")
+        # The model bundle is an input to this bake, selected independently from its output tree.
         return cls(root=root, manifests=root / "manifests", models=MODELS)
 
 
@@ -231,17 +232,92 @@ def run_all(*, output_root: str | Path | None = None, learned=None, jobs: int = 
     return entries
 
 
+def rebuild_index(*, output_root: str | Path | None = None) -> dict:
+    """Regenerate reader-facing case metadata from the registry and complete case artifacts.
+
+    This supports copy and localization fixes without re-running every scientific solver. It refuses
+    partial or mixed-version evidence, refreshes copied roles in traces and their byte-based gate, and
+    preserves the engine version actually stamped on the manifests.
+    """
+    paths = PipelinePaths.from_output(output_root)
+    cases = registry.list_cases()
+    model_report = json.loads((paths.models / "expected-time.json").read_text(encoding="utf-8"))
+    target_relaxation = model_report.get("metrics", {}).get("target_relaxation")
+    entries = []
+    updates = []
+    versions = set()
+    for case in cases:
+        manifest_path = paths.manifests / f"{case.id}.json"
+        if not manifest_path.is_file():
+            raise SystemExit(f"index NOT written: missing manifest for {case.id}: {manifest_path}")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("case_id") != case.id:
+            raise SystemExit(f"index NOT written: manifest identity mismatch for {case.id}")
+        versions.add(manifest.get("engine", {}).get("version"))
+        trace_path = paths.root / manifest["artifact"]["path"]
+        if not trace_path.is_file():
+            raise SystemExit(f"index NOT written: missing trace for {case.id}: {trace_path}")
+        trace = json.loads(trace_path.read_text(encoding="utf-8"))
+        role = {"en": case.role_en, "es": case.role_es}
+        if trace.get("caseId") != case.id:
+            raise SystemExit(f"index NOT written: trace identity mismatch for {case.id}")
+        trace_changed = False
+        if trace.get("role") != role:
+            trace["role"] = role
+            trace_changed = True
+        expected_time = trace.get("learned", {}).get("expectedTime", {})
+        if target_relaxation and expected_time.get("target_relaxation") != target_relaxation:
+            expected_time["target_relaxation"] = target_relaxation
+            trace_changed = True
+        if trace_changed:
+            trace_bytes = write_json(trace_path, trace)
+            manifest["artifact"]["bytes"] = trace_bytes
+            gate = classify_lane(
+                n_blocks=manifest["instance"]["n_blocks"],
+                n_arcs=manifest["instance"]["n_precedence_arcs"],
+                trace_bytes=trace_bytes,
+                offline_ms=manifest["gate"]["offline_ms"],
+                redistributable=manifest["real_or_synthetic"] == "synthetic",
+            )
+            manifest["gate"] = gate
+            manifest["lane"] = gate["lane"]
+        updates.append((manifest_path, manifest))
+        entries.append(
+            {
+                "case_id": case.id,
+                "category": case.category,
+                "manifest_path": f"manifests/{case.id}.json",
+                "default": case.default,
+                "lane": manifest["lane"],
+                "title": {"en": case.title_en, "es": case.title_es},
+                "role": {"en": case.role_en, "es": case.role_es},
+            }
+        )
+    if len(versions) != 1 or None in versions:
+        raise SystemExit(f"index NOT written: manifests have mixed or missing engine versions: {sorted(map(str, versions))}")
+    index = build_index(entries, engine_version=versions.pop())
+    for manifest_path, manifest in updates:
+        manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    (paths.manifests / "index.json").write_text(
+        json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    return index
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(prog="phaseflow-pipeline")
-    ap.add_argument("case", nargs="?", default="all", help="a case id, or 'all'")
-    ap.add_argument("--output", type=Path, help="sandbox output root; omit only for a release bake")
+    ap.add_argument("case", nargs="?", default="all", help="a case id, 'all', 'index', or 'readiness'")
+    ap.add_argument("--output", type=Path, required=True, help="required external candidate output root")
     ap.add_argument("--skip-minelib", action="store_true",
                     help="skip cases that need a MineLib cache that is not present")
     ap.add_argument("--learned", action="store_true", help="include the learned methods (needs models/)")
     ap.add_argument("--jobs", type=int, default=1,
                     help="with 'all': bake this many cases at once, as separate processes")
     args = ap.parse_args()
-    paths = PipelinePaths.from_output(args.output)
+    try:
+        paths = PipelinePaths.from_output(args.output)
+    except ValueError as exc:
+        ap.error(str(exc))
 
     learned = None
     if args.learned:
@@ -249,7 +325,14 @@ def main() -> None:
 
         learned = LearnedBundle.load(paths.models)
 
-    if args.case == "all":
+    if args.case == "readiness":
+        document = compute_readiness(repo_root=REPO_ROOT, derived_root=paths.root, models_dir=paths.models)
+        size = write_readiness(paths.root, document)
+        print(f"phaseflow {__version__}: wrote readiness ({size} bytes) -> {paths.root / 'readiness.json'}")
+    elif args.case == "index":
+        index = rebuild_index(output_root=args.output)
+        print(f"phaseflow {__version__}: rebuilt index for {index['n_cases']} complete manifests -> {paths.manifests / 'index.json'}")
+    elif args.case == "all":
         cases = registry.list_cases()
         if args.skip_minelib:
             from .model.instances import MINELIB_CACHE

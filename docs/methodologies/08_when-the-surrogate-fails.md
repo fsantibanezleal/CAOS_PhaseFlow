@@ -8,7 +8,7 @@ story told after the fact.
 
 - A **failure** is a held-out case whose learned plan is worth less than **0.90** of the plan the true
   expected times produce. Not a constant of nature: the line below which the product stops presenting
-  the learned rung as an alternative and presents it as a warning.
+  the learned method as an alternative and presents it as a warning.
 - A candidate rule is read off the deposits the model **trained** on, measured on deposits neither the
   model nor the rule has seen (**held out**), and measured again on a **third** disjoint seed set that
   had no part in choosing it. Six candidate rules are evaluated, not one.
@@ -26,19 +26,19 @@ Failures per archetype and per size, on both splits, with the held-out distribut
 <!-- generated:learned-study:archetype -->
 | archetype | training cases below 0.90 | held-out cases below 0.90 | held-out median | held-out P10 | held-out minimum |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| core_halo | 129 / 216 | 65 / 108 | 0.881 | 0.790 | 0.702 |
-| layered | 40 / 216 | 24 / 108 | 0.942 | 0.885 | 0.870 |
-| porphyry | 15 / 216 | 4 / 108 | 0.970 | 0.923 | 0.891 |
-| vein | 126 / 216 | 77 / 108 | 0.878 | 0.783 | 0.732 |
-| **all** | **310 / 864** | **170 / 432** |  |  |  |
+| core_halo | 71 / 216 | 37 / 108 | 0.935 | 0.848 | 0.736 |
+| layered | 59 / 216 | 26 / 108 | 0.943 | 0.877 | 0.854 |
+| porphyry | 5 / 216 | 2 / 108 | 0.997 | 0.948 | 0.880 |
+| vein | 138 / 216 | 80 / 108 | 0.867 | 0.773 | 0.710 |
+| **all** | **273 / 864** | **145 / 432** |  |  |  |
 <!-- /generated -->
 
 <!-- generated:learned-study:size -->
 | size | training cases below 0.90 | held-out cases below 0.90 | held-out median | held-out P10 | held-out minimum |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| 1,008 blocks | 134 / 432 | 73 / 216 | 0.945 | 0.795 | 0.709 |
-| 6,912 blocks | 176 / 432 | 97 / 216 | 0.913 | 0.836 | 0.702 |
-| **all** | **310 / 864** | **170 / 432** |  |  |  |
+| 1,008 blocks | 139 / 432 | 82 / 216 | 0.939 | 0.795 | 0.710 |
+| 6,912 blocks | 134 / 432 | 63 / 216 | 0.941 | 0.861 | 0.791 |
+| **all** | **273 / 864** | **145 / 432** |  |  |  |
 <!-- /generated -->
 
 The failures concentrate on the shapes where the ORDER of extraction is delicate: a thin rich core inside
@@ -51,32 +51,35 @@ orebody rather than of a sample.
 <!-- generated:learned-study:rules -->
 | rule (read off the training deposits) | held-out cases flagged | precision | recall | worst unflagged share |
 | --- | ---: | ---: | ---: | ---: |
-| `archetype in ['core_halo', 'layered', 'porphyry', 'vein'], discount rate >= 0.05, horizon >= 6` | 432 / 432 | 0.39 | 1.00 | - |
-| `discount rate >= 0.15` | 192 / 432 | 0.41 | 0.46 | 0.732 |
-| `archetype in ['core_halo', 'layered', 'porphyry', 'vein']` | 432 / 432 | 0.39 | 1.00 | - |
-| `archetype == core_halo` **(shipped)** | 108 / 432 | 0.60 | 0.38 | 0.732 |
-| `discount rate >= 0.20 and horizon >= 12` | 0 / 432 | - | 0.00 | 0.702 |
-| `no rule` | 0 / 432 | - | 0.00 | 0.702 |
+| `archetype in ['core_halo', 'layered', 'porphyry', 'vein'], discount rate >= 0.05, horizon >= 6` | 432 / 432 | 0.34 | 1.00 | - |
+| `discount rate >= 0.15` | 192 / 432 | 0.32 | 0.43 | 0.710 |
+| `archetype in ['core_halo', 'layered', 'porphyry', 'vein']` | 432 / 432 | 0.34 | 1.00 | - |
+| `archetype == vein` **(selected candidate; not shipped)** | 108 / 432 | 0.74 | 0.55 | 0.736 |
+| `discount rate >= 0.20 and horizon >= 12` | 0 / 432 | - | 0.00 | 0.710 |
+| `no rule` | 0 / 432 | - | 0.00 | 0.710 |
 <!-- /generated -->
 
-## 4. And on the third split, which had no part in choosing the rule
+## 4. And on the third split, which had no part in choosing the candidate rule
 
 <!-- generated:learned-study:guard -->
 |  | held out (chose the rule) | third split (clean) |
 | --- | ---: | ---: |
 | cases | 432 | 432 |
-| failures (below 0.90) | 170 | 142 |
+| failures (below 0.90) | 145 | 133 |
 | flagged by the rule | 108 | 108 |
-| precision | 0.602 | 0.620 |
-| recall | 0.382 | 0.472 |
-| worst unflagged share | 0.732 | 0.773 |
-| median share | - | 0.933 |
-| P10 share | - | 0.826 |
+| precision | 0.741 | 0.528 |
+| recall | 0.552 | 0.429 |
+| worst unflagged share | 0.736 | 0.732 |
+| median share | - | 0.944 |
+| P10 share | - | 0.858 |
 <!-- /generated -->
 
-Read the recall row before anything else. The shipped rule catches **fewer than half** of the failures
-on both measured splits; its precision is moderate. It is a warning, not a verdict, and the product
-presents it that way.
+Read the recall row before anything else. The selected `vein` candidate catches fewer than half of
+the failures on the untouched third split, and also misses the required precision and worst-unflagged
+thresholds. It is **not shipped** as a live guard. The deployed `core_halo` rule is a separate older
+model: on the same third split it reaches precision 0.620, recall 0.472 and worst-unflagged share
+0.773, also below the release thresholds. Neither archetype rule is reliable enough to label a live
+deposit safe or unsafe.
 
 ## 5. What the study protects against: a confounded sweep
 
@@ -94,7 +97,7 @@ separate them, and every model and every rule fitted on it inherits the confusio
 
 ## 6. What the product does about it
 
-**Measure, do not predict.** Every baked case also contains the exact plan the learned rung
+**Measure, do not predict.** Every baked case also contains the exact plan the learned method
 approximates, on the same instance against the same bound, so the reliability signal is the RATIO
 between them: a fact about that case, not a forecast about cases like it. `measuredVsExact` in the
 trace, the percentage next to the method selector, and the flag raised off the measurement.
@@ -112,7 +115,8 @@ validating on real models is open work (backlog BL-054).
 does not arrive with one. In the live lane the exact plan arrives a second or so after the learned one
 and the share is then measured on screen ([07](07_learned.md), section 3); until it arrives, the learned
 plan is labelled a preview. A guard over deposit STATISTICS, fitted on the training seeds and validated
-on both other splits, is the open work that would give the live lane a forecast (backlog BL-034).
+on both other splits, remains open work (backlog BL-034); no statistical feature rule has passed its
+design or validation gates.
 
 ## Where it lives
 

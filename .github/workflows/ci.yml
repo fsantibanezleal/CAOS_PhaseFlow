@@ -29,8 +29,8 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Install the frontend and schema validator
-        run: cd frontend && npm ci && cd .. && pip install jsonschema==4.26.0
+      - name: Install the pipeline runtime, schema validator, and frontend
+        run: pip install -r requirements.txt jsonschema==4.26.0 && cd frontend && npm ci
       - name: Lint the offline pipeline, tests, and repository scripts
         run: pip install ruff==0.15.18 && ruff check data-pipeline tests scripts
       - name: The workflows parse
@@ -45,6 +45,14 @@ jobs:
         run: python scripts/check_sdd.py
       - name: Static notebook structure and measured quality bar
         run: python scripts/check_notebooks.py
+      - name: Notebook topic depth, evidence and bilingual parity
+        run: python scripts/check_notebook_depth.py .
+      - name: Manuscript research depth, title support and method coverage
+        run: python scripts/check_manuscript_depth.py . --report
+      - name: Internal method names stay out of reader-facing content
+        run: python scripts/check_internal_names.py .
+      - name: Product manuscripts are declared and versioned
+        run: python scripts/check_manuscripts.py
       - name: README areas, notebook mirror and documentation links
         run: python scripts/check_readme_areas.py && python scripts/check_doc_paths.py
       - name: Theme-aware SVGs and accessible animation limits
@@ -57,6 +65,11 @@ jobs:
         run: |
           base="$BEFORE"
           if [ -z "${base//0/}" ]; then base=origin/develop; fi
+          # A full-depth checkout does not guarantee that an event's previous
+          # commit is reachable from the fetched refs (for example after a
+          # branch rewrite). Fetch the release and integration refs explicitly
+          # before asking the contract migration checker to resolve the base.
+          git fetch --no-tags origin main develop
           python scripts/check_contract_versions.py --base "$base"
       - name: Adversarial guard tests
         run: pip install pytest==9.1.1 && python -m pytest tests/adversarial -q
@@ -91,6 +104,8 @@ jobs:
         run: cd frontend && npm run build
       - name: Frontend unit, contract, and engine parity tests
         run: cd frontend && npm test
+      - name: Public method language follows the current content rule
+        run: cd frontend && npm run check:method-language
       - name: Shared shell baseline and product overrides
         run: python scripts/check_web_baseline.py
 

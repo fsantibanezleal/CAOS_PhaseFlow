@@ -1,0 +1,21 @@
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "PhaseFlow artifact contracts",
+    "version": "1.0.0",
+    "summary": "Machine-readable index of the committed PhaseFlow JSON contracts.",
+    "description": "The case index, manifests, traces and model/readiness records are defined by the JSON Schemas in this directory. This document is a type-generation source; it does not declare or imply a network API."
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "CaseIndex": {"$ref": "./schemas/index.schema.json"},
+      "CaseManifest": {"$ref": "./schemas/manifest.schema.json"},
+      "Trace": {"$ref": "./schemas/trace.schema.json"},
+      "LearnedModel": {"$ref": "./schemas/learned-model.schema.json"},
+      "LearnedStudy": {"$ref": "./schemas/learned-study.schema.json"},
+      "Readiness": {"$ref": "./schemas/readiness.schema.json"}
+    }
+  }
+}

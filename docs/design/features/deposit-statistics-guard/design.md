@@ -1,6 +1,8 @@
 # Deposit-statistics live guard: design
 
-Status: proposed. [Proposal](proposal.md); this proposal has no approved implementation tasks.
+Status: proposed. The statistical feature itself remains unimplemented. A shared eligibility gate now
+enforces the SG-004 negative path for label-rule candidates; it does not make this statistical guard
+available or close backlog item 34.
 
 ## Data flow
 
@@ -43,3 +45,10 @@ flattering holdout result. G-04 is a predeclared minimum; if it fails, publish
 the negative measurement in the surrogate-failure methodology page and
 leave the live lane unguarded. No test may redefine failure after seeing the
 third split.
+
+The current frozen `archetype == vein` candidate was evaluated on 432 untouched cases
+and missed the predeclared precision, recall and worst-unflagged thresholds. It remains
+research-only. `LearnedBundle.live_guard_status` checks that the validation receipt
+matches the model rule, uses the fixed 0.90 threshold and contains disjoint split IDs;
+`unreliable_here` returns no classification unless all three thresholds pass. The
+frontend labels an unmeasured preview `guard unavailable` and does not call it safe.

@@ -1,22 +1,19 @@
 # Guide: the five documentation pages
 
-Every product carries five documentation pages: Introduction, Methodology, Implementation, Experiments and
-Benchmark. This guide says what each must contain. It is transcribed from ADR-0017 section 2.1 of CAOS_MANAGE
-(`conventions/architecture/1-frontend/ADR-0017-rotorvitals-frontend-bar.md`, amended 2026-10-12), which is the binding
-text; if the two differ, the ADR wins and this guide is wrong.
+PhaseFlow's scientific documentation has five routes: Introduction, Methodology, Implementation, Experiments and
+Benchmark. This guide describes the content of each page and how its evidence connects to the app.
 
-Two rules hold for the header and the layout, whatever a product adds (Felipe, 2026-10-13, shell 0.13.1). The header
+The shared shell owns the header and layout. Its header
 order is always App, Introduction, Methodology, Implementation, Experiments, Benchmark: the App is the leftmost tab, and
 the product lands on the Introduction's executive view without moving any tab (the shell's `STANDARD_ROUTES` carries the
 order; a product never reorders it). Every documentation route, the Introduction included, takes the full width of the
 page: the shell's `DocPage` always renders the wide document layout (its `wide` prop is kept and changes nothing), so a
 page never sets a centred reading column of its own.
 
-Status: the checks below run in the shell's gate (`caos-shell-gate`, check `ADR-0017.2`) from shell 0.11.0, which ships
-the page components, and the template's example carries every area of the five pages from release 0.06.000 (shell
-0.12.0): Methodology has six topics (four classical, two learned), Implementation nine topics in four groups, Experiments
-six topics, Benchmark its six areas, the Introduction its two views. A product replaces the content and keeps the
-structure, so it needs no rework. The executive view of the Introduction is the shell's standard ([guide 06](06_executive-brief.md)).
+The shell's measured gate checks these areas against the built pages. PhaseFlow's Methodology explains its methods,
+Implementation traces the pipeline and browser, Experiments reports measured cases, and Benchmark compares each method
+with the correct bound. The Introduction carries executive and technical views. The executive view is rendered by the
+shell ([guide 06](06_executive-brief.md)).
 
 ## 1. How a section declares its area
 
@@ -46,7 +43,7 @@ areas to declare and nothing is placed beside it; the product fills the data fil
 ([guide 06](06_executive-brief.md)). It cannot be waived.
 
 Since shell 0.14.0 the executive view shows four groups as small cards that flip (the bearers, the roles, the approaches of
-the state of the art and the 4 C's), turns a group of five or more cards into a carousel, and accepts animated
+published approaches and the 4 C's), turns a group of five or more cards into a carousel, and accepts animated
 illustrations that carry a `prefers-reduced-motion` block with their static final frame. The rules of use (a title of at
 most 8 words and a back of at most 40 in English, 10 and 50 in Spanish; animate what explains a change, a flow or a
 sequence; the ten second limit) are in [guide 06](06_executive-brief.md), sections 2.1 and 5.1.
@@ -66,8 +63,8 @@ five areas below, with at least 1 overview figure and 3 captioned equations.
 
 | Area | What it is | What the gate requires in it |
 |---|---|---|
-| `method` (one per topic, with `kind="classical"` or `kind="learned"`) | one method family, as the build runs it: its exact behaviour and constants | at least 4 dense paragraphs, at least 2 captioned equations, at least 1 figure, exactly 1 honest callout (scope, exact versus illustrative), references |
-| page level | the ladder from baseline to the state of the art of the domain | at least 2 topics of kind `learned` (the learned methods that are the state of the art for the domain, each beside its classical baseline) |
+| `method` (one per topic, with `kind="established"` or `kind="learned"`) | one method family, as the build runs it: its exact behaviour and constants | at least 4 dense paragraphs, at least 2 captioned equations, at least 1 figure, exactly 1 honest callout (scope, exact versus illustrative), references |
+| page level | methods from their documented baseline through current published approaches | at least 2 topics of kind `learned` (each with a measured comparator and a clear limitation) |
 
 ## 4. Implementation (at least 8 topics)
 
@@ -94,7 +91,7 @@ five areas below, with at least 1 overview figure and 3 captioned equations.
 | Area | What it is | What the gate requires in it |
 |---|---|---|
 | `results` | held-out numbers read from committed artifacts | 1 table or chart |
-| `comparison` | a learned model and a classical baseline on the same real data | 1 table or chart |
+| `comparison` | a learned model and a documented reference method on the same real data | 1 table or chart |
 | `robustness` | an honest robustness or degradation curve | 1 chart |
 | `live` | a live in-browser inference panel on real held-out data | at least 1 control |
 | `provenance` | per row: dataset, difficulty source, redistribution | 1 table |
@@ -110,7 +107,7 @@ reviewer reads these against the rubric before a release is called ready.
 
 A page that cannot carry an area for a stated reason declares it on the page: `floorWaivers` on `DocPage`, rendered as
 `data-floor-waiver="<area or floor>: <reason>"`. Legitimate: a product with no learned method (Methodology's
-`learned` topics), no live lane (`live`) or no governing equation (`math`). Not legitimate: the executive view or any of its five sub-tabs, which cannot be waived (ADR-0017 section 2.1), or an area
+`learned` topics), no live lane (`live`) or no governing equation (`math`). Not legitimate: the executive view or any of its five sub-tabs, which cannot be waived, or an area
 skipped for lack of time. The gate lists every waiver in its report, fails a waiver
 without a reason or naming an unknown area, and the waiver is reviewed with the pull request that adds it.
 

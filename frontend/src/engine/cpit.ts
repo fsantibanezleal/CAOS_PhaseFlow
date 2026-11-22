@@ -2,7 +2,7 @@
 // to it that `frontend/test/parity.test.ts` can assert the two agree to floating tolerance on a
 // committed case.
 //
-// Why the browser has a real solver at all: ADR-0070 requires the focus view's parameters to
+// Why the browser has a real solver at all: Focus parameters must
 // recompute live, and a scheduling product whose discount rate and capacity are pre-baked chips is a
 // brochure with a slider on it. Everything below runs on the block model the trace already carries,
 // so moving the rate re-solves the actual problem rather than fetching a different answer.

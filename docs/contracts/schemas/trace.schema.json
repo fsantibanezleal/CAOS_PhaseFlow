@@ -4,22 +4,1033 @@
   "title": "PhaseFlow schedule trace",
   "description": "Replay payload for one case. Synthetic cases may include block-level arrays; MineLib traces contain aggregate data only.",
   "type": "object",
-  "required": ["schema", "caseId", "category", "title", "role", "instance", "scenario", "bound", "controls", "methods", "contract"],
+  "required": [
+    "schema",
+    "caseId",
+    "category",
+    "title",
+    "role",
+    "instance",
+    "scenario",
+    "published",
+    "controls",
+    "methods",
+    "contract"
+  ],
   "properties": {
-    "schema": {"const": "phaseflow.schedule-trace/v1"},
-    "caseId": {"type": "string", "minLength": 1},
-    "category": {"type": "string", "minLength": 1},
-    "title": {"$ref": "#/$defs/bilingual"},
-    "role": {"$ref": "#/$defs/bilingual"},
-    "instance": {"type": "object", "required": ["source", "synthetic", "nBlocks", "nPrecedenceArcs", "dims", "licence"], "properties": {"source": {"enum": ["twin", "minelib"]}, "synthetic": {"type": "boolean"}, "nBlocks": {"type": "integer", "minimum": 1}, "nPrecedenceArcs": {"type": "integer", "minimum": 0}, "dims": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "integer", "minimum": 1}}, "licence": {"type": "string"}}, "additionalProperties": true},
-    "scenario": {"type": "object", "required": ["periods", "discountRate", "resources"], "properties": {"periods": {"type": "integer", "minimum": 1}, "discountRate": {"type": "number"}, "resources": {"type": "array", "minItems": 1}}, "additionalProperties": true},
-    "bound": {"type": "object"},
-    "controls": {"type": "object", "required": ["allPass"], "properties": {"allPass": {"type": "boolean"}}, "additionalProperties": true},
-    "methods": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["method", "rung", "npv", "bound", "periods"], "properties": {"method": {"type": "string"}, "rung": {"enum": ["classical", "sota", "learned", "beyond"]}, "npv": {"type": "number"}, "bound": {"type": "number"}, "periods": {"type": "array"}}, "additionalProperties": true}},
-    "contract": {"type": "object", "required": ["accepted", "flags", "facts"], "properties": {"accepted": {"type": "boolean"}, "flags": {"type": "array"}, "facts": {"type": "object"}}, "additionalProperties": true}
+    "schema": {
+      "const": "phaseflow.schedule-trace/v1"
+    },
+    "caseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "$ref": "#/$defs/bilingual"
+    },
+    "role": {
+      "$ref": "#/$defs/bilingual"
+    },
+    "instance": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "enum": [
+            "twin",
+            "minelib"
+          ]
+        },
+        "synthetic": {
+          "type": "boolean"
+        },
+        "nBlocks": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "nPrecedenceArcs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "gradeSource": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dims": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "upitValue": {
+          "type": "number"
+        },
+        "upitBlocks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "licence": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "synthetic",
+        "nBlocks",
+        "nPrecedenceArcs",
+        "gradeSource",
+        "dims",
+        "upitValue",
+        "upitBlocks",
+        "licence"
+      ],
+      "additionalProperties": true
+    },
+    "scenario": {
+      "type": "object",
+      "properties": {
+        "periods": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "discountRate": {
+          "type": "number"
+        },
+        "periodOneUndiscounted": {
+          "type": "boolean"
+        },
+        "declared": {
+          "type": "boolean"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/traceResource"
+          }
+        }
+      },
+      "required": [
+        "periods",
+        "discountRate",
+        "periodOneUndiscounted",
+        "declared",
+        "resources"
+      ],
+      "additionalProperties": true
+    },
+    "published": {
+      "$ref": "#/$defs/tracePublished"
+    },
+    "controls": {
+      "$ref": "#/$defs/traceControls"
+    },
+    "bound": {
+      "$ref": "#/$defs/boundReport"
+    },
+    "ensemble": {
+      "$ref": "#/$defs/ensembleReport"
+    },
+    "learned": {
+      "$ref": "#/$defs/learnedReport"
+    },
+    "contract": {
+      "type": "object",
+      "properties": {
+        "accepted": {
+          "type": "boolean"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contractFlag"
+          }
+        },
+        "facts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "accepted",
+        "flags",
+        "facts"
+      ],
+      "additionalProperties": true
+    },
+    "methods": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/traceMethod"
+      }
+    },
+    "frontierPolicy": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "status",
+            "source",
+            "trainingSourceCommit",
+            "evaluationSourceCommit",
+            "trainingReceiptSha256",
+            "featureContractSha256",
+            "checkpointSha256"
+          ],
+          "properties": {
+            "status": { "enum": ["complete", "partial"] },
+            "source": { "type": "string", "minLength": 1 },
+            "trainingSourceCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "evaluationSourceCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "trainingReceiptSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "featureContractSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+            "checkpointSha256": {
+              "type": "array",
+              "minItems": 5,
+              "maxItems": 5,
+              "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["status", "reason"],
+          "properties": {
+            "status": { "enum": ["failed", "unavailable"] },
+            "reason": { "type": "string", "minLength": 12, "maxLength": 1000 }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "blocks": {
+      "$ref": "#/$defs/traceBlocks"
+    }
   },
   "$defs": {
-    "bilingual": {"type": "object", "required": ["en", "es"], "properties": {"en": {"type": "string", "minLength": 1}, "es": {"type": "string", "minLength": 1}}, "additionalProperties": false}
+    "bilingual": {
+      "type": "object",
+      "required": [
+        "en",
+        "es"
+      ],
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "es": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "localSearchReceipt": {
+      "type": "object",
+      "required": [
+        "requestedRounds",
+        "attemptedRounds",
+        "skippedRounds",
+        "mipGapTarget",
+        "nodeLimit",
+        "certifiedOptimal",
+        "neighborhoods"
+      ],
+      "properties": {
+        "requestedRounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attemptedRounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skippedRounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mipGapTarget": {
+          "type": "number",
+          "minimum": 0
+        },
+        "timeLimitSeconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "nodeLimit": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "certifiedOptimal": {
+          "type": "boolean"
+        },
+        "neighborhoods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/neighborhoodReceipt"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "neighborhoodReceipt": {
+      "type": "object",
+      "required": [
+        "round",
+        "backend",
+        "status",
+        "seconds",
+        "nodes",
+        "usedStart",
+        "improved",
+        "certifiedOptimal"
+      ],
+      "properties": {
+        "round": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "backend": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "nodes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "mipGap": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "incumbentNpv": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "upperBoundNpv": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "usedStart": {
+          "type": "boolean"
+        },
+        "improved": {
+          "type": "boolean"
+        },
+        "certifiedOptimal": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "contractFlag": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "detail"
+      ],
+      "additionalProperties": false
+    },
+    "tracePeriod": {
+      "type": "object",
+      "properties": {
+        "t": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "minedTonnes": {
+          "type": "number"
+        },
+        "oreTonnes": {
+          "type": "number"
+        },
+        "wasteTonnes": {
+          "type": "number"
+        },
+        "headGrade": {
+          "type": "number"
+        },
+        "metal": {
+          "type": "number"
+        },
+        "value": {
+          "type": "number"
+        },
+        "discCashFlow": {
+          "type": "number"
+        },
+        "cumNpv": {
+          "type": "number"
+        },
+        "stripRatio": {
+          "type": "number"
+        },
+        "resourceUse": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "resourceLimit": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "components": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "largestComponentShare": {
+          "type": "number"
+        },
+        "minWidthBlocks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocks": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "t",
+        "minedTonnes",
+        "oreTonnes",
+        "wasteTonnes",
+        "headGrade",
+        "metal",
+        "value",
+        "discCashFlow",
+        "cumNpv",
+        "stripRatio",
+        "resourceUse",
+        "resourceLimit",
+        "components",
+        "largestComponentShare",
+        "minWidthBlocks",
+        "blocks"
+      ],
+      "additionalProperties": false
+    },
+    "traceResource": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "limitPerPeriod": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "limitPerPeriod"
+      ],
+      "additionalProperties": false
+    },
+    "methodRung": {
+      "enum": [
+        "classical",
+        "sota",
+        "learned",
+        "beyond"
+      ]
+    },
+    "traceMethod": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "rung": {
+          "$ref": "#/$defs/methodRung"
+        },
+        "heuristic": {
+          "type": "boolean"
+        },
+        "npv": {
+          "type": "number"
+        },
+        "bound": {
+          "type": "number"
+        },
+        "gapPct": {
+          "type": "number"
+        },
+        "runtimeMs": {
+          "type": "number"
+        },
+        "minedBlocks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "notes": {
+          "type": "string"
+        },
+        "unreliable": {
+          "type": "boolean"
+        },
+        "measuredVsExact": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "flaggedByRule": {
+          "type": "boolean"
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tracePeriod"
+          }
+        },
+        "periodOfBlock": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "extra": {
+          "type": "object",
+          "properties": {
+            "localSearchReceipt": {
+              "$ref": "#/$defs/localSearchReceipt"
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "method",
+        "rung",
+        "heuristic",
+        "npv",
+        "bound",
+        "gapPct",
+        "runtimeMs",
+        "minedBlocks",
+        "notes",
+        "periods"
+      ],
+      "additionalProperties": true
+    },
+    "traceBlocks": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "y": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "level": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "grade": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "tonnage": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "processTonnage": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "inPit": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "level",
+        "grade",
+        "tonnage",
+        "processTonnage",
+        "value",
+        "inPit"
+      ],
+      "additionalProperties": false
+    },
+    "traceControls": {
+      "type": "object",
+      "properties": {
+        "dualitySetMatches": {
+          "type": "boolean"
+        },
+        "dualityBoundError": {
+          "type": "number"
+        },
+        "boundGeqFeasible": {
+          "type": "boolean"
+        },
+        "orderInvariant": {
+          "type": "boolean"
+        },
+        "orderInvarianceError": {
+          "type": "number"
+        },
+        "allPass": {
+          "type": "boolean"
+        },
+        "bestGapPct": {
+          "type": "number"
+        },
+        "worstGapPct": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "dualitySetMatches",
+        "dualityBoundError",
+        "boundGeqFeasible",
+        "orderInvariant",
+        "orderInvarianceError",
+        "allPass",
+        "bestGapPct",
+        "worstGapPct"
+      ],
+      "additionalProperties": true
+    },
+    "tracePublished": {
+      "type": "object",
+      "properties": {
+        "problem": {
+          "enum": [
+            "CPIT",
+            "PCPSP"
+          ]
+        },
+        "source_tables": {
+          "type": "string"
+        },
+        "upit_optimum": {
+          "type": "number"
+        },
+        "lp_bound": {
+          "type": "number"
+        },
+        "best_known": {
+          "type": "number"
+        },
+        "best_known_gap_pct": {
+          "type": "number"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    },
+    "boundReport": {
+      "type": "object",
+      "properties": {
+        "algorithm4": {
+          "type": "number"
+        },
+        "algorithm4_ms": {
+          "type": "number"
+        },
+        "closure_solves": {
+          "type": "integer"
+        },
+        "joint": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "joint_ms": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "joint_iterations": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "joint_converged": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "joint_nodes": {
+          "type": "integer"
+        },
+        "joint_edges": {
+          "type": "integer"
+        },
+        "joint_skipped": {
+          "type": "string"
+        },
+        "joint_error": {
+          "type": "string"
+        },
+        "skipped_methods": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "joint_note": {
+          "type": "string"
+        },
+        "joint_solver": {
+          "type": "string"
+        },
+        "joint_slack": {
+          "type": "number"
+        },
+        "tightening_pct": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "used": {
+          "enum": [
+            "algorithm4",
+            "bienstock-zuckerberg"
+          ]
+        },
+        "pcpsp_lp": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pcpsp_lp_ms": {
+          "type": "number"
+        },
+        "pcpsp_lp_rows": {
+          "type": "integer"
+        },
+        "pcpsp_lp_status": {
+          "type": "string"
+        },
+        "pcpsp_lp_method": {
+          "type": "string"
+        },
+        "pcpsp_lp_iterations": {
+          "type": "integer"
+        },
+        "pcpsp_lp_gap_estimate": {
+          "type": "number"
+        },
+        "pcpsp_lp_slack": {
+          "type": "number"
+        },
+        "pcpsp_lp_note": {
+          "type": "string"
+        },
+        "pcpsp_lp_error": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    },
+    "ensembleSettings": {
+      "type": "object",
+      "properties": {
+        "dMax": {
+          "type": "integer"
+        },
+        "rounds": {
+          "type": "integer"
+        },
+        "mipGap": {
+          "type": "number"
+        },
+        "timeLimitSecondsPerNeighborhood": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "nodeLimitPerNeighborhood": {
+          "type": "integer"
+        },
+        "seedBase": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "dMax",
+        "rounds",
+        "mipGap",
+        "timeLimitSecondsPerNeighborhood",
+        "seedBase"
+      ],
+      "additionalProperties": true
+    },
+    "ensembleReport": {
+      "type": "object",
+      "properties": {
+        "resolveMethod": {
+          "type": "string"
+        },
+        "ran": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "nRealisations": {
+          "type": "integer"
+        },
+        "sigma": {
+          "type": "number"
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "expected": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "p10": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "p90": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "meanModel": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "optimism": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "bestByExpected": {
+          "type": "string"
+        },
+        "bestByP10": {
+          "type": "string"
+        },
+        "valueOfPlanSelection": {
+          "type": "number"
+        },
+        "valueOfReplanning": {
+          "type": "number"
+        },
+        "valueOfReplanningPct": {
+          "type": "number"
+        },
+        "fixedPolicy": {
+          "type": "string"
+        },
+        "fixedPolicyExpectedNpv": {
+          "type": "number"
+        },
+        "replannedExpectedNpv": {
+          "type": "number"
+        },
+        "replanningElapsedSeconds": {
+          "type": "number"
+        },
+        "replanningSettings": {
+          "$ref": "#/$defs/ensembleSettings"
+        },
+        "replanningNote": {
+          "type": "string"
+        },
+        "replanningReceipts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "realisation": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "certifiedOptimal": {
+                "type": "boolean"
+              },
+              "requestedRounds": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "attemptedRounds": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "skippedRounds": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "neighborhoods": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/neighborhoodReceipt"
+                }
+              }
+            },
+            "required": [
+              "realisation",
+              "certifiedOptimal",
+              "requestedRounds",
+              "attemptedRounds",
+              "skippedRounds",
+              "neighborhoods"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ran"
+      ],
+      "additionalProperties": true
+    },
+    "learnedReport": {
+      "type": "object",
+      "properties": {
+        "expectedTime": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "bound": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "guard": {
+          "type": "object",
+          "properties": {
+            "rule": {
+              "type": "string"
+            },
+            "failure_below": {
+              "type": "number"
+            },
+            "validation_n": {
+              "type": "integer"
+            },
+            "validation_recall": {
+              "type": "number"
+            },
+            "validation_precision": {
+              "type": "number"
+            },
+            "validation_worst_unflagged": {
+              "type": "number"
+            },
+            "live_available": {
+              "type": "boolean"
+            },
+            "live_unavailable_reason": {
+              "type": "string"
+            }
+          },
+          "required": [],
+          "additionalProperties": true
+        },
+        "honesty": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    }
   },
   "additionalProperties": true
 }

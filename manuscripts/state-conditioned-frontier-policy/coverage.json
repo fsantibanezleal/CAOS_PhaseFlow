@@ -1,0 +1,11 @@
+{
+  "kind": "manuscript",
+  "title_support": [
+    "fig:validation-history",
+    "fig:validation-replay",
+    "tab:validation-diagnostic"
+  ],
+  "claims": {
+    "BS-2": "sec:proposed-method"
+  }
+}

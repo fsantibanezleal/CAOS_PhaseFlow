@@ -6,7 +6,7 @@
  * references. A topic is data, so the five pages share one layout and a fix lands once.
  */
 import { Callout, DocPage as ShellDocPage, DocSection, Equation, Figure, SubTabs, Tabs, InlineMath } from '@fasl-work/caos-app-shell';
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 
 export type Lang = 'en' | 'es';
 export type Bi = { en: string; es: string };
@@ -107,15 +107,25 @@ function Equations({ topic, lang }: { topic: Topic; lang: Lang }) {
 
 function Symbols({ topic, lang }: { topic: Topic; lang: Lang }) {
   if (!topic.symbols?.length) return null;
+  const plainSymbol = (tex: string) => tex
+    .replace(/\\(?:mathcal|mathrm|operatorname)\s*/g, '')
+    .replace(/\\lambda/g, 'λ')
+    .replace(/\\,/g, ' ')
+    .replace(/_\{([A-Za-z0-9]+)\}/g, (_, value: string) => value.replace(/[A-Za-z0-9]/g, (c) => ({ b: 'ᵦ', t: 'ₜ', r: 'ᵣ', u: 'ᵤ', l: 'ₗ', 0: '₀', 1: '₁' })[c] ?? c))
+    .replace(/\^\{([A-Za-z0-9]+)\}/g, (_, value: string) => value.replace(/[A-Za-z0-9]/g, (c) => ({ u: 'ᵘ', l: 'ˡ', 0: '⁰', 1: '¹' })[c] ?? c))
+    .replace(/_([A-Za-z0-9])/g, (_, c: string) => ({ b: 'ᵦ', t: 'ₜ', r: 'ᵣ', u: 'ᵤ', l: 'ₗ', 0: '₀', 1: '₁' })[c] ?? c)
+    .replace(/\^([A-Za-z0-9])/g, (_, c: string) => ({ u: 'ᵘ', l: 'ˡ', 0: '⁰', 1: '¹' })[c] ?? c)
+    .replace(/[{}\\]/g, '')
+    .trim();
   return (
     <div className="pfd-symbols" data-glossary>
       <div className="pfd-symbols-title">{T.symbols[lang]}</div>
       <dl>
         {topic.symbols.map((s, i) => (
-          <div key={i} className="pfd-symbol">
-            <dt><InlineMath tex={s.tex} /></dt>
+          <Fragment key={i}>
+            <dt><InlineMath tex={s.tex} /><span className="pfd-symbol-plain">{plainSymbol(s.tex)}</span></dt>
             <dd>{text(s.text, lang)}</dd>
-          </div>
+          </Fragment>
         ))}
       </dl>
     </div>

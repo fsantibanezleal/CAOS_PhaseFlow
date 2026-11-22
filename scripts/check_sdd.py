@@ -56,6 +56,21 @@ Checks, in increasing strength:
    from the row, a reason without a waiver and a row that says ``not applicable`` while ``product.json`` records no waiver are
    findings. ``frontend/scripts/gate.mjs`` holds the same rules and refuses to run the shell gate when they fail.
 
+6. **The visualization catalog** (ADR-0082): ``## Visualization catalog`` is a table with the columns ``id``, ``question``,
+   ``data contract``, ``kind``, ``interactions``, ``linked views`` and ``placement``. Every row is specific, non-placeholder,
+   and the set names V1 through V6 exactly once; an inapplicable kind must give its reason and a replacement view of the same purpose.
+   The guided story (0.15.001, issue #102) is declared in ``product.json`` as ``"showcase": {"story_routes": [...]}``: 3 to 6
+   distinct routes ``/story/<step>`` in story order. A ``product.json`` without the list, or with a list that is not that, is a
+   finding: ADR-0082 requires the story, and this guard, not the gate runner, is where its absence fails. The gate runner and
+   ``frontend/scripts/check_story_mode.mjs`` walk the same list. A tree without ``product.json`` declares nothing.
+7. **The three method tiers** (0.13.000; CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``): the ``## Method ladder`` is
+   a table ``| id | tier | method | acceptance criterion | gate |`` and each row's tier is ``classical``, ``sota`` (the state of
+   the art) or ``beyond`` (beyond it). A product (a tree without ``.template-source``) needs a method in each tier, a section
+   ``## Beyond the state of the art`` that lists at least one proposed method ``BS-<n>`` and never says "None claimed.", and a
+   ``beyond`` row for each claim; the template keeps its teaching example (``None claimed.``, no ``beyond`` row) but still
+   writes the table with its tier column. A ladder without the column fails and says how to add it. The notebook gate covers
+   each sota method and each claim; ``scripts/check_manuscripts.py`` covers the manuscripts.
+
 Check 3 is the one that matters: a requirement can name ``tests/test_nothing.py::test_imaginary`` and pass check 2
 while verifying nothing, which is the failure the rule exists for.
 
@@ -83,6 +98,12 @@ SECTIONS = (
     "Problem and non-goals", "Research basis", "Sizing and contracts", "Technology and versions", "Resources", "Lanes",
     "Method ladder", "Cases", "Oracles", "Deploy driver", "Risks and kill criteria", "ADR fit",
 )
+TIERS = ("classical", "sota", "beyond")
+LADDER_HEAD = ["id", "tier", "method", "acceptance criterion", "gate"]
+BEYOND_SECTION = "Beyond the state of the art"
+RULE = "CAOS_MANAGE conventions/method-tiers-and-manuscripts.md"
+TEMPLATE_SENTINEL = ".template-source"  # present only in CAOS_PRODUCT_TEMPLATE (instantiate.py removes it; check_template_residue.py guards it)
+BS_ID = re.compile(r"\bBS-\d+\b")
 BRIEF = "Executive brief"
 GUIDE = "see docs/guides/06_executive-brief.md"
 EXEC_FILE = "content/executive.json"
@@ -708,6 +729,135 @@ def app_kind_findings(text: str) -> list[str]:
     return out
 
 
+def ladder_findings(stripped: str) -> list[str]:
+    """The three method tiers (rule: CAOS_MANAGE ``conventions/method-tiers-and-manuscripts.md``) in the ladder table and the
+    section on the beyond of already-stripped text. The template (``.template-source``) keeps its teaching example; a product needs
+    a method in each tier and at least one ``BS-<n>`` claim, each claim with its ``beyond`` row."""
+    body = section_text(stripped, "Method ladder")
+    if body is None:
+        return []  # sections_findings names the missing section
+    template = (ROOT / TEMPLATE_SENTINEL).is_file()
+    tiers = "classical, sota, beyond"
+    rows = table_rows(body, LADDER_HEAD)
+    if rows is None:
+        return ["SDD.md Method ladder has no table with the columns | id | tier | method | acceptance criterion | gate |: add the "
+                f"tier column, one of {tiers} for each method, and an id for each ({RULE})"]
+    out: list[str] = []
+    seen: dict[str, str] = {}
+    by_tier: dict[str, list[str]] = {t: [] for t in TIERS}
+    for cells in rows:
+        if len(cells) != len(LADDER_HEAD):
+            out.append(f"SDD.md Method ladder row {' | '.join(cells)[:60]!r} has {len(cells)} cells, the table has {len(LADDER_HEAD)}")
+            continue
+        rid, tier, method = cells[0], cells[1].lower(), cells[2]
+        if not rid or rid.lower() in PLACEHOLDER:
+            out.append("SDD.md Method ladder has a row with no id (M-1, M-2 for the classical and sota methods, BS-1 for a beyond one)")
+            continue
+        if rid in seen:
+            out.append(f"SDD.md Method ladder lists the id {rid} twice")
+        seen[rid] = tier
+        if tier not in TIERS:
+            out.append(f"SDD.md Method ladder row {rid} has the tier {cells[1]!r}: it must be one of {tiers}")
+            continue
+        if not method or method.lower() in PLACEHOLDER or not cells[3] or cells[3].lower() in PLACEHOLDER:
+            out.append(f"SDD.md Method ladder row {rid} has an empty or placeholder method or acceptance criterion")
+        by_tier[tier].append(rid)
+    section = section_text(stripped, BEYOND_SECTION)
+    claims = set(BS_ID.findall(section)) if section is not None else set()
+    for rid in by_tier["beyond"]:
+        if rid not in claims:
+            out.append(f"SDD.md Method ladder row {rid} is a beyond method but the section '{BEYOND_SECTION}' lists no {rid}")
+    for claim in sorted(claims - set(by_tier["beyond"])):
+        out.append(f"SDD.md lists {claim} under '{BEYOND_SECTION}' but the Method ladder has no beyond method row with that id "
+                   "(a validation protocol, a calibration or a benchmark design is not a method beyond the state of the art)")
+    if template:
+        return out
+    for tier in TIERS:
+        if not by_tier[tier]:
+            out.append(f"SDD.md Method ladder has no {tier} method: every CAOS product implements the three tiers "
+                       f"(classical, state of the art, beyond it) ({RULE})")
+    if section is None:
+        out.append(f"SDD.md has no section '## {BEYOND_SECTION}': list at least one proposed method BS-<n> ({RULE})")
+    else:
+        if re.search(r"none\s+claimed", section, re.I):
+            out.append(f"SDD.md '{BEYOND_SECTION}' says \"None claimed.\": that holds only for the template's teaching example, "
+                       f"a product proposes at least one method BS-<n> ({RULE})")
+        if not claims:
+            out.append(f"SDD.md '{BEYOND_SECTION}' lists no proposed method BS-<n>: a product proposes at least one, with its hypothesis, "
+                       f"its method and the evaluation that would confirm or refute it ({RULE})")
+    return out
+
+
+STORY_ROUTE = re.compile(r"^/story/[A-Za-z0-9][A-Za-z0-9._~-]*$")
+STORY_RULE = "ADR-0082: every App has a guided story of 3 to 6 directly addressable steps"
+
+
+def story_findings() -> list[str]:
+    """The guided story's routes, declared in ``product.json`` ``showcase.story_routes`` (0.15.001): 3 to 6 distinct ``/story/<step>``
+    routes. The gate runner and the story check read the same list; a missing story fails here."""
+    path = ROOT / "product.json"
+    if not path.is_file():
+        return []
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError:
+        return []  # app_kind_findings reports the file
+    if not isinstance(doc, dict):
+        return []
+    showcase = doc.get("showcase")
+    routes = showcase.get("story_routes") if isinstance(showcase, dict) else None
+    if routes is None:
+        return [f'product.json declares no showcase.story_routes ({STORY_RULE}): list the story\'s routes, "/story/<step>", '
+                'in story order, as the gate runner walks them']
+    if not isinstance(routes, list):
+        return [f'product.json showcase.story_routes must be a list of "/story/<step>" routes ({STORY_RULE})']
+    out: list[str] = []
+    for i, route in enumerate(routes):
+        if not isinstance(route, str) or not STORY_ROUTE.match(route):
+            out.append(f'product.json showcase.story_routes[{i}] is {json.dumps(route)}: each entry is one step, "/story/<step>" ({STORY_RULE})')
+        elif routes.index(route) != i:
+            out.append(f"product.json showcase.story_routes lists {route} twice ({STORY_RULE})")
+    if not 3 <= len(routes) <= 6:
+        out.append(f"product.json showcase.story_routes has {len(routes)} step(s) ({STORY_RULE})")
+    return out
+
+
+def visualization_catalog_findings(stripped: str) -> list[str]:
+    """Every CAOS app states the problem-specific data and interaction contract for the six ADR-0082 view kinds."""
+    body = section_text(stripped, "Visualization catalog")
+    if body is None:
+        return ["SDD.md has no '## Visualization catalog' (ADR-0082): add one row for each V1–V6 with question, data contract, interactions, linked views and placement"]
+    head = ["id", "question", "data contract", "kind", "interactions", "linked views", "placement"]
+    rows = table_rows(body, head)
+    if rows is None:
+        return ["SDD.md Visualization catalog needs a table with columns | id | question | data contract | kind | interactions | linked views | placement | (ADR-0082)"]
+    out: list[str] = []
+    seen: dict[str, int] = {}
+    for cells in rows:
+        if len(cells) != len(head):
+            out.append(f"SDD.md Visualization catalog row has {len(cells)} cells; expected {len(head)}")
+            continue
+        vid = cells[0].strip().upper()
+        match = re.search(r"\bV([1-6])\b", vid)
+        if not match:
+            out.append(f"SDD.md Visualization catalog row id {cells[0]!r} must identify V1 through V6")
+            continue
+        kind = f"V{match.group(1)}"
+        seen[kind] = seen.get(kind, 0) + 1
+        for label, value in zip(head[1:], cells[1:], strict=True):
+            if not value.strip() or value.strip().lower() in PLACEHOLDER or re.search(r"\b(TODO|TBD|TBC|placeholder|unknown)\b", value, re.I):
+                out.append(f"SDD.md {kind} {label} is empty or a placeholder; ADR-0082 requires a product-specific contract")
+        reasoned = bool(re.search(r"not applicable|inapplicable", cells[3], re.I))
+        if reasoned and (re.search(r"because|reason", cells[3], re.I) is None or len(cells[4].split()) < 3):
+            out.append(f"SDD.md {kind} kind waives applicability without a reason and a replacement purpose in interactions")
+    for kind in (f"V{i}" for i in range(1, 7)):
+        if seen.get(kind, 0) == 0:
+            out.append(f"SDD.md Visualization catalog is missing {kind} (ADR-0082)")
+        elif seen[kind] > 1:
+            out.append(f"SDD.md Visualization catalog lists {kind} {seen[kind]} times; each kind has one canonical row")
+    return out
+
+
 def sdd_findings() -> list[str]:
     if not SDD.is_file():
         return [f"{SDD.relative_to(ROOT).as_posix()} is missing"]
@@ -718,6 +868,14 @@ def sdd_findings() -> list[str]:
     out += sections_findings(text)
     out += app_kind_findings(text)
     stripped = strip_markup(text)
+    # The visualization catalog is a CAOS application contract. Small SDD-only
+    # fixtures used to exercise the generic research/requirements guards are not
+    # product repositories and do not have product.json, so they do not claim
+    # this app-level ADR.
+    if (ROOT / "product.json").is_file():
+        out += visualization_catalog_findings(stripped)
+    out += story_findings()
+    out += ladder_findings(stripped)
     research = section_text(stripped, "Research basis")
     resources = section_text(stripped, "Resources")
     if research is not None:

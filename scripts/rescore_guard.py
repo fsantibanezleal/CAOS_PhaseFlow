@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Re-run the failure-mode study on the rows already recorded, without re-solving anything.
 
-    .venv/Scripts/python.exe scripts/rescore_guard.py
+    CAOS_MODELS_ROOT=<external-model-stage> .venv-pipeline/Scripts/python.exe scripts/rescore_guard.py
 
-`train_learned.py` records every scored case, both splits, into `models/learned-failure-modes.json`.
+`train_learned.py` records every scored case, both splits, into the external model candidate.
 Choosing which rule to ship is arithmetic over those rows, so it does not need the forty minutes of
 LP relaxations that produced them. This script exists because the conclusion changed twice under
 measurement and re-deriving it has to be cheap enough to actually do:
@@ -14,7 +14,7 @@ measurement and re-deriving it has to be cheap enough to actually do:
 - with a crossed nine-scenario sweep, the orebody is the signal on BOTH splits and the scenario rule
   falls to a recall of 0.44.
 
-It rewrites the study, the shipped rule and the metrics the app reads. It never touches the weights.
+It rewrites the study, the candidate rule and metrics. It never touches the weights or checkout models.
 """
 
 from __future__ import annotations
@@ -29,11 +29,14 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "data-pipeline"))
 from pipeline.model.learned import json_safe  # noqa: E402
 from train_learned import FAILURE_BELOW, characterise_failures  # noqa: E402
+from model_paths import external_model_root  # noqa: E402
 
-MODELS = ROOT / "models"
+MODELS: Path
 
 
 def main() -> int:
+    global MODELS
+    MODELS = external_model_root()
     study_path = MODELS / "learned-failure-modes.json"
     old = json.loads(study_path.read_text(encoding="utf-8"))
     train_rows = old["train"]["rows"]

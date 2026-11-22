@@ -5,7 +5,7 @@
 [doi:10.1007/s12532-017-0130-5](https://doi.org/10.1007/s12532-017-0130-5)), an open-source LP and MILP
 solver; `scipy.sparse.csgraph.maximum_flow` is the compiled max-flow behind the joint bound's pricing.
 
-**Pin.** `scipy==1.18.0`, through `oreblocks[milp]` in `requirements.txt` and pinned in
+**Pin.** `scipy==1.18.1`, through `oreblocks[milp]` in `requirements.txt` and pinned in
 `requirements-precompute.txt`.
 
 **Why this one.** It is open source, it ships with scipy (no separate binary, no licence server), and it

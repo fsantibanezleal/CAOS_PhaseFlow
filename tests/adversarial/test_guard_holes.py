@@ -1,7 +1,7 @@
 """The holes an adversarial review found in the spec-area guards (0.05.000), one plant each: a defect planted in a copy of
 the repository's real files, the real guard run on it, exit 1 and the message that names the defect expected. The ids
 (S-1a, C-3, T-8, B-1 ...) are the rows of the review's refutation table
-(CAOS_MANAGE wip/product-template/review-0-05-000-guards-2026-10-11.md, D2).
+(the product-template guard review, case D2).
 
 Each plant copies only the inputs its guard reads (`make_tree`), so the suite stays cheap; every plant asserts the guard
 printed, so a guard that never ran cannot pass."""
@@ -218,7 +218,13 @@ def test_ci_budget_rereview_an_allowance_broader_than_the_yaml_shows(budget_repo
 
 
 def test_ci_budget_rereview_pytest_addopts_at_the_top_of_the_workflow(budget_repo: Path) -> None:
-    edit(budget_repo, ".github/workflows/ci.yml", "\nconcurrency:\n", "\nenv:\n  PYTEST_ADDOPTS: tests\nconcurrency:\n")
+    workflow = budget_repo / ".github" / "workflows" / "ci.yml"
+    text = workflow.read_text(encoding="utf-8")
+    newline = "\r\n" if "\r\n" in text else "\n"
+    marker = f"{newline}concurrency:{newline}"
+    assert marker in text, "CI workflow no longer declares its concurrency group"
+    workflow.write_text(text.replace(marker, f"{newline}env:{newline}  PYTEST_ADDOPTS: tests{newline}concurrency:{newline}", 1),
+                        encoding="utf-8", newline="")
     r = guard(budget_repo, "check_ci_budget.py")
     assert r.returncode == 1 and "PYTEST_ADDOPTS" in r.stdout, r.stdout
 

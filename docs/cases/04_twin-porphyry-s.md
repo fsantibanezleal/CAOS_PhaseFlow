@@ -20,9 +20,9 @@ hold the browser engine to.
 
 ## What to read in it
 
-- The step from greedy and Gershon to the expected-time rungs, then the sliding window's look-ahead on top:
+- The step from greedy and Gershon to the expected-time methods, then the sliding window's look-ahead on top:
   the clearest ladder in the matrix.
-- The destination rungs at full size: the plant takes half the pit's ore tonnage, so which ore it gets is
+- The destination methods at full size: the plant takes half the pit's ore tonnage, so which ore it gets is
   the decision, and the re-cut on the PCPSP LP is where that value shows (compare the destination plans with
   the best CPIT plan in the table).
 - The joint LP equals Algorithm 4 here (one resource determines the LP), so the CPIT gaps are pure plan
@@ -34,9 +34,9 @@ hold the browser engine to.
 | bound | value | time | detail |
 | --- | ---: | ---: | --- |
 | ultimate pit (UPIT, exact, undiscounted) | 473,615,066 |  | 4,621 of 6,912 blocks; no time, no capacity |
-| Algorithm 4 (min over single-resource LPs) | 234,230,542 | 18.2 s | 215 maximum closures |
-| joint LP (Bienstock-Zuckerberg) | 234,230,542 | 8.1 s | 14 iterations on 55,296 nodes, 479,584 edges; slack of Algorithm 4: 0.0000% |
-| PCPSP LP (HiGHS, destinations free) | 316,475,407 | 7.5 min | 534,896 rows, status optimal |
+| Algorithm 4 (min over single-resource LPs) | 234,230,542 | 28.6 s | 215 maximum closures |
+| joint LP (Bienstock-Zuckerberg) | 234,230,542 | 12.8 s | 14 iterations on 55,296 nodes, 479,584 edges; slack of Algorithm 4: 0.0000% |
+| PCPSP LP (HiGHS, destinations free) | 316,475,407 | 10.2 min | 534,896 rows, status optimal |
 | used for every CPIT gap on this case | joint LP |  |  |
 <!-- /generated -->
 
@@ -47,22 +47,23 @@ CPIT bound the case uses. Coherence is the mean over periods of the connected co
 the largest one.
 
 <!-- generated:case:twin-porphyry-s -->
-| method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
+| method | family | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | 107,531,529 | joint LP | 54.09% | 83 ms | 6.6 / 87% |
-| `nested-shells` | classical | 130,810,346 | joint LP | 44.15% | 78 ms | 2.9 / 90% |
-| `toposort-greedy` | classical | 117,596,778 | joint LP | 49.79% | 78 ms | 10.9 / 87% |
-| `toposort-gershon` | classical | 187,236,535 | joint LP | 20.06% | 272 ms | 50.4 / 41% |
-| `toposort-expected` | sota | 223,413,685 | joint LP | 4.62% | 18.3 s | 10.5 / 78% |
-| `exts-two-resource` | sota | 223,413,685 | joint LP | 4.62% | 18.4 s | 10.5 / 78% |
-| `shift-local-search` | sota | 224,241,882 | joint LP | 4.26% | 54 ms | 6.8 / 85% |
-| `sliding-window` **(best)** | sota | 231,622,561 | joint LP | 1.11% | 39.7 min | 13.2 / 71% |
-| `cpitD-local-search` | sota | 224,340,746 | joint LP | 4.22% | 707 ms | 7.1 / 86% |
-| `learned-expected-time` | learned | 215,693,991 | joint LP | 7.91% | 118 ms | 67.8 / 44% |
-| `destination-toposort` | beyond | 285,163,568 | PCPSP LP | 9.89% | 22.4 s | 27.1 / 65% |
-| `destination-sliding-window` | beyond | 314,005,926 | PCPSP LP | 0.78% | 77.1 min | 25.4 / 70% |
-| `destination-local-search` | beyond | 314,279,336 | PCPSP LP | 0.69% | 1.6 s | 25.2 / 70% |
-| `min-width` | beyond | 231,603,548 | joint LP | 1.12% | 178 ms | 12.5 / 72% |
+| `bench-by-bench` | Reference methods | 107,531,529 | joint LP | 54.09% | 93 ms | 6.6 / 87% |
+| `nested-shells` | Reference methods | 130,810,346 | joint LP | 44.15% | 87 ms | 2.9 / 90% |
+| `toposort-greedy` | Reference methods | 117,596,778 | joint LP | 49.79% | 81 ms | 10.9 / 87% |
+| `toposort-gershon` | Reference methods | 187,236,535 | joint LP | 20.06% | 300 ms | 50.4 / 41% |
+| `toposort-expected` | Published methods | 223,413,685 | joint LP | 4.62% | 28.7 s | 10.5 / 78% |
+| `exts-two-resource` | Published methods | 223,413,685 | joint LP | 4.62% | 28.8 s | 10.5 / 78% |
+| `shift-local-search` | Published methods | 224,241,882 | joint LP | 4.26% | 54 ms | 6.8 / 85% |
+| `sliding-window` **(best)** | Published methods | 231,622,561 | joint LP | 1.11% | 52.8 min | 13.2 / 71% |
+| `cpitD-local-search` | Published methods | 224,340,746 | joint LP | 4.22% | 966 ms | 7.1 / 86% |
+| `learned-expected-time` | Learned methods | 217,707,634 | joint LP | 7.05% | 159 ms | 72.9 / 27% |
+| `destination-toposort` | Additional analyses | 285,163,568 | PCPSP LP | 9.89% | 54.4 s | 27.1 / 65% |
+| `destination-sliding-window` | Additional analyses | 314,005,926 | PCPSP LP | 0.78% | 87.5 min | 25.4 / 70% |
+| `destination-local-search` | Additional analyses | 314,279,336 | PCPSP LP | 0.69% | 1.2 s | 25.2 / 70% |
+| `min-width` | Additional analyses | 231,603,548 | joint LP | 1.12% | 128 ms | 12.5 / 72% |
+| `frontier-policy` | Additional analyses | 209,106,102 | joint LP | 10.73% | 66.6 s | 41.0 / 51% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/twin-porphyry-s.json` by `scripts/docs_tables.py`.*

@@ -4,15 +4,31 @@
 // retraining or a rebake:
 //   node --import tsx scripts/measure-learned-preview.mjs
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
 import { buildLiveInstance, buildPrecedence, toLiveModel } from '../src/engine/instance.ts';
 import { solveCpit } from '../src/engine/cpit.ts';
 import { solveUltimatePit } from '../src/engine/maxflow.ts';
 import { learnedSchedule } from '../src/engine/learned.ts';
 
-const ROOT = join(process.cwd(), '..');
-const model = JSON.parse(readFileSync(join(ROOT, 'models', 'expected-time.json'), 'utf8'));
-const DERIVED = join(ROOT, 'data', 'derived');
+const ROOT = fileURLToPath(new URL('../../', import.meta.url));
+const { values: options } = parseArgs({
+  options: {
+    'models-root': { type: 'string' },
+    'derived-root': { type: 'string' },
+  },
+});
+function selectedRoot(value, fallback, label) {
+  const path = resolve(value ?? fallback);
+  if (value && (path === ROOT || path.startsWith(`${ROOT}${sep}`))) {
+    throw new Error(`${label} must resolve outside the product repository`);
+  }
+  return path;
+}
+const MODELS = selectedRoot(options['models-root'], join(ROOT, 'models'), 'models root');
+const DERIVED = selectedRoot(options['derived-root'], join(ROOT, 'data', 'derived'), 'derived root');
+const model = JSON.parse(readFileSync(join(MODELS, 'expected-time.json'), 'utf8'));
 const rows = [];
 for (const id of readdirSync(DERIVED)) {
   let t;
@@ -42,11 +58,11 @@ for (const id of readdirSync(DERIVED)) {
     `preview/ExTS ${(result.npv / exts.npv).toFixed(3)}  preview gap ${((100 * (out.bound - result.npv)) / out.bound).toFixed(2)}%  ExTS gap ${exts.gapPct.toFixed(2)}%`);
 }
 
-writeFileSync(join(ROOT, 'models', 'learned-preview-timing.json'), JSON.stringify({
+writeFileSync(join(MODELS, 'learned-preview-timing.json'), JSON.stringify({
   schema: 'phaseflow.learned-preview-timing/v1',
   measured: new Date().toISOString().slice(0, 10),
   runtime: `node ${process.version}, the browser engine's TypeScript, single thread`,
   note: 'each committed twin at its own baked setting; exact = bound per resource, three TopoSorts and a shift search',
   rows,
 }, null, 1) + '\n');
-console.log(`wrote models/learned-preview-timing.json (${rows.length} cases)`);
+console.log(`wrote ${join(MODELS, 'learned-preview-timing.json')} (${rows.length} cases)`);

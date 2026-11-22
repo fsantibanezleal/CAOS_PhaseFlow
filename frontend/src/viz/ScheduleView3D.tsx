@@ -52,10 +52,12 @@ export interface ScheduleView3DProps {
   cursor: number;
   mode?: StageMode;
   theme: string;
-  /** 0 means fill the parent, which is the ADR-0070 focus stage contract */
+  /** 0 means fill the parent, which is the Focus stage contract */
   height?: number;
   /** cut everything with y index above this, to look inside. -1 disables. */
   sectionY?: number;
+  /** Optional bench highlight used by linked case-story selection. */
+  highlightLevel?: number | null;
   onStats?: (s: { drawn: number; wall: number; coloured: number }) => void;
   /** only for the placeholder sentence shown until the first frame lands */
   lang?: string;
@@ -63,7 +65,7 @@ export interface ScheduleView3DProps {
 
 export function ScheduleView3D({
   x, y, level, grade, inPit, periodOfBlock, dims, nPeriods, cursor,
-  mode = 'schedule', theme, height = 0, sectionY = -1, onStats, lang = 'en',
+  mode = 'schedule', theme, height = 0, sectionY = -1, highlightLevel = null, onStats, lang = 'en',
 }: ScheduleView3DProps) {
   const host = useRef<HTMLDivElement>(null);
   const api = useRef<{
@@ -147,10 +149,14 @@ export function ScheduleView3D({
       return r;
     };
     const reserve0 = applyReserve(W, H);
-    const dist = fitDistance((W - reserve0) / H) * 0.73;
+    const fillFactor = W >= 1800 ? 0.70 : 0.68;
+    const dist = fitDistance((W - reserve0) / H) * fillFactor;
     camera.position.copy(dir).multiplyScalar(dist);
     camera.lookAt(0, 0, 0);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    // The stage is captured by the browser compositor; it is never read back from WebGL. Keeping
+    // preserveDrawingBuffer enabled forces an expensive full-frame copy on every render, especially
+    // visible on the larger story scenes.
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     renderer.setSize(W, H);
     el.appendChild(renderer.domElement);
@@ -193,7 +199,7 @@ export function ScheduleView3D({
     // correctly sized and scroll-free is all of those things while still blank, so both the CSS
     // placeholder and the browser gate key off THIS rather than off a timer. On a software
     // rasteriser a frame of this scene costs about 100 ms, so a fixed sleep is a promise the stage
-    // size can break: growing the stage to meet the ADR-0071 floor tripled its pixels and broke
+    // size can break: growing the stage to meet the minimum stage height tripled its pixels and broke
     // exactly that assumption once already.
     // Only once the mesh actually HAS instances. The build effect renders before the cursor effect
     // has written a single matrix, so a flag set in the render loop alone marks a black frame as
@@ -240,7 +246,8 @@ export function ScheduleView3D({
       // CURRENT position preserves their view; only the distance changes.
       const cur = camera.position.length() || 1;
       const view = camera.position.clone().normalize();
-      camera.position.multiplyScalar((fitDistance((w2 - reserve) / h2, view) * 0.73) / cur);
+      const fillFactor = w2 >= 1800 ? 0.70 : 0.68;
+      camera.position.multiplyScalar((fitDistance((w2 - reserve) / h2, view) * fillFactor) / cur);
       // setSize CLEARS the drawing buffer, so re-render here and now rather than waiting for the
       // next animation frame. On a software rasteriser that wait is about 100 ms of a stage that has
       // gone completely black, and the layout settles late enough that a reader sees it.
@@ -255,7 +262,11 @@ export function ScheduleView3D({
       mesh,
       scene,
       n,
-      render: () => { renderer.render(scene, camera); markDrawn(); kick(200); },
+      // A period update changes instance matrices and colors, not the camera. One explicit frame
+      // is sufficient here; keeping the render loop alive for an arbitrary 200 ms wastes frames
+      // and blocks the browser during the story's measured transition. OrbitControls owns the
+      // continuous loop while the reader is actually moving the camera.
+      render: () => { renderer.render(scene, camera); markDrawn(); },
       dispose: () => {
         ro.disconnect();
         renderer.domElement.removeEventListener('webglcontextrestored', onRestored);
@@ -315,6 +326,10 @@ export function ScheduleView3D({
         }
       }
 
+      if (highlightLevel != null && level[b] === highlightLevel) {
+        rgb = [1, 0.58, 0.08];
+      }
+
       // Levels increase UPWARD: `buildPrecedence` puts a block's predecessors one level ABOVE it, and
       // the data agrees (the ultimate pit holds every block of the top four benches and none of the
       // bottom one). Negating this rendered the deposit UPSIDE DOWN, which put the one fully intact
@@ -334,7 +349,7 @@ export function ScheduleView3D({
     a.render();
     onStats?.({ drawn, wall: wallCount, coloured });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cursor, mode, sectionY, periodOfBlock, nPeriods, gradeMax, theme]);
+  }, [cursor, mode, sectionY, periodOfBlock, nPeriods, gradeMax, theme, highlightLevel]);
 
   return (
     <div
@@ -342,6 +357,7 @@ export function ScheduleView3D({
       className="pf-stage3d"
       data-testid="schedule-stage"
       data-label={label}
+      data-highlight-level={highlightLevel ?? ''}
       style={height > 0 ? { height } : undefined}
     />
   );

@@ -1,0 +1,4 @@
+# Explicit training environment only. Keep PyTorch out of CI, the pipeline venv and the web/deploy lanes.
+-r requirements.txt
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.1

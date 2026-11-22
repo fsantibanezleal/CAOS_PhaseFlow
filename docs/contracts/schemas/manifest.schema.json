@@ -4,22 +4,727 @@
   "title": "PhaseFlow case manifest",
   "description": "Per-case provenance and measured result summary. Cross-file semantics are checked by scripts/check_artifacts.py.",
   "type": "object",
-  "required": ["schema", "case_id", "category", "real_or_synthetic", "engine", "scenario", "instance", "artifact", "lane", "gate", "flags", "controls", "best", "scoreboard"],
+  "required": [
+    "schema",
+    "case_id",
+    "category",
+    "real_or_synthetic",
+    "engine",
+    "scenario",
+    "instance",
+    "artifact",
+    "lane",
+    "gate",
+    "flags",
+    "controls",
+    "best",
+    "scoreboard",
+    "published"
+  ],
   "properties": {
-    "schema": {"const": "phaseflow.manifest/v1"},
-    "case_id": {"type": "string", "minLength": 1},
-    "category": {"type": "string", "minLength": 1},
-    "real_or_synthetic": {"enum": ["real", "synthetic"]},
-    "engine": {"type": "object", "required": ["version"], "properties": {"version": {"type": "string"}}, "additionalProperties": true},
-    "scenario": {"type": "object", "required": ["periods", "discount_rate", "resource_names", "limit_per_period"], "properties": {"periods": {"type": "integer", "minimum": 1}, "discount_rate": {"type": "number"}, "resource_names": {"type": "array", "minItems": 1, "items": {"type": "string"}}, "limit_per_period": {"type": "array", "minItems": 1}}, "additionalProperties": true},
-    "instance": {"type": "object", "required": ["n_blocks", "n_precedence_arcs"], "properties": {"n_blocks": {"type": "integer", "minimum": 1}, "n_precedence_arcs": {"type": "integer", "minimum": 0}}, "additionalProperties": true},
-    "artifact": {"type": "object", "required": ["path", "format", "trace_schema", "bytes"], "properties": {"path": {"type": "string", "pattern": "^[^/].*trace\\.json$"}, "format": {"const": "json"}, "trace_schema": {"const": "phaseflow.schedule-trace/v1"}, "bytes": {"type": "integer", "minimum": 1}}, "additionalProperties": false},
-    "lane": {"enum": ["live", "replay"]},
-    "gate": {"type": "object", "required": ["lane"], "properties": {"lane": {"enum": ["live", "replay"]}}, "additionalProperties": true},
-    "flags": {"type": "array"},
-    "controls": {"type": "object"},
-    "best": {"type": "object"},
-    "scoreboard": {"type": "array", "minItems": 1, "items": {"type": "object"}}
+    "schema": {
+      "const": "phaseflow.manifest/v1"
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1
+    },
+    "real_or_synthetic": {
+      "enum": [
+        "real",
+        "synthetic"
+      ]
+    },
+    "engine": {
+      "type": "object",
+      "required": [
+        "version"
+      ],
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "oreblocks": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "properties": {
+        "periods": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "discount_rate": {
+          "type": "number"
+        },
+        "period_one_undiscounted": {
+          "type": "boolean"
+        },
+        "n_resources": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "declared": {
+          "type": "boolean"
+        },
+        "capacity_fraction": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "limit_per_period": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "resource_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "periods",
+        "discount_rate",
+        "period_one_undiscounted",
+        "n_resources",
+        "declared",
+        "resource_names",
+        "limit_per_period"
+      ],
+      "additionalProperties": true
+    },
+    "instance": {
+      "type": "object",
+      "properties": {
+        "n_blocks": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "n_precedence_arcs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "upit_value": {
+          "type": "number"
+        },
+        "upit_blocks": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "n_blocks",
+        "n_precedence_arcs",
+        "upit_value",
+        "upit_blocks"
+      ],
+      "additionalProperties": true
+    },
+    "artifact": {
+      "type": "object",
+      "required": [
+        "path",
+        "format",
+        "trace_schema",
+        "bytes"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^[^/].*trace\\.json$"
+        },
+        "format": {
+          "const": "json"
+        },
+        "trace_schema": {
+          "const": "phaseflow.schedule-trace/v1"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "lane": {
+      "enum": [
+        "live",
+        "replay"
+      ]
+    },
+    "gate": {
+      "type": "object",
+      "required": [
+        "lane",
+        "n_blocks",
+        "n_arcs",
+        "trace_bytes",
+        "offline_ms",
+        "budgets",
+        "reasons"
+      ],
+      "properties": {
+        "lane": {
+          "enum": [
+            "live",
+            "replay"
+          ]
+        },
+        "n_blocks": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "n_arcs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "trace_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offline_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "budgets": {
+          "type": "object",
+          "required": [
+            "blocks",
+            "arcs",
+            "trace_bytes"
+          ],
+          "properties": {
+            "blocks": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "arcs": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "trace_bytes": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "flags": {
+      "type": "array"
+    },
+    "controls": {
+      "type": "object",
+      "properties": {
+        "dualitySetMatches": {
+          "type": "boolean"
+        },
+        "dualityBoundError": {
+          "type": "number"
+        },
+        "boundGeqFeasible": {
+          "type": "boolean"
+        },
+        "orderInvariant": {
+          "type": "boolean"
+        },
+        "orderInvarianceError": {
+          "type": "number"
+        },
+        "allPass": {
+          "type": "boolean"
+        },
+        "bestGapPct": {
+          "type": "number"
+        },
+        "worstGapPct": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "allPass"
+      ],
+      "additionalProperties": true
+    },
+    "best": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string"
+            },
+            "gap_pct": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "method",
+            "gap_pct"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "scoreboard": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/scoreboardRow"
+      }
+    },
+    "published": {
+      "type": "object",
+      "properties": {
+        "problem": {
+          "enum": [
+            "CPIT",
+            "PCPSP"
+          ]
+        },
+        "source_tables": {
+          "type": "string"
+        },
+        "upit_optimum": {
+          "type": "number"
+        },
+        "lp_bound": {
+          "type": "number"
+        },
+        "best_known": {
+          "type": "number"
+        },
+        "best_known_gap_pct": {
+          "type": "number"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "bound_summary": {
+      "$ref": "#/$defs/boundSummary"
+    },
+    "ensemble_summary": {
+      "$ref": "#/$defs/ensembleSummary"
+    }
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "$defs": {
+    "scoreboardRow": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "rung": {
+          "enum": [
+            "classical",
+            "sota",
+            "learned",
+            "beyond"
+          ]
+        },
+        "npv": {
+          "type": "number"
+        },
+        "bound": {
+          "type": "number"
+        },
+        "gap_pct": {
+          "type": "number"
+        },
+        "runtime_ms": {
+          "type": "number"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "measured_vs_exact": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "components_mean": {
+          "type": "number"
+        },
+        "largest_share_mean": {
+          "type": "number"
+        },
+        "utilization": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          }
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "method",
+        "rung",
+        "npv",
+        "bound",
+        "gap_pct",
+        "runtime_ms"
+      ],
+      "additionalProperties": true
+    },
+    "boundSummary": {
+      "type": "object",
+      "properties": {
+        "algorithm4": {
+          "type": "number"
+        },
+        "algorithm4_ms": {
+          "type": "number"
+        },
+        "closure_solves": {
+          "type": "integer"
+        },
+        "joint": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "joint_ms": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "joint_iterations": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "joint_converged": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "tightening_pct": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "used": {
+          "type": "string"
+        },
+        "joint_nodes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "joint_edges": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "joint_skipped": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "joint_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pcpsp_lp": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pcpsp_lp_ms": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pcpsp_lp_rows": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "pcpsp_lp_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pcpsp_lp_method": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pcpsp_lp_iterations": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "pcpsp_lp_gap_estimate": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pcpsp_lp_slack": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "pcpsp_lp_note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pcpsp_lp_error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "skipped_methods": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "algorithm4",
+        "algorithm4_ms",
+        "closure_solves",
+        "joint",
+        "joint_ms",
+        "joint_iterations",
+        "joint_converged",
+        "tightening_pct",
+        "used",
+        "joint_nodes",
+        "joint_edges",
+        "joint_skipped",
+        "joint_note",
+        "pcpsp_lp",
+        "pcpsp_lp_ms",
+        "pcpsp_lp_rows",
+        "pcpsp_lp_status",
+        "skipped_methods"
+      ],
+      "additionalProperties": true
+    },
+    "ensembleSummary": {
+      "type": "object",
+      "properties": {
+        "ran": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "nRealisations": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "sigma": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "methods": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "expected": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "p10": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "p90": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "meanModel": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "optimism": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "number"
+          }
+        },
+        "bestByExpected": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bestByP10": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valueOfReplanningPct": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "resolveMethod": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fixedPolicy": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fixedPolicyExpectedNpv": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "replannedExpectedNpv": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "replanningElapsedSeconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "replanningSettings": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": true
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ran",
+        "reason",
+        "nRealisations",
+        "sigma",
+        "methods",
+        "expected",
+        "p10",
+        "p90",
+        "meanModel",
+        "optimism",
+        "bestByExpected",
+        "bestByP10",
+        "valueOfReplanningPct"
+      ],
+      "additionalProperties": true
+    }
+  }
 }

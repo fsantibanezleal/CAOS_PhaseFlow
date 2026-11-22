@@ -29,7 +29,7 @@ periods, its own eight percent rate, its own two capacities.
 |---|---|---|
 | ultimate pit optimum | 26,086,899 | 26,086,899 |
 | certified LP bound, joint (Bienstock-Zuckerberg) | 24,486,184 | 24,486,549 (PCPSP LP) |
-| best feasible schedule (`sliding-window` for PhaseFlow) | 24,142,200 | 24,176,861 |
+| best feasible schedule (`cpitD-local-search` for PhaseFlow) | 23,875,538 | 24,176,861 |
 | gap to each problem's LP bound | 1.40% | 1.26% |
 
 The ultimate pit reproduces exactly. The bound has a direct check on the same problem:
@@ -37,22 +37,20 @@ The ultimate pit reproduces exactly. The bound has a direct check on the same pr
 24,486,184 for `newman1`, and PhaseFlow's 24,486,184.09 reproduces it to the unit. The ORDERING is a
 second check: a CPIT LP bound must sit BELOW a PCPSP LP bound, because PCPSP is the richer problem, and
 it does, by 365 units in 24.5 million. The schedule sits below the 2018 PCPSP feasible result, but the
-two gap percentages use different LP bounds and must not be read as a like-for-like method contest. It
-sits above the best known feasible CPIT value MineLib still lists, 23,483,671 (4.1%), which predates
-both the 2018 results and the external optimum below. The best plan is the sliding time window
-(Cullenbine, Wood and Newman), solved as a MILP per window on an LP-guided candidate set. The 2018 PCPSP
-numbers are from Tables 3 and 4 of [Jelvez, Morales and Nancel-Penard](https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf).
+two gap percentages use different LP bounds and must not be read as a like-for-like method contest. The
+current best feasible CPIT result is from `cpitD-local-search`; its 2.49% gap is measured against
+PhaseFlow's certified joint bound. The 2018 PCPSP numbers are from Tables 3 and 4 of [Jelvez, Morales
+and Nancel-Penard](https://www.delphoslab.cl/Publicaciones/2018/Jelvez_et_al_MPES2018.pdf).
 
 An [external AMPL/Gurobi notebook](https://colab.ampl.com/notebooks/minelib-in-ampl-and-amplpy.html)
 later reports an integer optimum of 24,176,864.82 for Newman1 CPIT, with a matching MIP best bound.
-Relative to that external result, PhaseFlow's feasible plan is 0.143% lower. Most of the displayed
-1.40% LP-bound gap is integrality gap rather than a loss of the scheduling method. This external
+Relative to that external result, PhaseFlow's current feasible plan is about 1.25% lower. This external
 certificate was not produced by PhaseFlow; [the source comparison](docs/cases/01_newman1-published.md)
 shows the inputs, calculations and limits.
 
 These four numbers are read out of `data/derived/manifests/newman1-published.json` by
 `scripts/check_readme_numbers.py`, which CI runs: the previous version of this table was two releases
-stale and said the exact local search was NOT implemented while it was rung 9 of the ladder and the
+stale and said the exact local search was NOT implemented while method 9 in the results list and the
 best method on this very case.
 
 **The walls carry the schedule.** Drawing the mined blocks gives a growing solid that is not a pit.
@@ -94,7 +92,7 @@ artifacts and checked in CI.
 | Web | [`frontend/`](frontend/) | active | Bilingual research workbench, Focus view, charts, and shell routes; build with `cd frontend && npm ci && npm run build`. |
 | API | [`app/`](app/) | dormant: no hosted service is in the product contract | PhaseFlow is a static research application and its reserved API boundary documents the current scope. |
 | Core pipelines | [`data-pipeline/`](data-pipeline/) | active | Case ingestion, scheduling methods, validation, and reproducible artifact baking. |
-| Packages | [oreblocks 0.6.3](https://pypi.org/project/oreblocks/0.6.3/) | active | Product methods remain in the local pipeline package; OreBlocks supplies the pinned optimization engine. |
+| Packages | [oreblocks 0.6.6](https://pypi.org/project/oreblocks/) | active | Product methods remain in the local pipeline package; OreBlocks supplies the pinned optimization engine and bounded neighborhood proof receipts. |
 | Notebooks | [`notebooks/`](notebooks/) | active | Bilingual, executed research notebooks teach the problem, methods, and evidence. |
 | Data | [`data/`](data/) | active | Compact derived traces, manifests, metrics, and source provenance; raw MineLib data stays external. |
 | Contracts | [`docs/contracts/`](docs/contracts/) | active | Versioned trace and manifest schemas with producer and consumer gates. |
@@ -108,9 +106,9 @@ Numbered scripts, in the order you run them. Each ends by printing the next comm
 options and the release gates: [`scripts/local/README.md`](scripts/local/README.md).
 
 ```powershell
-.\scripts\local\00_install-prereqs.ps1     # check python 3.12+, node 20+, git
-.\scripts\local\01_init.ps1                # venv, deps, frontend packages, artifacts if empty
-.\scripts\local\03_dev.ps1                 # http://localhost:5173
+.\scripts\local\00_install-prereqs.ps1     # check Python 3.12+, Node 22.12+/24/26+, git
+.\scripts\local\01_init.ps1                # initialize pinned environments and frontend
+.\scripts\local\03_dev.ps1                 # validate shipped evidence, then start http://localhost:5173
 ```
 
 ```bash
@@ -119,11 +117,12 @@ options and the release gates: [`scripts/local/README.md`](scripts/local/README.
 ./scripts/local/03_dev.sh
 ```
 
-The MineLib instances are an academic download and are never redistributed:
-`python scripts/fetch_minelib.py --all` puts them in the machine's data folder (`PHASEFLOW_DATA_DIR`) or
-a git-ignored one. `02_generate-data` bakes into `build/local` unless you pass `--release`, so it cannot
-overwrite the committed evidence by accident; the whole set takes hours and runs cases side by side
-(`PHASEFLOW_BAKE_JOBS`). `npm test` runs the engine, parity, contract and design-token gates.
+Set `CAOS_VENVS_ROOT` to an absolute external runtime directory before initialization. Raw MineLib
+inputs are academic downloads and are never redistributed. Set `CAOS_DATA_ROOT` to an external data
+directory and `CAOS_TEMP_ROOT` to an external scratch directory before acquisition or generation. Run `python scripts/fetch_minelib.py --all` to populate the external MineLib cache. The
+numbered `02_generate-data` workflow creates a complete, source-bound sandbox; it does not overwrite
+shipped evidence. Inspect and validate its candidate, then explicitly promote that exact stage with
+`--release --from-stage`. See [`scripts/local/README.md`](scripts/local/README.md) for commands and recovery.
 
 ## Shape
 

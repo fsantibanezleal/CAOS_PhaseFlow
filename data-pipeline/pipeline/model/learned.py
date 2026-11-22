@@ -41,7 +41,12 @@ import numpy as np
 from ..io.schema import Scenario
 from .features import block_feature_matrix, deposit_feature_vector
 
-__all__ = ["Mlp", "LearnedBundle", "capacity_fractions", "json_safe", "train_mlp", "export_onnx"]
+__all__ = ["Mlp", "LearnedBundle", "capacity_fractions", "json_safe", "train_mlp", "train_ensemble", "export_onnx"]
+
+LIVE_GUARD_MIN_RECALL = 0.818
+LIVE_GUARD_MIN_PRECISION = 0.667
+LIVE_GUARD_MIN_WORST_UNFLAGGED = 0.7852
+LIVE_GUARD_FAILURE_BELOW = 0.90
 
 
 def json_safe(obj):
@@ -80,7 +85,16 @@ def capacity_fractions(cpit, in_pit: np.ndarray) -> tuple[float, ...]:
 # ------------------------------------------------------------------------------------------------
 @dataclass
 class Mlp:
-    """A 2-hidden-layer perceptron with ReLU and a sigmoid head, weights as plain arrays."""
+    """A 2-hidden-layer perceptron with ReLU and a sigmoid head, weights as plain arrays.
+
+    Optionally an ENSEMBLE: ``members`` holds further weight sets trained on the same rows with other
+    seeds and the same standardisation, and :meth:`forward` averages the sigmoid outputs. The
+    expected-time model ships as five members since 0.09.000, because on a real deposit a single
+    training run is a lottery: five seeds of the same model on the same data reached 0.717 to 0.879 of
+    the exact ExTS plan on `kd-declared` while agreeing within 0.013 on held-out twins, and the 0.08
+    model's 0.413 was one draw from that spread. Their average reached 0.886 and was as good as the best
+    single seed on the twins.
+    """
 
     w: list[np.ndarray]
     b: list[np.ndarray]
@@ -90,13 +104,27 @@ class Mlp:
     mu: np.ndarray = field(default_factory=lambda: np.zeros(0))
     sigma: np.ndarray = field(default_factory=lambda: np.ones(0))
     metrics: dict = field(default_factory=dict)
+    #: further members, each ``(w, b)``; empty for a single model
+    members: list[tuple[list[np.ndarray], list[np.ndarray]]] = field(default_factory=list)
+
+    def _weight_sets(self) -> list[tuple[list[np.ndarray], list[np.ndarray]]]:
+        return [(self.w, self.b), *self.members]
 
     def forward(self, x: np.ndarray) -> np.ndarray:
-        h = (x - self.mu) / np.where(self.sigma > 1e-8, self.sigma, 1.0)
-        for k in range(len(self.w) - 1):
-            h = np.maximum(0.0, h @ self.w[k] + self.b[k])
-        z = h @ self.w[-1] + self.b[-1]
-        return 1.0 / (1.0 + np.exp(-z))
+        x = np.asarray(x, dtype=np.float64)
+        if x.shape[-1] != len(self.feature_names) or len(self.mu) != len(self.feature_names) or len(self.sigma) != len(self.feature_names):
+            raise ValueError("model input, feature names, and standardisation dimensions do not match")
+        if not np.isfinite(x).all() or not np.isfinite(self.sigma).all() or np.any(self.sigma <= 1e-8):
+            raise ValueError("model inputs must be finite and every trained feature must have positive variance")
+        h0 = (x - self.mu) / np.where(self.sigma > 1e-8, self.sigma, 1.0)
+        outs = []
+        for w, b in self._weight_sets():
+            h = h0
+            for k in range(len(w) - 1):
+                h = np.maximum(0.0, h @ w[k] + b[k])
+            z = h @ w[-1] + b[-1]
+            outs.append(1.0 / (1.0 + np.exp(-z)))
+        return np.mean(outs, axis=0)
 
     def to_json(self) -> dict:
         return {
@@ -108,6 +136,10 @@ class Mlp:
             "layers": [
                 {"w": w.tolist(), "b": b.tolist()} for w, b in zip(self.w, self.b, strict=True)
             ],
+            **({"members": [
+                {"layers": [{"w": w.tolist(), "b": b.tolist()} for w, b in zip(mw, mb, strict=True)]}
+                for mw, mb in self.members
+            ]} if self.members else {}),
             "metrics": json_safe(self.metrics),
         }
 
@@ -121,6 +153,11 @@ class Mlp:
             mu=np.array(d["mu"], dtype=np.float64),
             sigma=np.array(d["sigma"], dtype=np.float64),
             metrics=d.get("metrics", {}),
+            members=[
+                ([np.array(layer["w"], dtype=np.float64) for layer in m["layers"]],
+                 [np.array(layer["b"], dtype=np.float64) for layer in m["layers"]])
+                for m in d.get("members", [])
+            ],
         )
 
 
@@ -143,10 +180,29 @@ def train_mlp(
     sigmoid is well behaved for a regression on a bounded target.
     """
     rng = np.random.default_rng(seed)
+    x = np.asarray(x, dtype=np.float64)
+    y = np.asarray(y, dtype=np.float64).reshape(-1)
+    if x.ndim != 2 or x.shape[0] == 0:
+        raise ValueError("training features must be a non-empty two-dimensional matrix")
     n, d = x.shape
+    if len(feature_names) != d or len(set(feature_names)) != d:
+        raise ValueError("feature names must be unique and match the training matrix columns")
+    if y.shape[0] != n:
+        raise ValueError(f"training target has {y.shape[0]} rows for {n} feature rows")
+    non_finite = [feature_names[i] for i in range(d) if not np.isfinite(x[:, i]).all()]
+    if non_finite:
+        raise ValueError(f"training feature(s) contain non-finite values: {non_finite}")
+    if not np.isfinite(y).all():
+        raise ValueError("training targets must be finite")
     mu = x.mean(axis=0)
     sigma = x.std(axis=0)
-    xs = (x - mu) / np.where(sigma > 1e-8, sigma, 1.0)
+    constant = [name for name, s in zip(feature_names, sigma, strict=True) if s <= 1e-8]
+    if constant:
+        # An input that never varies in training gets no gradient on its first-layer weights: they
+        # keep their random initial values and act on every deployment row where the input DOES vary.
+        # `tonnage_norm` did exactly that on real deposits until 0.09.000. Refuse, never ship it.
+        raise ValueError(f"constant training feature(s) must be removed before fitting: {constant}")
+    xs = (x - mu) / sigma
 
     dims = [d, *hidden, 1]
     w = [rng.normal(0, np.sqrt(2.0 / dims[k]), (dims[k], dims[k + 1])) for k in range(len(dims) - 1)]
@@ -196,6 +252,20 @@ def train_mlp(
     return Mlp(w=w, b=b, feature_names=feature_names, target=target, mu=mu, sigma=sigma)
 
 
+def train_ensemble(x: np.ndarray, y: np.ndarray, *, seeds: tuple[int, ...], **kw) -> Mlp:
+    """``train_mlp`` once per seed on the same rows, combined into one averaged model.
+
+    The members share the standardisation (it is a property of the rows, not of the seed), so the
+    ensemble is one ``mu``/``sigma`` and several weight sets; ``Mlp.forward`` averages them.
+    """
+    first, *rest = (train_mlp(x, y, seed=s, **kw) for s in seeds)
+    for m in rest:
+        if not (np.array_equal(m.mu, first.mu) and np.array_equal(m.sigma, first.sigma)):
+            raise AssertionError("ensemble members disagree on the standardisation")
+        first.members.append((m.w, m.b))
+    return first
+
+
 # ------------------------------------------------------------------------------------------------
 # ONNX export, verified against the numpy forward pass before it is written
 # ------------------------------------------------------------------------------------------------
@@ -230,14 +300,22 @@ def export_onnx(model: Mlp, path: str | Path, *, sample: np.ndarray | None = Non
         helper.make_node("Sub", ["x", "mu"], ["c"]),
         helper.make_node("Div", ["c", "sigma"], ["h0"]),
     ]
-    for k in range(len(model.w)):
-        inits.append(numpy_helper.from_array(model.w[k].astype(np.float32), f"W{k}"))
-        inits.append(numpy_helper.from_array(model.b[k].astype(np.float32), f"B{k}"))
-        nodes.append(helper.make_node("MatMul", [f"h{k}", f"W{k}"], [f"m{k}"]))
-        nodes.append(helper.make_node("Add", [f"m{k}", f"B{k}"], [f"a{k}"]))
-        if k < len(model.w) - 1:
-            nodes.append(helper.make_node("Relu", [f"a{k}"], [f"h{k + 1}"]))
-    nodes.append(helper.make_node("Sigmoid", [f"a{len(model.w) - 1}"], ["y"]))
+    heads = []
+    for e, (w, b) in enumerate(model._weight_sets()):
+        prev = "h0"
+        for k in range(len(w)):
+            inits.append(numpy_helper.from_array(w[k].astype(np.float32), f"W{e}_{k}"))
+            inits.append(numpy_helper.from_array(b[k].astype(np.float32), f"B{e}_{k}"))
+            nodes.append(helper.make_node("MatMul", [prev, f"W{e}_{k}"], [f"m{e}_{k}"]))
+            nodes.append(helper.make_node("Add", [f"m{e}_{k}", f"B{e}_{k}"], [f"a{e}_{k}"]))
+            if k < len(w) - 1:
+                nodes.append(helper.make_node("Relu", [f"a{e}_{k}"], [f"h{e}_{k + 1}"]))
+                prev = f"h{e}_{k + 1}"
+        nodes.append(helper.make_node("Sigmoid", [f"a{e}_{len(w) - 1}"], [f"y{e}"]))
+        heads.append(f"y{e}")
+    # one member is the plain model; several are averaged, exactly as Mlp.forward does
+    nodes.append(helper.make_node("Mean", heads, ["y"]) if len(heads) > 1
+                 else helper.make_node("Identity", heads, ["y"]))
 
     graph = helper.make_graph(
         nodes,
@@ -256,12 +334,19 @@ def export_onnx(model: Mlp, path: str | Path, *, sample: np.ndarray | None = Non
     if sample is None:
         scale = np.where(model.sigma > 1e-8, model.sigma, 1.0)
         sample = model.mu + scale * np.random.default_rng(0).normal(size=(256, d))
-    expected = model.forward(sample.astype(np.float64))
-    live = float(np.mean((expected > 1e-4) & (expected < 1 - 1e-4)))
-    if live < 0.5:
+    sample64 = sample.astype(np.float64)
+    expected = model.forward(sample64)
+    live_by_member = []
+    for w, b in model._weight_sets():
+        member = Mlp(w=w, b=b, feature_names=model.feature_names, target=model.target,
+                     mu=model.mu, sigma=model.sigma)
+        prediction = member.forward(sample64)
+        live_by_member.append(float(np.mean((prediction > 1e-4) & (prediction < 1 - 1e-4))))
+    if any(live < 0.5 for live in live_by_member):
+        worst = min(live_by_member)
         raise AssertionError(
-            f"only {100 * live:.0f} percent of the parity sample reaches the unsaturated range of the "
-            "output; a parity check on saturated outputs proves nothing"
+            f"only {100 * worst:.0f} percent of the parity sample reaches the unsaturated range in "
+            "at least one ensemble member; averaging saturated members can conceal a useless parity sample"
         )
     try:
         import onnxruntime as ort
@@ -302,18 +387,36 @@ class LearnedBundle:
 
     @classmethod
     def load(cls, models_dir: str | Path) -> LearnedBundle:
+        from .features import BLOCK_FEATURES, DEPOSIT_FEATURES
+
         d = Path(models_dir)
-        return cls(
+        bundle = cls(
             expected_time=Mlp.from_json(json.loads((d / "expected-time.json").read_text(encoding="utf-8"))),
             bound=Mlp.from_json(json.loads((d / "bound.json").read_text(encoding="utf-8"))),
             root=d,
         )
+        # A model trained on a different feature list would still run if the counts happened to match,
+        # on columns that mean something else. Names, in order, or nothing.
+        for label, model, names in (("expected-time", bundle.expected_time, BLOCK_FEATURES),
+                                    ("bound", bundle.bound, DEPOSIT_FEATURES)):
+            if tuple(model.feature_names) != tuple(names):
+                raise ValueError(
+                    f"models/{label}.json was trained on {list(model.feature_names)}, the pipeline builds "
+                    f"{list(names)}; retrain (scripts/train_learned.py) rather than feed it other columns"
+                )
+            if len(model.mu) != len(names) or len(model.sigma) != len(names) or not np.isfinite(model.sigma).all() or np.any(model.sigma <= 1e-8):
+                raise ValueError(f"models/{label}.json has invalid or zero-variance feature scales; retrain it")
+        if len(bundle.expected_time.members) != 4:
+            raise ValueError(
+                f"models/expected-time.json must contain five trained members, got "
+                f"{len(bundle.expected_time.members) + 1}"
+            )
+        return bundle
 
     def predict_expected_times(self, instance, scenario: Scenario) -> np.ndarray:
         """Predicted ``E_b`` per block, with NO LP solve."""
         x = block_feature_matrix(
             values=instance.cpit.value,
-            tonnage=instance.tonnage,
             grade=instance.grade,
             level=instance.level,
             x=instance.x,
@@ -348,15 +451,14 @@ class LearnedBundle:
                 "exact quantity they approximate, on deposits they never saw, split by deposit seed."
             ),
         }
-        # The guard's CLEAN numbers, from a third seed set that had no part in choosing the rule.
-        # Carried separately from the held-out metrics on purpose: those were measured on the set
-        # that motivated the choice and came out at recall 1.00, and the clean number is 0.625. A
-        # scorecard that shows only the first is showing the flattering half of its own study.
+        # Keep the untouched third-seed validation separate from the held-out scores used while
+        # selecting the rule. Its values are loaded from the independently generated receipt.
         validation = (self.root / "guard-validation.json") if self.root else None
         if validation is not None and validation.exists():
             import json
 
             v = json.loads(validation.read_text(encoding="utf-8"))
+            eligibility = self.live_guard_status()
             out["guard"] = {
                 "rule": v.get("rule"),
                 "failure_below": v.get("failure_below"),
@@ -367,30 +469,100 @@ class LearnedBundle:
                 "validation_worst_unflagged": v.get("worst_unflagged"),
                 "validation_worst_overall": v.get("worst_overall"),
                 "holdout_recall_for_comparison": (v.get("holdout_for_comparison") or {}).get("recall"),
+                "live_available": eligibility["available"],
+                "live_unavailable_reason": eligibility["reason"],
                 "note": (
-                    "measured on a THIRD disjoint seed set that had no part in choosing the rule. "
-                    "The held-out set that did choose it reported recall 1.00; this is the number "
-                    "that was not chosen on. Where the exact plan is in the same bake the product "
-                    "shows the MEASURED ratio instead of this rule."
+                    "measured on a third disjoint seed set that had no part in choosing the rule. "
+                    "The held-out score is shown separately because it informed selection. Where "
+                    "the exact plan is in the same bake the product shows the MEASURED ratio. A rule "
+                    "that misses any release threshold is research-only and cannot flag a live plan."
                 ),
             }
         return out
 
+    def live_guard_status(self) -> dict[str, object]:
+        """Fail closed unless the frozen rule passes every independent third-split threshold."""
+        rule = str(self.expected_time.metrics.get("failure_rule", ""))
+        if not rule or rule == "no rule":
+            return {"available": False, "reason": "no frozen failure rule is available"}
+        if self.root is None:
+            return {"available": False, "reason": "the third-split validation receipt is unavailable"}
+        receipt_path = self.root / "guard-validation.json"
+        if not receipt_path.is_file():
+            return {"available": False, "reason": "the third-split validation receipt is unavailable"}
+        try:
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            return {"available": False, "reason": "the third-split validation receipt cannot be read"}
+        if receipt.get("rule") != rule:
+            return {"available": False, "reason": "the validation receipt does not match the frozen rule"}
+        try:
+            failure_below = float(receipt.get("failure_below", -1))
+        except (TypeError, ValueError):
+            failure_below = -1.0
+        if failure_below != LIVE_GUARD_FAILURE_BELOW:
+            return {"available": False, "reason": "the validation receipt uses a different failure threshold"}
+        train_seeds = receipt.get("train_seeds")
+        holdout_seeds = receipt.get("holdout_seeds")
+        validation_seeds = receipt.get("validation_seeds")
+        splits = (train_seeds, holdout_seeds, validation_seeds)
+        if not all(isinstance(seeds, list) and seeds for seeds in splits):
+            return {"available": False, "reason": "the validation receipt is missing its disjoint seed IDs"}
+        if any(
+            any(not isinstance(seed, int) or isinstance(seed, bool) for seed in seeds)
+            or len(set(seeds)) != len(seeds)
+            for seeds in splits
+        ):
+            return {"available": False, "reason": "the validation receipt contains invalid or duplicate seed IDs"}
+        if (set(train_seeds) & set(holdout_seeds)) or (set(train_seeds) & set(validation_seeds)) or (set(holdout_seeds) & set(validation_seeds)):
+            return {"available": False, "reason": "the validation receipt reuses a seed across splits"}
+        rows = receipt.get("rows")
+        n = receipt.get("n")
+        if (
+            not isinstance(rows, list)
+            or not isinstance(n, int)
+            or isinstance(n, bool)
+            or n <= 0
+            or n != len(rows)
+        ):
+            return {"available": False, "reason": "the validation receipt has inconsistent case counts"}
+        if any(
+            not isinstance(row, dict)
+            or not isinstance(row.get("seed"), int)
+            or isinstance(row.get("seed"), bool)
+            for row in rows
+        ):
+            return {"available": False, "reason": "the validation receipt does not cover every third-split seed"}
+        row_seeds = {row["seed"] for row in rows}
+        if not row_seeds or row_seeds != set(validation_seeds):
+            return {"available": False, "reason": "the validation receipt does not cover every third-split seed"}
+        checks = (
+            ("recall", LIVE_GUARD_MIN_RECALL),
+            ("precision", LIVE_GUARD_MIN_PRECISION),
+            ("worst_unflagged", LIVE_GUARD_MIN_WORST_UNFLAGGED),
+        )
+        failures = []
+        for key, minimum in checks:
+            value = receipt.get(key)
+            if (not isinstance(value, (int, float)) or isinstance(value, bool)
+                    or not np.isfinite(value) or value < minimum):
+                shown = "missing" if not isinstance(value, (int, float)) else f"{value:.3f}"
+                failures.append(f"third-split {key} {shown} is below the required {minimum:.4f}")
+        if failures:
+            return {"available": False, "reason": "; ".join(failures)}
+        return {"available": True, "reason": "the frozen rule passed all third-split thresholds"}
+
     def unreliable_here(self, cpit, archetype: str | None = None) -> str | None:
-        """The rule, when it can be applied at all.
+        """Apply a label rule only after its independent third-split gate passes.
 
-        It is about the OREBODY, not the scenario, and that conclusion cost two measurements. With a
-        five-scenario sweep that ran the discount rate and the plant capacity together at a
-        correlation of -0.735, the training failures were all `core_halo` and the held-out ones looked
-        like they refuted that in favour of the rate. On a crossed nine-scenario sweep the orebody is
-        the signal on BOTH splits (core_halo fails on 80 of 108 training cases and 36 of 54 held out;
-        layered on none of either) and the scenario rule falls to a recall of 0.44.
-
-        Which means the rule needs a LABEL this product has for its own synthetic cases and nobody has
-        for a real deposit. Returning None here is therefore not "it is fine", it is "this rule cannot
-        speak", and the caller says which. Where the exact plan is in the same bake the product does
-        not need the rule at all: it measures the ratio and shows that instead.
+        A selected candidate is not live evidence. The third-split receipt must match the frozen rule,
+        fixed threshold and disjoint seed sets, and must pass every predeclared quality threshold.
+        Returning None when that gate fails means "unavailable", never "safe". Where the exact plan is
+        in the same bake, the caller measures the ratio for this case and displays that instead.
         """
+        eligibility = self.live_guard_status()
+        if not eligibility["available"]:
+            return None
         m = self.expected_time.metrics
         rule = str(m.get("failure_rule", ""))
         if not rule.startswith("archetype ==") or archetype is None:
@@ -450,5 +622,10 @@ class LearnedBundle:
         warning = self.unreliable_here(cpit, getattr(instance, "archetype", None))
         if warning:
             note = f"{note}. UNRELIABLE HERE: {warning}"
+        elif not self.live_guard_status()["available"]:
+            note = (
+                f"{note}. GUARD UNAVAILABLE: {self.live_guard_status()['reason']}; "
+                "no safety classification is made"
+            )
         out.append(("learned-expected-time", res, ms, note))
         return out

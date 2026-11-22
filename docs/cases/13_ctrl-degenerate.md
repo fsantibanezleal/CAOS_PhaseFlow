@@ -24,9 +24,9 @@ algorithm is already exact).
 | bound | value | time | detail |
 | --- | ---: | ---: | --- |
 | ultimate pit (UPIT, exact, undiscounted) | 473,615,066 |  | 4,621 of 6,912 blocks; no time, no capacity |
-| Algorithm 4 (min over single-resource LPs) | 473,615,066 | 69 ms | 1 maximum closures |
+| Algorithm 4 (min over single-resource LPs) | 473,615,066 | 291 ms | 1 maximum closures |
 | joint LP (Bienstock-Zuckerberg) | not computed | - | one resource: there is nothing to join, and Algorithm 4 on a single resource is the critical multiplier algorithm, which solves the LP relaxation exactly |
-| PCPSP LP (HiGHS, destinations free) | 473,615,066 | 143 ms | 60,813 rows, status optimal |
+| PCPSP LP (HiGHS, destinations free) | 473,615,066 | 393 ms | 60,813 rows, status optimal |
 | used for every CPIT gap on this case | Algorithm 4 |  |  |
 <!-- /generated -->
 
@@ -37,21 +37,21 @@ CPIT bound the case uses. Coherence is the mean over periods of the connected co
 the largest one.
 
 <!-- generated:case:ctrl-degenerate -->
-| method | rung | NPV | measured against | gap | time | components / largest share (mean per period) |
+| method | family | NPV | measured against | gap | time | components / largest share (mean per period) |
 | --- | --- | ---: | --- | ---: | ---: | --- |
-| `bench-by-bench` | classical | 473,615,066 | Algorithm 4 | 0.00% | 52 ms | 1.0 / 100% |
-| `nested-shells` | classical | 473,615,066 | Algorithm 4 | 0.00% | 52 ms | 1.0 / 100% |
-| `toposort-greedy` **(best)** | classical | 473,615,066 | Algorithm 4 | 0.00% | 53 ms | 1.0 / 100% |
-| `toposort-gershon` | classical | 473,615,066 | Algorithm 4 | 0.00% | 147 ms | 1.0 / 100% |
-| `toposort-expected` | sota | 473,615,066 | Algorithm 4 | 0.00% | 120 ms | 1.0 / 100% |
-| `shift-local-search` | sota | 473,615,066 | Algorithm 4 | 0.00% | 22 ms | 1.0 / 100% |
-| `sliding-window` | sota | 473,615,066 | Algorithm 4 | 0.00% | 1.7 s | 1.0 / 100% |
-| `cpitD-local-search` | sota | 473,615,066 | Algorithm 4 | 0.00% | 365 ms | 1.0 / 100% |
-| `learned-expected-time` | learned | 473,615,066 | Algorithm 4 | 0.00% | 120 ms | 1.0 / 100% |
-| `destination-toposort` | beyond | 473,615,066 | PCPSP LP | 0.00% | 378 ms | 1.0 / 100% |
-| `destination-sliding-window` | beyond | 473,615,066 | PCPSP LP | 0.00% | 2.8 s | 1.0 / 100% |
-| `destination-local-search` | beyond | 473,615,066 | PCPSP LP | 0.00% | 1.1 s | 1.0 / 100% |
-| `min-width` | beyond | 473,615,066 | Algorithm 4 | 0.00% | 419 ms | 1.0 / 100% |
+| `bench-by-bench` | Reference methods | 473,615,066 | Algorithm 4 | 0.00% | 88 ms | 1.0 / 100% |
+| `nested-shells` | Reference methods | 473,615,066 | Algorithm 4 | 0.00% | 79 ms | 1.0 / 100% |
+| `toposort-greedy` **(best)** | Reference methods | 473,615,066 | Algorithm 4 | 0.00% | 104 ms | 1.0 / 100% |
+| `toposort-gershon` | Reference methods | 473,615,066 | Algorithm 4 | 0.00% | 386 ms | 1.0 / 100% |
+| `toposort-expected` | Published methods | 473,615,066 | Algorithm 4 | 0.00% | 394 ms | 1.0 / 100% |
+| `shift-local-search` | Published methods | 473,615,066 | Algorithm 4 | 0.00% | 36 ms | 1.0 / 100% |
+| `sliding-window` | Published methods | 473,615,066 | Algorithm 4 | 0.00% | 3.2 s | 1.0 / 100% |
+| `cpitD-local-search` | Published methods | 473,615,066 | Algorithm 4 | 0.00% | 339 ms | 1.0 / 100% |
+| `learned-expected-time` | Learned methods | 473,615,066 | Algorithm 4 | 0.00% | 262 ms | 1.0 / 100% |
+| `destination-toposort` | Additional analyses | 473,615,066 | PCPSP LP | 0.00% | 524 ms | 1.0 / 100% |
+| `destination-sliding-window` | Additional analyses | 473,615,066 | PCPSP LP | 0.00% | 3.5 s | 1.0 / 100% |
+| `destination-local-search` | Additional analyses | 473,615,066 | PCPSP LP | 0.00% | 780 ms | 1.0 / 100% |
+| `min-width` | Additional analyses | 473,615,066 | Algorithm 4 | 0.00% | 335 ms | 1.0 / 100% |
 <!-- /generated -->
 
 *Tables generated from `data/derived/manifests/ctrl-degenerate.json` by `scripts/docs_tables.py`.*
