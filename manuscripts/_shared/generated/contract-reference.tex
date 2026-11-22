@@ -18,7 +18,7 @@ Table~\ref{tab:contract-case-index} lists the versioned fields and structural co
 \path{cases[].category} & string & yes & no physical unit & min length: 1 \\
 \path{cases[].manifest_path} & string & yes & no physical unit & pattern: \textasciicircum{}manifests/[\textasciicircum{}/]+\textbackslash{}.json\$ \\
 \path{cases[].default} & boolean & yes & no physical unit & no additional range declared \\
-\path{cases[].lane} & enum & yes & no physical unit & enum: ["live","replay"] \\
+\path{cases[].lane} & enum & yes & no physical unit & enum: \path{live}, \path{replay} \\
 \path{cases[].title} & object & yes & units not specified & no additional range declared \\
 \path{cases[].title.en} & string & yes & no physical unit & min length: 1 \\
 \path{cases[].title.es} & string & yes & no physical unit & min length: 1 \\
@@ -26,7 +26,8 @@ Table~\ref{tab:contract-case-index} lists the versioned fields and structural co
 \path{cases[].role.en} & string & yes & no physical unit & min length: 1 \\
 \path{cases[].role.es} & string & yes & no physical unit & min length: 1 \\
 \bottomrule\end{longtable}
-\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/manifest.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
+\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/manifest.py}.\par
+\noindent\textbf{Data provider:} \path{simulator:data-pipeline/pipeline}.\par
 \textbf{Documents:} \path{data/derived/manifests/index.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: release gates fail before deployment; stale: the index engine version differs from VERSION.
 Table~\ref{tab:contract-case-manifest} lists the versioned fields and structural constraints for case-manifest; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
@@ -38,7 +39,7 @@ Table~\ref{tab:contract-case-manifest} lists the versioned fields and structural
 \path{schema} & constant & yes & no physical unit & const: "phaseflow.manifest/v1" \\
 \path{case_id} & string & yes & no physical unit & min length: 1 \\
 \path{category} & string & yes & no physical unit & min length: 1 \\
-\path{real_or_synthetic} & enum & yes & no physical unit & enum: ["real","synthetic"] \\
+\path{real_or_synthetic} & enum & yes & no physical unit & enum: \path{real}, \path{synthetic} \\
 \path{engine} & object & yes & units not specified & no additional range declared \\
 \path{engine.version} & string & yes & no physical unit & no additional range declared \\
 \path{engine.oreblocks} & string & no & no physical unit & no additional range declared \\
@@ -65,9 +66,9 @@ Table~\ref{tab:contract-case-manifest} lists the versioned fields and structural
 \path{artifact.format} & constant & yes & no physical unit & const: "json" \\
 \path{artifact.trace_schema} & constant & yes & no physical unit & const: "phaseflow.schedule-trace/v1" \\
 \path{artifact.bytes} & integer & yes & bytes & minimum: 1 \\
-\path{lane} & enum & yes & no physical unit & enum: ["live","replay"] \\
+\path{lane} & enum & yes & no physical unit & enum: \path{live}, \path{replay} \\
 \path{gate} & object & yes & units not specified & no additional range declared \\
-\path{gate.lane} & enum & yes & no physical unit & enum: ["live","replay"] \\
+\path{gate.lane} & enum & yes & no physical unit & enum: \path{live}, \path{replay} \\
 \path{gate.n_blocks} & integer & yes & count & minimum: 0 \\
 \path{gate.n_arcs} & integer & yes & count & minimum: 0 \\
 \path{gate.trace_bytes} & integer & yes & bytes & minimum: 0 \\
@@ -109,7 +110,7 @@ Table~\ref{tab:contract-case-manifest} lists the versioned fields and structural
 \path{scoreboard[].utilization[][]} & number or null & no & units not specified & no additional range declared \\
 \path{scoreboard[].extra} & object & no & units not specified & no additional range declared \\
 \path{published} & object & yes & units not specified & no additional range declared \\
-\path{published.problem} & enum & no & no physical unit & enum: ["CPIT","PCPSP"] \\
+\path{published.problem} & enum & no & no physical unit & enum: \path{CPIT}, \path{PCPSP} \\
 \path{published.source_tables} & string & no & no physical unit & no additional range declared \\
 \path{published.upit_optimum} & number & no & units not specified & no additional range declared \\
 \path{published.lp_bound} & number & no & units not specified & no additional range declared \\
@@ -170,7 +171,8 @@ Table~\ref{tab:contract-case-manifest} lists the versioned fields and structural
 \path{ensemble_summary.replanningSettings (anyOf 1)} & object & no & units not specified & no additional range declared \\
 \path{ensemble_summary.replanningSettings (anyOf 2)} & null & no & units not specified & no additional range declared \\
 \bottomrule\end{longtable}
-\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/manifest.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
+\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/manifest.py}.\par
+\noindent\textbf{Data provider:} \path{simulator:data-pipeline/pipeline}.\par
 \textbf{Documents:} \path{data/derived/manifests/*.json, !data/derived/manifests/index.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: the release gate reports the missing manifest and blocks promotion.
 Table~\ref{tab:contract-schedule-trace} lists the versioned fields and structural constraints for schedule-trace; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
@@ -189,7 +191,7 @@ Table~\ref{tab:contract-schedule-trace} lists the versioned fields and structura
 \path{role.en} & string & yes & no physical unit & min length: 1 \\
 \path{role.es} & string & yes & no physical unit & min length: 1 \\
 \path{instance} & object & yes & units not specified & no additional range declared \\
-\path{instance.source} & enum & yes & no physical unit & enum: ["twin","minelib"] \\
+\path{instance.source} & enum & yes & no physical unit & enum: \path{twin}, \path{minelib} \\
 \path{instance.synthetic} & boolean & yes & no physical unit & no additional range declared \\
 \path{instance.nBlocks} & integer & yes & count & minimum: 1 \\
 \path{instance.nPrecedenceArcs} & integer & yes & count & minimum: 0 \\
@@ -211,7 +213,7 @@ Table~\ref{tab:contract-schedule-trace} lists the versioned fields and structura
 \path{scenario.resources[].limitPerPeriod} & array & yes & resource-specific input unit & no additional range declared \\
 \path{scenario.resources[].limitPerPeriod[]} & number & no & resource-specific input unit & no additional range declared \\
 \path{published} & object & yes & units not specified & no additional range declared \\
-\path{published.problem} & enum & no & no physical unit & enum: ["CPIT","PCPSP"] \\
+\path{published.problem} & enum & no & no physical unit & enum: \path{CPIT}, \path{PCPSP} \\
 \path{published.source_tables} & string & no & no physical unit & no additional range declared \\
 \path{published.upit_optimum} & number & no & units not specified & no additional range declared \\
 \path{published.lp_bound} & number & no & units not specified & no additional range declared \\
@@ -244,7 +246,7 @@ Table~\ref{tab:contract-schedule-trace} lists the versioned fields and structura
 \path{bound.joint_solver} & string & no & no physical unit & no additional range declared \\
 \path{bound.joint_slack} & number & no & units not specified & no additional range declared \\
 \path{bound.tightening_pct} & number or null & no & units not specified & no additional range declared \\
-\path{bound.used} & enum & no & no physical unit & enum: ["algorithm4","bienstock-zuckerberg"] \\
+\path{bound.used} & enum & no & no physical unit & enum: \path{algorithm4}, \path{bienstock-zuckerberg} \\
 \path{bound.pcpsp_lp} & number or null & no & units not specified & no additional range declared \\
 \path{bound.pcpsp_lp_ms} & number & no & milliseconds & no additional range declared \\
 \path{bound.pcpsp_lp_rows} & integer & no & count & no additional range declared \\
@@ -390,7 +392,7 @@ Table~\ref{tab:contract-schedule-trace} lists the versioned fields and structura
 \path{methods[].extra.localSearchReceipt.neighborhoods[].certifiedOptimal} & boolean & yes & no physical unit & no additional range declared \\
 \path{frontierPolicy} & JSON value & no & units not specified & no additional range declared \\
 \path{frontierPolicy (oneOf 1)} & object & no & units not specified & no additional range declared \\
-\path{frontierPolicy (oneOf 1).status} & enum & yes & no physical unit & enum: ["complete","partial"] \\
+\path{frontierPolicy (oneOf 1).status} & enum & yes & no physical unit & enum: \path{complete}, \path{partial} \\
 \path{frontierPolicy (oneOf 1).source} & string & yes & no physical unit & min length: 1 \\
 \path{frontierPolicy (oneOf 1).trainingSourceCommit} & string & yes & no physical unit & pattern: \textasciicircum{}[0-9a-f]\{40\}\$ \\
 \path{frontierPolicy (oneOf 1).evaluationSourceCommit} & string & yes & no physical unit & pattern: \textasciicircum{}[0-9a-f]\{40\}\$ \\
@@ -399,7 +401,7 @@ Table~\ref{tab:contract-schedule-trace} lists the versioned fields and structura
 \path{frontierPolicy (oneOf 1).checkpointSha256} & array & yes & 64-character lowercase hexadecimal digest & min items: 5; max items: 5 \\
 \path{frontierPolicy (oneOf 1).checkpointSha256[]} & string & no & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
 \path{frontierPolicy (oneOf 2)} & object & no & units not specified & no additional range declared \\
-\path{frontierPolicy (oneOf 2).status} & enum & yes & no physical unit & enum: ["failed","unavailable"] \\
+\path{frontierPolicy (oneOf 2).status} & enum & yes & no physical unit & enum: \path{failed}, \path{unavailable} \\
 \path{frontierPolicy (oneOf 2).reason} & string & yes & no physical unit & min length: 12; max length: 1000 \\
 \path{blocks} & object & no & units not specified & no additional range declared \\
 \path{blocks.x} & array & yes & units not specified & no additional range declared \\
@@ -419,7 +421,8 @@ Table~\ref{tab:contract-schedule-trace} lists the versioned fields and structura
 \path{blocks.inPit} & array & yes & units not specified & no additional range declared \\
 \path{blocks.inPit[]} & integer & no & count & no additional range declared \\
 \bottomrule\end{longtable}
-\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/trace.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
+\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/trace.py}.\par
+\noindent\textbf{Data provider:} \path{simulator:data-pipeline/pipeline}.\par
 \textbf{Documents:} \path{data/derived/*/trace.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: the release gate reports the missing trace and blocks promotion; unavailable solver node counts are null, never negative sentinels; frontier-policy outcomes carry their source and checkpoint receipt. % voice-ok: literal artifact path from the contract catalog
 Table~\ref{tab:contract-frontier-release} lists the versioned fields and structural constraints for frontier-release; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
@@ -456,7 +459,7 @@ Table~\ref{tab:contract-frontier-release} lists the versioned fields and structu
 \path{cases[].source_commit} & string & yes & no physical unit & pattern: \textasciicircum{}[0-9a-f]\{40\}\$ \\
 \path{cases[].checkpoint_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
 \path{cases[].feature_contract_sha256} & string & yes & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
-\path{cases[].status} & enum & yes & no physical unit & enum: ["complete","partial","failed","unavailable"] \\
+\path{cases[].status} & enum & yes & no physical unit & enum: \path{complete}, \path{partial}, \path{failed}, \path{unavailable} \\
 \path{cases[].trace_sha256} & string & no & 64-character lowercase hexadecimal digest & pattern: \textasciicircum{}[0-9a-f]\{64\}\$ \\
 \path{cases[].tonnage_coverage} & number & no & resource-specific input unit & minimum: 0; maximum: 1 \\
 \path{cases[].positive_value_coverage} & number & no & case economic unit & minimum: 0; maximum: 1 \\
@@ -469,7 +472,8 @@ Table~\ref{tab:contract-frontier-release} lists the versioned fields and structu
 \path{summary.unavailable} & integer & yes & count & minimum: 0 \\
 \path{redistribution} & string & yes & no physical unit & min length: 20 \\
 \bottomrule\end{longtable}
-\noindent\textbf{Implementation:} \path{scripts/build_frontier_release_candidate.py}. \textbf{Data provider:} simulator:scripts/build\_frontier\_release\_candidate.py.
+\noindent\textbf{Implementation:} \path{scripts/build_frontier_release_candidate.py}.\par
+\noindent\textbf{Data provider:} \path{simulator:scripts/build_frontier_release_candidate.py}.\par
 \textbf{Documents:} \path{data/derived/frontier-release-receipt.json}. \textbf{Producer check:} \path{tests/test_build_frontier_release_candidate.py}. \textbf{Consumer check:} \path{scripts/check_frontier_release.py}. \textbf{Missing-data behavior:} missing or mixed source/case/checkpoint/split/partial coverage: the 0.12 release gate fails before promotion. % voice-ok: literal artifact path from the contract catalog
 Table~\ref{tab:contract-learned-model} lists the versioned fields and structural constraints for learned-model; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
@@ -479,7 +483,7 @@ Table~\ref{tab:contract-learned-model} lists the versioned fields and structural
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
 \midrule\endhead
 \path{schema} & string & yes & no physical unit & min length: 1 \\
-\path{target} & enum & yes & no physical unit & enum: ["expected\_time\_fraction","bound\_over\_upit"] \\
+\path{target} & enum & yes & no physical unit & enum: \path{expected_time_fraction}, \path{bound_over_upit} \\
 \path{features} & array & yes & units not specified & min items: 1 \\
 \path{features[]} & string & no & no physical unit & no additional range declared \\
 \path{layers} & array & yes & units not specified & min items: 1 \\
@@ -490,7 +494,8 @@ Table~\ref{tab:contract-learned-model} lists the versioned fields and structural
 \path{sigma[]} & number & no & units not specified & minimum: 0 \\
 \path{metrics} & object & yes & units not specified & no additional range declared \\
 \bottomrule\end{longtable}
-\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/model/learned.py}. \textbf{Data provider:} baseline:models.
+\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/model/learned.py}.\par
+\noindent\textbf{Data provider:} \path{baseline:models}.\par
 \textbf{Documents:} \path{models/expected-time.json, models/bound.json, models/expected-time.onnx, models/bound.onnx}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: learned parity and model checks fail; the exact lane remains authoritative.
 Table~\ref{tab:contract-learned-study} lists the versioned fields and structural constraints for learned-study; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
@@ -500,54 +505,55 @@ Table~\ref{tab:contract-learned-study} lists the versioned fields and structural
 \toprule Field & Type & Req. & Unit/domain & Constraints or meaning \\
 \midrule\endhead
 No property-level schema is declared; see observed study document fields below. & object & - & mixed & The shared schema enforces only the outer object shape. \\
-\texttt{training-report.json.expected\_time} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{training-report.json.expected\_time\_per\_case} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{training-report.json.bound} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{training-report.json.archetypes} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{training-report.json.scenarios} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{training-report.json.sizes} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{training-report.json.honesty} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\ % voice-ok: literal source field name
-\texttt{guard-validation.json.purpose} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.rule} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.failure\_below} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.validation\_seeds} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.train\_seeds} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.holdout\_seeds} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.n} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.failures} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.flagged} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.true\_positive} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.false\_positive} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.false\_negative} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.true\_negative} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.precision} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.recall} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.worst\_unflagged} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.worst\_overall} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.median} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.median\_by\_size} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.p10} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.holdout\_for\_comparison} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{guard-validation.json.rows} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-failure-modes.json.failure\_below} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-failure-modes.json.rules} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-failure-modes.json.shipped\_rule} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-failure-modes.json.shipped\_caveat} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-failure-modes.json.refuted} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-failure-modes.json.train} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-failure-modes.json.holdout} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{surrogate-parity.json.schema} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{surrogate-parity.json.note} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{surrogate-parity.json.bound} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{surrogate-parity.json.expectedTime} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{surrogate-parity.json.features} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-preview-timing.json.schema} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-preview-timing.json.measured} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-preview-timing.json.runtime} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-preview-timing.json.note} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
-\texttt{learned-preview-timing.json.rows} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{training-report.json.expected_time} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{training-report.json.expected_time_per_case} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{training-report.json.bound} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{training-report.json.archetypes} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{training-report.json.scenarios} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{training-report.json.sizes} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{training-report.json.honesty} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\ % voice-ok: literal source field name
+\path{guard-validation.json.purpose} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.rule} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.failure_below} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.validation_seeds} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.train_seeds} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.holdout_seeds} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.n} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.failures} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.flagged} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.true_positive} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.false_positive} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.false_negative} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.true_negative} & int & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.precision} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.recall} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.worst_unflagged} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.worst_overall} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.median} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.median_by_size} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.p10} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.holdout_for_comparison} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{guard-validation.json.rows} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-failure-modes.json.failure_below} & float & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-failure-modes.json.rules} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-failure-modes.json.shipped_rule} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-failure-modes.json.shipped_caveat} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-failure-modes.json.refuted} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-failure-modes.json.train} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-failure-modes.json.holdout} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{surrogate-parity.json.schema} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{surrogate-parity.json.note} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{surrogate-parity.json.bound} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{surrogate-parity.json.expectedTime} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{surrogate-parity.json.features} & dict & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-preview-timing.json.schema} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-preview-timing.json.measured} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-preview-timing.json.runtime} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-preview-timing.json.note} & str & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
+\path{learned-preview-timing.json.rows} & list & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\
 \bottomrule\end{longtable}
-\noindent\textbf{Implementation:} \path{scripts/train_learned.py and evaluation scripts}. \textbf{Data provider:} baseline:models.
+\noindent\textbf{Implementation:} \path{scripts/train_learned.py and evaluation scripts}.\par
+\noindent\textbf{Data provider:} \path{baseline:models}.\par
 \textbf{Documents:} \path{models/training-report.json, models/guard-validation.json, models/learned-failure-modes.json, models/surrogate-parity.json, models/learned-preview-timing.json}. \textbf{Producer check:} \path{tests/contracts/test_contract_schemas.py::test_every_catalogued_document_matches_its_schema}. \textbf{Consumer check:} \path{frontend/test/contract.test.ts}. \textbf{Missing-data behavior:} missing: release evidence gate reports absent study evidence and blocks promotion.
 Table~\ref{tab:contract-readiness} lists the versioned fields and structural constraints for readiness; the table also records observed fields where the shared schema intentionally leaves document detail open.
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.23\textwidth}>{\raggedright\arraybackslash}p{0.09\textwidth}>{\raggedright\arraybackslash}p{0.07\textwidth}>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
@@ -563,12 +569,13 @@ Table~\ref{tab:contract-readiness} lists the versioned fields and structural con
 \path{contracts[]} & object & no & units not specified & no additional range declared \\
 \path{contracts[].id} & string & yes & no physical unit & min length: 1 \\
 \path{contracts[].version} & string & yes & no physical unit & pattern: \textasciicircum{}\textbackslash{}d+\textbackslash{}.\textbackslash{}d+\textbackslash{}.\textbackslash{}d+\$ \\
-\path{contracts[].state} & enum & yes & no physical unit & enum: ["available","partial","missing","stale"] \\
+\path{contracts[].state} & enum & yes & no physical unit & enum: \path{available}, \path{partial}, \path{missing}, \path{stale} \\
 \path{contracts[].provenance} & string or null & yes & units not specified & no additional range declared \\
 \path{contracts[].reason} & object or null & yes & units not specified & no additional range declared \\
 \path{contracts[].missing} & array & yes & units not specified & no additional range declared \\
 \path{contracts[].missing[]} & string & no & no physical unit & no additional range declared \\
 \bottomrule\end{longtable}
-\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/readiness.py}. \textbf{Data provider:} simulator:data-pipeline/pipeline.
+\noindent\textbf{Implementation:} \path{data-pipeline/pipeline/core/readiness.py}.\par
+\noindent\textbf{Data provider:} \path{simulator:data-pipeline/pipeline}.\par
 \textbf{Documents:} \path{data/derived/readiness.json}. \textbf{Producer check:} \path{tests/contracts/test_readiness.py::test_committed_snapshot_is_reproducible}. \textbf{Consumer check:} \path{scripts/check_readiness.py}. \textbf{Missing-data behavior:} missing or stale: the release gate fails.
 \endgroup

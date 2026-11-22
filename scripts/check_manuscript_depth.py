@@ -33,7 +33,7 @@ from pathlib import Path
 from check_notebook_depth import inventory_table, visible
 
 RULE = "conventions/manuscript-content-bar.md"
-SUPPORT = {"shared", "_shared", "common", "figures", "assets"}
+SUPPORT = {"shared", "_shared", "common", "figures", "assets", "__pycache__", ".pytest_cache"}
 NOT_LATEX = {".md", ".docx", ".doc", ".odt", ".rtf", ".html", ".htm", ".txt"}
 KINDS = ("technical-report", "manuscript")
 

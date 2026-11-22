@@ -43,7 +43,8 @@ def type_name(schema: dict[str, Any]) -> str:
     return "object" if "properties" in schema else "JSON value"
 
 
-def constraints(schema: dict[str, Any]) -> str:
+def constraints_tex(schema: dict[str, Any]) -> str:
+    """Render long enum tokens as breakable paths in the fixed-width contract table."""
     labels = {
         "format": "format", "pattern": "pattern", "minLength": "min length",
         "maxLength": "max length", "minimum": "minimum", "maximum": "maximum",
@@ -51,17 +52,21 @@ def constraints(schema: dict[str, Any]) -> str:
         "minItems": "min items", "maxItems": "max items", "minProperties": "min properties",
         "maxProperties": "max properties", "multipleOf": "multiple of",
     }
-    parts = [f"{label}: {schema[key]}" for key, label in labels.items() if key in schema]
+    parts = [f"{label}: {tex(str(schema[key]))}" for key, label in labels.items() if key in schema]
     for key in ("const", "enum"):
-        if key in schema:
-            value = schema[key]
-            rendered = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
-            parts.append(f"{key}: {rendered}")
+        if key not in schema:
+            continue
+        value = schema[key]
+        if key == "enum" and isinstance(value, list) and all(isinstance(item, str) for item in value):
+            rendered = ", ".join(rf"\path{{{item}}}" for item in value)
+        else:
+            rendered = tex(json.dumps(value, ensure_ascii=False, separators=(",", ":")))
+        parts.append(f"{key}: {rendered}")
     if not parts:
         parts.append("no additional range declared")
     description = schema.get("description")
     if isinstance(description, str) and description.strip():
-        parts.append(description.strip())
+        parts.append(tex(description.strip()))
     return "; ".join(parts)
 
 
@@ -210,7 +215,7 @@ def build(root: Path) -> None:
                 field = path
                 row = (
                     rf"\path{{{field}}} & {tex(type_name(node))} & {'yes' if required else 'no'} & "
-                    rf"{tex(unit_hint(path, node))} & {tex(constraints(node))} \\")
+                    rf"{tex(unit_hint(path, node))} & {constraints_tex(node)} \\")
                 # This is a literal field name from the learned-study JSON contract, not prose.
                 if path.endswith(".honesty"):
                     row += " % voice-ok: literal schema field name"
@@ -218,7 +223,7 @@ def build(root: Path) -> None:
         else:
             rows.append(r"No property-level schema is declared; see observed study document fields below. & object & - & mixed & The shared schema enforces only the outer object shape. \\")
             for path, kind in observed_fields(root, documents):
-                row = rf"\texttt{{{tex(path)}}} & {tex(kind)} & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\"
+                row = rf"\path{{{path}}} & {tex(kind)} & - & source-defined & Observed top-level field; shape is not constrained by the shared schema. \\"
                 if path.endswith(".honesty"):
                     row += " % voice-ok: literal source field name"
                 rows.append(row)
@@ -230,7 +235,8 @@ def build(root: Path) -> None:
             metadata_line += " % voice-ok: literal artifact path from the contract catalog"
         rows.extend([
             r"\bottomrule\end{longtable}",
-            rf"\noindent\textbf{{Implementation:}} \path{{{owner}}}. \textbf{{Data provider:}} {tex(catalog_row[9])}.",
+            rf"\noindent\textbf{{Implementation:}} \path{{{owner}}}.\par",
+            rf"\noindent\textbf{{Data provider:}} \path{{{catalog_row[9]}}}.\par",
             metadata_line,
         ])
     rows.append(r"\endgroup")
