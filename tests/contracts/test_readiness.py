@@ -53,6 +53,23 @@ def test_missing_trace_names_the_phaseflow_artifact(tmp_path: Path):
     assert trace.relative_to(root).as_posix() in result["missing"]
 
 
+def test_incomplete_frontier_receipt_does_not_claim_release_readiness(tmp_path: Path):
+    root = isolated_repo(tmp_path)
+    receipt = root / "data/derived/frontier-release-receipt.json"
+    receipt.parent.mkdir(parents=True, exist_ok=True)
+    receipt.write_text(json.dumps({
+        "schema": "phaseflow.frontier-release/v3",
+        "cases": [{"status": "partial"}] * 13,
+        "summary": {"cases": 13, "complete": 0, "partial": 13, "failed": 0, "unavailable": 0},
+    }), encoding="utf-8")
+
+    result = row(compute(root), "frontier-release")
+
+    assert result["state"] == "missing"
+    assert result["provenance"] is None
+    assert result["missing"] == ["data/derived/frontier-release-receipt.json"]
+
+
 def test_catalog_change_updates_its_digest(tmp_path: Path):
     root = isolated_repo(tmp_path)
     before = compute(root)["catalog_sha256"]
